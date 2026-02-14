@@ -47,14 +47,14 @@ const Dashboard = () => {
     <DashboardLayout>
       <div className="max-w-4xl space-y-8">
         <div>
-          <h1 className="text-lg font-medium tracking-tight text-foreground">Dashboard</h1>
-          <p className="mt-1 text-sm text-muted-foreground">Record observations and track relational patterns with clarity.</p>
+          <h1 className="text-xl font-bold tracking-tight text-foreground">Welcome back 🌿</h1>
+          <p className="mt-1 text-sm text-muted-foreground leading-relaxed">Your space for observation and reflection.</p>
         </div>
 
         <ActionGrid />
 
-        <div className="border border-border rounded-sm p-6">
-          <h2 className="text-xs font-mono uppercase tracking-[0.15em] text-muted-foreground mb-4">Recent Activity</h2>
+        <div className="bg-card/60 backdrop-blur border border-border rounded-3xl p-6">
+          <h2 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-4">Recent Activity</h2>
           {loading ? (
             <p className="text-sm text-muted-foreground">Loading...</p>
           ) : items.length === 0 ? (
@@ -65,7 +65,7 @@ const Dashboard = () => {
                 <button
                   key={item.id}
                   onClick={() => navigate(item.type === 'journal' ? '/journal' : '/self-checks')}
-                  className="w-full flex items-center gap-3 py-2.5 px-3 rounded-sm text-left hover:bg-muted/50 transition-colors"
+                  className="w-full flex items-center gap-3 py-2.5 px-3 rounded-2xl text-left hover:bg-accent/50 transition-colors"
                 >
                   {item.type === 'journal' ? <BookOpen className="h-3.5 w-3.5 text-primary shrink-0" /> : <ClipboardCheck className="h-3.5 w-3.5 text-muted-foreground shrink-0" />}
                   <span className="text-sm flex-1 truncate">{item.title}</span>
