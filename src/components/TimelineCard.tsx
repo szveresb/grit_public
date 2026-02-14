@@ -1,3 +1,5 @@
+import { Link } from 'react-router-dom';
+
 const TimelineCard = () => {
   return (
     <div className="w-full h-full flex items-center justify-center p-8">
@@ -29,9 +31,9 @@ const TimelineCard = () => {
 
         {/* CTA */}
         <div className="mt-8">
-          <button className="w-full py-3 px-6 bg-primary text-primary-foreground text-sm font-medium tracking-wide rounded-sm border border-primary hover:opacity-90 transition-opacity">
+          <Link to="/dashboard" className="block w-full py-3 px-6 bg-primary text-primary-foreground text-sm font-medium tracking-wide rounded-sm border border-primary hover:opacity-90 transition-opacity text-center">
             Start Your Objective Journal
-          </button>
+          </Link>
         </div>
       </div>
     </div>
