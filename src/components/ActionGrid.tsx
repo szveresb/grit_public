@@ -6,32 +6,32 @@ interface ActionCardProps {
   title: string;
   description: string;
   icon: LucideIcon;
-  variant: 'blue' | 'slate' | 'bordered';
+  variant: 'sage' | 'leaf' | 'mist';
   onClick: () => void;
 }
 
 const variantStyles: Record<ActionCardProps['variant'], string> = {
-  blue: 'bg-primary text-primary-foreground border-primary',
-  slate: 'bg-foreground text-background border-foreground',
-  bordered: 'bg-background text-foreground border-border',
+  sage: 'bg-primary text-primary-foreground border-primary/30',
+  leaf: 'bg-bamboo-sage-light text-foreground border-border',
+  mist: 'bg-card text-foreground border-border',
 };
 
 const iconVariantStyles: Record<ActionCardProps['variant'], string> = {
-  blue: 'text-primary-foreground/70',
-  slate: 'text-background/70',
-  bordered: 'text-muted-foreground',
+  sage: 'text-primary-foreground/80',
+  leaf: 'text-bamboo-sage',
+  mist: 'text-muted-foreground',
 };
 
 const ActionCard = ({ title, description, icon: Icon, variant, onClick }: ActionCardProps) => {
   return (
     <button
       onClick={onClick}
-      className={`flex flex-col items-start gap-3 rounded-sm border p-6 text-left transition-opacity hover:opacity-80 ${variantStyles[variant]}`}
+      className={`flex flex-col items-start gap-3 rounded-3xl border p-6 text-left transition-all hover:shadow-md hover:scale-[1.02] ${variantStyles[variant]}`}
     >
       <Icon className={`h-5 w-5 ${iconVariantStyles[variant]}`} />
       <div>
-        <h3 className="text-sm font-medium">{title}</h3>
-        <p className={`mt-1 text-xs ${variant === 'bordered' ? 'text-muted-foreground' : 'opacity-70'}`}>
+        <h3 className="text-sm font-semibold">{title}</h3>
+        <p className={`mt-1 text-xs leading-relaxed ${variant === 'sage' ? 'opacity-80' : 'text-muted-foreground'}`}>
           {description}
         </p>
       </div>
@@ -46,23 +46,23 @@ const ActionGrid = () => {
     <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
       <ActionCard
         title="Log Observation"
-        description="Record a factual event as it happened."
+        description="Record what happened with clarity and structure."
         icon={BookOpen}
-        variant="blue"
+        variant="sage"
         onClick={() => navigate('/journal')}
       />
       <ActionCard
         title="Complete Self-Check"
-        description="Assess your current emotional state."
+        description="A gentle check-in on how you're feeling right now."
         icon={ClipboardCheck}
-        variant="slate"
+        variant="leaf"
         onClick={() => navigate('/self-checks')}
       />
       <ActionCard
-        title="View Timeline"
-        description="See your observations in sequence."
+        title="View History"
+        description="See your observations and reflections over time."
         icon={Clock}
-        variant="bordered"
+        variant="mist"
         onClick={() => navigate('/timeline')}
       />
     </div>

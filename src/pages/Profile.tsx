@@ -8,6 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { toast } from 'sonner';
+import { Download } from 'lucide-react';
 
 const Profile = () => {
   const { user, signOut } = useAuth();
@@ -25,8 +26,7 @@ const Profile = () => {
     if (!user) return;
     setSaving(true);
     await supabase.from('profiles').update({ display_name: displayName }).eq('user_id', user.id);
-    toast.success('Profile updated');
-    setSaving(false);
+    toast.success('Profile updated'); setSaving(false);
   };
 
   const handleRoleChange = async (newRole: string) => {
@@ -34,46 +34,61 @@ const Profile = () => {
     toast.success('Role updated');
   };
 
+  const handleExport = async () => {
+    if (!user) return;
+    const { data: entries } = await supabase.from('journal_entries').select('*').eq('user_id', user.id).order('entry_date');
+    const { data: responses } = await supabase.from('questionnaire_responses')
+      .select('*, questionnaires(title), questionnaire_answers(question_id, answer, questionnaire_questions(question_text))')
+      .eq('user_id', user.id);
+    const exportData = { exported_at: new Date().toISOString(), journal_entries: entries ?? [], questionnaire_responses: responses ?? [] };
+    const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url; a.download = `liftoff-export-${new Date().toISOString().split('T')[0]}.json`;
+    a.click(); URL.revokeObjectURL(url);
+    toast.success('Data exported');
+  };
+
   return (
     <DashboardLayout>
-      <div className="max-w-lg space-y-8">
+      <div className="max-w-lg space-y-6">
         <div>
-          <h1 className="text-lg font-medium tracking-tight text-foreground">Profile</h1>
-          <p className="mt-1 text-sm text-muted-foreground">Manage your identity and role framing.</p>
+          <h1 className="text-xl font-bold tracking-tight text-foreground">Account</h1>
+          <p className="mt-1 text-sm text-muted-foreground leading-relaxed">Manage your identity, role, and data.</p>
         </div>
 
-        <div className="border border-border rounded-sm p-6 space-y-4">
-          <h2 className="text-xs font-mono uppercase tracking-[0.15em] text-muted-foreground">Account</h2>
+        <div className="bg-card/60 backdrop-blur border border-border rounded-3xl p-6 space-y-4">
+          <h2 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Profile</h2>
           <div className="space-y-2">
-            <Label className="text-xs font-mono uppercase tracking-widest">Email</Label>
-            <Input value={user?.email ?? ''} disabled className="opacity-60" />
+            <Label className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Email</Label>
+            <Input value={user?.email ?? ''} disabled className="opacity-60 rounded-2xl" />
           </div>
           <div className="space-y-2">
-            <Label className="text-xs font-mono uppercase tracking-widest">Display Name</Label>
-            <Input value={displayName} onChange={e => setDisplayName(e.target.value)} />
+            <Label className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Display Name</Label>
+            <Input value={displayName} onChange={e => setDisplayName(e.target.value)} className="rounded-2xl" />
           </div>
-          <Button onClick={handleSave} disabled={saving} size="sm">
+          <Button onClick={handleSave} disabled={saving} size="sm" className="rounded-2xl">
             {saving ? 'Saving...' : 'Save Changes'}
           </Button>
         </div>
 
-        <div className="border border-border rounded-sm p-6 space-y-4">
-          <h2 className="text-xs font-mono uppercase tracking-[0.15em] text-muted-foreground">Role Framing</h2>
+        <div className="bg-card/60 backdrop-blur border border-border rounded-3xl p-6 space-y-4">
+          <h2 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Role Framing</h2>
           {roleLoading ? (
             <p className="text-sm text-muted-foreground">Loading...</p>
           ) : (
             <RadioGroup value={currentRole ?? ''} onValueChange={handleRoleChange} className="space-y-2">
-              <div className="flex items-center space-x-3 border border-border rounded-sm p-3">
+              <div className="flex items-center space-x-3 border border-border rounded-2xl p-3.5 hover:bg-accent/30 transition-colors">
                 <RadioGroupItem value="affected_person" id="role_ap" />
                 <div>
-                  <Label htmlFor="role_ap" className="text-sm font-medium cursor-pointer">Affected Person</Label>
+                  <Label htmlFor="role_ap" className="text-sm font-semibold cursor-pointer">Affected Person</Label>
                   <p className="text-xs text-muted-foreground">Documenting your own experiences.</p>
                 </div>
               </div>
-              <div className="flex items-center space-x-3 border border-border rounded-sm p-3">
+              <div className="flex items-center space-x-3 border border-border rounded-2xl p-3.5 hover:bg-accent/30 transition-colors">
                 <RadioGroupItem value="observer" id="role_ob" />
                 <div>
-                  <Label htmlFor="role_ob" className="text-sm font-medium cursor-pointer">Observer</Label>
+                  <Label htmlFor="role_ob" className="text-sm font-semibold cursor-pointer">Observer</Label>
                   <p className="text-xs text-muted-foreground">Documenting patterns you witness.</p>
                 </div>
               </div>
@@ -81,7 +96,15 @@ const Profile = () => {
           )}
         </div>
 
-        <Button variant="outline" onClick={signOut} size="sm">Sign Out</Button>
+        <div className="bg-card/60 backdrop-blur border border-border rounded-3xl p-6 space-y-4">
+          <h2 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Your Data</h2>
+          <p className="text-sm text-muted-foreground leading-relaxed">Download all your journal entries and self-check responses as a portable file.</p>
+          <Button onClick={handleExport} size="sm" variant="outline" className="rounded-2xl">
+            <Download className="h-4 w-4 mr-1.5" /> Export All Data
+          </Button>
+        </div>
+
+        <Button variant="outline" onClick={signOut} size="sm" className="rounded-2xl">Sign Out</Button>
       </div>
     </DashboardLayout>
   );
