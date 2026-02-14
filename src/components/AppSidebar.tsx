@@ -6,6 +6,7 @@ import {
   ClipboardCheck,
   Clock,
   Download,
+  User,
 } from 'lucide-react';
 import {
   Sidebar,
@@ -20,11 +21,12 @@ import {
 } from '@/components/ui/sidebar';
 
 const navItems = [
-  { title: 'Dashboard', url: '/', icon: LayoutDashboard },
+  { title: 'Dashboard', url: '/dashboard', icon: LayoutDashboard },
   { title: 'Journal', url: '/journal', icon: BookOpen },
   { title: 'Self-Checks', url: '/self-checks', icon: ClipboardCheck },
   { title: 'Timeline', url: '/timeline', icon: Clock },
   { title: 'Data Export', url: '/export', icon: Download },
+  { title: 'Profile', url: '/profile', icon: User },
 ];
 
 const AppSidebar = () => {

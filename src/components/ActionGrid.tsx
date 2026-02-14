@@ -1,3 +1,4 @@
+import { useNavigate } from 'react-router-dom';
 import { BookOpen, ClipboardCheck, Clock } from 'lucide-react';
 import type { LucideIcon } from 'lucide-react';
 
@@ -6,6 +7,7 @@ interface ActionCardProps {
   description: string;
   icon: LucideIcon;
   variant: 'blue' | 'slate' | 'bordered';
+  onClick: () => void;
 }
 
 const variantStyles: Record<ActionCardProps['variant'], string> = {
@@ -20,9 +22,10 @@ const iconVariantStyles: Record<ActionCardProps['variant'], string> = {
   bordered: 'text-muted-foreground',
 };
 
-const ActionCard = ({ title, description, icon: Icon, variant }: ActionCardProps) => {
+const ActionCard = ({ title, description, icon: Icon, variant, onClick }: ActionCardProps) => {
   return (
     <button
+      onClick={onClick}
       className={`flex flex-col items-start gap-3 rounded-sm border p-6 text-left transition-opacity hover:opacity-80 ${variantStyles[variant]}`}
     >
       <Icon className={`h-5 w-5 ${iconVariantStyles[variant]}`} />
@@ -37,6 +40,8 @@ const ActionCard = ({ title, description, icon: Icon, variant }: ActionCardProps
 };
 
 const ActionGrid = () => {
+  const navigate = useNavigate();
+
   return (
     <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
       <ActionCard
@@ -44,18 +49,21 @@ const ActionGrid = () => {
         description="Record a factual event as it happened."
         icon={BookOpen}
         variant="blue"
+        onClick={() => navigate('/journal')}
       />
       <ActionCard
         title="Complete Self-Check"
         description="Assess your current emotional state."
         icon={ClipboardCheck}
         variant="slate"
+        onClick={() => navigate('/self-checks')}
       />
       <ActionCard
         title="View Timeline"
         description="See your observations in sequence."
         icon={Clock}
         variant="bordered"
+        onClick={() => navigate('/timeline')}
       />
     </div>
   );
