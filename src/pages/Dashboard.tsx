@@ -1,28 +1,80 @@
+import { useNavigate } from 'react-router-dom';
+import { useEffect, useState } from 'react';
 import DashboardLayout from '@/components/DashboardLayout';
 import ActionGrid from '@/components/ActionGrid';
+import { useAuth } from '@/hooks/useAuth';
+import { supabase } from '@/integrations/supabase/client';
+import { format, parseISO } from 'date-fns';
+import { BookOpen, ClipboardCheck } from 'lucide-react';
+
+interface RecentItem {
+  id: string;
+  type: 'journal' | 'questionnaire';
+  title: string;
+  date: string;
+  detail?: string;
+}
 
 const Dashboard = () => {
+  const { user } = useAuth();
+  const [items, setItems] = useState<RecentItem[]>([]);
+  const [loading, setLoading] = useState(true);
+  const navigate = useNavigate();
+
+  useEffect(() => {
+    if (!user) return;
+    const fetch = async () => {
+      const [jRes, qRes] = await Promise.all([
+        supabase.from('journal_entries').select('id, title, entry_date, impact_level').eq('user_id', user.id).order('created_at', { ascending: false }).limit(5),
+        supabase.from('questionnaire_responses').select('id, completed_at, questionnaires(title)').eq('user_id', user.id).order('completed_at', { ascending: false }).limit(5),
+      ]);
+
+      const jItems: RecentItem[] = (jRes.data ?? []).map(j => ({
+        id: j.id, type: 'journal', title: j.title, date: j.entry_date,
+        detail: j.impact_level ? `Impact: ${j.impact_level}/5` : undefined,
+      }));
+      const qItems: RecentItem[] = (qRes.data ?? []).map((r: any) => ({
+        id: r.id, type: 'questionnaire', title: r.questionnaires?.title ?? 'Self-Check', date: r.completed_at.split('T')[0],
+      }));
+
+      setItems([...jItems, ...qItems].sort((a, b) => b.date.localeCompare(a.date)).slice(0, 8));
+      setLoading(false);
+    };
+    fetch();
+  }, [user]);
+
   return (
     <DashboardLayout>
       <div className="max-w-4xl space-y-8">
         <div>
-          <h1 className="text-lg font-medium tracking-tight text-foreground">
-            Dashboard
-          </h1>
-          <p className="mt-1 text-sm text-muted-foreground">
-            Record observations and track relational patterns with clarity.
-          </p>
+          <h1 className="text-lg font-medium tracking-tight text-foreground">Dashboard</h1>
+          <p className="mt-1 text-sm text-muted-foreground">Record observations and track relational patterns with clarity.</p>
         </div>
 
         <ActionGrid />
 
         <div className="border border-border rounded-sm p-6">
-          <h2 className="text-xs font-mono uppercase tracking-[0.15em] text-muted-foreground mb-4">
-            Recent Activity
-          </h2>
-          <p className="text-sm text-muted-foreground">
-            No observations logged yet. Start by logging your first observation.
-          </p>
+          <h2 className="text-xs font-mono uppercase tracking-[0.15em] text-muted-foreground mb-4">Recent Activity</h2>
+          {loading ? (
+            <p className="text-sm text-muted-foreground">Loading...</p>
+          ) : items.length === 0 ? (
+            <p className="text-sm text-muted-foreground">No activity yet. Start by logging your first observation.</p>
+          ) : (
+            <div className="space-y-1">
+              {items.map(item => (
+                <button
+                  key={item.id}
+                  onClick={() => navigate(item.type === 'journal' ? '/journal' : '/self-checks')}
+                  className="w-full flex items-center gap-3 py-2.5 px-3 rounded-sm text-left hover:bg-muted/50 transition-colors"
+                >
+                  {item.type === 'journal' ? <BookOpen className="h-3.5 w-3.5 text-primary shrink-0" /> : <ClipboardCheck className="h-3.5 w-3.5 text-muted-foreground shrink-0" />}
+                  <span className="text-sm flex-1 truncate">{item.title}</span>
+                  {item.detail && <span className="text-xs text-muted-foreground hidden sm:inline">{item.detail}</span>}
+                  <span className="text-xs text-muted-foreground shrink-0">{format(parseISO(item.date), 'MMM d')}</span>
+                </button>
+              ))}
+            </div>
+          )}
         </div>
       </div>
     </DashboardLayout>
