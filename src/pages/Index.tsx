@@ -1,18 +1,21 @@
 import { Link, useNavigate } from 'react-router-dom';
+import { useEffect, useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
+import { supabase } from '@/integrations/supabase/client';
 import { BookOpen, ClipboardCheck, Search, FileText, Users, Lock, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
+import { Skeleton } from '@/components/ui/skeleton';
 import bambooBg from '@/assets/bamboo-bg.jpg';
 
-const sampleArticles = [
-  { title: 'Understanding High-Conflict Relational Patterns', source: 'Journal of Interpersonal Relations', category: 'Research', excerpt: 'An overview of behavioral cycles commonly observed in high-conflict dynamics and their long-term effects on wellbeing.' },
-  { title: 'Emotional Regulation in Challenging Relationships', source: 'Psychology Today', category: 'Article', excerpt: 'Practical strategies for maintaining emotional balance when navigating unpredictable relational environments.' },
-  { title: 'Boundaries and Self-Preservation', source: 'Dr. Ramani Durvasula', category: 'Book', excerpt: 'A comprehensive guide to establishing and maintaining healthy boundaries in difficult interpersonal situations.' },
-  { title: 'Recognizing Gaslighting Patterns', source: 'Behavioral Health Review', category: 'Study Summary', excerpt: 'How subtle reality-distortion tactics affect perception over time and strategies for reality-anchoring.' },
-  { title: 'The Impact of Intermittent Reinforcement', source: 'Attachment Theory Quarterly', category: 'Research', excerpt: 'Why inconsistent positive and negative feedback creates powerful emotional bonds and dependency cycles.' },
-  { title: 'Recovery and Post-Separation Growth', source: 'Healing Forward Institute', category: 'Article', excerpt: 'Evidence-based approaches to rebuilding identity and confidence after exiting high-conflict dynamics.' },
-];
+interface LibraryArticle {
+  id: string;
+  title: string;
+  excerpt: string | null;
+  source: string | null;
+  category: string;
+}
+
 
 const samplePreviewQuestions = [
   { text: 'How would you rate your emotional stability today?', type: 'Scale 1–5' },
@@ -23,6 +26,13 @@ const samplePreviewQuestions = [
 const Index = () => {
   const { user } = useAuth();
   const navigate = useNavigate();
+  const [articles, setArticles] = useState<LibraryArticle[]>([]);
+  const [articlesLoading, setArticlesLoading] = useState(true);
+
+  useEffect(() => {
+    supabase.from('library_articles').select('id, title, excerpt, source, category').eq('published', true).order('created_at', { ascending: false })
+      .then(({ data }) => { setArticles(data ?? []); setArticlesLoading(false); });
+  }, []);
 
   const handleGatedClick = (path: string) => {
     if (user) {
@@ -95,24 +105,39 @@ const Index = () => {
           </div>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
-          {sampleArticles.map((article, i) => (
-            <div key={i} className="bg-card/70 backdrop-blur border border-border rounded-3xl p-6 hover:shadow-md transition-all group">
-              <div className="flex items-center gap-2 mb-3">
-                <Badge variant="secondary" className="rounded-full text-[10px] font-semibold uppercase tracking-wider">
-                  {article.category}
-                </Badge>
+          {articlesLoading ? (
+            Array.from({ length: 6 }).map((_, i) => (
+              <div key={i} className="bg-card/70 backdrop-blur border border-border rounded-3xl p-6 space-y-3">
+                <Skeleton className="h-5 w-20 rounded-full" />
+                <Skeleton className="h-4 w-full" />
+                <Skeleton className="h-3 w-full" />
+                <Skeleton className="h-3 w-2/3" />
               </div>
-              <h3 className="text-sm font-semibold text-foreground leading-snug group-hover:text-primary transition-colors">
-                {article.title}
-              </h3>
-              <p className="mt-2 text-xs text-muted-foreground leading-relaxed line-clamp-3">
-                {article.excerpt}
-              </p>
-              <p className="mt-3 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
-                {article.source}
-              </p>
-            </div>
-          ))}
+            ))
+          ) : articles.length === 0 ? (
+            <p className="text-sm text-muted-foreground col-span-full">No articles available yet.</p>
+          ) : (
+            articles.map((article) => (
+              <div key={article.id} className="bg-card/70 backdrop-blur border border-border rounded-3xl p-6 hover:shadow-md transition-all group">
+                <div className="flex items-center gap-2 mb-3">
+                  <Badge variant="secondary" className="rounded-full text-[10px] font-semibold uppercase tracking-wider">
+                    {article.category}
+                  </Badge>
+                </div>
+                <h3 className="text-sm font-semibold text-foreground leading-snug group-hover:text-primary transition-colors">
+                  {article.title}
+                </h3>
+                <p className="mt-2 text-xs text-muted-foreground leading-relaxed line-clamp-3">
+                  {article.excerpt}
+                </p>
+                {article.source && (
+                  <p className="mt-3 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+                    {article.source}
+                  </p>
+                )}
+              </div>
+            ))
+          )}
         </div>
       </section>
 
