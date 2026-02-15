@@ -8,7 +8,8 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
-import { Plus, ChevronDown, ChevronUp, Pencil, Trash2, Search, X, Save } from 'lucide-react';
+import { Plus, ChevronDown, ChevronUp, Pencil, Trash2, Search, X, Save, Sparkles, Loader2 } from 'lucide-react';
+import ReactMarkdown from 'react-markdown';
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
@@ -31,6 +32,8 @@ const emptyForm = {
   event_description: '', impact_level: 3, emotional_state: '', free_text: '', self_anchor: '',
 };
 
+const REFLECT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/journal-reflect`;
+
 const Journal = () => {
   const { user } = useAuth();
   const [entries, setEntries] = useState<JournalEntry[]>([]);
@@ -42,6 +45,8 @@ const Journal = () => {
   const [searchQuery, setSearchQuery] = useState('');
   const [dateFrom, setDateFrom] = useState('');
   const [dateTo, setDateTo] = useState('');
+  const [reflections, setReflections] = useState<Record<string, string>>({});
+  const [reflectingId, setReflectingId] = useState<string | null>(null);
 
   const fetchEntries = async () => {
     if (!user) return;
@@ -116,6 +121,72 @@ const Journal = () => {
     const { error } = await supabase.from('journal_entries').delete().eq('id', id);
     if (error) { toast.error(error.message); return; }
     toast.success('Entry deleted'); fetchEntries();
+  };
+
+  const handleReflect = async (entry: JournalEntry) => {
+    if (reflectingId) return;
+    setReflectingId(entry.id);
+    setReflections(prev => ({ ...prev, [entry.id]: '' }));
+
+    try {
+      const resp = await fetch(REFLECT_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+        },
+        body: JSON.stringify({ entry }),
+      });
+
+      if (!resp.ok) {
+        const err = await resp.json().catch(() => ({ error: 'Reflection unavailable' }));
+        toast.error(err.error || 'Failed to generate reflection');
+        setReflectingId(null);
+        return;
+      }
+
+      const reader = resp.body?.getReader();
+      if (!reader) { setReflectingId(null); return; }
+
+      const decoder = new TextDecoder();
+      let textBuffer = '';
+      let accumulated = '';
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        textBuffer += decoder.decode(value, { stream: true });
+
+        let newlineIndex: number;
+        while ((newlineIndex = textBuffer.indexOf('\n')) !== -1) {
+          let line = textBuffer.slice(0, newlineIndex);
+          textBuffer = textBuffer.slice(newlineIndex + 1);
+
+          if (line.endsWith('\r')) line = line.slice(0, -1);
+          if (line.startsWith(':') || line.trim() === '') continue;
+          if (!line.startsWith('data: ')) continue;
+
+          const jsonStr = line.slice(6).trim();
+          if (jsonStr === '[DONE]') break;
+
+          try {
+            const parsed = JSON.parse(jsonStr);
+            const content = parsed.choices?.[0]?.delta?.content as string | undefined;
+            if (content) {
+              accumulated += content;
+              setReflections(prev => ({ ...prev, [entry.id]: accumulated }));
+            }
+          } catch {
+            textBuffer = line + '\n' + textBuffer;
+            break;
+          }
+        }
+      }
+    } catch (e) {
+      console.error('Reflect error:', e);
+      toast.error('Failed to generate reflection');
+    }
+    setReflectingId(null);
   };
 
   const impactLabels = ['Minimal', 'Low', 'Moderate', 'High', 'Severe'];
@@ -244,6 +315,38 @@ const Journal = () => {
                   {entry.emotional_state && <div><span className="text-xs font-semibold uppercase text-muted-foreground">Feeling:</span><p className="text-sm mt-1">{entry.emotional_state}</p></div>}
                   {entry.self_anchor && <div><span className="text-xs font-semibold uppercase text-muted-foreground">Self-Anchor:</span><p className="text-sm mt-1 italic leading-relaxed">{entry.self_anchor}</p></div>}
                   {entry.free_text && <div><span className="text-xs font-semibold uppercase text-muted-foreground">Notes:</span><p className="text-sm mt-1 whitespace-pre-wrap leading-relaxed">{entry.free_text}</p></div>}
+
+                  {/* AI Reflection */}
+                  <div className="pt-2 border-t border-border/40">
+                    {reflections[entry.id] ? (
+                      <div className="space-y-2">
+                        <div className="flex items-center gap-2">
+                          <Sparkles className="h-3.5 w-3.5 text-primary" />
+                          <span className="text-xs font-semibold uppercase tracking-widest text-primary">Reflection</span>
+                          {reflectingId === entry.id && <Loader2 className="h-3 w-3 animate-spin text-muted-foreground" />}
+                        </div>
+                        <div className="prose prose-sm max-w-none text-sm text-foreground/90 leading-relaxed [&_p]:mb-2 [&_p:last-child]:mb-0">
+                          <ReactMarkdown>{reflections[entry.id]}</ReactMarkdown>
+                        </div>
+                        {reflectingId !== entry.id && (
+                          <Button variant="ghost" size="sm" className="text-xs text-muted-foreground h-7 px-2" onClick={() => setReflections(prev => { const n = { ...prev }; delete n[entry.id]; return n; })}>
+                            Dismiss
+                          </Button>
+                        )}
+                      </div>
+                    ) : (
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        className="rounded-2xl text-xs gap-1.5"
+                        onClick={() => handleReflect(entry)}
+                        disabled={reflectingId !== null}
+                      >
+                        <Sparkles className="h-3.5 w-3.5" />
+                        Reflect on this entry
+                      </Button>
+                    )}
+                  </div>
                 </div>
               )}
             </div>
