@@ -52,7 +52,7 @@ const Index = () => {
           <Link to={localePath('/')} className="text-lg font-bold tracking-tight text-foreground">
             {t.brand}
           </Link>
-          <nav className="hidden md:flex items-center gap-8">
+          <nav className="hidden lg:flex items-center gap-8">
             <a href="#library" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">{t.nav.library}</a>
             <a href="#research" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">{t.nav.researchSummaries}</a>
             <button onClick={() => handleGatedClick('/self-checks')} className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1.5">
