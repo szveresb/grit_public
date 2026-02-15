@@ -33,7 +33,7 @@ const Auth = () => {
       if (user) {
         await supabase.from('user_roles').insert({ user_id: user.id, role });
       }
-      toast.success('Welcome to Liftoff');
+      toast.success('Welcome to Grit.hu');
       navigate('/dashboard');
     } else {
       const { error } = await signIn(email, password);
@@ -88,7 +88,7 @@ const Auth = () => {
 
           {isSignUp && (
             <div className="space-y-3">
-              <Label className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">How will you use Liftoff?</Label>
+              <Label className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">How will you use Grit.hu?</Label>
               <RadioGroup value={role} onValueChange={(v) => setRole(v as typeof role)} className="space-y-2">
                 <div className="flex items-center space-x-3 border border-border rounded-2xl p-3.5 hover:bg-accent/50 transition-colors">
                   <RadioGroupItem value="affected_person" id="affected_person" />
