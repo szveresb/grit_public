@@ -1,0 +1,37 @@
+import { Button } from '@/components/ui/button';
+import { TrendingUp, Loader2, X } from 'lucide-react';
+import ReactMarkdown from 'react-markdown';
+
+interface PatternSummaryProps {
+  summary: string;
+  isAnalyzing: boolean;
+  onDismiss: () => void;
+}
+
+const PatternSummary = ({ summary, isAnalyzing, onDismiss }: PatternSummaryProps) => {
+  if (!summary && !isAnalyzing) return null;
+
+  return (
+    <div className="bg-card/60 backdrop-blur border border-primary/20 rounded-3xl p-6 space-y-3 animate-fade-in">
+      <div className="flex items-center justify-between">
+        <div className="flex items-center gap-2">
+          <TrendingUp className="h-4 w-4 text-primary" />
+          <span className="text-xs font-semibold uppercase tracking-widest text-primary">Pattern Summary</span>
+          {isAnalyzing && <Loader2 className="h-3 w-3 animate-spin text-muted-foreground" />}
+        </div>
+        {!isAnalyzing && summary && (
+          <Button variant="ghost" size="sm" className="text-xs text-muted-foreground h-7 px-2" onClick={onDismiss}>
+            <X className="h-3.5 w-3.5" />
+          </Button>
+        )}
+      </div>
+      {summary && (
+        <div className="prose prose-sm max-w-none text-sm text-foreground/90 leading-relaxed [&_p]:mb-2 [&_p:last-child]:mb-0">
+          <ReactMarkdown>{summary}</ReactMarkdown>
+        </div>
+      )}
+    </div>
+  );
+};
+
+export default PatternSummary;
