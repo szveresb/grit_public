@@ -38,9 +38,6 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
         <main className="flex-1 flex flex-col">
           <header className="h-14 flex items-center border-b border-border/60 px-5 bg-card/40 backdrop-blur-sm gap-3">
             <SidebarTrigger />
-            <Link to={localePath('/')} className="text-sm font-bold text-foreground tracking-tight hover:text-primary transition-colors">
-              {t.brand}
-            </Link>
             {!isMobile && (
               <nav className="hidden md:flex items-center gap-8 ml-auto">
                 <a href={`${localePath('/')}#library`} className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">{t.nav.library}</a>
