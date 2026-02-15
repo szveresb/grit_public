@@ -21,15 +21,19 @@ const Dashboard = () => {
   const { t, localePath } = useLanguage();
   const [items, setItems] = useState<RecentItem[]>([]);
   const [loading, setLoading] = useState(true);
+  const [displayName, setDisplayName] = useState<string | null>(null);
   const navigate = useNavigate();
 
   useEffect(() => {
     if (!user) return;
-    const fetch = async () => {
-      const [jRes, qRes] = await Promise.all([
+    const fetchData = async () => {
+      const [jRes, qRes, pRes] = await Promise.all([
         supabase.from('journal_entries').select('id, title, entry_date, impact_level').eq('user_id', user.id).order('created_at', { ascending: false }).limit(5),
         supabase.from('questionnaire_responses').select('id, completed_at, questionnaires(title)').eq('user_id', user.id).order('completed_at', { ascending: false }).limit(5),
+        supabase.from('profiles').select('display_name').eq('user_id', user.id).maybeSingle(),
       ]);
+
+      setDisplayName(pRes.data?.display_name ?? null);
 
       const jItems: RecentItem[] = (jRes.data ?? []).map(j => ({
         id: j.id, type: 'journal', title: j.title, date: j.entry_date,
@@ -42,14 +46,16 @@ const Dashboard = () => {
       setItems([...jItems, ...qItems].sort((a, b) => b.date.localeCompare(a.date)).slice(0, 8));
       setLoading(false);
     };
-    fetch();
+    fetchData();
   }, [user]);
 
   return (
     <DashboardLayout>
       <div className="max-w-4xl space-y-8">
         <div>
-          <h1 className="text-xl font-bold tracking-tight text-foreground">{t.dash.welcomeBack}</h1>
+          <h1 className="text-xl font-bold tracking-tight text-foreground">
+            {displayName ? `${displayName}! 🌿` : t.dash.welcomeBack}
+          </h1>
           <p className="mt-1 text-sm text-muted-foreground leading-relaxed">{t.dash.yourSpace}</p>
         </div>
 
