@@ -250,6 +250,46 @@ export interface Dictionary {
     returnHome: string;
   };
 
+  // Observations
+  observations: {
+    tabQuestionnaires: string;
+    tabObservations: string;
+    chooseDomain: string;
+    pickObservation: string;
+    qualifiers: string;
+    intensity: string;
+    frequency: string;
+    context: string;
+    notes: string;
+    freqOnce: string;
+    freqSometimes: string;
+    freqOften: string;
+    freqConstant: string;
+    logged: string;
+    noCategories: string;
+    noConcepts: string;
+    noLogs: string;
+    recentObservations: string;
+    back: string;
+    logObservation: string;
+    manage: string;
+    addCategory: string;
+    addConcept: string;
+    editCategory: string;
+    editConcept: string;
+    categoryName: string;
+    conceptName: string;
+    conceptCode: string;
+    conceptDescription: string;
+    iconName: string;
+    deleteCategoryConfirm: string;
+    deleteConceptConfirm: string;
+    categorySaved: string;
+    categoryDeleted: string;
+    conceptSaved: string;
+    conceptDeleted: string;
+  };
+
   // Emergency exit
   emergencyExit: string;
 

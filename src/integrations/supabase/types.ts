@@ -101,6 +101,127 @@ export type Database = {
         }
         Relationships: []
       }
+      observation_categories: {
+        Row: {
+          created_at: string
+          icon: string | null
+          id: string
+          is_active: boolean
+          name_en: string
+          name_hu: string
+          sort_order: number
+        }
+        Insert: {
+          created_at?: string
+          icon?: string | null
+          id?: string
+          is_active?: boolean
+          name_en: string
+          name_hu: string
+          sort_order?: number
+        }
+        Update: {
+          created_at?: string
+          icon?: string | null
+          id?: string
+          is_active?: boolean
+          name_en?: string
+          name_hu?: string
+          sort_order?: number
+        }
+        Relationships: []
+      }
+      observation_concepts: {
+        Row: {
+          category_id: string
+          concept_code: string
+          created_at: string
+          description_en: string | null
+          description_hu: string | null
+          id: string
+          is_active: boolean
+          name_en: string
+          name_hu: string
+          sort_order: number
+        }
+        Insert: {
+          category_id: string
+          concept_code: string
+          created_at?: string
+          description_en?: string | null
+          description_hu?: string | null
+          id?: string
+          is_active?: boolean
+          name_en: string
+          name_hu: string
+          sort_order?: number
+        }
+        Update: {
+          category_id?: string
+          concept_code?: string
+          created_at?: string
+          description_en?: string | null
+          description_hu?: string | null
+          id?: string
+          is_active?: boolean
+          name_en?: string
+          name_hu?: string
+          sort_order?: number
+        }
+        Relationships: [
+          {
+            foreignKeyName: "observation_concepts_category_id_fkey"
+            columns: ["category_id"]
+            isOneToOne: false
+            referencedRelation: "observation_categories"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      observation_logs: {
+        Row: {
+          concept_id: string
+          context_modifier: string | null
+          created_at: string
+          frequency: string | null
+          id: string
+          intensity: number
+          logged_at: string
+          user_id: string
+          user_narrative: string | null
+        }
+        Insert: {
+          concept_id: string
+          context_modifier?: string | null
+          created_at?: string
+          frequency?: string | null
+          id?: string
+          intensity?: number
+          logged_at?: string
+          user_id: string
+          user_narrative?: string | null
+        }
+        Update: {
+          concept_id?: string
+          context_modifier?: string | null
+          created_at?: string
+          frequency?: string | null
+          id?: string
+          intensity?: number
+          logged_at?: string
+          user_id?: string
+          user_narrative?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "observation_logs_concept_id_fkey"
+            columns: ["concept_id"]
+            isOneToOne: false
+            referencedRelation: "observation_concepts"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       profiles: {
         Row: {
           created_at: string
