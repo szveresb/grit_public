@@ -1,3 +1,4 @@
+import * as React from 'react';
 import { useLocation, Link } from 'react-router-dom';
 import { NavLink } from '@/components/NavLink';
 import { useUserRole } from '@/hooks/useUserRole';
@@ -19,7 +20,15 @@ const AppSidebar = () => {
   const { user } = useAuth();
   const { t, localePath } = useLanguage();
   const isMobile = useIsMobile();
+  const [isLargeScreen, setIsLargeScreen] = React.useState(window.innerWidth >= 1024);
   const { hasAnyRole, hasRole } = useUserRole();
+
+  React.useEffect(() => {
+    const mql = window.matchMedia('(min-width: 1024px)');
+    const onChange = () => setIsLargeScreen(mql.matches);
+    mql.addEventListener('change', onChange);
+    return () => mql.removeEventListener('change', onChange);
+  }, []);
   const canManageLibrary = hasAnyRole('admin', 'editor', 'guest_editor');
   const canAnalyse = hasAnyRole('admin', 'analyst');
   const isAdmin = hasRole('admin');
@@ -86,7 +95,8 @@ const AppSidebar = () => {
           </SidebarGroupContent>
         </SidebarGroup>
 
-        {isMobile && (
+        {/* Show explore items when sidebar is in mobile/sheet mode OR on tablet where top nav is hidden */}
+        {(isMobile || !isLargeScreen) && (
           <SidebarGroup>
             <SidebarGroupLabel className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
               {t.nav.explore}
