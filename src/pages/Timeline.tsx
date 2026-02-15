@@ -4,14 +4,14 @@ import { useAuth } from '@/hooks/useAuth';
 import { useLanguage } from '@/hooks/useLanguage';
 import { supabase } from '@/integrations/supabase/client';
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, parseISO } from 'date-fns';
-import { ChevronLeft, ChevronRight, BookOpen, ClipboardCheck } from 'lucide-react';
+import { ChevronLeft, ChevronRight, BookOpen, ClipboardCheck, Eye } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
-interface TimelineItem { id: string; type: 'journal' | 'questionnaire'; title: string; date: string; detail?: string; }
+interface TimelineItem { id: string; type: 'journal' | 'questionnaire' | 'observation'; title: string; date: string; detail?: string; }
 
 const Timeline = () => {
   const { user } = useAuth();
-  const { t } = useLanguage();
+  const { t, lang } = useLanguage();
   const [items, setItems] = useState<TimelineItem[]>([]);
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
@@ -19,13 +19,29 @@ const Timeline = () => {
   useEffect(() => {
     if (!user) return;
     const fetchAll = async () => {
-      const [journalRes, responseRes] = await Promise.all([
+      const [journalRes, responseRes, obsRes] = await Promise.all([
         supabase.from('journal_entries').select('id, title, entry_date, impact_level').eq('user_id', user.id),
         supabase.from('questionnaire_responses').select('id, questionnaire_id, completed_at, questionnaires(title)').eq('user_id', user.id),
+        supabase.from('observation_logs').select('id, intensity, frequency, logged_at, concept_id').eq('user_id', user.id),
       ]);
       const journalItems: TimelineItem[] = (journalRes.data ?? []).map(j => ({ id: j.id, type: 'journal', title: j.title, date: j.entry_date, detail: j.impact_level ? `Impact: ${j.impact_level}/5` : undefined }));
       const qItems: TimelineItem[] = (responseRes.data ?? []).map((r: any) => ({ id: r.id, type: 'questionnaire', title: r.questionnaires?.title ?? t.nav.selfChecks, date: r.completed_at.split('T')[0] }));
-      setItems([...journalItems, ...qItems].sort((a, b) => b.date.localeCompare(a.date)));
+
+      // Resolve observation concept names
+      let obsItems: TimelineItem[] = [];
+      const obsData = obsRes.data ?? [];
+      if (obsData.length > 0) {
+        const conceptIds = [...new Set(obsData.map(o => o.concept_id))];
+        const { data: concepts } = await supabase.from('observation_concepts').select('id, name_hu, name_en').in('id', conceptIds);
+        const conMap = Object.fromEntries((concepts ?? []).map(c => [c.id, c]));
+        obsItems = obsData.map(o => {
+          const concept = conMap[o.concept_id];
+          const name = concept ? (lang === 'en' ? concept.name_en : concept.name_hu) : t.observations.tabObservations;
+          return { id: o.id, type: 'observation' as const, title: name, date: o.logged_at, detail: `${t.observations.intensity}: ${o.intensity}/5` };
+        });
+      }
+
+      setItems([...journalItems, ...qItems, ...obsItems].sort((a, b) => b.date.localeCompare(a.date)));
     };
     fetchAll();
   }, [user]);
@@ -75,6 +91,7 @@ const Timeline = () => {
                     <div className="flex justify-center gap-0.5 mt-0.5">
                       {dayItems.some(i => i.type === 'journal') && <span className={`h-1.5 w-1.5 rounded-full ${isSelected ? 'bg-primary-foreground' : 'bg-primary'}`} />}
                       {dayItems.some(i => i.type === 'questionnaire') && <span className={`h-1.5 w-1.5 rounded-full ${isSelected ? 'bg-primary-foreground/70' : 'bg-muted-foreground'}`} />}
+                      {dayItems.some(i => i.type === 'observation') && <span className={`h-1.5 w-1.5 rounded-full ${isSelected ? 'bg-primary-foreground/50' : 'bg-accent-foreground/60'}`} />}
                     </div>
                   )}
                 </button>
@@ -90,10 +107,10 @@ const Timeline = () => {
               <p className="text-sm text-muted-foreground">{t.timeline.noEntriesOnDay}</p>
             ) : selectedItems.map(item => (
               <div key={item.id} className="flex items-start gap-3 p-3 border border-border rounded-2xl">
-                {item.type === 'journal' ? <BookOpen className="h-4 w-4 text-primary mt-0.5" /> : <ClipboardCheck className="h-4 w-4 text-muted-foreground mt-0.5" />}
+                {item.type === 'journal' ? <BookOpen className="h-4 w-4 text-primary mt-0.5" /> : item.type === 'observation' ? <Eye className="h-4 w-4 text-accent-foreground/60 mt-0.5" /> : <ClipboardCheck className="h-4 w-4 text-muted-foreground mt-0.5" />}
                 <div>
                   <span className="text-sm font-semibold">{item.title}</span>
-                  <span className="ml-2 text-xs text-muted-foreground capitalize">{item.type === 'journal' ? t.timeline.journalLabel : t.timeline.selfCheckLabel}</span>
+                  <span className="ml-2 text-xs text-muted-foreground capitalize">{item.type === 'journal' ? t.timeline.journalLabel : item.type === 'observation' ? t.observations.tabObservations : t.timeline.selfCheckLabel}</span>
                   {item.detail && <p className="text-xs text-muted-foreground mt-0.5">{item.detail}</p>}
                 </div>
               </div>
@@ -107,7 +124,7 @@ const Timeline = () => {
             <p className="text-sm text-muted-foreground">{t.timeline.noActivity}</p>
           ) : items.map(item => (
             <div key={item.id} className="flex items-center gap-3 py-2.5 border-b border-border/50 last:border-0">
-              {item.type === 'journal' ? <BookOpen className="h-3.5 w-3.5 text-primary" /> : <ClipboardCheck className="h-3.5 w-3.5 text-muted-foreground" />}
+              {item.type === 'journal' ? <BookOpen className="h-3.5 w-3.5 text-primary" /> : item.type === 'observation' ? <Eye className="h-3.5 w-3.5 text-accent-foreground/60" /> : <ClipboardCheck className="h-3.5 w-3.5 text-muted-foreground" />}
               <span className="text-sm flex-1">{item.title}</span>
               <span className="text-xs text-muted-foreground">{format(parseISO(item.date), 'MMM d')}</span>
             </div>
