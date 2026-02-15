@@ -1,5 +1,6 @@
 import { useLocation } from 'react-router-dom';
 import { NavLink } from '@/components/NavLink';
+import { useUserRole } from '@/hooks/useUserRole';
 import {
   LayoutDashboard,
   BookOpen,
@@ -7,6 +8,7 @@ import {
   Clock,
   Download,
   User,
+  Library,
 } from 'lucide-react';
 import {
   Sidebar,
@@ -29,8 +31,14 @@ const navItems = [
   { title: 'Account', url: '/profile', icon: User },
 ];
 
+const editorItems = [
+  { title: 'Manage Library', url: '/manage-library', icon: Library },
+];
+
 const AppSidebar = () => {
   const location = useLocation();
+  const { hasRole } = useUserRole();
+  const isEditor = hasRole('observer');
 
   return (
     <Sidebar collapsible="icon">
@@ -69,6 +77,37 @@ const AppSidebar = () => {
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
+
+        {isEditor && (
+          <SidebarGroup>
+            <SidebarGroupLabel className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+              Editor
+            </SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                {editorItems.map((item) => (
+                  <SidebarMenuItem key={item.title}>
+                    <SidebarMenuButton
+                      asChild
+                      isActive={location.pathname === item.url}
+                      tooltip={item.title}
+                    >
+                      <NavLink
+                        to={item.url}
+                        end
+                        className="hover:bg-accent rounded-xl"
+                        activeClassName="bg-accent text-foreground font-semibold rounded-xl"
+                      >
+                        <item.icon className="h-4 w-4" />
+                        <span>{item.title}</span>
+                      </NavLink>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                ))}
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        )}
       </SidebarContent>
     </Sidebar>
   );
