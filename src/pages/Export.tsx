@@ -1,5 +1,6 @@
 import DashboardLayout from '@/components/DashboardLayout';
 import { useAuth } from '@/hooks/useAuth';
+import { useLanguage } from '@/hooks/useLanguage';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
@@ -7,6 +8,7 @@ import { Download } from 'lucide-react';
 
 const Export = () => {
   const { user } = useAuth();
+  const { t } = useLanguage();
 
   const handleExport = async () => {
     if (!user) return;
@@ -20,20 +22,20 @@ const Export = () => {
     const a = document.createElement('a');
     a.href = url; a.download = `grithu-export-${new Date().toISOString().split('T')[0]}.json`;
     a.click(); URL.revokeObjectURL(url);
-    toast.success('Data exported');
+    toast.success(t.profile.dataExported);
   };
 
   return (
     <DashboardLayout>
       <div className="max-w-lg space-y-6">
         <div>
-          <h1 className="text-xl font-bold tracking-tight text-foreground">Data Export</h1>
-          <p className="mt-1 text-sm text-muted-foreground leading-relaxed">Download all your data in a portable format.</p>
+          <h1 className="text-xl font-bold tracking-tight text-foreground">{t.export.title}</h1>
+          <p className="mt-1 text-sm text-muted-foreground leading-relaxed">{t.export.subtitle}</p>
         </div>
         <div className="bg-card/60 backdrop-blur border border-border rounded-3xl p-6 space-y-4">
-          <p className="text-sm text-muted-foreground leading-relaxed">Export includes all journal entries and self-check responses as JSON. This is your data — take it with you.</p>
+          <p className="text-sm text-muted-foreground leading-relaxed">{t.export.desc}</p>
           <Button onClick={handleExport} size="sm" className="rounded-2xl">
-            <Download className="h-4 w-4 mr-1.5" /> Export All Data
+            <Download className="h-4 w-4 mr-1.5" /> {t.export.exportAll}
           </Button>
         </div>
       </div>

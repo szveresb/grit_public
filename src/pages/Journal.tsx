@@ -1,6 +1,7 @@
 import { useEffect, useState, useMemo, useCallback } from 'react';
 import DashboardLayout from '@/components/DashboardLayout';
 import { useAuth } from '@/hooks/useAuth';
+import { useLanguage } from '@/hooks/useLanguage';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -19,6 +20,7 @@ const PATTERNS_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/journal-
 
 const Journal = () => {
   const { user } = useAuth();
+  const { t } = useLanguage();
   const [entries, setEntries] = useState<JournalEntry[]>([]);
   const [showForm, setShowForm] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
@@ -64,12 +66,9 @@ const Journal = () => {
   const openEdit = (entry: JournalEntry) => {
     setEditingId(entry.id);
     setForm({
-      title: entry.title,
-      entry_date: entry.entry_date,
-      event_description: entry.event_description ?? '',
-      impact_level: entry.impact_level ?? 3,
-      emotional_state: entry.emotional_state ?? '',
-      free_text: entry.free_text ?? '',
+      title: entry.title, entry_date: entry.entry_date,
+      event_description: entry.event_description ?? '', impact_level: entry.impact_level ?? 3,
+      emotional_state: entry.emotional_state ?? '', free_text: entry.free_text ?? '',
       self_anchor: entry.self_anchor ?? '',
     });
     setShowForm(true);
@@ -79,66 +78,42 @@ const Journal = () => {
     e.preventDefault();
     if (!user) return;
     setSaving(true);
-
     const payload = {
-      title: form.title,
-      entry_date: form.entry_date,
-      event_description: form.event_description || null,
-      impact_level: form.impact_level || null,
-      emotional_state: form.emotional_state || null,
-      free_text: form.free_text || null,
+      title: form.title, entry_date: form.entry_date,
+      event_description: form.event_description || null, impact_level: form.impact_level || null,
+      emotional_state: form.emotional_state || null, free_text: form.free_text || null,
       self_anchor: form.self_anchor || null,
     };
-
     if (editingId) {
       const { error } = await supabase.from('journal_entries').update(payload).eq('id', editingId);
-      if (error) { toast.error(error.message); } else { toast.success('Entry updated'); }
+      if (error) { toast.error(error.message); } else { toast.success(t.journal.entryUpdated); }
     } else {
       const { error } = await supabase.from('journal_entries').insert({ user_id: user.id, ...payload });
-      if (error) { toast.error(error.message); } else { toast.success('Entry logged'); }
+      if (error) { toast.error(error.message); } else { toast.success(t.journal.entryLogged); }
     }
-
-    setForm(emptyForm); setShowForm(false); setEditingId(null); fetchEntries();
-    setSaving(false);
+    setForm(emptyForm); setShowForm(false); setEditingId(null); fetchEntries(); setSaving(false);
   };
 
   const handleDelete = async (id: string) => {
     const { error } = await supabase.from('journal_entries').delete().eq('id', id);
     if (error) { toast.error(error.message); return; }
-    toast.success('Entry deleted'); fetchEntries();
+    toast.success(t.journal.entryDeleted); fetchEntries();
   };
 
   const handleReflect = async (entry: JournalEntry) => {
     if (reflectingId) return;
     setReflectingId(entry.id);
     setReflections(prev => ({ ...prev, [entry.id]: '' }));
-
     try {
       const resp = await fetch(REFLECT_URL, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
-        },
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}` },
         body: JSON.stringify({ entry }),
       });
-
-      if (!resp.ok) {
-        const err = await resp.json().catch(() => ({ error: 'Reflection unavailable' }));
-        toast.error(err.error || 'Failed to generate reflection');
-        setReflectingId(null);
-        return;
-      }
-
+      if (!resp.ok) { const err = await resp.json().catch(() => ({ error: 'Reflection unavailable' })); toast.error(err.error || 'Failed'); setReflectingId(null); return; }
       let accumulated = '';
-      await readSSEStream(resp, (content) => {
-        accumulated += content;
-        setReflections(prev => ({ ...prev, [entry.id]: accumulated }));
-      });
-    } catch (e) {
-      console.error('Reflect error:', e);
-      toast.error('Failed to generate reflection');
-    }
+      await readSSEStream(resp, (content) => { accumulated += content; setReflections(prev => ({ ...prev, [entry.id]: accumulated })); });
+    } catch (e) { console.error('Reflect error:', e); toast.error('Failed to generate reflection'); }
     setReflectingId(null);
   };
 
@@ -147,50 +122,30 @@ const Journal = () => {
     if (!text) return;
     const { error } = await supabase.from('journal_entries').update({ reflection: text }).eq('id', entryId);
     if (error) { toast.error(error.message); return; }
-    toast.success('Reflection saved');
-    fetchEntries();
+    toast.success(t.journal.reflectionSaved); fetchEntries();
   };
 
   const clearReflection = async (entryId: string) => {
     const { error } = await supabase.from('journal_entries').update({ reflection: null }).eq('id', entryId);
     if (error) { toast.error(error.message); return; }
     setReflections(prev => { const n = { ...prev }; delete n[entryId]; return n; });
-    toast.success('Reflection removed');
-    fetchEntries();
+    toast.success(t.journal.reflectionRemoved); fetchEntries();
   };
 
   const handlePatternAnalysis = async () => {
     if (analyzingPatterns || entries.length < 2) return;
-    setAnalyzingPatterns(true);
-    setPatternSummary('');
-
+    setAnalyzingPatterns(true); setPatternSummary('');
     try {
       const sorted = [...entries].sort((a, b) => a.entry_date.localeCompare(b.entry_date));
       const resp = await fetch(PATTERNS_URL, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
-        },
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}` },
         body: JSON.stringify({ entries: sorted }),
       });
-
-      if (!resp.ok) {
-        const err = await resp.json().catch(() => ({ error: 'Pattern analysis unavailable' }));
-        toast.error(err.error || 'Failed to analyze patterns');
-        setAnalyzingPatterns(false);
-        return;
-      }
-
+      if (!resp.ok) { const err = await resp.json().catch(() => ({ error: 'Pattern analysis unavailable' })); toast.error(err.error || 'Failed'); setAnalyzingPatterns(false); return; }
       let accumulated = '';
-      await readSSEStream(resp, (content) => {
-        accumulated += content;
-        setPatternSummary(accumulated);
-      });
-    } catch (e) {
-      console.error('Pattern analysis error:', e);
-      toast.error('Failed to analyze patterns');
-    }
+      await readSSEStream(resp, (content) => { accumulated += content; setPatternSummary(accumulated); });
+    } catch (e) { console.error('Pattern analysis error:', e); toast.error('Failed to analyze patterns'); }
     setAnalyzingPatterns(false);
   };
 
@@ -199,62 +154,50 @@ const Journal = () => {
       <div className="max-w-2xl space-y-6">
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-xl font-bold tracking-tight text-foreground">Journal</h1>
-            <p className="mt-1 text-sm text-muted-foreground leading-relaxed">Structured self-report and free-text documentation.</p>
+            <h1 className="text-xl font-bold tracking-tight text-foreground">{t.journal.title}</h1>
+            <p className="mt-1 text-sm text-muted-foreground leading-relaxed">{t.journal.subtitle}</p>
           </div>
           <div className="flex gap-2">
             {entries.length >= 2 && (
               <Button size="sm" variant="outline" className="rounded-2xl gap-1.5" onClick={handlePatternAnalysis} disabled={analyzingPatterns}>
                 {analyzingPatterns ? <Loader2 className="h-4 w-4 animate-spin" /> : <TrendingUp className="h-4 w-4" />}
-                Patterns
+                {t.journal.patterns}
               </Button>
             )}
             <Button size="sm" className="rounded-2xl" onClick={openCreate}>
-              <Plus className="h-4 w-4 mr-1" /> New Entry
+              <Plus className="h-4 w-4 mr-1" /> {t.journal.newEntry}
             </Button>
           </div>
         </div>
 
-        {/* Search & Date Filter */}
         <div className="flex flex-wrap gap-3">
           <div className="relative flex-1 min-w-[200px]">
             <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input value={searchQuery} onChange={e => setSearchQuery(e.target.value)} placeholder="Search entries..." className="pl-9 rounded-2xl" />
+            <Input value={searchQuery} onChange={e => setSearchQuery(e.target.value)} placeholder={t.journal.searchEntries} className="pl-9 rounded-2xl" />
           </div>
-          <Input type="date" value={dateFrom} onChange={e => setDateFrom(e.target.value)} className="w-36 rounded-2xl" placeholder="From" />
-          <Input type="date" value={dateTo} onChange={e => setDateTo(e.target.value)} className="w-36 rounded-2xl" placeholder="To" />
+          <Input type="date" value={dateFrom} onChange={e => setDateFrom(e.target.value)} className="w-36 rounded-2xl" />
+          <Input type="date" value={dateTo} onChange={e => setDateTo(e.target.value)} className="w-36 rounded-2xl" />
         </div>
 
         <PatternSummary summary={patternSummary} isAnalyzing={analyzingPatterns} onDismiss={() => setPatternSummary('')} />
 
         {showForm && (
-          <JournalForm
-            form={form}
-            onChange={setForm}
-            onSubmit={handleSubmit}
-            onClose={() => setShowForm(false)}
-            saving={saving}
-            isEditing={!!editingId}
-          />
+          <JournalForm form={form} onChange={setForm} onSubmit={handleSubmit} onClose={() => setShowForm(false)} saving={saving} isEditing={!!editingId} />
         )}
 
         <div className="space-y-3">
           {filteredEntries.length === 0 ? (
             <div className="bg-card/60 backdrop-blur border border-border rounded-3xl p-6">
-              <p className="text-sm text-muted-foreground">{entries.length === 0 ? 'No journal entries yet. Start by logging your first observation.' : 'No entries match your search.'}</p>
+              <p className="text-sm text-muted-foreground">{entries.length === 0 ? t.journal.noEntries : t.journal.noMatch}</p>
             </div>
           ) : filteredEntries.map(entry => (
             <JournalEntryCard
-              key={entry.id}
-              entry={entry}
+              key={entry.id} entry={entry}
               isExpanded={expandedId === entry.id}
               onToggleExpand={() => setExpandedId(expandedId === entry.id ? null : entry.id)}
-              onEdit={() => openEdit(entry)}
-              onDelete={() => handleDelete(entry.id)}
-              streamedReflection={reflections[entry.id]}
-              isReflecting={reflectingId === entry.id}
-              reflectDisabled={reflectingId !== null}
-              onReflect={() => handleReflect(entry)}
+              onEdit={() => openEdit(entry)} onDelete={() => handleDelete(entry.id)}
+              streamedReflection={reflections[entry.id]} isReflecting={reflectingId === entry.id}
+              reflectDisabled={reflectingId !== null} onReflect={() => handleReflect(entry)}
               onSaveReflection={() => saveReflection(entry.id)}
               onDismissReflection={() => setReflections(prev => { const n = { ...prev }; delete n[entry.id]; return n; })}
               onClearSavedReflection={() => clearReflection(entry.id)}
