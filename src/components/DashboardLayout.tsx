@@ -6,6 +6,8 @@ import RoleIndicator from '@/components/RoleIndicator';
 import LanguageToggle from '@/components/LanguageToggle';
 import { useAuth } from '@/hooks/useAuth';
 import { useLanguage } from '@/hooks/useLanguage';
+import { Button } from '@/components/ui/button';
+import { LogOut, User } from 'lucide-react';
 import bambooBg from '@/assets/bamboo-bg.jpg';
 
 interface DashboardLayoutProps {
@@ -13,7 +15,7 @@ interface DashboardLayoutProps {
 }
 
 const DashboardLayout = ({ children }: DashboardLayoutProps) => {
-  const { user } = useAuth();
+  const { user, signOut } = useAuth();
   const { t, localePath } = useLanguage();
   const navigate = useNavigate();
 
@@ -44,8 +46,20 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
               </button>
               <a href={`${localePath('/')}#about`} className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">{t.nav.about}</a>
             </nav>
-            <div className="ml-auto lg:ml-4">
+            <div className="ml-auto lg:ml-4 flex items-center gap-2">
               <LanguageToggle />
+              {user && (
+                <>
+                  <Button variant="ghost" size="sm" className="rounded-full gap-1.5" onClick={() => navigate(localePath('/profile'))}>
+                    <User className="h-4 w-4" />
+                    <span className="hidden sm:inline">{t.nav.account}</span>
+                  </Button>
+                  <Button variant="ghost" size="sm" className="rounded-full gap-1.5 text-muted-foreground" onClick={async () => { await signOut(); navigate(localePath('/')); }}>
+                    <LogOut className="h-4 w-4" />
+                    <span className="hidden sm:inline">{t.signOut}</span>
+                  </Button>
+                </>
+              )}
             </div>
           </header>
           <div className="flex-1 p-6 md:p-8">
