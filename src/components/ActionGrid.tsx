@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { BookOpen, ClipboardCheck, Clock } from 'lucide-react';
+import { useLanguage } from '@/hooks/useLanguage';
 import type { LucideIcon } from 'lucide-react';
 
 interface ActionCardProps {
@@ -41,29 +42,30 @@ const ActionCard = ({ title, description, icon: Icon, variant, onClick }: Action
 
 const ActionGrid = () => {
   const navigate = useNavigate();
+  const { t, localePath } = useLanguage();
 
   return (
     <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
       <ActionCard
-        title="Log Observation"
-        description="Record what happened with clarity and structure."
+        title={t.dash.logObservation}
+        description={t.dash.logObservationDesc}
         icon={BookOpen}
         variant="sage"
-        onClick={() => navigate('/journal')}
+        onClick={() => navigate(localePath('/journal'))}
       />
       <ActionCard
-        title="Complete Self-Check"
-        description="A gentle check-in on how you're feeling right now."
+        title={t.dash.completeSelfCheck}
+        description={t.dash.completeSelfCheckDesc}
         icon={ClipboardCheck}
         variant="leaf"
-        onClick={() => navigate('/self-checks')}
+        onClick={() => navigate(localePath('/self-checks'))}
       />
       <ActionCard
-        title="View History"
-        description="See your observations and reflections over time."
+        title={t.dash.viewHistory}
+        description={t.dash.viewHistoryDesc}
         icon={Clock}
         variant="mist"
-        onClick={() => navigate('/timeline')}
+        onClick={() => navigate(localePath('/timeline'))}
       />
     </div>
   );

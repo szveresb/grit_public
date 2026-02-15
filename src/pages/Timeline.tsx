@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import DashboardLayout from '@/components/DashboardLayout';
 import { useAuth } from '@/hooks/useAuth';
+import { useLanguage } from '@/hooks/useLanguage';
 import { supabase } from '@/integrations/supabase/client';
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, parseISO } from 'date-fns';
 import { ChevronLeft, ChevronRight, BookOpen, ClipboardCheck } from 'lucide-react';
@@ -10,6 +11,7 @@ interface TimelineItem { id: string; type: 'journal' | 'questionnaire'; title: s
 
 const Timeline = () => {
   const { user } = useAuth();
+  const { t } = useLanguage();
   const [items, setItems] = useState<TimelineItem[]>([]);
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
@@ -22,7 +24,7 @@ const Timeline = () => {
         supabase.from('questionnaire_responses').select('id, questionnaire_id, completed_at, questionnaires(title)').eq('user_id', user.id),
       ]);
       const journalItems: TimelineItem[] = (journalRes.data ?? []).map(j => ({ id: j.id, type: 'journal', title: j.title, date: j.entry_date, detail: j.impact_level ? `Impact: ${j.impact_level}/5` : undefined }));
-      const qItems: TimelineItem[] = (responseRes.data ?? []).map((r: any) => ({ id: r.id, type: 'questionnaire', title: r.questionnaires?.title ?? 'Self-Check', date: r.completed_at.split('T')[0] }));
+      const qItems: TimelineItem[] = (responseRes.data ?? []).map((r: any) => ({ id: r.id, type: 'questionnaire', title: r.questionnaires?.title ?? t.nav.selfChecks, date: r.completed_at.split('T')[0] }));
       setItems([...journalItems, ...qItems].sort((a, b) => b.date.localeCompare(a.date)));
     };
     fetchAll();
@@ -39,8 +41,8 @@ const Timeline = () => {
     <DashboardLayout>
       <div className="max-w-3xl space-y-6">
         <div>
-          <h1 className="text-xl font-bold tracking-tight text-foreground">History</h1>
-          <p className="mt-1 text-sm text-muted-foreground leading-relaxed">Calendar view of your journal entries and self-check completions.</p>
+          <h1 className="text-xl font-bold tracking-tight text-foreground">{t.timeline.title}</h1>
+          <p className="mt-1 text-sm text-muted-foreground leading-relaxed">{t.timeline.subtitle}</p>
         </div>
 
         <div className="bg-card/60 backdrop-blur border border-border rounded-3xl p-5">
@@ -55,7 +57,7 @@ const Timeline = () => {
           </div>
 
           <div className="grid grid-cols-7 gap-1">
-            {['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'].map(d => (
+            {t.timeline.dayNames.map(d => (
               <div key={d} className="text-center text-xs font-semibold text-muted-foreground py-2">{d}</div>
             ))}
             {Array.from({ length: startDayOfWeek }).map((_, i) => <div key={`e-${i}`} />)}
@@ -85,13 +87,13 @@ const Timeline = () => {
           <div className="bg-card/60 backdrop-blur border border-border rounded-3xl p-5 space-y-3 animate-fade-in">
             <h2 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">{format(selectedDate, 'EEEE, MMMM d, yyyy')}</h2>
             {selectedItems.length === 0 ? (
-              <p className="text-sm text-muted-foreground">No entries on this day.</p>
+              <p className="text-sm text-muted-foreground">{t.timeline.noEntriesOnDay}</p>
             ) : selectedItems.map(item => (
               <div key={item.id} className="flex items-start gap-3 p-3 border border-border rounded-2xl">
                 {item.type === 'journal' ? <BookOpen className="h-4 w-4 text-primary mt-0.5" /> : <ClipboardCheck className="h-4 w-4 text-muted-foreground mt-0.5" />}
                 <div>
                   <span className="text-sm font-semibold">{item.title}</span>
-                  <span className="ml-2 text-xs text-muted-foreground capitalize">{item.type === 'journal' ? 'Journal' : 'Self-Check'}</span>
+                  <span className="ml-2 text-xs text-muted-foreground capitalize">{item.type === 'journal' ? t.timeline.journalLabel : t.timeline.selfCheckLabel}</span>
                   {item.detail && <p className="text-xs text-muted-foreground mt-0.5">{item.detail}</p>}
                 </div>
               </div>
@@ -100,9 +102,9 @@ const Timeline = () => {
         )}
 
         <div className="bg-card/60 backdrop-blur border border-border rounded-3xl p-5 space-y-2">
-          <h2 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-3">All Activity</h2>
+          <h2 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-3">{t.timeline.allActivity}</h2>
           {items.length === 0 ? (
-            <p className="text-sm text-muted-foreground">No activity recorded yet.</p>
+            <p className="text-sm text-muted-foreground">{t.timeline.noActivity}</p>
           ) : items.map(item => (
             <div key={item.id} className="flex items-center gap-3 py-2.5 border-b border-border/50 last:border-0">
               {item.type === 'journal' ? <BookOpen className="h-3.5 w-3.5 text-primary" /> : <ClipboardCheck className="h-3.5 w-3.5 text-muted-foreground" />}

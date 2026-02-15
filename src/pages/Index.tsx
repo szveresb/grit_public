@@ -1,11 +1,13 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
+import { useLanguage } from '@/hooks/useLanguage';
 import { supabase } from '@/integrations/supabase/client';
-import { BookOpen, ClipboardCheck, Search, FileText, Users, Lock, ArrowRight } from 'lucide-react';
+import { Lock, ArrowRight, FileText } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
+import LanguageToggle from '@/components/LanguageToggle';
 import bambooBg from '@/assets/bamboo-bg.jpg';
 
 interface LibraryArticle {
@@ -17,15 +19,9 @@ interface LibraryArticle {
   category: string;
 }
 
-
-const samplePreviewQuestions = [
-  { text: 'How would you rate your emotional stability today?', type: 'Scale 1–5' },
-  { text: 'Did you experience any boundary violations this week?', type: 'Yes / No' },
-  { text: 'Which coping strategies did you use?', type: 'Multiple Choice' },
-];
-
 const Index = () => {
   const { user } = useAuth();
+  const { t, localePath } = useLanguage();
   const navigate = useNavigate();
   const [articles, setArticles] = useState<LibraryArticle[]>([]);
   const [articlesLoading, setArticlesLoading] = useState(true);
@@ -36,43 +32,47 @@ const Index = () => {
   }, []);
 
   const handleGatedClick = (path: string) => {
-    if (user) {
-      navigate(path);
-    } else {
-      navigate('/auth');
-    }
+    navigate(user ? localePath(path) : localePath('/auth'));
   };
+
+  const samplePreviewQuestions = [
+    { text: t.sampleQuestions.q1, type: t.sampleQuestions.q1Type },
+    { text: t.sampleQuestions.q2, type: t.sampleQuestions.q2Type },
+    { text: t.sampleQuestions.q3, type: t.sampleQuestions.q3Type },
+  ];
 
   return (
     <div className="min-h-screen relative">
-      {/* Fixed bamboo background */}
       <div className="fixed inset-0 z-0 bg-cover bg-center" style={{ backgroundImage: `url(${bambooBg})`, opacity: 0.12 }} />
       <div className="fixed inset-0 z-0 bg-background/80" />
 
       {/* Header */}
       <header className="relative z-10 border-b border-border bg-card/60 backdrop-blur-xl">
         <div className="max-w-6xl mx-auto flex items-center justify-between px-6 py-4">
-          <Link to="/" className="text-lg font-bold tracking-tight text-foreground">
-            Grit.hu
+          <Link to={localePath('/')} className="text-lg font-bold tracking-tight text-foreground">
+            {t.brand}
           </Link>
           <nav className="hidden md:flex items-center gap-8">
-            <a href="#library" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">Library</a>
-            <a href="#research" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">Research Summaries</a>
+            <a href="#library" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">{t.nav.library}</a>
+            <a href="#research" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">{t.nav.researchSummaries}</a>
             <button onClick={() => handleGatedClick('/self-checks')} className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1.5">
-              Self-Checks
+              {t.nav.selfChecks}
               {!user && <Lock className="h-3 w-3" />}
             </button>
-            <a href="#about" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">About</a>
+            <a href="#about" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">{t.nav.about}</a>
           </nav>
-          {user ? (
-            <Button variant="outline" size="sm" className="rounded-full px-4" onClick={() => navigate('/dashboard')}>
-              Dashboard
-            </Button>
-          ) : (
-            <Button size="sm" className="rounded-full px-4" onClick={() => navigate('/auth')}>
-              Get Started
-            </Button>
-          )}
+          <div className="flex items-center gap-3">
+            <LanguageToggle />
+            {user ? (
+              <Button variant="outline" size="sm" className="rounded-full px-4" onClick={() => navigate(localePath('/dashboard'))}>
+                {t.dashboard}
+              </Button>
+            ) : (
+              <Button size="sm" className="rounded-full px-4" onClick={() => navigate(localePath('/auth'))}>
+                {t.getStarted}
+              </Button>
+            )}
+          </div>
         </div>
       </header>
 
@@ -80,17 +80,17 @@ const Index = () => {
       <section className="relative z-10 px-6 pt-16 pb-12 max-w-6xl mx-auto text-center">
         <div className="max-w-2xl mx-auto animate-fade-in">
           <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-foreground leading-tight">
-            Your sensemaking library for navigating high-conflict dynamics
+            {t.landing.heroTitle}
           </h1>
           <p className="mt-4 text-sm md:text-base text-muted-foreground leading-relaxed max-w-xl mx-auto">
-            Curated research, structured self-reflection tools, and a safe space to anchor yourself in what's real.
+            {t.landing.heroSubtitle}
           </p>
           <div className="mt-8 flex flex-wrap gap-3 justify-center">
             <Button size="lg" className="rounded-2xl px-6" asChild>
-              <a href="#library">Browse the Library</a>
+              <a href="#library">{t.landing.browseLibrary}</a>
             </Button>
             <Button size="lg" variant="outline" className="rounded-2xl px-6" onClick={() => handleGatedClick('/self-checks')}>
-              Start a Self-Check
+              {t.landing.startSelfCheck}
               {!user && <Lock className="h-4 w-4 ml-1.5" />}
             </Button>
           </div>
@@ -101,8 +101,8 @@ const Index = () => {
       <section id="library" className="relative z-10 px-6 py-12 max-w-6xl mx-auto">
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h2 className="text-xl font-bold tracking-tight text-foreground">The Library</h2>
-            <p className="mt-1 text-sm text-muted-foreground">Curated articles, studies, and book recommendations.</p>
+            <h2 className="text-xl font-bold tracking-tight text-foreground">{t.landing.libraryTitle}</h2>
+            <p className="mt-1 text-sm text-muted-foreground">{t.landing.librarySubtitle}</p>
           </div>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
@@ -116,7 +116,7 @@ const Index = () => {
               </div>
             ))
           ) : articles.length === 0 ? (
-            <p className="text-sm text-muted-foreground col-span-full">No articles available yet.</p>
+            <p className="text-sm text-muted-foreground col-span-full">{t.landing.noArticles}</p>
           ) : (
             articles.map((article) => {
               const Wrapper = article.url ? 'a' : 'div';
@@ -149,12 +149,12 @@ const Index = () => {
       {/* Research Summaries Section */}
       <section id="research" className="relative z-10 px-6 py-12 max-w-6xl mx-auto">
         <div className="mb-6">
-          <h2 className="text-xl font-bold tracking-tight text-foreground">Research Summaries</h2>
-          <p className="mt-1 text-sm text-muted-foreground">Key findings distilled into accessible overviews.</p>
+          <h2 className="text-xl font-bold tracking-tight text-foreground">{t.landing.researchTitle}</h2>
+          <p className="mt-1 text-sm text-muted-foreground">{t.landing.researchSubtitle}</p>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
           {articles.filter(a => a.category === 'Research' || a.category === 'Study Summary').length === 0 ? (
-            <p className="text-sm text-muted-foreground col-span-full">No research summaries available yet.</p>
+            <p className="text-sm text-muted-foreground col-span-full">{t.landing.noResearch}</p>
           ) : (
             articles.filter(a => a.category === 'Research' || a.category === 'Study Summary').map(study => {
               const Wrapper = study.url ? 'a' : 'div';
@@ -179,16 +179,16 @@ const Index = () => {
       <section id="self-checks" className="relative z-10 px-6 py-12 max-w-6xl mx-auto">
         <div className="max-w-2xl mx-auto">
           <div className="text-center mb-8">
-            <h2 className="text-xl font-bold tracking-tight text-foreground">Self-Check Preview</h2>
-            <p className="mt-1 text-sm text-muted-foreground">See what structured self-reflection looks like. Create an account to track your progress over time.</p>
+            <h2 className="text-xl font-bold tracking-tight text-foreground">{t.landing.selfCheckPreviewTitle}</h2>
+            <p className="mt-1 text-sm text-muted-foreground">{t.landing.selfCheckPreviewSubtitle}</p>
           </div>
           <div className="bg-card/70 backdrop-blur border border-border rounded-[40px] p-8 space-y-5">
-            <h3 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Sample Questions</h3>
+            <h3 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">{t.landing.sampleQuestions}</h3>
             {samplePreviewQuestions.map((q, i) => (
               <div key={i} className="border border-border rounded-2xl p-4 space-y-2">
                 <p className="text-sm font-medium text-foreground">{i + 1}. {q.text}</p>
                 <Badge variant="outline" className="rounded-full text-[10px]">{q.type}</Badge>
-                {q.type === 'Scale 1–5' && (
+                {q.type === t.sampleQuestions.q1Type && (
                   <div className="flex gap-2 pt-1">
                     {[1, 2, 3, 4, 5].map(n => (
                       <div key={n} className="h-9 w-9 rounded-full border border-border flex items-center justify-center text-xs text-muted-foreground">{n}</div>
@@ -199,14 +199,14 @@ const Index = () => {
             ))}
             <div className="text-center pt-2">
               {user ? (
-                <Button className="rounded-2xl px-6" onClick={() => navigate('/self-checks')}>
-                  Go to Self-Checks <ArrowRight className="h-4 w-4 ml-1" />
+                <Button className="rounded-2xl px-6" onClick={() => navigate(localePath('/self-checks'))}>
+                  {t.landing.goToSelfChecks} <ArrowRight className="h-4 w-4 ml-1" />
                 </Button>
               ) : (
                 <div className="space-y-3">
-                  <p className="text-xs text-muted-foreground">Create a free account to start tracking your patterns over time.</p>
-                  <Button className="rounded-2xl px-6" onClick={() => navigate('/auth')}>
-                    Create Your Space <ArrowRight className="h-4 w-4 ml-1" />
+                  <p className="text-xs text-muted-foreground">{t.landing.createFreeAccount}</p>
+                  <Button className="rounded-2xl px-6" onClick={() => navigate(localePath('/auth'))}>
+                    {t.landing.createYourSpace} <ArrowRight className="h-4 w-4 ml-1" />
                   </Button>
                 </div>
               )}
@@ -218,27 +218,20 @@ const Index = () => {
       {/* About Section */}
       <section id="about" className="relative z-10 px-6 py-12 max-w-6xl mx-auto">
         <div className="max-w-2xl mx-auto bg-card/70 backdrop-blur border border-border rounded-[40px] p-10 text-center">
-          <h2 className="text-xl font-bold tracking-tight text-foreground">About Grit.hu</h2>
-          <p className="mt-4 text-sm text-muted-foreground leading-relaxed">
-            Grit.hu is a sensemaking information portal for people affected by high-conflict relational dynamics.
-            We provide a curated library of research, structured self-reflection tools, and a private sanctuary
-            for observation and reality-anchoring — all without clinical labels or diagnostic language.
-          </p>
-          <p className="mt-3 text-sm text-muted-foreground leading-relaxed">
-            Your data is yours. Everything stays private. No social features, no sharing, no community feeds.
-            Just you, your observations, and the research that helps you make sense of your experience.
-          </p>
+          <h2 className="text-xl font-bold tracking-tight text-foreground">{t.landing.aboutTitle}</h2>
+          <p className="mt-4 text-sm text-muted-foreground leading-relaxed">{t.landing.aboutP1}</p>
+          <p className="mt-3 text-sm text-muted-foreground leading-relaxed">{t.landing.aboutP2}</p>
         </div>
       </section>
 
       {/* Footer */}
       <footer className="relative z-10 border-t border-border bg-card/40 backdrop-blur-xl">
         <div className="max-w-6xl mx-auto px-6 py-6 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <span className="text-xs text-muted-foreground">© {new Date().getFullYear()} Grit.hu. All rights reserved.</span>
+          <span className="text-xs text-muted-foreground">{t.landing.footerRights.replace('{year}', String(new Date().getFullYear()))}</span>
           <div className="flex items-center gap-6">
-            <a href="#" className="text-xs text-muted-foreground hover:text-foreground transition-colors">Terms & Conditions</a>
-            <a href="#" className="text-xs text-muted-foreground hover:text-foreground transition-colors">Cookie Policy</a>
-            <a href="#" className="text-xs text-muted-foreground hover:text-foreground transition-colors">GDPR Compliance</a>
+            <a href="#" className="text-xs text-muted-foreground hover:text-foreground transition-colors">{t.landing.terms}</a>
+            <a href="#" className="text-xs text-muted-foreground hover:text-foreground transition-colors">{t.landing.cookies}</a>
+            <a href="#" className="text-xs text-muted-foreground hover:text-foreground transition-colors">{t.landing.gdpr}</a>
           </div>
         </div>
       </footer>

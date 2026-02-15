@@ -64,10 +64,12 @@ export type Database = {
           category: string
           created_at: string
           excerpt: string | null
+          excerpt_localized: Json | null
           id: string
           published: boolean
           source: string | null
           title: string
+          title_localized: Json | null
           updated_at: string
           url: string | null
         }
@@ -75,10 +77,12 @@ export type Database = {
           category?: string
           created_at?: string
           excerpt?: string | null
+          excerpt_localized?: Json | null
           id?: string
           published?: boolean
           source?: string | null
           title: string
+          title_localized?: Json | null
           updated_at?: string
           url?: string | null
         }
@@ -86,10 +90,12 @@ export type Database = {
           category?: string
           created_at?: string
           excerpt?: string | null
+          excerpt_localized?: Json | null
           id?: string
           published?: boolean
           source?: string | null
           title?: string
+          title_localized?: Json | null
           updated_at?: string
           url?: string | null
         }
@@ -160,7 +166,9 @@ export type Database = {
           created_at: string
           id: string
           options: Json | null
+          options_localized: Json | null
           question_text: string
+          question_text_localized: Json | null
           question_type: string
           questionnaire_id: string
           sort_order: number
@@ -169,7 +177,9 @@ export type Database = {
           created_at?: string
           id?: string
           options?: Json | null
+          options_localized?: Json | null
           question_text: string
+          question_text_localized?: Json | null
           question_type?: string
           questionnaire_id: string
           sort_order?: number
@@ -178,7 +188,9 @@ export type Database = {
           created_at?: string
           id?: string
           options?: Json | null
+          options_localized?: Json | null
           question_text?: string
+          question_text_localized?: Json | null
           question_type?: string
           questionnaire_id?: string
           sort_order?: number
@@ -227,27 +239,33 @@ export type Database = {
           created_at: string
           created_by: string | null
           description: string | null
+          description_localized: Json | null
           id: string
           is_published: boolean
           title: string
+          title_localized: Json | null
           updated_at: string
         }
         Insert: {
           created_at?: string
           created_by?: string | null
           description?: string | null
+          description_localized?: Json | null
           id?: string
           is_published?: boolean
           title: string
+          title_localized?: Json | null
           updated_at?: string
         }
         Update: {
           created_at?: string
           created_by?: string | null
           description?: string | null
+          description_localized?: Json | null
           id?: string
           is_published?: boolean
           title?: string
+          title_localized?: Json | null
           updated_at?: string
         }
         Relationships: []

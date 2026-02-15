@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react';
 import DashboardLayout from '@/components/DashboardLayout';
 import ActionGrid from '@/components/ActionGrid';
 import { useAuth } from '@/hooks/useAuth';
+import { useLanguage } from '@/hooks/useLanguage';
 import { supabase } from '@/integrations/supabase/client';
 import { format, parseISO } from 'date-fns';
 import { BookOpen, ClipboardCheck } from 'lucide-react';
@@ -17,6 +18,7 @@ interface RecentItem {
 
 const Dashboard = () => {
   const { user } = useAuth();
+  const { t, localePath } = useLanguage();
   const [items, setItems] = useState<RecentItem[]>([]);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
@@ -34,7 +36,7 @@ const Dashboard = () => {
         detail: j.impact_level ? `Impact: ${j.impact_level}/5` : undefined,
       }));
       const qItems: RecentItem[] = (qRes.data ?? []).map((r: any) => ({
-        id: r.id, type: 'questionnaire', title: r.questionnaires?.title ?? 'Self-Check', date: r.completed_at.split('T')[0],
+        id: r.id, type: 'questionnaire', title: r.questionnaires?.title ?? t.nav.selfChecks, date: r.completed_at.split('T')[0],
       }));
 
       setItems([...jItems, ...qItems].sort((a, b) => b.date.localeCompare(a.date)).slice(0, 8));
@@ -47,24 +49,24 @@ const Dashboard = () => {
     <DashboardLayout>
       <div className="max-w-4xl space-y-8">
         <div>
-          <h1 className="text-xl font-bold tracking-tight text-foreground">Welcome back 🌿</h1>
-          <p className="mt-1 text-sm text-muted-foreground leading-relaxed">Your space for observation and reflection.</p>
+          <h1 className="text-xl font-bold tracking-tight text-foreground">{t.dash.welcomeBack}</h1>
+          <p className="mt-1 text-sm text-muted-foreground leading-relaxed">{t.dash.yourSpace}</p>
         </div>
 
         <ActionGrid />
 
         <div className="bg-card/60 backdrop-blur border border-border rounded-3xl p-6">
-          <h2 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-4">Recent Activity</h2>
+          <h2 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-4">{t.dash.recentActivity}</h2>
           {loading ? (
-            <p className="text-sm text-muted-foreground">Loading...</p>
+            <p className="text-sm text-muted-foreground">{t.loading}</p>
           ) : items.length === 0 ? (
-            <p className="text-sm text-muted-foreground">No activity yet. Start by logging your first observation.</p>
+            <p className="text-sm text-muted-foreground">{t.dash.noActivity}</p>
           ) : (
             <div className="space-y-1">
               {items.map(item => (
                 <button
                   key={item.id}
-                  onClick={() => navigate(item.type === 'journal' ? '/journal' : '/self-checks')}
+                  onClick={() => navigate(localePath(item.type === 'journal' ? '/journal' : '/self-checks'))}
                   className="w-full flex items-center gap-3 py-2.5 px-3 rounded-2xl text-left hover:bg-accent/50 transition-colors"
                 >
                   {item.type === 'journal' ? <BookOpen className="h-3.5 w-3.5 text-primary shrink-0" /> : <ClipboardCheck className="h-3.5 w-3.5 text-muted-foreground shrink-0" />}
