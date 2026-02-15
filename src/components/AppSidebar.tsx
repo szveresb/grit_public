@@ -1,4 +1,4 @@
-import { useLocation } from 'react-router-dom';
+import { useLocation, Link } from 'react-router-dom';
 import { NavLink } from '@/components/NavLink';
 import { useUserRole } from '@/hooks/useUserRole';
 import { useAuth } from '@/hooks/useAuth';
@@ -51,9 +51,9 @@ const AppSidebar = () => {
   return (
     <Sidebar collapsible="icon">
       <SidebarHeader className="px-5 py-5">
-        <span className="text-sm font-semibold tracking-tight text-foreground">
+        <Link to={localePath('/')} className="text-sm font-semibold tracking-tight text-foreground hover:text-primary transition-colors">
           🌿 {t.brand}
-        </span>
+        </Link>
       </SidebarHeader>
 
       <SidebarContent>
