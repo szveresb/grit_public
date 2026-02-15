@@ -1,7 +1,10 @@
 import { useLocation } from 'react-router-dom';
 import { NavLink } from '@/components/NavLink';
 import { useUserRole } from '@/hooks/useUserRole';
+import { useAuth } from '@/hooks/useAuth';
+import { useIsMobile } from '@/hooks/use-mobile';
 import {
+  Home,
   LayoutDashboard,
   BookOpen,
   ClipboardCheck,
@@ -11,6 +14,9 @@ import {
   Library,
   Users,
   BarChart3,
+  FileText,
+  Info,
+  Lock,
 } from 'lucide-react';
 import {
   Sidebar,
@@ -25,6 +31,7 @@ import {
 } from '@/components/ui/sidebar';
 
 const navItems = [
+  { title: 'Home', url: '/', icon: Home },
   { title: 'Dashboard', url: '/dashboard', icon: LayoutDashboard },
   { title: 'Journal', url: '/journal', icon: BookOpen },
   { title: 'Self-Checks', url: '/self-checks', icon: ClipboardCheck },
@@ -33,8 +40,17 @@ const navItems = [
   { title: 'Account', url: '/profile', icon: User },
 ];
 
+/** Top-menu items shown only on mobile inside the hamburger */
+const topMenuItems = [
+  { title: 'Library', url: '/#library', icon: Library },
+  { title: 'Research Summaries', url: '/#research', icon: FileText },
+  { title: 'About', url: '/#about', icon: Info },
+];
+
 const AppSidebar = () => {
   const location = useLocation();
+  const { user } = useAuth();
+  const isMobile = useIsMobile();
   const { hasAnyRole, hasRole } = useUserRole();
   const canManageLibrary = hasAnyRole('admin', 'editor', 'guest_editor');
   const canAnalyse = hasAnyRole('admin', 'analyst');
@@ -83,6 +99,48 @@ const AppSidebar = () => {
             </SidebarMenu>
           </SidebarGroupContent>
         </SidebarGroup>
+
+        {/* Top menu items merged into sidebar on mobile */}
+        {isMobile && (
+          <SidebarGroup>
+            <SidebarGroupLabel className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+              Explore
+            </SidebarGroupLabel>
+            <SidebarGroupContent>
+              <SidebarMenu>
+                {topMenuItems.map((item) => (
+                  <SidebarMenuItem key={item.title}>
+                    <SidebarMenuButton asChild tooltip={item.title}>
+                      <a href={item.url} className="hover:bg-accent rounded-xl">
+                        <item.icon className="h-4 w-4" />
+                        <span>{item.title}</span>
+                      </a>
+                    </SidebarMenuButton>
+                  </SidebarMenuItem>
+                ))}
+                {/* Self-Checks with gated lock icon */}
+                <SidebarMenuItem>
+                  <SidebarMenuButton
+                    asChild
+                    isActive={location.pathname === '/self-checks'}
+                    tooltip="Self-Checks"
+                  >
+                    <NavLink
+                      to={user ? '/self-checks' : '/auth'}
+                      end
+                      className="hover:bg-accent rounded-xl"
+                      activeClassName="bg-accent text-foreground font-semibold rounded-xl"
+                    >
+                      <ClipboardCheck className="h-4 w-4" />
+                      <span>Self-Checks</span>
+                      {!user && <Lock className="h-3 w-3 ml-auto" />}
+                    </NavLink>
+                  </SidebarMenuButton>
+                </SidebarMenuItem>
+              </SidebarMenu>
+            </SidebarGroupContent>
+          </SidebarGroup>
+        )}
 
         {editorItems.length > 0 && (
           <SidebarGroup>
