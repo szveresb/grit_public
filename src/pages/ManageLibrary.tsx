@@ -35,7 +35,7 @@ const ManageLibrary = () => {
   const [form, setForm] = useState(emptyForm);
   const [saving, setSaving] = useState(false);
 
-  const isEditor = hasRole('observer');
+  const isEditor = hasRole('admin') || hasRole('editor') || hasRole('guest_editor');
 
   const fetchArticles = async () => {
     const { data } = await supabase
