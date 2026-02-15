@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useMemo } from 'react';
 import DashboardLayout from '@/components/DashboardLayout';
 import { useAuth } from '@/hooks/useAuth';
 import { useUserRole } from '@/hooks/useUserRole';
@@ -10,7 +10,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
-import { Plus, Pencil, Trash2, X, Save } from 'lucide-react';
+import { Plus, Pencil, Trash2, X, Save, Search } from 'lucide-react';
 import { Navigate } from 'react-router-dom';
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
@@ -22,12 +22,14 @@ interface Article {
   title: string;
   excerpt: string | null;
   source: string | null;
+  url: string | null;
   category: string;
   published: boolean;
   created_at: string;
 }
 
-const emptyForm = { title: '', excerpt: '', source: '', category: 'Article', published: true };
+const emptyForm = { title: '', excerpt: '', source: '', url: '', category: 'Article', published: true };
+const categories = ['Article', 'Research', 'Book', 'Study Summary'];
 
 const ManageLibrary = () => {
   const { user } = useAuth();
@@ -38,6 +40,8 @@ const ManageLibrary = () => {
   const [showForm, setShowForm] = useState(false);
   const [form, setForm] = useState(emptyForm);
   const [saving, setSaving] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [filterCategory, setFilterCategory] = useState('All');
 
   const isEditor = hasRole('admin') || hasRole('editor') || hasRole('guest_editor');
 
@@ -52,29 +56,33 @@ const ManageLibrary = () => {
 
   useEffect(() => { if (user && isEditor) fetchArticles(); }, [user, isEditor]);
 
+  const filteredArticles = useMemo(() => {
+    return articles.filter(a => {
+      const matchesSearch = !searchQuery || a.title.toLowerCase().includes(searchQuery.toLowerCase()) || (a.excerpt?.toLowerCase().includes(searchQuery.toLowerCase()));
+      const matchesCategory = filterCategory === 'All' || a.category === filterCategory;
+      return matchesSearch && matchesCategory;
+    });
+  }, [articles, searchQuery, filterCategory]);
+
   if (roleLoading) return <DashboardLayout><p className="text-sm text-muted-foreground">Loading...</p></DashboardLayout>;
   if (!isEditor) return <Navigate to="/dashboard" replace />;
 
-  const openCreate = () => {
-    setEditingId(null);
-    setForm(emptyForm);
-    setShowForm(true);
-  };
+  const openCreate = () => { setEditingId(null); setForm(emptyForm); setShowForm(true); };
 
   const openEdit = (a: Article) => {
     setEditingId(a.id);
-    setForm({ title: a.title, excerpt: a.excerpt ?? '', source: a.source ?? '', category: a.category, published: a.published });
+    setForm({ title: a.title, excerpt: a.excerpt ?? '', source: a.source ?? '', url: (a as any).url ?? '', category: a.category, published: a.published });
     setShowForm(true);
   };
 
   const handleSave = async () => {
     if (!form.title.trim()) { toast.error('Title is required'); return; }
     setSaving(true);
-
     const payload = {
       title: form.title.trim(),
       excerpt: form.excerpt.trim() || null,
       source: form.source.trim() || null,
+      url: form.url.trim() || null,
       category: form.category.trim() || 'Article',
       published: form.published,
     };
@@ -89,21 +97,14 @@ const ManageLibrary = () => {
       toast.success('Article created');
     }
 
-    setSaving(false);
-    setShowForm(false);
-    setForm(emptyForm);
-    setEditingId(null);
-    fetchArticles();
+    setSaving(false); setShowForm(false); setForm(emptyForm); setEditingId(null); fetchArticles();
   };
 
   const handleDelete = async (id: string) => {
     const { error } = await supabase.from('library_articles').delete().eq('id', id);
     if (error) { toast.error(error.message); return; }
-    toast.success('Article deleted');
-    fetchArticles();
+    toast.success('Article deleted'); fetchArticles();
   };
-
-  const categories = ['Article', 'Research', 'Book', 'Study Summary'];
 
   return (
     <DashboardLayout>
@@ -118,6 +119,19 @@ const ManageLibrary = () => {
           </Button>
         </div>
 
+        {/* Search & Filter */}
+        <div className="flex gap-3">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input value={searchQuery} onChange={e => setSearchQuery(e.target.value)} placeholder="Search articles..." className="pl-9 rounded-2xl" />
+          </div>
+          <select value={filterCategory} onChange={e => setFilterCategory(e.target.value)}
+            className="border border-input rounded-2xl px-3 h-10 text-sm bg-background">
+            <option value="All">All Categories</option>
+            {categories.map(c => <option key={c} value={c}>{c}</option>)}
+          </select>
+        </div>
+
         {/* Create / Edit Form */}
         {showForm && (
           <div className="bg-card/60 backdrop-blur border border-border rounded-3xl p-6 space-y-4 animate-fade-in">
@@ -127,17 +141,18 @@ const ManageLibrary = () => {
               </h2>
               <Button variant="ghost" size="icon" onClick={() => setShowForm(false)}><X className="h-4 w-4" /></Button>
             </div>
-
             <div className="space-y-2">
               <Label className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Title</Label>
               <Input value={form.title} onChange={e => setForm(f => ({ ...f, title: e.target.value }))} placeholder="Article title" className="rounded-2xl" />
             </div>
-
             <div className="space-y-2">
               <Label className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Excerpt</Label>
               <Textarea value={form.excerpt} onChange={e => setForm(f => ({ ...f, excerpt: e.target.value }))} placeholder="Brief summary..." rows={3} className="rounded-2xl" />
             </div>
-
+            <div className="space-y-2">
+              <Label className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">URL</Label>
+              <Input value={form.url} onChange={e => setForm(f => ({ ...f, url: e.target.value }))} placeholder="https://example.com/article" className="rounded-2xl" />
+            </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Source</Label>
@@ -145,21 +160,16 @@ const ManageLibrary = () => {
               </div>
               <div className="space-y-2">
                 <Label className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">Category</Label>
-                <select
-                  value={form.category}
-                  onChange={e => setForm(f => ({ ...f, category: e.target.value }))}
-                  className="w-full border border-input rounded-2xl px-3 h-10 text-sm bg-background"
-                >
+                <select value={form.category} onChange={e => setForm(f => ({ ...f, category: e.target.value }))}
+                  className="w-full border border-input rounded-2xl px-3 h-10 text-sm bg-background">
                   {categories.map(c => <option key={c} value={c}>{c}</option>)}
                 </select>
               </div>
             </div>
-
             <div className="flex items-center gap-3">
               <Switch checked={form.published} onCheckedChange={v => setForm(f => ({ ...f, published: v }))} />
               <Label className="text-sm">Published</Label>
             </div>
-
             <div className="flex gap-2">
               <Button size="sm" className="rounded-2xl" onClick={handleSave} disabled={saving}>
                 <Save className="h-4 w-4 mr-1" /> {saving ? 'Saving...' : editingId ? 'Update' : 'Create'}
@@ -173,12 +183,12 @@ const ManageLibrary = () => {
         <div className="space-y-3">
           {loading ? (
             <p className="text-sm text-muted-foreground">Loading articles...</p>
-          ) : articles.length === 0 ? (
+          ) : filteredArticles.length === 0 ? (
             <div className="bg-card/60 backdrop-blur border border-border rounded-3xl p-6">
-              <p className="text-sm text-muted-foreground">No articles yet. Create your first one above.</p>
+              <p className="text-sm text-muted-foreground">{articles.length === 0 ? 'No articles yet. Create your first one above.' : 'No articles match your search.'}</p>
             </div>
           ) : (
-            articles.map(a => (
+            filteredArticles.map(a => (
               <div key={a.id} className="bg-card/60 backdrop-blur border border-border rounded-3xl p-5 flex items-start gap-4">
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-1">
@@ -190,14 +200,10 @@ const ManageLibrary = () => {
                   {a.source && <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground mt-2">{a.source}</p>}
                 </div>
                 <div className="flex gap-1 shrink-0">
-                  <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => openEdit(a)}>
-                    <Pencil className="h-3.5 w-3.5" />
-                  </Button>
+                  <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => openEdit(a)}><Pencil className="h-3.5 w-3.5" /></Button>
                   <AlertDialog>
                     <AlertDialogTrigger asChild>
-                      <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:text-destructive">
-                        <Trash2 className="h-3.5 w-3.5" />
-                      </Button>
+                      <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:text-destructive"><Trash2 className="h-3.5 w-3.5" /></Button>
                     </AlertDialogTrigger>
                     <AlertDialogContent>
                       <AlertDialogHeader>
