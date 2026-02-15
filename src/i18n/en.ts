@@ -100,6 +100,7 @@ export const en: Dictionary = {
 
   dash: {
     welcomeBack: 'Welcome back 🌿',
+    welcomeUser: 'Hello {name}!',
     yourSpace: 'Your space for observation and reflection.',
     recentActivity: 'Recent Activity',
     noActivity: 'No activity yet. Start by logging your first observation.',
