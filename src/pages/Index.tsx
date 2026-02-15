@@ -13,6 +13,7 @@ interface LibraryArticle {
   title: string;
   excerpt: string | null;
   source: string | null;
+  url: string | null;
   category: string;
 }
 
@@ -30,8 +31,8 @@ const Index = () => {
   const [articlesLoading, setArticlesLoading] = useState(true);
 
   useEffect(() => {
-    supabase.from('library_articles').select('id, title, excerpt, source, category').eq('published', true).order('created_at', { ascending: false })
-      .then(({ data }) => { setArticles(data ?? []); setArticlesLoading(false); });
+    supabase.from('library_articles').select('id, title, excerpt, source, category, url').eq('published', true).order('created_at', { ascending: false })
+      .then(({ data }) => { setArticles((data as LibraryArticle[]) ?? []); setArticlesLoading(false); });
   }, []);
 
   const handleGatedClick = (path: string) => {
@@ -117,26 +118,30 @@ const Index = () => {
           ) : articles.length === 0 ? (
             <p className="text-sm text-muted-foreground col-span-full">No articles available yet.</p>
           ) : (
-            articles.map((article) => (
-              <div key={article.id} className="bg-card/70 backdrop-blur border border-border rounded-3xl p-6 hover:shadow-md transition-all group">
-                <div className="flex items-center gap-2 mb-3">
-                  <Badge variant="secondary" className="rounded-full text-[10px] font-semibold uppercase tracking-wider">
-                    {article.category}
-                  </Badge>
-                </div>
-                <h3 className="text-sm font-semibold text-foreground leading-snug group-hover:text-primary transition-colors">
-                  {article.title}
-                </h3>
-                <p className="mt-2 text-xs text-muted-foreground leading-relaxed line-clamp-3">
-                  {article.excerpt}
-                </p>
-                {article.source && (
-                  <p className="mt-3 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
-                    {article.source}
+            articles.map((article) => {
+              const Wrapper = article.url ? 'a' : 'div';
+              const linkProps = article.url ? { href: article.url, target: '_blank', rel: 'noopener noreferrer' } : {};
+              return (
+                <Wrapper key={article.id} {...linkProps} className={`bg-card/70 backdrop-blur border border-border rounded-3xl p-6 hover:shadow-md transition-all group ${article.url ? 'cursor-pointer' : ''}`}>
+                  <div className="flex items-center gap-2 mb-3">
+                    <Badge variant="secondary" className="rounded-full text-[10px] font-semibold uppercase tracking-wider">
+                      {article.category}
+                    </Badge>
+                  </div>
+                  <h3 className="text-sm font-semibold text-foreground leading-snug group-hover:text-primary transition-colors">
+                    {article.title}
+                  </h3>
+                  <p className="mt-2 text-xs text-muted-foreground leading-relaxed line-clamp-3">
+                    {article.excerpt}
                   </p>
-                )}
-              </div>
-            ))
+                  {article.source && (
+                    <p className="mt-3 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+                      {article.source}
+                    </p>
+                  )}
+                </Wrapper>
+              );
+            })
           )}
         </div>
       </section>
@@ -148,21 +153,25 @@ const Index = () => {
           <p className="mt-1 text-sm text-muted-foreground">Key findings distilled into accessible overviews.</p>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-          {[
-            { title: 'Attachment Styles & Conflict Escalation', finding: 'Insecure attachment patterns correlate with a 3x increase in conflict frequency within intimate relationships.', year: '2023' },
-            { title: 'Effects of Reality-Distortion on Self-Trust', finding: 'Prolonged exposure to gaslighting reduces self-reported confidence scores by an average of 47% over 18 months.', year: '2022' },
-            { title: 'Boundary Setting & Emotional Recovery', finding: 'Individuals who implement structured boundary protocols report 62% faster emotional recovery post-separation.', year: '2024' },
-            { title: 'Journaling as a Reality-Anchoring Tool', finding: 'Daily structured journaling improves reality-testing accuracy by 38% in individuals affected by high-conflict dynamics.', year: '2023' },
-          ].map((study, i) => (
-            <div key={i} className="bg-card/70 backdrop-blur border border-border rounded-3xl p-6">
-              <div className="flex items-center gap-2 mb-2">
-                <FileText className="h-4 w-4 text-primary" />
-                <span className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">{study.year}</span>
-              </div>
-              <h3 className="text-sm font-semibold text-foreground">{study.title}</h3>
-              <p className="mt-2 text-xs text-muted-foreground leading-relaxed">{study.finding}</p>
-            </div>
-          ))}
+          {articles.filter(a => a.category === 'Research' || a.category === 'Study Summary').length === 0 ? (
+            <p className="text-sm text-muted-foreground col-span-full">No research summaries available yet.</p>
+          ) : (
+            articles.filter(a => a.category === 'Research' || a.category === 'Study Summary').map(study => {
+              const Wrapper = study.url ? 'a' : 'div';
+              const linkProps = study.url ? { href: study.url, target: '_blank', rel: 'noopener noreferrer' } : {};
+              return (
+                <Wrapper key={study.id} {...linkProps} className={`bg-card/70 backdrop-blur border border-border rounded-3xl p-6 hover:shadow-md transition-all group ${study.url ? 'cursor-pointer' : ''}`}>
+                  <div className="flex items-center gap-2 mb-2">
+                    <FileText className="h-4 w-4 text-primary" />
+                    <Badge variant="secondary" className="rounded-full text-[10px] font-semibold uppercase tracking-wider">{study.category}</Badge>
+                  </div>
+                  <h3 className="text-sm font-semibold text-foreground group-hover:text-primary transition-colors">{study.title}</h3>
+                  {study.excerpt && <p className="mt-2 text-xs text-muted-foreground leading-relaxed">{study.excerpt}</p>}
+                  {study.source && <p className="mt-2 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">{study.source}</p>}
+                </Wrapper>
+              );
+            })
+          )}
         </div>
       </section>
 

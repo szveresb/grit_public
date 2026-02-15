@@ -23,6 +23,7 @@ export type Database = {
           free_text: string | null
           id: string
           impact_level: number | null
+          self_anchor: string | null
           title: string
           updated_at: string
           user_id: string
@@ -35,6 +36,7 @@ export type Database = {
           free_text?: string | null
           id?: string
           impact_level?: number | null
+          self_anchor?: string | null
           title: string
           updated_at?: string
           user_id: string
@@ -47,6 +49,7 @@ export type Database = {
           free_text?: string | null
           id?: string
           impact_level?: number | null
+          self_anchor?: string | null
           title?: string
           updated_at?: string
           user_id?: string
@@ -63,6 +66,7 @@ export type Database = {
           source: string | null
           title: string
           updated_at: string
+          url: string | null
         }
         Insert: {
           category?: string
@@ -73,6 +77,7 @@ export type Database = {
           source?: string | null
           title: string
           updated_at?: string
+          url?: string | null
         }
         Update: {
           category?: string
@@ -83,6 +88,7 @@ export type Database = {
           source?: string | null
           title?: string
           updated_at?: string
+          url?: string | null
         }
         Relationships: []
       }
