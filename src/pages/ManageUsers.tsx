@@ -8,6 +8,10 @@ import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 import { Navigate } from 'react-router-dom';
 import { Shield, Plus, X } from 'lucide-react';
+import {
+  AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
+  AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 
 interface UserWithRoles {
   user_id: string;
@@ -106,13 +110,26 @@ const ManageUsers = () => {
                     {u.roles.map(role => (
                       <Badge key={role} variant="secondary" className="rounded-full text-[10px] font-semibold uppercase tracking-wider flex items-center gap-1 pr-1">
                         {ROLE_LABELS[role]}
-                        <button
-                          onClick={() => removeRole(u.user_id, role)}
-                          className="ml-0.5 rounded-full hover:bg-destructive/20 p-0.5"
-                          title={`Remove ${ROLE_LABELS[role]}`}
-                        >
-                          <X className="h-3 w-3" />
-                        </button>
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <button
+                              className="ml-0.5 rounded-full hover:bg-destructive/20 p-0.5"
+                              title={`Remove ${ROLE_LABELS[role]}`}
+                            >
+                              <X className="h-3 w-3" />
+                            </button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>Remove role?</AlertDialogTitle>
+                              <AlertDialogDescription>Remove the {ROLE_LABELS[role]} role from {u.display_name || 'this user'}? They will lose access to features tied to this role.</AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>Cancel</AlertDialogCancel>
+                              <AlertDialogAction onClick={() => removeRole(u.user_id, role)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">Remove</AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
                       </Badge>
                     ))}
                   </div>
