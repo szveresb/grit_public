@@ -13,6 +13,7 @@ import SelfChecks from "./pages/SelfChecks";
 import Timeline from "./pages/Timeline";
 import Profile from "./pages/Profile";
 import Export from "./pages/Export";
+import ManageLibrary from "./pages/ManageLibrary";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -33,6 +34,7 @@ const App = () => (
             <Route path="/timeline" element={<ProtectedRoute><Timeline /></ProtectedRoute>} />
             <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
             <Route path="/export" element={<ProtectedRoute><Export /></ProtectedRoute>} />
+            <Route path="/manage-library" element={<ProtectedRoute><ManageLibrary /></ProtectedRoute>} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>
