@@ -1,4 +1,4 @@
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
 import AppSidebar from '@/components/AppSidebar';
 import EmergencyExit from '@/components/EmergencyExit';
@@ -6,7 +6,6 @@ import RoleIndicator from '@/components/RoleIndicator';
 import LanguageToggle from '@/components/LanguageToggle';
 import { useAuth } from '@/hooks/useAuth';
 import { useLanguage } from '@/hooks/useLanguage';
-import { useIsMobile } from '@/hooks/use-mobile';
 import bambooBg from '@/assets/bamboo-bg.jpg';
 
 interface DashboardLayoutProps {
@@ -16,7 +15,6 @@ interface DashboardLayoutProps {
 const DashboardLayout = ({ children }: DashboardLayoutProps) => {
   const { user } = useAuth();
   const { t, localePath } = useLanguage();
-  const isMobile = useIsMobile();
   const navigate = useNavigate();
 
   const handleGatedClick = (path: string) => {
@@ -38,17 +36,15 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
         <main className="flex-1 flex flex-col">
           <header className="h-14 flex items-center border-b border-border/60 px-5 bg-card/40 backdrop-blur-sm gap-3">
             <SidebarTrigger />
-            {!isMobile && (
-              <nav className="hidden md:flex items-center gap-8 ml-auto">
-                <a href={`${localePath('/')}#library`} className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">{t.nav.library}</a>
-                <a href={`${localePath('/')}#research`} className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">{t.nav.researchSummaries}</a>
-                <button onClick={() => handleGatedClick('/self-checks')} className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1.5">
-                  {t.nav.selfChecks}
-                </button>
-                <a href={`${localePath('/')}#about`} className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">{t.nav.about}</a>
-              </nav>
-            )}
-            <div className={`${isMobile ? 'ml-auto' : 'ml-4'}`}>
+            <nav className="hidden lg:flex items-center gap-8 ml-auto">
+              <a href={`${localePath('/')}#library`} className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">{t.nav.library}</a>
+              <a href={`${localePath('/')}#research`} className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">{t.nav.researchSummaries}</a>
+              <button onClick={() => handleGatedClick('/self-checks')} className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1.5">
+                {t.nav.selfChecks}
+              </button>
+              <a href={`${localePath('/')}#about`} className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">{t.nav.about}</a>
+            </nav>
+            <div className="ml-auto lg:ml-4">
               <LanguageToggle />
             </div>
           </header>
