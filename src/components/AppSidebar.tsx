@@ -36,7 +36,7 @@ const AppSidebar = () => {
     <Sidebar collapsible="icon">
       <SidebarHeader className="px-5 py-5">
         <span className="text-sm font-semibold tracking-tight text-foreground">
-          🌿 Liftoff
+          🌿 Grit.hu
         </span>
       </SidebarHeader>
 
