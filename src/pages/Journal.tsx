@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
-import { Plus, ChevronDown, ChevronUp, Pencil, Trash2, Search, X, Save, Sparkles, Loader2 } from 'lucide-react';
+import { Plus, ChevronDown, ChevronUp, Pencil, Trash2, Search, X, Save, Sparkles, Loader2, TrendingUp } from 'lucide-react';
 import ReactMarkdown from 'react-markdown';
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
@@ -34,6 +34,7 @@ const emptyForm = {
 };
 
 const REFLECT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/journal-reflect`;
+const PATTERNS_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/journal-patterns`;
 
 const Journal = () => {
   const { user } = useAuth();
@@ -48,6 +49,8 @@ const Journal = () => {
   const [dateTo, setDateTo] = useState('');
   const [reflections, setReflections] = useState<Record<string, string>>({});
   const [reflectingId, setReflectingId] = useState<string | null>(null);
+  const [patternSummary, setPatternSummary] = useState('');
+  const [analyzingPatterns, setAnalyzingPatterns] = useState(false);
 
   const fetchEntries = async () => {
     if (!user) return;
@@ -207,6 +210,71 @@ const Journal = () => {
     fetchEntries();
   };
 
+  const handlePatternAnalysis = async () => {
+    if (analyzingPatterns || entries.length < 2) return;
+    setAnalyzingPatterns(true);
+    setPatternSummary('');
+
+    try {
+      // Send entries sorted oldest-first for chronological analysis
+      const sorted = [...entries].sort((a, b) => a.entry_date.localeCompare(b.entry_date));
+      const resp = await fetch(PATTERNS_URL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+        },
+        body: JSON.stringify({ entries: sorted }),
+      });
+
+      if (!resp.ok) {
+        const err = await resp.json().catch(() => ({ error: 'Pattern analysis unavailable' }));
+        toast.error(err.error || 'Failed to analyze patterns');
+        setAnalyzingPatterns(false);
+        return;
+      }
+
+      const reader = resp.body?.getReader();
+      if (!reader) { setAnalyzingPatterns(false); return; }
+
+      const decoder = new TextDecoder();
+      let textBuffer = '';
+      let accumulated = '';
+
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        textBuffer += decoder.decode(value, { stream: true });
+
+        let newlineIndex: number;
+        while ((newlineIndex = textBuffer.indexOf('\n')) !== -1) {
+          let line = textBuffer.slice(0, newlineIndex);
+          textBuffer = textBuffer.slice(newlineIndex + 1);
+          if (line.endsWith('\r')) line = line.slice(0, -1);
+          if (line.startsWith(':') || line.trim() === '') continue;
+          if (!line.startsWith('data: ')) continue;
+          const jsonStr = line.slice(6).trim();
+          if (jsonStr === '[DONE]') break;
+          try {
+            const parsed = JSON.parse(jsonStr);
+            const content = parsed.choices?.[0]?.delta?.content as string | undefined;
+            if (content) {
+              accumulated += content;
+              setPatternSummary(accumulated);
+            }
+          } catch {
+            textBuffer = line + '\n' + textBuffer;
+            break;
+          }
+        }
+      }
+    } catch (e) {
+      console.error('Pattern analysis error:', e);
+      toast.error('Failed to analyze patterns');
+    }
+    setAnalyzingPatterns(false);
+  };
+
   const impactLabels = ['Minimal', 'Low', 'Moderate', 'High', 'Severe'];
 
   return (
@@ -217,9 +285,17 @@ const Journal = () => {
             <h1 className="text-xl font-bold tracking-tight text-foreground">Journal</h1>
             <p className="mt-1 text-sm text-muted-foreground leading-relaxed">Structured self-report and free-text documentation.</p>
           </div>
-          <Button size="sm" className="rounded-2xl" onClick={openCreate}>
-            <Plus className="h-4 w-4 mr-1" /> New Entry
-          </Button>
+          <div className="flex gap-2">
+            {entries.length >= 2 && (
+              <Button size="sm" variant="outline" className="rounded-2xl gap-1.5" onClick={handlePatternAnalysis} disabled={analyzingPatterns}>
+                {analyzingPatterns ? <Loader2 className="h-4 w-4 animate-spin" /> : <TrendingUp className="h-4 w-4" />}
+                Patterns
+              </Button>
+            )}
+            <Button size="sm" className="rounded-2xl" onClick={openCreate}>
+              <Plus className="h-4 w-4 mr-1" /> New Entry
+            </Button>
+          </div>
         </div>
 
         {/* Search & Date Filter */}
@@ -231,6 +307,29 @@ const Journal = () => {
           <Input type="date" value={dateFrom} onChange={e => setDateFrom(e.target.value)} className="w-36 rounded-2xl" placeholder="From" />
           <Input type="date" value={dateTo} onChange={e => setDateTo(e.target.value)} className="w-36 rounded-2xl" placeholder="To" />
         </div>
+
+        {/* Pattern Summary */}
+        {(patternSummary || analyzingPatterns) && (
+          <div className="bg-card/60 backdrop-blur border border-primary/20 rounded-3xl p-6 space-y-3 animate-fade-in">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <TrendingUp className="h-4 w-4 text-primary" />
+                <span className="text-xs font-semibold uppercase tracking-widest text-primary">Pattern Summary</span>
+                {analyzingPatterns && <Loader2 className="h-3 w-3 animate-spin text-muted-foreground" />}
+              </div>
+              {!analyzingPatterns && patternSummary && (
+                <Button variant="ghost" size="sm" className="text-xs text-muted-foreground h-7 px-2" onClick={() => setPatternSummary('')}>
+                  <X className="h-3.5 w-3.5" />
+                </Button>
+              )}
+            </div>
+            {patternSummary && (
+              <div className="prose prose-sm max-w-none text-sm text-foreground/90 leading-relaxed [&_p]:mb-2 [&_p:last-child]:mb-0">
+                <ReactMarkdown>{patternSummary}</ReactMarkdown>
+              </div>
+            )}
+          </div>
+        )}
 
         {showForm && (
           <form onSubmit={handleSubmit} className="bg-card/60 backdrop-blur border border-border rounded-3xl p-6 space-y-4 animate-fade-in">
