@@ -1,18 +1,21 @@
 import { useEffect, useState } from 'react';
 import DashboardLayout from '@/components/DashboardLayout';
 import { useAuth } from '@/hooks/useAuth';
-import { useUserRole } from '@/hooks/useUserRole';
+import { useUserRole, SELF_SELECT_ROLES, ROLE_LABELS, AppRole } from '@/hooks/useUserRole';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
+import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 import { Download } from 'lucide-react';
 
 const Profile = () => {
   const { user, signOut } = useAuth();
-  const { currentRole, setRole, loading: roleLoading } = useUserRole();
+  const { roles, setRole, loading: roleLoading } = useUserRole();
+  const selfSelectRole = roles.find(r => SELF_SELECT_ROLES.includes(r)) ?? null;
+  const adminRoles = roles.filter(r => !SELF_SELECT_ROLES.includes(r));
   const [displayName, setDisplayName] = useState('');
   const [saving, setSaving] = useState(false);
 
@@ -30,7 +33,7 @@ const Profile = () => {
   };
 
   const handleRoleChange = async (newRole: string) => {
-    await setRole(newRole as 'affected_person' | 'observer');
+    await setRole(newRole as AppRole);
     toast.success('Role updated');
   };
 
@@ -77,22 +80,36 @@ const Profile = () => {
           {roleLoading ? (
             <p className="text-sm text-muted-foreground">Loading...</p>
           ) : (
-            <RadioGroup value={currentRole ?? ''} onValueChange={handleRoleChange} className="space-y-2">
-              <div className="flex items-center space-x-3 border border-border rounded-2xl p-3.5 hover:bg-accent/30 transition-colors">
-                <RadioGroupItem value="affected_person" id="role_ap" />
-                <div>
-                  <Label htmlFor="role_ap" className="text-sm font-semibold cursor-pointer">Affected Person</Label>
-                  <p className="text-xs text-muted-foreground">Documenting your own experiences.</p>
+            <>
+              <RadioGroup value={selfSelectRole ?? ''} onValueChange={handleRoleChange} className="space-y-2">
+                <div className="flex items-center space-x-3 border border-border rounded-2xl p-3.5 hover:bg-accent/30 transition-colors">
+                  <RadioGroupItem value="affected_person" id="role_ap" />
+                  <div>
+                    <Label htmlFor="role_ap" className="text-sm font-semibold cursor-pointer">Affected Person</Label>
+                    <p className="text-xs text-muted-foreground">Documenting your own experiences.</p>
+                  </div>
                 </div>
-              </div>
-              <div className="flex items-center space-x-3 border border-border rounded-2xl p-3.5 hover:bg-accent/30 transition-colors">
-                <RadioGroupItem value="observer" id="role_ob" />
-                <div>
-                  <Label htmlFor="role_ob" className="text-sm font-semibold cursor-pointer">Observer</Label>
-                  <p className="text-xs text-muted-foreground">Documenting patterns you witness.</p>
+                <div className="flex items-center space-x-3 border border-border rounded-2xl p-3.5 hover:bg-accent/30 transition-colors">
+                  <RadioGroupItem value="observer" id="role_ob" />
+                  <div>
+                    <Label htmlFor="role_ob" className="text-sm font-semibold cursor-pointer">Observer</Label>
+                    <p className="text-xs text-muted-foreground">Documenting patterns you witness.</p>
+                  </div>
                 </div>
-              </div>
-            </RadioGroup>
+              </RadioGroup>
+              {adminRoles.length > 0 && (
+                <div className="pt-2 space-y-1">
+                  <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">Admin-assigned roles</p>
+                  <div className="flex flex-wrap gap-1.5">
+                    {adminRoles.map(r => (
+                      <Badge key={r} variant="secondary" className="rounded-full text-[10px] font-semibold uppercase tracking-wider">
+                        {ROLE_LABELS[r]}
+                      </Badge>
+                    ))}
+                  </div>
+                </div>
+              )}
+            </>
           )}
         </div>
 

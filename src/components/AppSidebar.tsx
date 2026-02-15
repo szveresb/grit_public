@@ -9,6 +9,7 @@ import {
   Download,
   User,
   Library,
+  Users,
 } from 'lucide-react';
 import {
   Sidebar,
@@ -31,14 +32,16 @@ const navItems = [
   { title: 'Account', url: '/profile', icon: User },
 ];
 
-const editorItems = [
-  { title: 'Manage Library', url: '/manage-library', icon: Library },
-];
-
 const AppSidebar = () => {
   const location = useLocation();
-  const { hasRole } = useUserRole();
-  const isEditor = hasRole('observer');
+  const { hasAnyRole, hasRole } = useUserRole();
+  const canManageLibrary = hasAnyRole('admin', 'editor', 'guest_editor');
+  const isAdmin = hasRole('admin');
+
+  const editorItems = [
+    ...(canManageLibrary ? [{ title: 'Manage Library', url: '/manage-library', icon: Library }] : []),
+    ...(isAdmin ? [{ title: 'Manage Users', url: '/manage-users', icon: Users }] : []),
+  ];
 
   return (
     <Sidebar collapsible="icon">
@@ -78,10 +81,10 @@ const AppSidebar = () => {
           </SidebarGroupContent>
         </SidebarGroup>
 
-        {isEditor && (
+        {editorItems.length > 0 && (
           <SidebarGroup>
             <SidebarGroupLabel className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
-              Editor
+              Management
             </SidebarGroupLabel>
             <SidebarGroupContent>
               <SidebarMenu>
