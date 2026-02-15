@@ -24,6 +24,7 @@ interface JournalEntry {
   emotional_state: string | null;
   free_text: string | null;
   self_anchor: string | null;
+  reflection: string | null;
   created_at: string;
 }
 
@@ -189,6 +190,23 @@ const Journal = () => {
     setReflectingId(null);
   };
 
+  const saveReflection = async (entryId: string) => {
+    const text = reflections[entryId];
+    if (!text) return;
+    const { error } = await supabase.from('journal_entries').update({ reflection: text }).eq('id', entryId);
+    if (error) { toast.error(error.message); return; }
+    toast.success('Reflection saved');
+    fetchEntries();
+  };
+
+  const clearReflection = async (entryId: string) => {
+    const { error } = await supabase.from('journal_entries').update({ reflection: null }).eq('id', entryId);
+    if (error) { toast.error(error.message); return; }
+    setReflections(prev => { const n = { ...prev }; delete n[entryId]; return n; });
+    toast.success('Reflection removed');
+    fetchEntries();
+  };
+
   const impactLabels = ['Minimal', 'Low', 'Moderate', 'High', 'Severe'];
 
   return (
@@ -318,6 +336,40 @@ const Journal = () => {
 
                   {/* AI Reflection */}
                   <div className="pt-2 border-t border-border/40">
+                    {/* Show saved reflection from DB */}
+                    {entry.reflection && !reflections[entry.id] && (
+                      <div className="space-y-2">
+                        <div className="flex items-center gap-2">
+                          <Sparkles className="h-3.5 w-3.5 text-primary" />
+                          <span className="text-xs font-semibold uppercase tracking-widest text-primary">Saved Reflection</span>
+                        </div>
+                        <div className="prose prose-sm max-w-none text-sm text-foreground/90 leading-relaxed [&_p]:mb-2 [&_p:last-child]:mb-0">
+                          <ReactMarkdown>{entry.reflection}</ReactMarkdown>
+                        </div>
+                        <div className="flex gap-2">
+                          <Button variant="ghost" size="sm" className="rounded-2xl text-xs gap-1.5" onClick={() => handleReflect(entry)} disabled={reflectingId !== null}>
+                            <Sparkles className="h-3.5 w-3.5" /> New Reflection
+                          </Button>
+                          <AlertDialog>
+                            <AlertDialogTrigger asChild>
+                              <Button variant="ghost" size="sm" className="text-xs text-muted-foreground h-7 px-2">Remove</Button>
+                            </AlertDialogTrigger>
+                            <AlertDialogContent>
+                              <AlertDialogHeader>
+                                <AlertDialogTitle>Remove saved reflection?</AlertDialogTitle>
+                                <AlertDialogDescription>This will delete the saved reflection for this entry.</AlertDialogDescription>
+                              </AlertDialogHeader>
+                              <AlertDialogFooter>
+                                <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                <AlertDialogAction onClick={() => clearReflection(entry.id)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">Remove</AlertDialogAction>
+                              </AlertDialogFooter>
+                            </AlertDialogContent>
+                          </AlertDialog>
+                        </div>
+                      </div>
+                    )}
+
+                    {/* Show streaming/new reflection */}
                     {reflections[entry.id] ? (
                       <div className="space-y-2">
                         <div className="flex items-center gap-2">
@@ -329,12 +381,17 @@ const Journal = () => {
                           <ReactMarkdown>{reflections[entry.id]}</ReactMarkdown>
                         </div>
                         {reflectingId !== entry.id && (
-                          <Button variant="ghost" size="sm" className="text-xs text-muted-foreground h-7 px-2" onClick={() => setReflections(prev => { const n = { ...prev }; delete n[entry.id]; return n; })}>
-                            Dismiss
-                          </Button>
+                          <div className="flex gap-2">
+                            <Button variant="default" size="sm" className="rounded-2xl text-xs gap-1.5" onClick={() => saveReflection(entry.id)}>
+                              <Save className="h-3.5 w-3.5" /> Save Reflection
+                            </Button>
+                            <Button variant="ghost" size="sm" className="text-xs text-muted-foreground h-7 px-2" onClick={() => setReflections(prev => { const n = { ...prev }; delete n[entry.id]; return n; })}>
+                              Dismiss
+                            </Button>
+                          </div>
                         )}
                       </div>
-                    ) : (
+                    ) : !entry.reflection && (
                       <Button
                         variant="ghost"
                         size="sm"
