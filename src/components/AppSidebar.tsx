@@ -10,6 +10,7 @@ import {
   User,
   Library,
   Users,
+  BarChart3,
 } from 'lucide-react';
 import {
   Sidebar,
@@ -36,11 +37,13 @@ const AppSidebar = () => {
   const location = useLocation();
   const { hasAnyRole, hasRole } = useUserRole();
   const canManageLibrary = hasAnyRole('admin', 'editor', 'guest_editor');
+  const canAnalyse = hasAnyRole('admin', 'analyst');
   const isAdmin = hasRole('admin');
 
   const editorItems = [
     ...(canManageLibrary ? [{ title: 'Manage Library', url: '/manage-library', icon: Library }] : []),
     ...(isAdmin ? [{ title: 'Manage Users', url: '/manage-users', icon: Users }] : []),
+    ...(canAnalyse ? [{ title: 'Analyst Export', url: '/analyst-export', icon: BarChart3 }] : []),
   ];
 
   return (

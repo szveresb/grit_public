@@ -15,6 +15,7 @@ import Profile from "./pages/Profile";
 import Export from "./pages/Export";
 import ManageLibrary from "./pages/ManageLibrary";
 import ManageUsers from "./pages/ManageUsers";
+import AnalystExport from "./pages/AnalystExport";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -37,6 +38,7 @@ const App = () => (
             <Route path="/export" element={<ProtectedRoute><Export /></ProtectedRoute>} />
             <Route path="/manage-library" element={<ProtectedRoute><ManageLibrary /></ProtectedRoute>} />
             <Route path="/manage-users" element={<ProtectedRoute><ManageUsers /></ProtectedRoute>} />
+            <Route path="/analyst-export" element={<ProtectedRoute><AnalystExport /></ProtectedRoute>} />
             <Route path="*" element={<NotFound />} />
           </Routes>
         </BrowserRouter>

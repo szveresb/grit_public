@@ -269,6 +269,31 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      analyst_journal_aggregates: {
+        Args: never
+        Returns: {
+          avg_impact_level: number
+          emotional_states: Json
+          entry_count: number
+          entry_date: string
+        }[]
+      }
+      analyst_questionnaire_aggregates: {
+        Args: never
+        Returns: {
+          answer_distribution: Json
+          question_text: string
+          questionnaire_title: string
+          response_count: number
+        }[]
+      }
+      analyst_role_distribution: {
+        Args: never
+        Returns: {
+          role: string
+          user_count: number
+        }[]
+      }
       has_any_role: {
         Args: {
           _roles: Database["public"]["Enums"]["app_role"][]
