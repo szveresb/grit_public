@@ -23,6 +23,7 @@ export type Database = {
           free_text: string | null
           id: string
           impact_level: number | null
+          reflection: string | null
           self_anchor: string | null
           title: string
           updated_at: string
@@ -36,6 +37,7 @@ export type Database = {
           free_text?: string | null
           id?: string
           impact_level?: number | null
+          reflection?: string | null
           self_anchor?: string | null
           title: string
           updated_at?: string
@@ -49,6 +51,7 @@ export type Database = {
           free_text?: string | null
           id?: string
           impact_level?: number | null
+          reflection?: string | null
           self_anchor?: string | null
           title?: string
           updated_at?: string
