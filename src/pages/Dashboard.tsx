@@ -54,7 +54,7 @@ const Dashboard = () => {
       <div className="max-w-4xl space-y-8">
         <div>
           <h1 className="text-xl font-bold tracking-tight text-foreground">
-            {displayName ? `${displayName}! 🌿` : t.dash.welcomeBack}
+            {displayName ? t.dash.welcomeUser.replace('{name}', displayName) : t.dash.welcomeBack}
           </h1>
           <p className="mt-1 text-sm text-muted-foreground leading-relaxed">{t.dash.yourSpace}</p>
         </div>

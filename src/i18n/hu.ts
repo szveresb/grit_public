@@ -100,6 +100,7 @@ export const hu: Dictionary = {
 
   dash: {
     welcomeBack: 'Üdv újra 🌿',
+    welcomeUser: 'Üdv {name}!',
     yourSpace: 'A te tered a megfigyeléshez és reflexióhoz.',
     recentActivity: 'Legutóbbi tevékenység',
     noActivity: 'Még nincs tevékenység. Kezdd az első megfigyelésed rögzítésével.',

@@ -106,6 +106,7 @@ export interface Dictionary {
   // Dashboard
   dash: {
     welcomeBack: string;
+    welcomeUser: string;
     yourSpace: string;
     recentActivity: string;
     noActivity: string;
