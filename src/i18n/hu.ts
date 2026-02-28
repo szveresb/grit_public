@@ -176,7 +176,7 @@ export const hu: Dictionary = {
   export: {
     title: 'Adatexport',
     subtitle: 'Töltsd le az összes adatodat hordozható formátumban.',
-    desc: 'Az export tartalmazza az összes naplóbejegyzést és önellenőrzési választ JSON formátumban. Ez a te adatod — vidd magaddal.',
+    desc: 'Az export tartalmazza a naplóbejegyzéseket, önellenőrzési válaszokat és megfigyelési naplókat (FHIR formátumban) JSON-ként. Ez a te adatod — vidd magaddal.',
     exportAll: 'Összes adat exportálása',
   },
 
@@ -223,7 +223,9 @@ export const hu: Dictionary = {
     depersonalised: 'Az export csak személytelenített összesített adatokat tartalmaz:',
     journalCounts: 'Naplóbejegyzések száma és átlagos hatás dátumonként',
     questionnaireDist: 'Kérdőív válaszok eloszlása kérdésenként',
+    observationAgg: 'Megfigyelési koncepciók gyakorisága és átlagos intenzitása',
     roleDist: 'Szerepek eloszlása a felhasználók között',
+    fhirFormat: 'FHIR Bundle formátum elérhető a ?format=fhir paraméterrel',
     privacyNote: 'Az adatok csak akkor állnak rendelkezésre, ha a platformnak legalább 10 aktív felhasználója van az egyéni adatvédelem érdekében.',
     downloadData: 'Elemzői adatok letöltése',
     exporting: 'Exportálás...',

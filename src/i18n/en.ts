@@ -176,7 +176,7 @@ export const en: Dictionary = {
   export: {
     title: 'Data Export',
     subtitle: 'Download all your data in a portable format.',
-    desc: 'Export includes all journal entries and self-check responses as JSON. This is your data — take it with you.',
+    desc: 'Export includes journal entries, self-check responses, and observation logs (FHIR-formatted) as JSON. This is your data — take it with you.',
     exportAll: 'Export All Data',
   },
 
@@ -223,7 +223,9 @@ export const en: Dictionary = {
     depersonalised: 'The export contains depersonalised aggregate data only:',
     journalCounts: 'Journal entry counts & average impact per date',
     questionnaireDist: 'Questionnaire answer distributions per question',
+    observationAgg: 'Observation concept frequencies & average intensity',
     roleDist: 'Role distribution across users',
+    fhirFormat: 'FHIR Bundle format available via ?format=fhir parameter',
     privacyNote: 'Data is only available when the platform has 10 or more active users to protect individual privacy.',
     downloadData: 'Download Analyst Data',
     exporting: 'Exporting…',
