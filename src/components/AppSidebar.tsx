@@ -31,7 +31,7 @@ const AppSidebar = () => {
   const navItems = [
     { title: t.nav.home, url: '/', icon: Home },
     { title: t.dashboard, url: '/dashboard', icon: LayoutDashboard },
-    { title: t.nav.checkIn, url: '/check-in', icon: HeartPulse },
+    { title: t.nav.checkIn, url: '/journal', icon: HeartPulse },
     { title: t.nav.history, url: '/timeline', icon: Clock },
     { title: t.nav.dataExport, url: '/export', icon: Download },
     { title: t.nav.account, url: '/profile', icon: User },
@@ -107,11 +107,11 @@ const AppSidebar = () => {
                 <SidebarMenuItem>
                   <SidebarMenuButton
                     asChild
-                    isActive={currentPath === '/check-in'}
+                    isActive={currentPath === '/journal'}
                     tooltip={t.nav.checkIn}
                   >
                     <NavLink
-                      to={user ? localePath('/check-in') : localePath('/auth')}
+                      to={user ? localePath('/journal') : localePath('/auth')}
                       end
                       className="hover:bg-accent rounded-xl"
                       activeClassName="bg-accent text-foreground font-semibold rounded-xl"
