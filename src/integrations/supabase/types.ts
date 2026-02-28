@@ -133,6 +133,7 @@ export type Database = {
       }
       observation_concepts: {
         Row: {
+          bno_code: string | null
           category_id: string
           concept_code: string
           created_at: string
@@ -145,6 +146,7 @@ export type Database = {
           sort_order: number
         }
         Insert: {
+          bno_code?: string | null
           category_id: string
           concept_code: string
           created_at?: string
@@ -157,6 +159,7 @@ export type Database = {
           sort_order?: number
         }
         Update: {
+          bno_code?: string | null
           category_id?: string
           concept_code?: string
           created_at?: string
