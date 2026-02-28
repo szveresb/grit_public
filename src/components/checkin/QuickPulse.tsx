@@ -6,16 +6,16 @@ import { toast } from 'sonner';
 import { format } from 'date-fns';
 
 const moodIcons = [
-  // Struggling: a single drop (tear)
-  <svg key="0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="w-6 h-6"><path d="M12 2c0 0-6 7-6 11a6 6 0 0 0 12 0c0-4-6-11-6-11z" /><path d="M10 15.5a2 2 0 0 0 4 0" /></svg>,
-  // Uneasy: a wave / ripple
-  <svg key="1" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" className="w-6 h-6"><path d="M3 12c2-2 4-2 6 0s4 2 6 0 4-2 6 0" /><path d="M3 16c2-2 4-2 6 0s4 2 6 0 4-2 6 0" /></svg>,
-  // Okay: a horizontal line (balance)
-  <svg key="2" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" className="w-6 h-6"><circle cx="12" cy="12" r="9" /><path d="M8 12h8" /></svg>,
-  // Good: a rising curve
-  <svg key="3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="w-6 h-6"><path d="M4 18c2-3 5-8 8-8s6 3 8 1" /><path d="M18 7v4h4" /></svg>,
-  // Strong: a mountain peak
-  <svg key="4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="w-6 h-6"><path d="M12 4l7 16H5L12 4z" /><path d="M9 14l3-4 3 4" /></svg>,
+  // Struggling: wilting leaf
+  <svg key="0" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" className="w-6 h-6"><path d="M12 22V8" /><path d="M12 8c-3-4-8-3-8 1 0 3 4 5 8 3" /><path d="M12 12c2 3 3 6 2 8" /></svg>,
+  // Uneasy: a gentle breeze / swaying reed
+  <svg key="1" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" className="w-6 h-6"><path d="M12 22c0 0-1-4 0-10s-2-8-2-8" /><path d="M12 12c3-2 6-1 7 1" /><path d="M12 16c-3-1-5 0-6 2" /></svg>,
+  // Okay: still water / calm circle
+  <svg key="2" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" className="w-6 h-6"><ellipse cx="12" cy="12" rx="9" ry="6" /><path d="M6 12c2 1.5 4 2 6 2s4-.5 6-2" /></svg>,
+  // Good: unfurling leaf
+  <svg key="3" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" className="w-6 h-6"><path d="M12 22V10" /><path d="M12 10c4-6 9-4 9 0s-4 6-9 4" /><path d="M12 14c-3-1-5 0-6 2" /></svg>,
+  // Strong: full bamboo stalk with leaves
+  <svg key="4" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" strokeLinejoin="round" className="w-6 h-6"><path d="M12 22V3" /><path d="M12 6h-1" /><path d="M12 12h-1" /><path d="M12 18h-1" /><path d="M12 5c3-2 6-1 7 1" /><path d="M12 9c-3-1-6 0-7 2" /><path d="M12 15c3-1 5 0 6 2" /></svg>,
 ];
 
 interface QuickPulseProps {
