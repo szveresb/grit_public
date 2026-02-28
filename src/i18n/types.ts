@@ -189,6 +189,10 @@ export interface Dictionary {
     subtitle: string;
     desc: string;
     exportAll: string;
+    therapistTitle: string;
+    therapistDesc: string;
+    therapistExport: string;
+    noObservations: string;
   };
 
   // Manage Library

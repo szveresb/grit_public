@@ -178,6 +178,10 @@ export const en: Dictionary = {
     subtitle: 'Download all your data in a portable format.',
     desc: 'Export includes journal entries, self-check responses, and observation logs (FHIR-formatted) as JSON. This is your data — take it with you.',
     exportAll: 'Export All Data',
+    therapistTitle: 'Therapist Export',
+    therapistDesc: 'Summary grouped by BNO-10 codes to share with your therapist.',
+    therapistExport: 'Download Therapist Export',
+    noObservations: 'No observations to export.',
   },
 
   manageLibrary: {
