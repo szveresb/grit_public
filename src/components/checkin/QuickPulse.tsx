@@ -60,19 +60,22 @@ const QuickPulse = ({ onPulseSaved, onGoDeeper, compact = false }: QuickPulsePro
         </h2>
       )}
       <div className="flex justify-center gap-3">
-        {moodEmojis.map((emoji, i) => (
-          <button
-            key={i}
-            onClick={() => handleMoodTap(i)}
-            disabled={saving}
-            className={`flex flex-col items-center gap-1.5 p-3 rounded-2xl border transition-all hover:scale-105 hover:shadow-md ${
-              saved ? 'opacity-50 pointer-events-none' : 'hover:border-primary/50'
-            } border-border bg-card/60 backdrop-blur`}
-          >
-            <span className="text-2xl">{emoji}</span>
-            <span className="text-[10px] font-medium text-muted-foreground">{moodLabels[i]}</span>
-          </button>
-        ))}
+        {moodEmojis.map((emoji, i) => {
+          const opacityLevels = ['opacity-20', 'opacity-40', 'opacity-60', 'opacity-80', 'opacity-100'];
+          return (
+            <button
+              key={i}
+              onClick={() => handleMoodTap(i)}
+              disabled={saving}
+              className={`flex flex-col items-center gap-1.5 p-3 rounded-2xl border transition-all hover:scale-105 hover:shadow-md ${
+                saved ? 'opacity-50 pointer-events-none' : 'hover:border-primary/50'
+              } border-border bg-card/60 backdrop-blur`}
+            >
+              <span className={`text-2xl text-primary ${opacityLevels[i]}`}>{emoji}</span>
+              <span className="text-[10px] font-medium text-muted-foreground">{moodLabels[i]}</span>
+            </button>
+          );
+        })}
       </div>
       {onGoDeeper && (
         <button
