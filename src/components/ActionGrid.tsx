@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router-dom';
-import { BookOpen, ClipboardCheck, Clock } from 'lucide-react';
+import { HeartPulse, Clock } from 'lucide-react';
 import { useLanguage } from '@/hooks/useLanguage';
+import QuickPulse from '@/components/checkin/QuickPulse';
 import type { LucideIcon } from 'lucide-react';
 
 interface ActionCardProps {
@@ -45,28 +46,35 @@ const ActionGrid = () => {
   const { t, localePath } = useLanguage();
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-      <ActionCard
-        title={t.dash.logObservation}
-        description={t.dash.logObservationDesc}
-        icon={BookOpen}
-        variant="sage"
-        onClick={() => navigate(localePath('/journal'))}
-      />
-      <ActionCard
-        title={t.dash.completeSelfCheck}
-        description={t.dash.completeSelfCheckDesc}
-        icon={ClipboardCheck}
-        variant="leaf"
-        onClick={() => navigate(localePath('/self-checks'))}
-      />
-      <ActionCard
-        title={t.dash.viewHistory}
-        description={t.dash.viewHistoryDesc}
-        icon={Clock}
-        variant="mist"
-        onClick={() => navigate(localePath('/timeline'))}
-      />
+    <div className="space-y-6">
+      {/* Quick Pulse */}
+      <div className="bg-card/60 backdrop-blur border border-border rounded-3xl p-5">
+        <h2 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-3">
+          {t.dash.quickPulse}
+        </h2>
+        <QuickPulse
+          compact
+          onGoDeeper={() => navigate(localePath('/check-in'))}
+        />
+      </div>
+
+      {/* Action cards */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <ActionCard
+          title={t.dash.completeSelfCheck}
+          description={t.dash.completeSelfCheckDesc}
+          icon={HeartPulse}
+          variant="sage"
+          onClick={() => navigate(localePath('/check-in'))}
+        />
+        <ActionCard
+          title={t.dash.viewHistory}
+          description={t.dash.viewHistoryDesc}
+          icon={Clock}
+          variant="mist"
+          onClick={() => navigate(localePath('/timeline'))}
+        />
+      </div>
     </div>
   );
 };

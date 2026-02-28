@@ -41,8 +41,8 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
             <nav className="hidden lg:flex items-center gap-8 ml-auto">
               <a href={`${localePath('/')}#library`} className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">{t.nav.library}</a>
               <a href={`${localePath('/')}#research`} className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">{t.nav.researchSummaries}</a>
-              <button onClick={() => handleGatedClick('/self-checks')} className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1.5">
-                {t.nav.selfChecks}
+              <button onClick={() => handleGatedClick('/check-in')} className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1.5">
+                {t.nav.checkIn}
               </button>
               <a href={`${localePath('/')}#about`} className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">{t.nav.about}</a>
             </nav>

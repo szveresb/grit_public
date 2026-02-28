@@ -72,7 +72,7 @@ const Dashboard = () => {
               {items.map(item => (
                 <button
                   key={item.id}
-                  onClick={() => navigate(localePath(item.type === 'journal' ? '/journal' : '/self-checks'))}
+                  onClick={() => navigate(localePath(item.type === 'journal' ? '/check-in' : '/check-in'))}
                   className="w-full flex items-center gap-3 py-2.5 px-3 rounded-2xl text-left hover:bg-accent/50 transition-colors"
                 >
                   {item.type === 'journal' ? <BookOpen className="h-3.5 w-3.5 text-primary shrink-0" /> : <ClipboardCheck className="h-3.5 w-3.5 text-muted-foreground shrink-0" />}
