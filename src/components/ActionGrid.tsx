@@ -1,13 +1,12 @@
 import { useNavigate } from 'react-router-dom';
-import { HeartPulse, Clock } from 'lucide-react';
 import { useLanguage } from '@/hooks/useLanguage';
 import QuickPulse from '@/components/checkin/QuickPulse';
-import type { LucideIcon } from 'lucide-react';
+import { FHeartPulse, FClock } from '@/components/icons/FreudIcons';
 
 interface ActionCardProps {
   title: string;
   description: string;
-  icon: LucideIcon;
+  icon: React.FC<React.SVGProps<SVGSVGElement>>;
   variant: 'sage' | 'leaf' | 'mist';
   onClick: () => void;
 }
@@ -63,14 +62,14 @@ const ActionGrid = () => {
         <ActionCard
           title={t.dash.completeSelfCheck}
           description={t.dash.completeSelfCheckDesc}
-          icon={HeartPulse}
+          icon={FHeartPulse}
           variant="sage"
           onClick={() => navigate(localePath('/journal'))}
         />
         <ActionCard
           title={t.dash.viewHistory}
           description={t.dash.viewHistoryDesc}
-          icon={Clock}
+          icon={FClock}
           variant="mist"
           onClick={() => navigate(localePath('/timeline'))}
         />

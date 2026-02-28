@@ -1,4 +1,4 @@
-import { X } from 'lucide-react';
+import { FClose } from '@/components/icons/FreudIcons';
 import { useLanguage } from '@/hooks/useLanguage';
 
 const EmergencyExit = () => {
@@ -11,7 +11,7 @@ const EmergencyExit = () => {
       aria-label={t.emergencyExit}
       title={t.emergencyExit}
     >
-      <X className="h-5 w-5" />
+      <FClose className="h-5 w-5" />
     </a>
   );
 };

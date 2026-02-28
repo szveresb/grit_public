@@ -11,7 +11,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import { ChevronDown } from 'lucide-react';
+import { FChevronDown } from '@/components/icons/FreudIcons';
 import type { JournalFormData } from '@/types/journal';
 import { emptyForm } from '@/types/journal';
 
@@ -104,7 +104,7 @@ const CheckIn = () => {
             <h2 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
               {t.checkIn.whatHappenedTitle}
             </h2>
-            <ChevronDown className={`h-4 w-4 text-muted-foreground transition-transform ${observationOpen ? 'rotate-180' : ''}`} />
+            <FChevronDown className={`h-4 w-4 text-muted-foreground transition-transform ${observationOpen ? 'rotate-180' : ''}`} />
           </CollapsibleTrigger>
           <CollapsibleContent className="bg-card/60 backdrop-blur border border-border border-t-0 rounded-b-3xl p-6 -mt-3">
             <ObservationStepper onLogged={refresh} />
