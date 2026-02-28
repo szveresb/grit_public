@@ -190,7 +190,7 @@ A SNOMED CT-inspired three-level hierarchy for logging interpersonal patterns.
 |---|---|---|
 | `id` | uuid (PK) | |
 | `category_id` | uuid (FK) | → `observation_categories.id` |
-| `concept_code` | text (UNIQUE) | Internal identifier |
+| `concept_code` | text (UNIQUE) | SNOMED CT identifier (e.g. `247735008`) |
 | `name_hu` / `name_en` | text | User-facing labels |
 | `description_hu` / `description_en` | text | Nullable |
 | `sort_order` | integer | Default `0` |
@@ -211,6 +211,7 @@ A SNOMED CT-inspired three-level hierarchy for logging interpersonal patterns.
 | `context_modifier` | text | E.g. "at home", "at work" |
 | `user_narrative` | text | Free-text anchor |
 | `logged_at` | date | Default `CURRENT_DATE` |
+| `status` | text | FHIR Observation status; default `'final'` |
 | `created_at` | timestamptz | |
 
 **RLS:** Users manage own logs only.
@@ -231,6 +232,7 @@ A SNOMED CT-inspired three-level hierarchy for logging interpersonal patterns.
 | `analyst_journal_aggregates()` | Anonymized journal stats | DEFINER |
 | `analyst_questionnaire_aggregates()` | Anonymized questionnaire stats | DEFINER |
 | `analyst_role_distribution()` | Role count distribution | DEFINER |
+| `analyst_observation_aggregates()` | Anonymized observation concept stats (SNOMED-coded) | DEFINER |
 
 ---
 
@@ -286,3 +288,5 @@ Full bilingual support (Hungarian primary, English secondary) via `src/i18n/` wi
 - **Role isolation** — Roles in `user_roles`, checked via SECURITY DEFINER functions
 - **Analyst anonymization** — Aggregate functions never expose `user_id`; 10+ user threshold enforced before any data release
 - **No admin access to personal data** — Individual user content is strictly private
+- **SNOMED CT coding** — `observation_concepts.concept_code` uses standard SNOMED CT identifiers for clinical interoperability
+- **FHIR export** — Personal export includes observation logs as FHIR Observation resources; analyst export supports `?format=fhir` for a FHIR Bundle of aggregated data

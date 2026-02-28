@@ -187,6 +187,7 @@ export type Database = {
           id: string
           intensity: number
           logged_at: string
+          status: string
           user_id: string
           user_narrative: string | null
         }
@@ -198,6 +199,7 @@ export type Database = {
           id?: string
           intensity?: number
           logged_at?: string
+          status?: string
           user_id: string
           user_narrative?: string | null
         }
@@ -209,6 +211,7 @@ export type Database = {
           id?: string
           intensity?: number
           logged_at?: string
+          status?: string
           user_id?: string
           user_narrative?: string | null
         }
@@ -424,6 +427,15 @@ export type Database = {
           emotional_states: Json
           entry_count: number
           entry_date: string
+        }[]
+      }
+      analyst_observation_aggregates: {
+        Args: never
+        Returns: {
+          avg_intensity: number
+          concept_code: string
+          concept_name_en: string
+          log_count: number
         }[]
       }
       analyst_questionnaire_aggregates: {

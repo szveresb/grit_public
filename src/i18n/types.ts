@@ -237,7 +237,9 @@ export interface Dictionary {
     depersonalised: string;
     journalCounts: string;
     questionnaireDist: string;
+    observationAgg: string;
     roleDist: string;
+    fhirFormat: string;
     privacyNote: string;
     downloadData: string;
     exporting: string;

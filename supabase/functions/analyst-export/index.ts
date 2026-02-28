@@ -5,6 +5,31 @@ const corsHeaders = {
   "Access-Control-Allow-Headers": "authorization, x-client-info, apikey, content-type",
 };
 
+function buildFhirBundle(observationAgg: any[], timestamp: string) {
+  return {
+    resourceType: "Bundle",
+    type: "collection",
+    timestamp,
+    entry: (observationAgg ?? []).map((row: any) => ({
+      resource: {
+        resourceType: "Observation",
+        status: "final",
+        code: {
+          coding: [{
+            system: "http://snomed.info/sct",
+            code: row.concept_code,
+            display: row.concept_name_en,
+          }],
+        },
+        valueInteger: Math.round(row.avg_intensity),
+        note: [{
+          text: `Aggregated: ${row.log_count} observations, avg intensity ${row.avg_intensity}`,
+        }],
+      },
+    })),
+  };
+}
+
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") {
     return new Response("ok", { headers: corsHeaders });
@@ -22,7 +47,6 @@ Deno.serve(async (req) => {
     const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
     const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 
-    // User client to verify identity
     const userClient = createClient(supabaseUrl, Deno.env.get("SUPABASE_PUBLISHABLE_KEY")!, {
       global: { headers: { Authorization: authHeader } },
     });
@@ -34,10 +58,8 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Service client for privileged queries
     const admin = createClient(supabaseUrl, serviceRoleKey);
 
-    // Check analyst or admin role
     const { data: roleData } = await admin
       .from("user_roles")
       .select("role")
@@ -51,7 +73,6 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Check 10+ active users threshold
     const { count: activeUserCount } = await admin
       .from("profiles")
       .select("id", { count: "exact", head: true });
@@ -66,23 +87,32 @@ Deno.serve(async (req) => {
       );
     }
 
-    // --- Build anonymised, aggregated dataset ---
+    // Fetch all aggregates
+    const [journalAgg, questionnaireAgg, roleDist, observationAgg] = await Promise.all([
+      admin.rpc("analyst_journal_aggregates").select("*"),
+      admin.rpc("analyst_questionnaire_aggregates").select("*"),
+      admin.rpc("analyst_role_distribution").select("*"),
+      admin.rpc("analyst_observation_aggregates").select("*"),
+    ]);
 
-    // 1. Journal aggregates per date
-    const { data: journalAgg } = await admin.rpc("analyst_journal_aggregates").select("*");
+    const url = new URL(req.url);
+    const format = url.searchParams.get("format");
+    const now = new Date().toISOString();
 
-    // 2. Questionnaire response aggregates
-    const { data: questionnaireAgg } = await admin.rpc("analyst_questionnaire_aggregates").select("*");
-
-    // 3. Role distribution
-    const { data: roleDist } = await admin.rpc("analyst_role_distribution").select("*");
+    if (format === "fhir") {
+      const bundle = buildFhirBundle(observationAgg.data, now);
+      return new Response(JSON.stringify(bundle, null, 2), {
+        headers: { ...corsHeaders, "Content-Type": "application/fhir+json" },
+      });
+    }
 
     const exportPayload = {
-      exported_at: new Date().toISOString(),
+      exported_at: now,
       active_user_count: activeUserCount,
-      journal_aggregates: journalAgg ?? [],
-      questionnaire_aggregates: questionnaireAgg ?? [],
-      role_distribution: roleDist ?? [],
+      journal_aggregates: journalAgg.data ?? [],
+      questionnaire_aggregates: questionnaireAgg.data ?? [],
+      role_distribution: roleDist.data ?? [],
+      observation_aggregates: observationAgg.data ?? [],
     };
 
     return new Response(JSON.stringify(exportPayload, null, 2), {
