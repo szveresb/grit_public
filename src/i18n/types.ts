@@ -163,6 +163,15 @@ export interface Dictionary {
     cardRemove: string;
     cardRemoveReflectionTitle: string;
     cardRemoveReflectionDesc: string;
+    // Guided tree
+    guidedTreeTitle: string;
+    guidedTreeSkip: string;
+    guidedTreePickObservation: string;
+    guidedTreeIntensity: string;
+    guidedTreeFrequency: string;
+    guidedTreeSelected: string;
+    guidedTreeChange: string;
+    guidedTreeContinue: string;
   };
 
   // Check-in

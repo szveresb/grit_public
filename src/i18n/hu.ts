@@ -156,6 +156,15 @@ export const hu: Dictionary = {
     cardRemove: 'Eltávolítás',
     cardRemoveReflectionTitle: 'Reflexió eltávolítása?',
     cardRemoveReflectionDesc: 'Ez törli a mentett reflexiót ehhez a bejegyzéshez.',
+    // Guided tree
+    guidedTreeTitle: 'Melyik területről reflektálsz?',
+    guidedTreeSkip: 'Kihagyom — csak írok',
+    guidedTreePickObservation: 'Mit veszel észre?',
+    guidedTreeIntensity: 'Mennyire volt nehéz?',
+    guidedTreeFrequency: 'Milyen gyakran?',
+    guidedTreeSelected: 'Útvonal kiválasztva ✓',
+    guidedTreeChange: 'Módosítás',
+    guidedTreeContinue: 'Tovább a naplóhoz',
   },
 
   checkIn: {

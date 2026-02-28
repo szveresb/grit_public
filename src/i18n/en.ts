@@ -156,6 +156,15 @@ export const en: Dictionary = {
     cardRemove: 'Remove',
     cardRemoveReflectionTitle: 'Remove saved reflection?',
     cardRemoveReflectionDesc: 'This will delete the saved reflection for this entry.',
+    // Guided tree
+    guidedTreeTitle: 'What area are you reflecting on?',
+    guidedTreeSkip: 'Skip — just write',
+    guidedTreePickObservation: 'What are you noticing?',
+    guidedTreeIntensity: 'How heavy was it?',
+    guidedTreeFrequency: 'How often?',
+    guidedTreeSelected: 'Path selected ✓',
+    guidedTreeChange: 'Change',
+    guidedTreeContinue: 'Continue to journal',
   },
 
   checkIn: {
