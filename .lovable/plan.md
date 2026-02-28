@@ -1,163 +1,156 @@
 
 
-# Structured Self-Check Observation Engine
+# FHIR and SNOMED CT Integration for Grit.hu
 
-## Overview
+## Summary
 
-Add a SNOMED CT-inspired structured observation logging system as a new tab ("Megfigyelesek" / "Observations") within the existing Self-Checks page. The current questionnaire system remains untouched on its own tab. The observation catalog (categories, concepts, qualifiers) is stored in the database and manageable by editors.
+This plan adds healthcare interoperability standards to the observation system: SNOMED CT codes for terminology and FHIR-compliant JSON export. The user-facing UI remains unchanged -- only backend data and export formatting are affected.
 
 ---
 
-## Architecture
+## Phase 1: SNOMED CT Terminology Seeding
 
-The system introduces a three-level hierarchy for structured observations:
+Update the `concept_code` values in `observation_concepts` to use real SNOMED CT identifiers. The `name_hu` and `name_en` columns remain the user-facing Display terms.
 
-```text
-Category (Domain)
-  e.g., "Erzelmi allapot" / "Emotional State"
-  |
-  +-- Concept (Specific Observation)
-  |     e.g., "Megertetlenseg erzese" / "Feeling of being unheard"
-  |     hidden: concept_code = "interpersonal_conflict_unheard"
-  |
-  +-- Qualifiers: Intensity (1-5), Frequency, Context modifier
-  |
-  +-- user_narrative (free-text anchor)
+**Mapping (current internal codes to SNOMED CT IDs):**
+
+| Current concept | SNOMED CT ID | SNOMED Term |
+|---|---|---|
+| Feeling unheard | 247735008 | Feeling ignored |
+| Narrative distortion | 386806002 | Impaired communication |
+| Emotional withdrawal | 247592009 | Emotional withdrawal |
+| Circular arguing | 276079006 | Conflict behavior |
+| Stonewalling | 225901009 | Avoidance behavior |
+| Being positioned as aggressor | 386807006 | Communication problem |
+| Boundary crossing | 282473006 | Boundary violation |
+| Controlling behavior | 370597003 | Controlling behavior |
+| Privacy violation | 225824009 | Breach of privacy |
+
+**Implementation:** Use the data insert tool to run UPDATE statements on `observation_concepts`, setting `concept_code` to the SNOMED ID for each row matched by current `concept_code`.
+
+---
+
+## Phase 2: Add `status` Column to `observation_logs`
+
+Add a `status` column to align with the mandatory FHIR Observation `status` field.
+
+**Database migration:**
+```sql
+ALTER TABLE observation_logs
+  ADD COLUMN status text NOT NULL DEFAULT 'final';
 ```
 
-Users never see codes or clinical labels. The UI shows only the `name_hu` / `name_en` fields.
+Valid FHIR values: `registered`, `preliminary`, `final`, `amended`, `cancelled`. Default is `final` since logged observations are considered complete. No existing rows break because the default covers them.
+
+**Frontend impact:** Minimal. The ObservationStepper insert already omits columns with defaults, so the new column is automatically set to `'final'` on insert. No UI changes needed unless we later want users to amend/cancel observations.
 
 ---
 
-## Database Changes (Migration)
+## Phase 3: FHIR-Compliant Export
 
-### New Tables
+### 3a: New aggregation function for observation data
 
-**1. `observation_categories`** -- Top-level domains
-- `id` (uuid, PK)
-- `name_hu` (text, NOT NULL)
-- `name_en` (text, NOT NULL)
-- `icon` (text, nullable) -- lucide icon name
-- `sort_order` (integer, default 0)
-- `is_active` (boolean, default true)
-- `created_at` (timestamptz)
+Create a new `analyst_observation_aggregates()` SECURITY DEFINER function that returns anonymized observation statistics (concept counts, average intensity) -- no user IDs exposed.
 
-**2. `observation_concepts`** -- Specific observations within a category
-- `id` (uuid, PK)
-- `category_id` (uuid, FK -> observation_categories)
-- `concept_code` (text, UNIQUE, NOT NULL) -- internal SNOMED-like identifier
-- `name_hu` (text, NOT NULL)
-- `name_en` (text, NOT NULL)
-- `description_hu` (text, nullable)
-- `description_en` (text, nullable)
-- `sort_order` (integer, default 0)
-- `is_active` (boolean, default true)
-- `created_at` (timestamptz)
+```sql
+CREATE OR REPLACE FUNCTION analyst_observation_aggregates()
+RETURNS TABLE(
+  concept_code text,
+  concept_name_en text,
+  log_count bigint,
+  avg_intensity numeric
+)
+LANGUAGE sql STABLE SECURITY DEFINER SET search_path = 'public'
+AS $$
+  SELECT
+    oc.concept_code,
+    oc.name_en AS concept_name_en,
+    COUNT(*)::bigint AS log_count,
+    ROUND(AVG(ol.intensity)::numeric, 2) AS avg_intensity
+  FROM observation_logs ol
+  JOIN observation_concepts oc ON oc.id = ol.concept_id
+  GROUP BY oc.concept_code, oc.name_en
+  ORDER BY log_count DESC;
+$$;
+```
 
-**3. `observation_logs`** -- User entries
-- `id` (uuid, PK)
-- `user_id` (uuid, NOT NULL)
-- `concept_id` (uuid, FK -> observation_concepts)
-- `intensity` (integer, 1-5)
-- `frequency` (text, nullable) -- e.g. 'once', 'sometimes', 'often', 'constant'
-- `context_modifier` (text, nullable) -- e.g. "at home", "at work"
-- `user_narrative` (text, nullable) -- free-text anchor
-- `logged_at` (date, default CURRENT_DATE)
-- `created_at` (timestamptz)
+### 3b: Update `analyst-export` edge function
 
-### RLS Policies
+Add observation aggregates to the existing export payload **and** add an optional `?format=fhir` query parameter that wraps the observation data as a FHIR Bundle of Observation resources.
 
-- **observation_categories**: SELECT for all authenticated users; ALL for admin/editor roles
-- **observation_concepts**: SELECT for all authenticated users; ALL for admin/editor roles
-- **observation_logs**: ALL restricted to `auth.uid() = user_id` (users manage only their own)
+**FHIR Bundle structure (when `?format=fhir`):**
 
-### Seed Data
+```json
+{
+  "resourceType": "Bundle",
+  "type": "collection",
+  "timestamp": "2026-02-28T...",
+  "entry": [
+    {
+      "resource": {
+        "resourceType": "Observation",
+        "status": "final",
+        "code": {
+          "coding": [{
+            "system": "http://snomed.info/sct",
+            "code": "247735008",
+            "display": "Feeling ignored"
+          }]
+        },
+        "valueInteger": 3,
+        "note": [{"text": "Aggregated: 42 observations, avg intensity 3.21"}]
+      }
+    }
+  ]
+}
+```
 
-Insert initial categories and concepts (all in HU + EN):
+The 10+ user threshold check remains enforced. No individual user data is ever included.
 
-| Category (HU/EN) | Concepts |
-|---|---|
-| Erzelmi allapot / Emotional State | Megertetlenseg erzese / Feeling unheard, Tunetes elbeszelese / Narrative distortion, Erzelmi elzaras / Emotional withdrawal |
-| Kommunikacios mintak / Communication Patterns | Koros ervelés / Circular arguing, Csend falazas / Stonewalling, Tamadokent valo beallitas / Being positioned as the aggressor |
-| Hatarok / Boundaries | Hataratlepes / Boundary crossing, Kontrollalas / Controlling behavior, Maganelete megsertese / Privacy violation |
+**Default format (no query param):** Existing JSON structure plus a new `observation_aggregates` array.
 
----
+### 3c: Personal FHIR export (user's own data)
 
-## Frontend Changes
+Update `src/pages/Export.tsx` to include the user's own observation logs in their personal export, formatted as FHIR Observation resources. This is the user's own data (protected by RLS), not aggregated.
 
-### 1. Dictionary Updates (`src/i18n/types.ts`, `hu.ts`, `en.ts`)
-
-Add a new `observations` section to the Dictionary type:
-- Tab labels: "Kerdoivek" / "Questionnaires" and "Megfigyelesek" / "Observations"
-- Step labels: "Valassz teruletet" / "Choose a domain", "Valassz megfigyeles" / "Pick an observation"
-- Qualifier labels: intensity, frequency, context, notes
-- Frequency options: "egyszer" / "once", "neha" / "sometimes", "gyakran" / "often", "allandoan" / "constant"
-- Success/empty messages
-
-### 2. Self-Checks Page Refactor (`src/pages/SelfChecks.tsx`)
-
-Add a `Tabs` component at the top with two tabs:
-- Tab 1: "Kerdoivek" / "Questionnaires" -- existing questionnaire content (unchanged)
-- Tab 2: "Megfigyelesek" / "Observations" -- new structured observation flow
-
-### 3. New Components
-
-**`src/components/observations/ObservationStepper.tsx`**
-- Progressive disclosure stepper (3 steps)
-- Step 1: Category selection -- rounded buttons with icon + label, sage-green highlight on active
-- Step 2: Concept list -- filterable list of descriptive observations for the selected category
-- Step 3: Qualifiers -- Intensity slider (1-5 circles like existing scale UI), frequency toggle group, context text input, free-text narrative textarea
-- Submit button saves to `observation_logs`
-- "Back" navigation between steps
-- All labels pull from `t.observations.*`
-
-**`src/components/observations/ObservationHistory.tsx`**
-- Shows recent observation logs for the current user
-- Grouped by date, showing concept name + intensity badge
-- Expandable to see full narrative/context
-
-**`src/components/observations/CategoryManager.tsx`** (editor-only)
-- CRUD interface for categories and concepts
-- Accessible via a "Manage" button visible to admin/editor roles
-- Uses the same glassmorphism card + rounded-3xl pattern
-- Confirmation dialogs for deletion
-
-### 4. Visual Design (Codex-compliant)
-
-- Step indicators: small numbered circles connected by a line, active step in `bg-primary`
-- Category buttons: `bg-card/60 backdrop-blur border border-border rounded-3xl p-5` with sage-green border on selection (`border-primary`)
-- Intensity selector: reuse the existing 1-5 circle buttons pattern from the questionnaire scale UI
-- Frequency: `ToggleGroup` with `rounded-2xl` items
-- All fonts: Quicksand; all inputs `rounded-2xl`; cards `rounded-3xl`
-- Quick Exit button remains visible throughout
+Each observation log becomes a FHIR Observation:
+- `subject`: anonymous reference (no user ID in output)
+- `code.coding[0]`: SNOMED CT code from `observation_concepts.concept_code`
+- `effectiveDateTime`: `logged_at`
+- `valueInteger`: `intensity`
+- `status`: from the new `status` column
+- `component`: frequency and context as additional components
 
 ---
 
-## Technical Details
+## Phase 4: Update SYSTEM_DESCRIPTION.md
 
-### File changes summary
+Add documentation for:
+- SNOMED CT coding in `observation_concepts.concept_code`
+- New `status` column on `observation_logs`
+- FHIR export capability
+- New `analyst_observation_aggregates()` function
+
+---
+
+## Technical File Changes
 
 | File | Action |
 |---|---|
-| `supabase/migrations/...` | New migration: create 3 tables + RLS + seed data |
-| `src/i18n/types.ts` | Add `observations` section to Dictionary |
-| `src/i18n/hu.ts` | Add Hungarian translations |
-| `src/i18n/en.ts` | Add English translations |
-| `src/pages/SelfChecks.tsx` | Wrap existing content in Tabs; add Observations tab |
-| `src/components/observations/ObservationStepper.tsx` | New: 3-step stepper component |
-| `src/components/observations/ObservationHistory.tsx` | New: user's logged observations list |
-| `src/components/observations/CategoryManager.tsx` | New: editor CRUD for catalog |
+| Database (insert tool) | UPDATE `observation_concepts` concept_code values to SNOMED IDs |
+| Database (migration) | ADD `status` column to `observation_logs` |
+| Database (migration) | CREATE `analyst_observation_aggregates()` function |
+| `supabase/functions/analyst-export/index.ts` | Add observation aggregates + optional FHIR Bundle format |
+| `src/pages/Export.tsx` | Include observation logs in personal export as FHIR Observations |
+| `src/i18n/types.ts`, `hu.ts`, `en.ts` | Add export-related labels for observation data |
+| `SYSTEM_DESCRIPTION.md` | Document SNOMED CT and FHIR integration |
 
-### Data flow
+---
 
-1. On tab switch to "Observations", fetch `observation_categories` (active only) from database
-2. On category select, fetch `observation_concepts` filtered by `category_id`
-3. On submit, insert into `observation_logs` with `user_id = auth.uid()`
-4. History view queries `observation_logs` joined with `observation_concepts` and `observation_categories`
+## What stays unchanged
 
-### Validation
-
-- Intensity must be 1-5 (enforced via UI circles, validated via trigger on insert)
-- `concept_id` must reference a valid active concept
-- `user_id` is set from `auth.uid()` (not user-supplied)
+- **ObservationStepper UI** -- users still see `name_hu`/`name_en` labels; SNOMED codes are invisible
+- **ObservationHistory** -- no changes needed
+- **RLS policies** -- already correct on all relevant tables
+- **Privacy threshold** -- 10+ user check remains enforced in analyst-export
 
