@@ -57,10 +57,10 @@ const CheckIn = () => {
 
   return (
     <DashboardLayout>
-      <div className="max-w-2xl space-y-8">
+      <div className="max-w-2xl mx-auto w-full space-y-8">
         {/* Header */}
         <div>
-          <h1 className="text-xl font-bold tracking-tight text-foreground">{t.checkIn.title}</h1>
+          <h1 className="text-lg md:text-xl font-bold tracking-tight text-foreground">{t.checkIn.title}</h1>
           <p className="mt-1 text-sm text-muted-foreground leading-relaxed">{t.checkIn.subtitle}</p>
         </div>
 

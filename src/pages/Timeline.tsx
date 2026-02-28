@@ -42,7 +42,6 @@ const Timeline = () => {
           return { id: o.id, type: 'observation' as const, title: name, date: o.logged_at, detail: `${t.observations.intensity}: ${o.intensity}/5` };
         });
 
-        // Pattern nudges: count observations this week
         const now = new Date();
         const weekStart = format(startOfWeek(now, { weekStartsOn: 1 }), 'yyyy-MM-dd');
         const weekEnd = format(endOfWeek(now, { weekStartsOn: 1 }), 'yyyy-MM-dd');
@@ -74,9 +73,9 @@ const Timeline = () => {
 
   return (
     <DashboardLayout>
-      <div className="max-w-3xl space-y-6">
+      <div className="max-w-3xl mx-auto w-full space-y-6">
         <div>
-          <h1 className="text-xl font-bold tracking-tight text-foreground">{t.timeline.title}</h1>
+          <h1 className="text-lg md:text-xl font-bold tracking-tight text-foreground">{t.timeline.title}</h1>
           <p className="mt-1 text-sm text-muted-foreground leading-relaxed">{t.timeline.subtitle}</p>
         </div>
 
