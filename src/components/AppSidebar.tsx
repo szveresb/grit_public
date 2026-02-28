@@ -7,9 +7,9 @@ import { useLanguage } from '@/hooks/useLanguage';
 import { stripLangPrefix } from '@/hooks/useLanguage';
 import { useIsMobile } from '@/hooks/use-mobile';
 import {
-  Home, LayoutDashboard, HeartPulse, Clock, Download, User,
-  Library, Users, BarChart3, FileText, Info, Lock,
-} from 'lucide-react';
+  FHome, FDashboard, FHeartPulse, FClock, FDownload, FUser,
+  FLibrary, FUsers, FBarChart, FFileText, FInfo, FLock,
+} from '@/components/icons/FreudIcons';
 import {
   Sidebar, SidebarContent, SidebarGroup, SidebarGroupLabel, SidebarGroupContent,
   SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarHeader,
@@ -29,24 +29,24 @@ const AppSidebar = () => {
   const currentPath = stripLangPrefix(location.pathname);
 
   const navItems = [
-    { title: t.nav.home, url: '/', icon: Home },
-    { title: t.dashboard, url: '/dashboard', icon: LayoutDashboard },
-    { title: t.nav.checkIn, url: '/journal', icon: HeartPulse },
-    { title: t.nav.history, url: '/timeline', icon: Clock },
-    { title: t.nav.dataExport, url: '/export', icon: Download },
-    { title: t.nav.account, url: '/profile', icon: User },
+    { title: t.nav.home, url: '/', icon: FHome },
+    { title: t.dashboard, url: '/dashboard', icon: FDashboard },
+    { title: t.nav.checkIn, url: '/journal', icon: FHeartPulse },
+    { title: t.nav.history, url: '/timeline', icon: FClock },
+    { title: t.nav.dataExport, url: '/export', icon: FDownload },
+    { title: t.nav.account, url: '/profile', icon: FUser },
   ];
 
   const topMenuItems = [
-    { title: t.nav.library, url: '/#library', icon: Library },
-    { title: t.nav.researchSummaries, url: '/#research', icon: FileText },
-    { title: t.nav.about, url: '/#about', icon: Info },
+    { title: t.nav.library, url: '/#library', icon: FLibrary },
+    { title: t.nav.researchSummaries, url: '/#research', icon: FFileText },
+    { title: t.nav.about, url: '/#about', icon: FInfo },
   ];
 
   const editorItems = [
-    ...(canManageLibrary ? [{ title: t.nav.manageLibrary, url: '/manage-library', icon: Library }] : []),
-    ...(isAdmin ? [{ title: t.nav.manageUsers, url: '/manage-users', icon: Users }] : []),
-    ...(canAnalyse ? [{ title: t.nav.analystExport, url: '/analyst-export', icon: BarChart3 }] : []),
+    ...(canManageLibrary ? [{ title: t.nav.manageLibrary, url: '/manage-library', icon: FLibrary }] : []),
+    ...(isAdmin ? [{ title: t.nav.manageUsers, url: '/manage-users', icon: FUsers }] : []),
+    ...(canAnalyse ? [{ title: t.nav.analystExport, url: '/analyst-export', icon: FBarChart }] : []),
   ];
 
   return (
@@ -116,9 +116,9 @@ const AppSidebar = () => {
                       className="hover:bg-accent rounded-xl"
                       activeClassName="bg-accent text-foreground font-semibold rounded-xl"
                     >
-                      <HeartPulse className="h-4 w-4" />
+                      <FHeartPulse className="h-4 w-4" />
                       <span>{t.nav.checkIn}</span>
-                      {!user && <Lock className="h-3 w-3 ml-auto" />}
+                      {!user && <FLock className="h-3 w-3 ml-auto" />}
                     </NavLink>
                   </SidebarMenuButton>
                 </SidebarMenuItem>

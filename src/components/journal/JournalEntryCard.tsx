@@ -1,5 +1,5 @@
 import { Button } from '@/components/ui/button';
-import { ChevronDown, ChevronUp, Pencil, Trash2, Sparkles, Loader2, Save } from 'lucide-react';
+import { FChevronDown, FChevronUp, FPencil, FTrash, FSparkles, FLoader, FSave } from '@/components/icons/FreudIcons';
 import { format } from 'date-fns';
 import ReactMarkdown from 'react-markdown';
 import { useLanguage } from '@/hooks/useLanguage';
@@ -44,13 +44,13 @@ const JournalEntryCard = ({
               </span>
             )}
           </div>
-          {isExpanded ? <ChevronUp className="h-4 w-4 text-muted-foreground" /> : <ChevronDown className="h-4 w-4 text-muted-foreground" />}
+          {isExpanded ? <FChevronUp className="h-4 w-4 text-muted-foreground" /> : <FChevronDown className="h-4 w-4 text-muted-foreground" />}
         </button>
         <div className="flex gap-1 pr-3">
-          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={onEdit}><Pencil className="h-3.5 w-3.5" /></Button>
+          <Button variant="ghost" size="icon" className="h-8 w-8" onClick={onEdit}><FPencil className="h-3.5 w-3.5" /></Button>
           <AlertDialog>
             <AlertDialogTrigger asChild>
-              <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:text-destructive"><Trash2 className="h-3.5 w-3.5" /></Button>
+              <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:text-destructive"><FTrash className="h-3.5 w-3.5" /></Button>
             </AlertDialogTrigger>
             <AlertDialogContent>
               <AlertDialogHeader>
@@ -77,7 +77,7 @@ const JournalEntryCard = ({
             {entry.reflection && !streamedReflection && (
               <div className="space-y-2">
                 <div className="flex items-center gap-2">
-                  <Sparkles className="h-3.5 w-3.5 text-primary" />
+                  <FSparkles className="h-3.5 w-3.5 text-primary" />
                   <span className="text-xs font-semibold uppercase tracking-widest text-primary">{t.journal.cardSavedReflection}</span>
                 </div>
                 <div className="prose prose-sm max-w-none text-sm text-foreground/90 leading-relaxed [&_p]:mb-2 [&_p:last-child]:mb-0">
@@ -85,7 +85,7 @@ const JournalEntryCard = ({
                 </div>
                 <div className="flex gap-2">
                   <Button variant="ghost" size="sm" className="rounded-2xl text-xs gap-1.5" onClick={onReflect} disabled={reflectDisabled}>
-                    <Sparkles className="h-3.5 w-3.5" /> {t.journal.cardNewReflection}
+                    <FSparkles className="h-3.5 w-3.5" /> {t.journal.cardNewReflection}
                   </Button>
                   <AlertDialog>
                     <AlertDialogTrigger asChild>
@@ -109,9 +109,9 @@ const JournalEntryCard = ({
             {streamedReflection ? (
               <div className="space-y-2">
                 <div className="flex items-center gap-2">
-                  <Sparkles className="h-3.5 w-3.5 text-primary" />
+                  <FSparkles className="h-3.5 w-3.5 text-primary" />
                   <span className="text-xs font-semibold uppercase tracking-widest text-primary">{t.journal.cardSavedReflection}</span>
-                  {isReflecting && <Loader2 className="h-3 w-3 animate-spin text-muted-foreground" />}
+                  {isReflecting && <FLoader className="h-3 w-3 animate-spin text-muted-foreground" />}
                 </div>
                 <div className="prose prose-sm max-w-none text-sm text-foreground/90 leading-relaxed [&_p]:mb-2 [&_p:last-child]:mb-0">
                   <ReactMarkdown>{streamedReflection}</ReactMarkdown>
@@ -119,7 +119,7 @@ const JournalEntryCard = ({
                 {!isReflecting && (
                   <div className="flex gap-2">
                     <Button variant="default" size="sm" className="rounded-2xl text-xs gap-1.5" onClick={onSaveReflection}>
-                      <Save className="h-3.5 w-3.5" /> {t.journal.cardSaveReflection}
+                      <FSave className="h-3.5 w-3.5" /> {t.journal.cardSaveReflection}
                     </Button>
                     <Button variant="ghost" size="sm" className="text-xs text-muted-foreground h-7 px-2" onClick={onDismissReflection}>
                       {t.journal.cardDismiss}
@@ -129,7 +129,7 @@ const JournalEntryCard = ({
               </div>
             ) : !entry.reflection && (
               <Button variant="ghost" size="sm" className="rounded-2xl text-xs gap-1.5" onClick={onReflect} disabled={reflectDisabled}>
-                <Sparkles className="h-3.5 w-3.5" />
+                <FSparkles className="h-3.5 w-3.5" />
                 {t.journal.cardReflect}
               </Button>
             )}

@@ -1,14 +1,14 @@
 import { Badge } from '@/components/ui/badge';
-import { Eye, Heart, Shield, Pencil, BarChart3, FileEdit } from 'lucide-react';
+import { FEye, FHeart, FShield, FPencil, FBarChart, FFileEdit } from '@/components/icons/FreudIcons';
 import { useUserRole, ROLE_LABELS, AppRole } from '@/hooks/useUserRole';
 
-const roleIcons: Record<AppRole, React.ElementType> = {
-  admin: Shield,
-  editor: Pencil,
-  analyst: BarChart3,
-  guest_editor: FileEdit,
-  observer: Eye,
-  affected_person: Heart,
+const roleIcons: Record<AppRole, React.FC<React.SVGProps<SVGSVGElement>>> = {
+  admin: FShield,
+  editor: FPencil,
+  analyst: FBarChart,
+  guest_editor: FFileEdit,
+  observer: FEye,
+  affected_person: FHeart,
 };
 
 const RoleIndicator = () => {

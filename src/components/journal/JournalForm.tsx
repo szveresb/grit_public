@@ -3,7 +3,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { X, Save } from 'lucide-react';
+import { FClose, FSave } from '@/components/icons/FreudIcons';
 import { useLanguage } from '@/hooks/useLanguage';
 import type { JournalFormData } from '@/types/journal';
 import ObservationTree, { type ObservationTreeResult } from './ObservationTree';
@@ -44,7 +44,7 @@ const JournalForm = ({ form, onChange, onSubmit, onClose, saving, isEditing, sho
         <h2 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
           {isEditing ? t.journal.formEditEntry : t.journal.formNewEntry}
         </h2>
-        <Button type="button" variant="ghost" size="icon" onClick={onClose}><X className="h-4 w-4" /></Button>
+        <Button type="button" variant="ghost" size="icon" onClick={onClose}><FClose className="h-4 w-4" /></Button>
       </div>
 
       {/* Observation Tree (optional guided step) */}
@@ -107,7 +107,7 @@ const JournalForm = ({ form, onChange, onSubmit, onClose, saving, isEditing, sho
           </div>
           <div className="flex gap-2">
             <Button type="submit" size="sm" className="rounded-2xl" disabled={saving}>
-              <Save className="h-4 w-4 mr-1" /> {saving ? t.saving : isEditing ? t.journal.formUpdate : t.journal.formSave}
+              <FSave className="h-4 w-4 mr-1" /> {saving ? t.saving : isEditing ? t.journal.formUpdate : t.journal.formSave}
             </Button>
             <Button type="button" variant="outline" size="sm" className="rounded-2xl" onClick={onClose}>{t.cancel}</Button>
           </div>
