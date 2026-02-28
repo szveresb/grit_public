@@ -191,6 +191,7 @@ A SNOMED CT-inspired three-level hierarchy for logging interpersonal patterns.
 | `id` | uuid (PK) | |
 | `category_id` | uuid (FK) | → `observation_categories.id` |
 | `concept_code` | text (UNIQUE) | SNOMED CT identifier (e.g. `247735008`) |
+| `bno_code` | text | Nullable; BNO-10 (ICD-10-HU) code for Hungarian interoperability |
 | `name_hu` / `name_en` | text | User-facing labels |
 | `description_hu` / `description_en` | text | Nullable |
 | `sort_order` | integer | Default `0` |
@@ -289,4 +290,6 @@ Full bilingual support (Hungarian primary, English secondary) via `src/i18n/` wi
 - **Analyst anonymization** — Aggregate functions never expose `user_id`; 10+ user threshold enforced before any data release
 - **No admin access to personal data** — Individual user content is strictly private
 - **SNOMED CT coding** — `observation_concepts.concept_code` uses standard SNOMED CT identifiers for clinical interoperability
-- **FHIR export** — Personal export includes observation logs as FHIR Observation resources; analyst export supports `?format=fhir` for a FHIR Bundle of aggregated data
+- **BNO-10 dual-coding** — `observation_concepts.bno_code` stores ICD-10-HU codes for Hungarian healthcare compatibility; FHIR exports include both SNOMED and ICD-10 coding entries
+- **FHIR export** — Personal export includes observation logs as FHIR Observation resources with dual SNOMED/BNO coding; analyst export supports `?format=fhir` for a FHIR Bundle of aggregated data
+- **Therapist export** — BNO-grouped summary export designed for sharing with Hungarian therapists, including observation counts, average intensity, and date ranges per BNO code

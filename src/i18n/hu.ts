@@ -178,6 +178,10 @@ export const hu: Dictionary = {
     subtitle: 'Töltsd le az összes adatodat hordozható formátumban.',
     desc: 'Az export tartalmazza a naplóbejegyzéseket, önellenőrzési válaszokat és megfigyelési naplókat (FHIR formátumban) JSON-ként. Ez a te adatod — vidd magaddal.',
     exportAll: 'Összes adat exportálása',
+    therapistTitle: 'Terapeuta export',
+    therapistDesc: 'BNO-10 kódok szerint csoportosított összefoglaló, amelyet megoszthat terapeutájával.',
+    therapistExport: 'Terapeuta export letöltése',
+    noObservations: 'Nincsenek megfigyelések az exporthoz.',
   },
 
   manageLibrary: {

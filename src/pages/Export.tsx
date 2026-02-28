@@ -6,6 +6,27 @@ import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { Download } from 'lucide-react';
 
+// Static BNO-10 label lookup (official Hungarian names)
+const BNO_LABELS_HU: Record<string, string> = {
+  'Z63.0': 'Házastárssal vagy partnerrel kapcsolatos problémák',
+  'Z63.1': 'Szülőkkel és anyóssal/apóssal kapcsolatos problémák',
+  'Z63.5': 'Családi különélés és válás',
+  'Z60.4': 'Társadalmi kirekesztés és visszautasítás',
+  'F43.2': 'Alkalmazkodási zavarok',
+  'F41.1': 'Generalizált szorongásos zavar',
+  'F32.9': 'Depressziós epizód m.n.o.',
+};
+
+const BNO_LABELS_EN: Record<string, string> = {
+  'Z63.0': 'Problems in relationship with spouse or partner',
+  'Z63.1': 'Problems with parents and in-laws',
+  'Z63.5': 'Family disruption by separation and divorce',
+  'Z60.4': 'Social exclusion and rejection',
+  'F43.2': 'Adjustment disorders',
+  'F41.1': 'Generalized anxiety disorder',
+  'F32.9': 'Depressive episode, unspecified',
+};
+
 interface FhirObservation {
   resourceType: 'Observation';
   status: string;
@@ -20,22 +41,30 @@ interface FhirObservation {
 
 function buildPersonalFhirObservations(
   logs: any[],
-  conceptMap: Record<string, { concept_code: string; name_en: string }>
+  conceptMap: Record<string, { concept_code: string; name_en: string; bno_code?: string }>
 ): FhirObservation[] {
   return logs.map((log) => {
     const concept = conceptMap[log.concept_id];
+    const coding: { system: string; code: string; display: string }[] = [
+      {
+        system: 'http://snomed.info/sct',
+        code: concept?.concept_code ?? 'unknown',
+        display: concept?.name_en ?? 'Unknown',
+      },
+    ];
+    if (concept?.bno_code) {
+      coding.push({
+        system: 'http://hl7.org/fhir/sid/icd-10',
+        code: concept.bno_code,
+        display: BNO_LABELS_EN[concept.bno_code] ?? concept.bno_code,
+      });
+    }
     const obs: FhirObservation = {
       resourceType: 'Observation',
       status: log.status ?? 'final',
       subject: { reference: 'Patient/anonymous' },
       effectiveDateTime: log.logged_at,
-      code: {
-        coding: [{
-          system: 'http://snomed.info/sct',
-          code: concept?.concept_code ?? 'unknown',
-          display: concept?.name_en ?? 'Unknown',
-        }],
-      },
+      code: { coding },
       valueInteger: log.intensity,
     };
     const components: { code: { text: string }; valueString: string }[] = [];
@@ -59,12 +88,12 @@ const Export = () => {
         .select('*, questionnaires(title), questionnaire_answers(question_id, answer, questionnaire_questions(question_text))')
         .eq('user_id', user.id),
       supabase.from('observation_logs').select('*').eq('user_id', user.id).order('logged_at'),
-      supabase.from('observation_concepts').select('id, concept_code, name_en'),
+      supabase.from('observation_concepts').select('id, concept_code, name_en, bno_code'),
     ]);
 
-    const conceptMap: Record<string, { concept_code: string; name_en: string }> = {};
+    const conceptMap: Record<string, { concept_code: string; name_en: string; bno_code?: string }> = {};
     (conceptsRes.data ?? []).forEach((c: any) => {
-      conceptMap[c.id] = { concept_code: c.concept_code, name_en: c.name_en };
+      conceptMap[c.id] = { concept_code: c.concept_code, name_en: c.name_en, bno_code: c.bno_code };
     });
 
     const fhirObservations = buildPersonalFhirObservations(logsRes.data ?? [], conceptMap);
@@ -86,6 +115,74 @@ const Export = () => {
     toast.success(t.profile.dataExported);
   };
 
+  const handleTherapistExport = async () => {
+    if (!user) return;
+
+    const [logsRes, conceptsRes] = await Promise.all([
+      supabase.from('observation_logs').select('*').eq('user_id', user.id).order('logged_at'),
+      supabase.from('observation_concepts').select('id, concept_code, name_hu, name_en, bno_code'),
+    ]);
+
+    const logs = logsRes.data ?? [];
+    const concepts = conceptsRes.data ?? [];
+
+    if (logs.length === 0) {
+      toast.error(t.export.noObservations);
+      return;
+    }
+
+    const conceptMap: Record<string, any> = {};
+    concepts.forEach((c: any) => { conceptMap[c.id] = c; });
+
+    // Group by BNO code
+    const bnoGroups: Record<string, {
+      bno_code: string;
+      observations: { concept_hu: string; intensity: number; logged_at: string; context: string | null }[];
+    }> = {};
+
+    for (const log of logs) {
+      const concept = conceptMap[log.concept_id];
+      const bno = concept?.bno_code ?? 'unknown';
+      if (!bnoGroups[bno]) {
+        bnoGroups[bno] = { bno_code: bno, observations: [] };
+      }
+      bnoGroups[bno].observations.push({
+        concept_hu: concept?.name_hu ?? concept?.name_en ?? 'Unknown',
+        intensity: log.intensity,
+        logged_at: log.logged_at,
+        context: log.context_modifier,
+      });
+    }
+
+    const bnoSummary = Object.values(bnoGroups).map((group) => {
+      const intensities = group.observations.map((o) => o.intensity);
+      const dates = group.observations.map((o) => o.logged_at).sort();
+      return {
+        bno_code: group.bno_code,
+        bno_label_hu: BNO_LABELS_HU[group.bno_code] ?? group.bno_code,
+        observation_count: group.observations.length,
+        avg_intensity: Math.round((intensities.reduce((a, b) => a + b, 0) / intensities.length) * 100) / 100,
+        date_range: { from: dates[0], to: dates[dates.length - 1] },
+        observations: group.observations,
+      };
+    });
+
+    const exportData = {
+      export_type: 'therapist_summary',
+      exported_at: new Date().toISOString(),
+      bno_summary: bnoSummary,
+    };
+
+    const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `grithu-therapist-export-${new Date().toISOString().split('T')[0]}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+    toast.success(t.profile.dataExported);
+  };
+
   return (
     <DashboardLayout>
       <div className="max-w-lg space-y-6">
@@ -97,6 +194,13 @@ const Export = () => {
           <p className="text-sm text-muted-foreground leading-relaxed">{t.export.desc}</p>
           <Button onClick={handleExport} size="sm" className="rounded-2xl">
             <Download className="h-4 w-4 mr-1.5" /> {t.export.exportAll}
+          </Button>
+        </div>
+        <div className="bg-card/60 backdrop-blur border border-border rounded-3xl p-6 space-y-4">
+          <h2 className="text-base font-semibold text-foreground">{t.export.therapistTitle}</h2>
+          <p className="text-sm text-muted-foreground leading-relaxed">{t.export.therapistDesc}</p>
+          <Button onClick={handleTherapistExport} size="sm" variant="secondary" className="rounded-2xl">
+            <Download className="h-4 w-4 mr-1.5" /> {t.export.therapistExport}
           </Button>
         </div>
       </div>
