@@ -26,10 +26,10 @@ const AppRoutes = () => (
     <Route path="/" element={<Index />} />
     <Route path="/auth" element={<Auth />} />
     <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
-    <Route path="/check-in" element={<ProtectedRoute><CheckIn /></ProtectedRoute>} />
-    {/* Old routes redirect to unified check-in */}
-    <Route path="/journal" element={<Navigate to="/check-in" replace />} />
-    <Route path="/self-checks" element={<Navigate to="/check-in" replace />} />
+    <Route path="/journal" element={<ProtectedRoute><CheckIn /></ProtectedRoute>} />
+    {/* Old routes redirect to journal */}
+    <Route path="/check-in" element={<Navigate to="/journal" replace />} />
+    <Route path="/self-checks" element={<Navigate to="/journal" replace />} />
     <Route path="/timeline" element={<ProtectedRoute><Timeline /></ProtectedRoute>} />
     <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
     <Route path="/export" element={<ProtectedRoute><Export /></ProtectedRoute>} />
@@ -40,9 +40,9 @@ const AppRoutes = () => (
     <Route path="/en" element={<Index />} />
     <Route path="/en/auth" element={<Auth />} />
     <Route path="/en/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
-    <Route path="/en/check-in" element={<ProtectedRoute><CheckIn /></ProtectedRoute>} />
-    <Route path="/en/journal" element={<Navigate to="/en/check-in" replace />} />
-    <Route path="/en/self-checks" element={<Navigate to="/en/check-in" replace />} />
+    <Route path="/en/journal" element={<ProtectedRoute><CheckIn /></ProtectedRoute>} />
+    <Route path="/en/check-in" element={<Navigate to="/en/journal" replace />} />
+    <Route path="/en/self-checks" element={<Navigate to="/en/journal" replace />} />
     <Route path="/en/timeline" element={<ProtectedRoute><Timeline /></ProtectedRoute>} />
     <Route path="/en/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
     <Route path="/en/export" element={<ProtectedRoute><Export /></ProtectedRoute>} />

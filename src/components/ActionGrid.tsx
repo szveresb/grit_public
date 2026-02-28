@@ -54,7 +54,7 @@ const ActionGrid = () => {
         </h2>
         <QuickPulse
           compact
-          onGoDeeper={() => navigate(localePath('/check-in'))}
+          onGoDeeper={() => navigate(localePath('/journal'))}
         />
       </div>
 
@@ -65,7 +65,7 @@ const ActionGrid = () => {
           description={t.dash.completeSelfCheckDesc}
           icon={HeartPulse}
           variant="sage"
-          onClick={() => navigate(localePath('/check-in'))}
+          onClick={() => navigate(localePath('/journal'))}
         />
         <ActionCard
           title={t.dash.viewHistory}
