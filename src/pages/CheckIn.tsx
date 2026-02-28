@@ -1,17 +1,15 @@
 import { useState, useCallback } from 'react';
 import DashboardLayout from '@/components/DashboardLayout';
 import { useLanguage } from '@/hooks/useLanguage';
-import { useUserRole } from '@/hooks/useUserRole';
 import QuickPulse from '@/components/checkin/QuickPulse';
 import UnifiedFeed from '@/components/checkin/UnifiedFeed';
 import ObservationStepper from '@/components/observations/ObservationStepper';
 import JournalForm from '@/components/journal/JournalForm';
+import type { ObservationTreeResult } from '@/components/journal/ObservationTree';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
-import { Button } from '@/components/ui/button';
-import { Plus } from 'lucide-react';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { ChevronDown } from 'lucide-react';
 import type { JournalFormData } from '@/types/journal';
@@ -33,8 +31,7 @@ const CheckIn = () => {
     setShowJournalForm(true);
   };
 
-  const handleJournalSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleJournalSubmit = async (_e: React.FormEvent, observation?: ObservationTreeResult) => {
     if (!user) return;
     setSaving(true);
     const payload = {
@@ -47,8 +44,27 @@ const CheckIn = () => {
       free_text: form.free_text || null,
       self_anchor: form.self_anchor || null,
     };
-    const { error } = await supabase.from('journal_entries').insert(payload);
-    if (error) { toast.error(error.message); } else { toast.success(t.journal.entryLogged); }
+    const { data: journalData, error } = await supabase
+      .from('journal_entries')
+      .insert(payload)
+      .select('id')
+      .single();
+
+    if (error) { toast.error(error.message); setSaving(false); return; }
+
+    // If an observation was selected via the guided tree, create linked observation_log
+    if (observation && journalData) {
+      const { error: obsError } = await supabase.from('observation_logs').insert({
+        user_id: user.id,
+        concept_id: observation.conceptId,
+        intensity: observation.intensity,
+        frequency: observation.frequency || null,
+        journal_entry_id: journalData.id,
+      } as any);
+      if (obsError) { console.error('Observation link error:', obsError.message); }
+    }
+
+    toast.success(t.journal.entryLogged);
     setForm(emptyForm);
     setShowJournalForm(false);
     setSaving(false);
@@ -69,7 +85,7 @@ const CheckIn = () => {
           <QuickPulse onPulseSaved={refresh} onGoDeeper={openJournalForm} />
         </div>
 
-        {/* Full journal form (shown when user wants to go deeper) */}
+        {/* Full journal form with guided tree */}
         {showJournalForm && (
           <JournalForm
             form={form}
@@ -78,6 +94,7 @@ const CheckIn = () => {
             onClose={() => setShowJournalForm(false)}
             saving={saving}
             isEditing={false}
+            showObservationTree={true}
           />
         )}
 

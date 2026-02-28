@@ -189,6 +189,7 @@ export type Database = {
           frequency: string | null
           id: string
           intensity: number
+          journal_entry_id: string | null
           logged_at: string
           status: string
           user_id: string
@@ -201,6 +202,7 @@ export type Database = {
           frequency?: string | null
           id?: string
           intensity?: number
+          journal_entry_id?: string | null
           logged_at?: string
           status?: string
           user_id: string
@@ -213,6 +215,7 @@ export type Database = {
           frequency?: string | null
           id?: string
           intensity?: number
+          journal_entry_id?: string | null
           logged_at?: string
           status?: string
           user_id?: string
@@ -224,6 +227,13 @@ export type Database = {
             columns: ["concept_id"]
             isOneToOne: false
             referencedRelation: "observation_concepts"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "observation_logs_journal_entry_id_fkey"
+            columns: ["journal_entry_id"]
+            isOneToOne: false
+            referencedRelation: "journal_entries"
             referencedColumns: ["id"]
           },
         ]
