@@ -249,36 +249,42 @@ A SNOMED CT-inspired three-level hierarchy for logging interpersonal patterns.
 
 ## 7. Frontend Architecture
 
+### Design Philosophy: "Clinical Core, Human Surface"
+
+The UI uses warm, low-cognitive-load language ("How heavy was it?", "My truth", "What happened?") while the backend silently records SNOMED CT and BNO-10 coded clinical data. Users experience a supportive sensemaking journal; practitioners receive standardized interoperable data. Monochrome iconography (filled-circle opacity scale for mood) aligns with the minimal bamboo aesthetic.
+
 ### Pages
 
-| Route | Component | Auth Required |
-|---|---|---|
-| `/` | `Index` (landing) | No |
-| `/auth` | `Auth` (login/signup) | No |
-| `/dashboard` | `Dashboard` | Yes |
-| `/journal` | `Journal` | Yes |
-| `/self-checks` | `SelfChecks` (questionnaires + observations tabs) | Yes |
-| `/timeline` | `Timeline` | Yes |
-| `/profile` | `Profile` | Yes |
-| `/export` | `Export` | Yes |
-| `/manage-library` | `ManageLibrary` | Yes (editor+) |
-| `/manage-users` | `ManageUsers` | Yes (admin) |
-| `/analyst-export` | `AnalystExport` | Yes (analyst) |
+| Route | Component | Auth Required | Notes |
+|---|---|---|---|
+| `/` | `Index` (landing) | No | Public library + research summaries |
+| `/auth` | `Auth` (login/signup) | No | |
+| `/dashboard` | `Dashboard` | Yes | Quick Pulse widget + recent activity |
+| `/check-in` | `CheckIn` | Yes | **Unified** — Quick Pulse + ObservationStepper + chronological feed |
+| `/timeline` | `Timeline` | Yes | Pattern nudge banners when concepts repeat 3+ times/week |
+| `/profile` | `Profile` | Yes | |
+| `/export` | `Export` | Yes | |
+| `/manage-library` | `ManageLibrary` | Yes (editor+) | |
+| `/manage-users` | `ManageUsers` | Yes (admin) | |
+| `/analyst-export` | `AnalystExport` | Yes (analyst) | |
+| `/journal` | redirect → `/check-in` | — | Legacy route |
+| `/self-checks` | redirect → `/check-in` | — | Legacy route |
 
 ### Key Components
 
 - **`DashboardLayout`** — Sidebar navigation + top header with auth controls
-- **`AppSidebar`** — Role-aware navigation links
+- **`AppSidebar`** — Role-aware navigation; single "Check-in" entry replaces former Journal + Self-Checks
 - **`ProtectedRoute`** — Auth guard wrapper
 - **`EmergencyExit`** — Quick-exit safety button (always visible)
 - **`LanguageToggle`** — HU/EN language switcher
-- **`ObservationStepper`** — 3-step progressive disclosure for logging observations
-- **`ObservationHistory`** — Chronological view of logged observations
-- **`JournalForm` / `JournalEntryCard`** — Journal creation and display
+- **`QuickPulse`** — 5 monochrome mood circles (opacity-graded sage-green ◌→●); one-tap creates a lightweight `journal_entry`
+- **`UnifiedFeed`** — Interleaved chronological list of journal entries, observation logs, and questionnaire completions
+- **`ObservationStepper`** — 3-step progressive disclosure with warm labels ("What's going on?" → "How heavy?" → "Anything to add?")
+- **`JournalForm` / `JournalEntryCard`** — Fully localized journal creation and display with progressive disclosure for clinical codes
 
 ### Internationalization
 
-Full bilingual support (Hungarian primary, English secondary) via `src/i18n/` with typed dictionary keys. Language preference stored in `localStorage`.
+Full bilingual support (Hungarian primary, English secondary) via `src/i18n/` with typed dictionary keys (~80+ keys including journal form, check-in, and pulse labels). Language preference stored in `localStorage`.
 
 ---
 
