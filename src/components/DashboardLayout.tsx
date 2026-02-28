@@ -33,12 +33,12 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
       />
       <div className="fixed inset-0 z-0 bg-background/85" />
 
-      <div className="min-h-screen flex w-full relative z-10">
+      <div className="min-h-screen flex w-full relative z-10 overflow-x-hidden">
         <AppSidebar />
-        <main className="flex-1 flex flex-col">
-          <header className="h-14 flex items-center border-b border-border/60 px-5 bg-card/40 backdrop-blur-sm gap-3">
+        <main className="flex-1 flex flex-col min-w-0">
+          <header className="h-14 flex items-center border-b border-border/60 px-4 md:px-6 bg-card/40 backdrop-blur-sm gap-3">
             <SidebarTrigger />
-            <nav className="hidden lg:flex items-center gap-8 ml-auto">
+            <nav className="hidden lg:flex items-center justify-center flex-1 gap-8">
               <a href={`${localePath('/')}#library`} className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">{t.nav.library}</a>
               <a href={`${localePath('/')}#research`} className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">{t.nav.researchSummaries}</a>
               <button onClick={() => handleGatedClick('/check-in')} className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1.5">
@@ -62,8 +62,10 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
               )}
             </div>
           </header>
-          <div className="flex-1 p-6 md:p-8">
-            {children}
+          <div className="flex-1 px-4 md:px-8 py-6 md:py-8">
+            <div className="max-w-7xl mx-auto w-full">
+              {children}
+            </div>
           </div>
         </main>
       </div>

@@ -42,17 +42,17 @@ const Index = () => {
   ];
 
   return (
-    <div className="min-h-screen relative">
+    <div className="min-h-screen relative w-full overflow-x-hidden">
       <div className="fixed inset-0 z-0 bg-cover bg-center" style={{ backgroundImage: `url(${bambooBg})`, opacity: 0.12 }} />
       <div className="fixed inset-0 z-0 bg-background/80" />
 
       {/* Header */}
       <header className="relative z-10 border-b border-border bg-card/60 backdrop-blur-xl">
-        <div className="max-w-6xl mx-auto flex items-center justify-between px-6 py-4">
+        <div className="max-w-7xl mx-auto flex items-center justify-between px-4 md:px-8 py-4">
           <Link to={localePath('/')} className="text-lg font-bold tracking-tight text-foreground">
             {t.brand}
           </Link>
-          <nav className="hidden lg:flex items-center gap-8">
+          <nav className="hidden lg:flex items-center justify-center flex-1 gap-8">
             <a href="#library" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">{t.nav.library}</a>
             <a href="#research" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">{t.nav.researchSummaries}</a>
             <button onClick={() => handleGatedClick('/check-in')} className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1.5">
@@ -77,9 +77,9 @@ const Index = () => {
       </header>
 
       {/* Hero */}
-      <section className="relative z-10 px-6 pt-16 pb-12 max-w-6xl mx-auto text-center">
+      <section className="relative z-10 px-4 md:px-8 pt-16 pb-12 max-w-7xl mx-auto text-center">
         <div className="max-w-2xl mx-auto animate-fade-in">
-          <h1 className="text-3xl md:text-4xl font-bold tracking-tight text-foreground leading-tight">
+          <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight text-foreground leading-tight">
             {t.landing.heroTitle}
           </h1>
           <p className="mt-4 text-sm md:text-base text-muted-foreground leading-relaxed max-w-xl mx-auto">
@@ -98,14 +98,14 @@ const Index = () => {
       </section>
 
       {/* Library Section */}
-      <section id="library" className="relative z-10 px-6 py-12 max-w-6xl mx-auto">
+      <section id="library" className="relative z-10 px-4 md:px-8 py-12 max-w-7xl mx-auto">
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h2 className="text-xl font-bold tracking-tight text-foreground">{t.landing.libraryTitle}</h2>
+            <h2 className="text-lg md:text-xl font-bold tracking-tight text-foreground">{t.landing.libraryTitle}</h2>
             <p className="mt-1 text-sm text-muted-foreground">{t.landing.librarySubtitle}</p>
           </div>
         </div>
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-5">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
           {articlesLoading ? (
             Array.from({ length: 6 }).map((_, i) => (
               <div key={i} className="bg-card/70 backdrop-blur border border-border rounded-3xl p-6 space-y-3">
@@ -147,9 +147,9 @@ const Index = () => {
       </section>
 
       {/* Research Summaries Section */}
-      <section id="research" className="relative z-10 px-6 py-12 max-w-6xl mx-auto">
+      <section id="research" className="relative z-10 px-4 md:px-8 py-12 max-w-7xl mx-auto">
         <div className="mb-6">
-          <h2 className="text-xl font-bold tracking-tight text-foreground">{t.landing.researchTitle}</h2>
+          <h2 className="text-lg md:text-xl font-bold tracking-tight text-foreground">{t.landing.researchTitle}</h2>
           <p className="mt-1 text-sm text-muted-foreground">{t.landing.researchSubtitle}</p>
         </div>
         <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
@@ -176,13 +176,13 @@ const Index = () => {
       </section>
 
       {/* Self-Check Preview Section */}
-      <section id="self-checks" className="relative z-10 px-6 py-12 max-w-6xl mx-auto">
+      <section id="self-checks" className="relative z-10 px-4 md:px-8 py-12 max-w-7xl mx-auto">
         <div className="max-w-2xl mx-auto">
           <div className="text-center mb-8">
-            <h2 className="text-xl font-bold tracking-tight text-foreground">{t.landing.selfCheckPreviewTitle}</h2>
+            <h2 className="text-lg md:text-xl font-bold tracking-tight text-foreground">{t.landing.selfCheckPreviewTitle}</h2>
             <p className="mt-1 text-sm text-muted-foreground">{t.landing.selfCheckPreviewSubtitle}</p>
           </div>
-          <div className="bg-card/70 backdrop-blur border border-border rounded-[40px] p-8 space-y-5">
+          <div className="bg-card/70 backdrop-blur border border-border rounded-[40px] p-6 md:p-8 space-y-5">
             <h3 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">{t.landing.sampleQuestions}</h3>
             {samplePreviewQuestions.map((q, i) => (
               <div key={i} className="border border-border rounded-2xl p-4 space-y-2">
@@ -216,9 +216,9 @@ const Index = () => {
       </section>
 
       {/* About Section */}
-      <section id="about" className="relative z-10 px-6 py-12 max-w-6xl mx-auto">
-        <div className="max-w-2xl mx-auto bg-card/70 backdrop-blur border border-border rounded-[40px] p-10 text-center">
-          <h2 className="text-xl font-bold tracking-tight text-foreground">{t.landing.aboutTitle}</h2>
+      <section id="about" className="relative z-10 px-4 md:px-8 py-12 max-w-7xl mx-auto">
+        <div className="max-w-2xl mx-auto bg-card/70 backdrop-blur border border-border rounded-[40px] p-8 md:p-10 text-center">
+          <h2 className="text-lg md:text-xl font-bold tracking-tight text-foreground">{t.landing.aboutTitle}</h2>
           <p className="mt-4 text-sm text-muted-foreground leading-relaxed">{t.landing.aboutP1}</p>
           <p className="mt-3 text-sm text-muted-foreground leading-relaxed">{t.landing.aboutP2}</p>
         </div>
@@ -226,7 +226,7 @@ const Index = () => {
 
       {/* Footer */}
       <footer className="relative z-10 border-t border-border bg-card/40 backdrop-blur-xl">
-        <div className="max-w-6xl mx-auto px-6 py-6 flex flex-col sm:flex-row items-center justify-between gap-4">
+        <div className="max-w-7xl mx-auto px-4 md:px-8 py-6 flex flex-col sm:flex-row items-center justify-between gap-4">
           <span className="text-xs text-muted-foreground">{t.landing.footerRights.replace('{year}', String(new Date().getFullYear()))}</span>
           <div className="flex items-center gap-6">
             <a href="#" className="text-xs text-muted-foreground hover:text-foreground transition-colors">{t.landing.terms}</a>

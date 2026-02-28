@@ -51,9 +51,9 @@ const Dashboard = () => {
 
   return (
     <DashboardLayout>
-      <div className="max-w-4xl space-y-8">
+      <div className="max-w-4xl mx-auto w-full space-y-8">
         <div>
-          <h1 className="text-xl font-bold tracking-tight text-foreground">
+          <h1 className="text-lg md:text-xl font-bold tracking-tight text-foreground">
             {displayName ? t.dash.welcomeUser.replace('{name}', displayName) : t.dash.welcomeBack}
           </h1>
           <p className="mt-1 text-sm text-muted-foreground leading-relaxed">{t.dash.yourSpace}</p>
@@ -72,7 +72,7 @@ const Dashboard = () => {
               {items.map(item => (
                 <button
                   key={item.id}
-                  onClick={() => navigate(localePath(item.type === 'journal' ? '/check-in' : '/check-in'))}
+                  onClick={() => navigate(localePath('/check-in'))}
                   className="w-full flex items-center gap-3 py-2.5 px-3 rounded-2xl text-left hover:bg-accent/50 transition-colors"
                 >
                   {item.type === 'journal' ? <BookOpen className="h-3.5 w-3.5 text-primary shrink-0" /> : <ClipboardCheck className="h-3.5 w-3.5 text-muted-foreground shrink-0" />}

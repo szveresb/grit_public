@@ -6,7 +6,6 @@ import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { Download } from 'lucide-react';
 
-// Static BNO-10 label lookup (official Hungarian names)
 const BNO_LABELS_HU: Record<string, string> = {
   'Z63.0': 'Házastárssal vagy partnerrel kapcsolatos problémák',
   'Z63.1': 'Szülőkkel és anyóssal/apóssal kapcsolatos problémák',
@@ -134,7 +133,6 @@ const Export = () => {
     const conceptMap: Record<string, any> = {};
     concepts.forEach((c: any) => { conceptMap[c.id] = c; });
 
-    // Group by BNO code
     const bnoGroups: Record<string, {
       bno_code: string;
       observations: { concept_hu: string; intensity: number; logged_at: string; context: string | null }[];
@@ -185,9 +183,9 @@ const Export = () => {
 
   return (
     <DashboardLayout>
-      <div className="max-w-lg space-y-6">
+      <div className="max-w-lg mx-auto w-full space-y-6">
         <div>
-          <h1 className="text-xl font-bold tracking-tight text-foreground">{t.export.title}</h1>
+          <h1 className="text-lg md:text-xl font-bold tracking-tight text-foreground">{t.export.title}</h1>
           <p className="mt-1 text-sm text-muted-foreground leading-relaxed">{t.export.subtitle}</p>
         </div>
         <div className="bg-card/60 backdrop-blur border border-border rounded-3xl p-6 space-y-4">
@@ -197,7 +195,7 @@ const Export = () => {
           </Button>
         </div>
         <div className="bg-card/60 backdrop-blur border border-border rounded-3xl p-6 space-y-4">
-          <h2 className="text-base font-semibold text-foreground">{t.export.therapistTitle}</h2>
+          <h2 className="text-sm md:text-base font-semibold text-foreground">{t.export.therapistTitle}</h2>
           <p className="text-sm text-muted-foreground leading-relaxed">{t.export.therapistDesc}</p>
           <Button onClick={handleTherapistExport} size="sm" variant="secondary" className="rounded-2xl">
             <Download className="h-4 w-4 mr-1.5" /> {t.export.therapistExport}
