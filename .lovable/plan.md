@@ -1,122 +1,116 @@
 
 
-# Consolidate Journal and Self-Check: "Clinical Core, Human Surface"
+# Guided Journal Tree -- Implementation Plan
 
-## Summary
-
-Unify the journal and observation workflows into a single, emotionally safe experience. The user interacts with warm, human language ("What's on your mind?", "How heavy was it?") while the database silently records SNOMED/BNO-coded clinical data. No new database tables needed -- this is a UI/UX consolidation of existing data flows.
-
----
-
-## What Changes
-
-### 1. Unified "Check-in" Page (replaces separate Journal + Self-Checks pages)
-
-Merge the current `/journal` and `/self-checks` into a single `/check-in` page with a tab-free, progressive flow:
-
-**Top section: "Quick Pulse"** -- a fast daily check-in (always visible)
-- Row of 5 emoji-style mood buttons (1-5 intensity) with labels like "Struggling", "Uneasy", "Okay", "Good", "Strong"
-- One-tap logs a lightweight journal entry with today's date, the selected mood as `impact_level`, and `emotional_state` auto-set from the label
-- Optional: tap to expand into the full journal form
-
-**Middle section: "What happened?"** -- the structured observation stepper
-- Reframe step labels: "What's going on?" -> "How heavy?" -> "Anything to add?"
-- Keep the existing 3-step ObservationStepper but with warmer placeholder text
-- Concept labels already use `name_hu`/`name_en` (human-friendly); no change needed there
-
-**Bottom section: "Your story"** -- unified chronological feed
-- Interleave journal entries, observation logs, and questionnaire completions in one scrollable list
-- Each card shows type indicator (subtle icon), human title, date, and expandable detail
-- Replaces the separate JournalEntryCard list and ObservationHistory
-
-### 2. Localize All Hardcoded English Strings
-
-Currently hardcoded in `JournalForm.tsx` and `JournalEntryCard.tsx`:
-- "New Journal Entry", "Edit Journal Entry", "Title", "Date", "What happened?", "Impact Level", "How are you feeling?", "Self-Anchor", "Additional Notes", "Save Entry"
-- "Delete entry?", "Impact:", "What happened:", "Feeling:", "Self-Anchor:", "Notes:", "Saved Reflection", "New Reflection", "Reflect on this entry", "Save Reflection", "Dismiss", "Remove"
-
-Add ~25 new i18n keys under `journal.*` in types.ts, en.ts, hu.ts. Use warm Hungarian phrasing (e.g., "Mi tortent?" not clinical terms).
-
-### 3. Reframe Labels to "Human Surface" Language
-
-| Current Label | New Label (EN) | New Label (HU) |
-|---|---|---|
-| Self-Checks | Check-in | Bejelentkezes |
-| Observations | Discoveries | Felfedezesek |
-| Impact Level | How heavy was it? | Mennyire volt nehez? |
-| Intensity | Weight | Suly |
-| Log Observation | Note this | Feljegyzem |
-| Self-Anchor | My truth | Az en igazsagom |
-| Event Description | What happened? | Mi tortent? |
-
-### 4. Progressive Disclosure on Observation Cards
-
-In the unified feed, observation entries show only the human label and intensity dot by default. An "Advanced" or "Details" expandable section reveals:
-- SNOMED concept code
-- BNO code
-- Frequency and context metadata
-
-This satisfies the "data collection" without overwhelming the user.
-
-### 5. Dashboard "Daily Pulse" Widget
-
-Replace the current ActionGrid's "Log Observation" card with an inline quick-pulse row:
-- 5 tappable circles labeled with mood words
-- Single tap creates a minimal journal entry and shows a toast
-- Below: "Want to go deeper?" link to `/check-in`
-
-### 6. Timeline Pattern Nudges
-
-Add a small insight banner at the top of the Timeline page when patterns are detected:
-- Query observation_logs for the current week, count by concept
-- If any concept appears 3+ times, show: "You've noticed [concept name] [count] times this week"
-- Use human labels, never clinical codes
+## Overview
+Add a three-tier observation tree as an **optional first step** inside JournalForm. When a user selects a path through the tree (Domain -> Theme -> Specific Observation), the clinical metadata (SNOMED CT + BNO-10) is silently captured. The free-text journal fields appear only after the path is selected. On submit, both a `journal_entries` row and a linked `observation_logs` row are created.
 
 ---
 
-## Routing Changes
+## 1. Database Migration
 
-| Old Route | New Route | Notes |
-|---|---|---|
-| `/journal` | `/check-in` | Unified page |
-| `/self-checks` | `/check-in` | Redirect or merge |
-| `/journal` | redirect to `/check-in` | Keep old URL working |
-| `/self-checks` | redirect to `/check-in` | Keep old URL working |
+**Add `journal_entry_id` column to `observation_logs`**:
+```sql
+ALTER TABLE observation_logs
+  ADD COLUMN journal_entry_id uuid REFERENCES journal_entries(id) ON DELETE SET NULL;
+```
 
-The sidebar nav collapses "Journal" and "Self-Checks" into a single "Check-in" entry.
+**Seed the tier data** into existing `observation_categories` and `observation_concepts` tables. The categories already have `name_hu`, `name_en`, `icon`, `sort_order`. The concepts already have `concept_code` (SNOMED), `bno_code`, `description_hu`, `description_en`.
+
+Seed categories (Tier 1):
+- Relational Dynamics / Kapcsolati dinamika
+- Emotional State / Érzelmi állapot
+- Behavioral Patterns / Viselkedési minták
+- Physical / Somatic / Testi jelzések
+
+Seed concepts (Tier 2+3 combined -- each concept belongs to a category and carries the SNOMED/BNO codes):
+
+| Category | Concept (EN) | Concept (HU) | SNOMED | BNO |
+|---|---|---|---|---|
+| Relational | Boundary testing | Határpróbálgatás | (custom) | F60.3 |
+| Relational | Reality distortion | Valóságtorzítás | 425038005 | F60.3 |
+| Relational | Conflict escalation | Konfliktusfokozás | (custom) | F60.3 |
+| Emotional | Emotional dysregulation | Érzelmi szabályozási nehézség | 28639000 | F32.9 |
+| Emotional | Emptiness | Ürességérzet | (custom) | F60.3 |
+| Emotional | Intense anger | Intenzív düh | (custom) | F60.3 |
+| Behavioral | Impulsivity | Impulzivitás | 55929007 | F60.30 |
+| Behavioral | Self-harm ideation | Önsértő gondolatok | (custom) | F60.3 |
+| Behavioral | Abandonment avoidance | Elhagyástól való félelem | 225444004 | F60.3 |
+
+Human-friendly descriptions will be added to `description_en` / `description_hu` for each concept (e.g., "High-intensity relational shift" instead of "F60.3").
 
 ---
 
-## File Changes
+## 2. New Component: `ObservationTree.tsx`
 
-| File | Change |
+**Location**: `src/components/journal/ObservationTree.tsx`
+
+A stepped wizard component with the Bamboo soft-UI aesthetic:
+
+- **Step 1 (Tier 1)**: Show 4 domain cards loaded from `observation_categories`. User picks one.
+- **Step 2 (Tier 2/3)**: Show concepts for that category from `observation_concepts`. Each card shows the human-friendly `description` -- never SNOMED/BNO codes. User picks one.
+- **Step 3**: Intensity selector (1-5 circles, same style as existing) + optional frequency toggle.
+- On selection complete, fires `onComplete(selectedConceptId, intensity, frequency)` callback.
+
+Step indicator uses the same rounded-circle pattern as `ObservationStepper`. A "Skip" link allows users to create a plain journal entry without the tree.
+
+---
+
+## 3. Modify `JournalForm.tsx`
+
+Add an **optional guided tree step** before the existing form fields:
+
+- New props: `showObservationTree?: boolean`, `onObservationSelected?: (data) => void`
+- When `showObservationTree` is true, render `ObservationTree` above the form. The text fields (title, what happened, etc.) appear only after the tree path is selected (or skipped).
+- Store selected `conceptId`, `intensity`, and `frequency` in local state, passed up to the parent on submit.
+
+The form's `onSubmit` signature will be extended so the parent can handle creating both records.
+
+---
+
+## 4. Modify `CheckIn.tsx` (Journal page)
+
+Update the journal submit handler:
+
+1. Insert `journal_entries` row (existing logic).
+2. If a concept was selected via the tree, insert an `observation_logs` row with `concept_id`, `intensity`, `frequency`, and the new `journal_entry_id` linking back to the journal entry.
+
+The "New Entry" button will open the form with `showObservationTree={true}` by default. A small "Quick note" link can bypass the tree for fast entries.
+
+---
+
+## 5. i18n Updates
+
+Add new keys to `en.ts`, `hu.ts`, and `types.ts`:
+
+```
+journal.guidedTreeTitle: "What area are you reflecting on?"
+journal.guidedTreeSkip: "Skip -- just write"
+journal.guidedTreeIntensity: "How heavy was it?"
+journal.guidedTreeFrequency: "How often?"
+journal.guidedTreeSelected: "Selected path"
+```
+
+(Plus Hungarian translations for all keys.)
+
+---
+
+## 6. Security
+
+- No new RLS policies needed: `observation_logs` already has `auth.uid() = user_id` policy for ALL operations.
+- SNOMED/BNO codes are stored in `observation_concepts` (read-only for regular users via existing SELECT policy on `is_active = true`). The codes exist in the DB but are never rendered in the UI for `affected_person` users.
+
+---
+
+## Summary of files changed
+
+| File | Action |
 |---|---|
-| `src/pages/CheckIn.tsx` | **NEW** -- Unified page with Quick Pulse, ObservationStepper, and merged chronological feed |
-| `src/pages/Journal.tsx` | Redirect to `/check-in` (keep file minimal) |
-| `src/pages/SelfChecks.tsx` | Redirect to `/check-in`; questionnaire editor stays accessible via a "Manage" tab for editors |
-| `src/App.tsx` | Add `/check-in` route, keep old routes as redirects |
-| `src/components/AppSidebar.tsx` | Replace Journal + Self-Checks nav items with single "Check-in" item |
-| `src/components/ActionGrid.tsx` | Replace "Log Observation" card with inline pulse widget |
-| `src/components/journal/JournalForm.tsx` | Replace hardcoded English with i18n keys; reframe labels |
-| `src/components/journal/JournalEntryCard.tsx` | Replace hardcoded English with i18n keys; add progressive disclosure for clinical codes |
-| `src/components/checkin/QuickPulse.tsx` | **NEW** -- 5-mood one-tap component |
-| `src/components/checkin/UnifiedFeed.tsx` | **NEW** -- Merged chronological feed of journals + observations + questionnaires |
-| `src/components/observations/ObservationStepper.tsx` | Reframe step labels to warmer language |
-| `src/pages/Timeline.tsx` | Add pattern nudge banner |
-| `src/pages/Dashboard.tsx` | Include observations in recent activity feed |
-| `src/i18n/types.ts` | Add ~30 new keys for journal form, entry card, check-in, pulse |
-| `src/i18n/en.ts` | Add English values with warm, non-clinical phrasing |
-| `src/i18n/hu.ts` | Add Hungarian values with official but approachable phrasing |
-| `SYSTEM_DESCRIPTION.md` | Document the "Clinical Core, Human Surface" philosophy and unified check-in |
-
----
-
-## What Stays Unchanged
-
-- **Database schema** -- no migrations needed; existing tables handle all data
-- **SNOMED/BNO coding** -- remains invisible to users, fully intact in the backend
-- **RLS policies** -- no changes
-- **Edge functions** (reflect, patterns, export) -- no changes
-- **Questionnaire editor** -- moves into a sub-tab of Check-in for editors only
-- **Export page** -- unchanged, continues to output FHIR/BNO data
+| Database migration | Add `journal_entry_id` column + seed categories/concepts |
+| `src/components/journal/ObservationTree.tsx` | **New** -- 3-step guided tree wizard |
+| `src/components/journal/JournalForm.tsx` | Add optional tree step before form fields |
+| `src/pages/CheckIn.tsx` | Update submit handler to create linked observation_logs |
+| `src/i18n/en.ts` | Add guided tree i18n keys |
+| `src/i18n/hu.ts` | Add guided tree i18n keys (Hungarian) |
+| `src/i18n/types.ts` | Add new key typings |
 
