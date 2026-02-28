@@ -38,6 +38,7 @@ export interface Dictionary {
     manageLibrary: string;
     manageUsers: string;
     analystExport: string;
+    checkIn: string;
   };
 
   // Index / Landing
@@ -116,6 +117,8 @@ export interface Dictionary {
     completeSelfCheckDesc: string;
     viewHistory: string;
     viewHistoryDesc: string;
+    quickPulse: string;
+    goDeeper: string;
   };
 
   // Journal
@@ -132,7 +135,55 @@ export interface Dictionary {
     entryDeleted: string;
     reflectionSaved: string;
     reflectionRemoved: string;
+    // Form labels
+    formNewEntry: string;
+    formEditEntry: string;
+    formTitle: string;
+    formDate: string;
+    formWhatHappened: string;
+    formHowHeavy: string;
+    formFeeling: string;
+    formMyTruth: string;
+    formNotes: string;
+    formSave: string;
+    formUpdate: string;
+    // Entry card labels
+    cardImpact: string;
+    cardWhatHappened: string;
+    cardFeeling: string;
+    cardMyTruth: string;
+    cardNotes: string;
+    cardDeleteTitle: string;
+    cardDeleteDesc: string;
+    cardSavedReflection: string;
+    cardNewReflection: string;
+    cardReflect: string;
+    cardSaveReflection: string;
+    cardDismiss: string;
+    cardRemove: string;
+    cardRemoveReflectionTitle: string;
+    cardRemoveReflectionDesc: string;
   };
+
+  // Check-in
+  checkIn: {
+    title: string;
+    subtitle: string;
+    quickPulseTitle: string;
+    whatHappenedTitle: string;
+    yourStoryTitle: string;
+    moodStruggling: string;
+    moodUneasy: string;
+    moodOkay: string;
+    moodGood: string;
+    moodStrong: string;
+    pulseSaved: string;
+    goDeeper: string;
+    noStory: string;
+  };
+
+  // Impact labels (warm)
+  impactLabels: string[];
 
   // Self-Checks
   selfChecks: {
@@ -164,6 +215,7 @@ export interface Dictionary {
     dayNames: string[];
     journalLabel: string;
     selfCheckLabel: string;
+    patternNudge: string;
   };
 
   // Profile
@@ -295,6 +347,10 @@ export interface Dictionary {
     categoryDeleted: string;
     conceptSaved: string;
     conceptDeleted: string;
+    // Warm stepper labels
+    stepWhatsGoing: string;
+    stepHowHeavy: string;
+    stepAnythingElse: string;
   };
 
   // Emergency exit

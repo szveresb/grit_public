@@ -7,7 +7,7 @@ import { useLanguage } from '@/hooks/useLanguage';
 import { stripLangPrefix } from '@/hooks/useLanguage';
 import { useIsMobile } from '@/hooks/use-mobile';
 import {
-  Home, LayoutDashboard, BookOpen, ClipboardCheck, Clock, Download, User,
+  Home, LayoutDashboard, HeartPulse, Clock, Download, User,
   Library, Users, BarChart3, FileText, Info, Lock,
 } from 'lucide-react';
 import {
@@ -22,7 +22,6 @@ const AppSidebar = () => {
   const isMobile = useIsMobile();
   const { hasAnyRole, hasRole } = useUserRole();
 
-
   const canManageLibrary = hasAnyRole('admin', 'editor', 'guest_editor');
   const canAnalyse = hasAnyRole('admin', 'analyst');
   const isAdmin = hasRole('admin');
@@ -32,8 +31,7 @@ const AppSidebar = () => {
   const navItems = [
     { title: t.nav.home, url: '/', icon: Home },
     { title: t.dashboard, url: '/dashboard', icon: LayoutDashboard },
-    { title: t.nav.journal, url: '/journal', icon: BookOpen },
-    { title: t.nav.selfChecks, url: '/self-checks', icon: ClipboardCheck },
+    { title: t.nav.checkIn, url: '/check-in', icon: HeartPulse },
     { title: t.nav.history, url: '/timeline', icon: Clock },
     { title: t.nav.dataExport, url: '/export', icon: Download },
     { title: t.nav.account, url: '/profile', icon: User },
@@ -89,7 +87,6 @@ const AppSidebar = () => {
           </SidebarGroupContent>
         </SidebarGroup>
 
-        {/* Show explore items when sidebar is in sheet mode (mobile/tablet) */}
         {isMobile && (
           <SidebarGroup>
             <SidebarGroupLabel className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
@@ -110,17 +107,17 @@ const AppSidebar = () => {
                 <SidebarMenuItem>
                   <SidebarMenuButton
                     asChild
-                    isActive={currentPath === '/self-checks'}
-                    tooltip={t.nav.selfChecks}
+                    isActive={currentPath === '/check-in'}
+                    tooltip={t.nav.checkIn}
                   >
                     <NavLink
-                      to={user ? localePath('/self-checks') : localePath('/auth')}
+                      to={user ? localePath('/check-in') : localePath('/auth')}
                       end
                       className="hover:bg-accent rounded-xl"
                       activeClassName="bg-accent text-foreground font-semibold rounded-xl"
                     >
-                      <ClipboardCheck className="h-4 w-4" />
-                      <span>{t.nav.selfChecks}</span>
+                      <HeartPulse className="h-4 w-4" />
+                      <span>{t.nav.checkIn}</span>
                       {!user && <Lock className="h-3 w-3 ml-auto" />}
                     </NavLink>
                   </SidebarMenuButton>

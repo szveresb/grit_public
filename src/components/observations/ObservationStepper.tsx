@@ -87,7 +87,7 @@ const ObservationStepper = ({ onLogged }: { onLogged?: () => void }) => {
   const name = (item: { name_hu: string; name_en: string }) => lang === 'en' ? item.name_en : item.name_hu;
   const desc = (item: { description_hu: string | null; description_en: string | null }) => lang === 'en' ? item.description_en : item.description_hu;
 
-  const stepLabels = [t.observations.chooseDomain, t.observations.pickObservation, t.observations.qualifiers];
+  const stepLabels = [t.observations.stepWhatsGoing, t.observations.stepHowHeavy, t.observations.stepAnythingElse];
 
   return (
     <div className="space-y-5">

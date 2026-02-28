@@ -2,6 +2,7 @@ import { Button } from '@/components/ui/button';
 import { ChevronDown, ChevronUp, Pencil, Trash2, Sparkles, Loader2, Save } from 'lucide-react';
 import { format } from 'date-fns';
 import ReactMarkdown from 'react-markdown';
+import { useLanguage } from '@/hooks/useLanguage';
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
@@ -14,7 +15,6 @@ interface JournalEntryCardProps {
   onToggleExpand: () => void;
   onEdit: () => void;
   onDelete: () => void;
-  // Reflection props
   streamedReflection?: string;
   isReflecting: boolean;
   reflectDisabled: boolean;
@@ -25,32 +25,22 @@ interface JournalEntryCardProps {
 }
 
 const JournalEntryCard = ({
-  entry,
-  isExpanded,
-  onToggleExpand,
-  onEdit,
-  onDelete,
-  streamedReflection,
-  isReflecting,
-  reflectDisabled,
-  onReflect,
-  onSaveReflection,
-  onDismissReflection,
-  onClearSavedReflection,
+  entry, isExpanded, onToggleExpand, onEdit, onDelete,
+  streamedReflection, isReflecting, reflectDisabled, onReflect,
+  onSaveReflection, onDismissReflection, onClearSavedReflection,
 }: JournalEntryCardProps) => {
+  const { t } = useLanguage();
+
   return (
     <div className="bg-card/60 backdrop-blur border border-border rounded-3xl overflow-hidden">
       <div className="flex items-center">
-        <button
-          onClick={onToggleExpand}
-          className="flex-1 flex items-center justify-between p-4 text-left hover:bg-accent/30 transition-colors"
-        >
+        <button onClick={onToggleExpand} className="flex-1 flex items-center justify-between p-4 text-left hover:bg-accent/30 transition-colors">
           <div className="flex items-center gap-2 flex-wrap">
             <span className="text-sm font-semibold">{entry.title}</span>
             <span className="text-xs text-muted-foreground">{format(new Date(entry.entry_date), 'MMM d, yyyy')}</span>
             {entry.impact_level && (
               <span className={`text-xs px-2 py-0.5 rounded-full border ${entry.impact_level >= 4 ? 'border-destructive/40 text-destructive bg-destructive/10' : 'border-border text-muted-foreground'}`}>
-                Impact: {entry.impact_level}/5
+                {t.journal.cardImpact}: {entry.impact_level}/5
               </span>
             )}
           </div>
@@ -64,12 +54,12 @@ const JournalEntryCard = ({
             </AlertDialogTrigger>
             <AlertDialogContent>
               <AlertDialogHeader>
-                <AlertDialogTitle>Delete entry?</AlertDialogTitle>
-                <AlertDialogDescription>This will permanently delete "{entry.title}". This action cannot be undone.</AlertDialogDescription>
+                <AlertDialogTitle>{t.journal.cardDeleteTitle}</AlertDialogTitle>
+                <AlertDialogDescription>{t.journal.cardDeleteDesc.replace('{title}', entry.title)}</AlertDialogDescription>
               </AlertDialogHeader>
               <AlertDialogFooter>
-                <AlertDialogCancel>Cancel</AlertDialogCancel>
-                <AlertDialogAction onClick={onDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">Delete</AlertDialogAction>
+                <AlertDialogCancel>{t.cancel}</AlertDialogCancel>
+                <AlertDialogAction onClick={onDelete} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">{t.delete}</AlertDialogAction>
               </AlertDialogFooter>
             </AlertDialogContent>
           </AlertDialog>
@@ -78,39 +68,37 @@ const JournalEntryCard = ({
 
       {isExpanded && (
         <div className="px-4 pb-4 space-y-3 border-t border-border/60 pt-3">
-          {entry.event_description && <div><span className="text-xs font-semibold uppercase text-muted-foreground">What happened:</span><p className="text-sm mt-1 leading-relaxed">{entry.event_description}</p></div>}
-          {entry.emotional_state && <div><span className="text-xs font-semibold uppercase text-muted-foreground">Feeling:</span><p className="text-sm mt-1">{entry.emotional_state}</p></div>}
-          {entry.self_anchor && <div><span className="text-xs font-semibold uppercase text-muted-foreground">Self-Anchor:</span><p className="text-sm mt-1 italic leading-relaxed">{entry.self_anchor}</p></div>}
-          {entry.free_text && <div><span className="text-xs font-semibold uppercase text-muted-foreground">Notes:</span><p className="text-sm mt-1 whitespace-pre-wrap leading-relaxed">{entry.free_text}</p></div>}
+          {entry.event_description && <div><span className="text-xs font-semibold uppercase text-muted-foreground">{t.journal.cardWhatHappened}:</span><p className="text-sm mt-1 leading-relaxed">{entry.event_description}</p></div>}
+          {entry.emotional_state && <div><span className="text-xs font-semibold uppercase text-muted-foreground">{t.journal.cardFeeling}:</span><p className="text-sm mt-1">{entry.emotional_state}</p></div>}
+          {entry.self_anchor && <div><span className="text-xs font-semibold uppercase text-muted-foreground">{t.journal.cardMyTruth}:</span><p className="text-sm mt-1 italic leading-relaxed">{entry.self_anchor}</p></div>}
+          {entry.free_text && <div><span className="text-xs font-semibold uppercase text-muted-foreground">{t.journal.cardNotes}:</span><p className="text-sm mt-1 whitespace-pre-wrap leading-relaxed">{entry.free_text}</p></div>}
 
-          {/* AI Reflection */}
           <div className="pt-2 border-t border-border/40">
-            {/* Saved reflection */}
             {entry.reflection && !streamedReflection && (
               <div className="space-y-2">
                 <div className="flex items-center gap-2">
                   <Sparkles className="h-3.5 w-3.5 text-primary" />
-                  <span className="text-xs font-semibold uppercase tracking-widest text-primary">Saved Reflection</span>
+                  <span className="text-xs font-semibold uppercase tracking-widest text-primary">{t.journal.cardSavedReflection}</span>
                 </div>
                 <div className="prose prose-sm max-w-none text-sm text-foreground/90 leading-relaxed [&_p]:mb-2 [&_p:last-child]:mb-0">
                   <ReactMarkdown>{entry.reflection}</ReactMarkdown>
                 </div>
                 <div className="flex gap-2">
                   <Button variant="ghost" size="sm" className="rounded-2xl text-xs gap-1.5" onClick={onReflect} disabled={reflectDisabled}>
-                    <Sparkles className="h-3.5 w-3.5" /> New Reflection
+                    <Sparkles className="h-3.5 w-3.5" /> {t.journal.cardNewReflection}
                   </Button>
                   <AlertDialog>
                     <AlertDialogTrigger asChild>
-                      <Button variant="ghost" size="sm" className="text-xs text-muted-foreground h-7 px-2">Remove</Button>
+                      <Button variant="ghost" size="sm" className="text-xs text-muted-foreground h-7 px-2">{t.journal.cardRemove}</Button>
                     </AlertDialogTrigger>
                     <AlertDialogContent>
                       <AlertDialogHeader>
-                        <AlertDialogTitle>Remove saved reflection?</AlertDialogTitle>
-                        <AlertDialogDescription>This will delete the saved reflection for this entry.</AlertDialogDescription>
+                        <AlertDialogTitle>{t.journal.cardRemoveReflectionTitle}</AlertDialogTitle>
+                        <AlertDialogDescription>{t.journal.cardRemoveReflectionDesc}</AlertDialogDescription>
                       </AlertDialogHeader>
                       <AlertDialogFooter>
-                        <AlertDialogCancel>Cancel</AlertDialogCancel>
-                        <AlertDialogAction onClick={onClearSavedReflection} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">Remove</AlertDialogAction>
+                        <AlertDialogCancel>{t.cancel}</AlertDialogCancel>
+                        <AlertDialogAction onClick={onClearSavedReflection} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">{t.journal.cardRemove}</AlertDialogAction>
                       </AlertDialogFooter>
                     </AlertDialogContent>
                   </AlertDialog>
@@ -118,12 +106,11 @@ const JournalEntryCard = ({
               </div>
             )}
 
-            {/* Streaming/new reflection */}
             {streamedReflection ? (
               <div className="space-y-2">
                 <div className="flex items-center gap-2">
                   <Sparkles className="h-3.5 w-3.5 text-primary" />
-                  <span className="text-xs font-semibold uppercase tracking-widest text-primary">Reflection</span>
+                  <span className="text-xs font-semibold uppercase tracking-widest text-primary">{t.journal.cardSavedReflection}</span>
                   {isReflecting && <Loader2 className="h-3 w-3 animate-spin text-muted-foreground" />}
                 </div>
                 <div className="prose prose-sm max-w-none text-sm text-foreground/90 leading-relaxed [&_p]:mb-2 [&_p:last-child]:mb-0">
@@ -132,10 +119,10 @@ const JournalEntryCard = ({
                 {!isReflecting && (
                   <div className="flex gap-2">
                     <Button variant="default" size="sm" className="rounded-2xl text-xs gap-1.5" onClick={onSaveReflection}>
-                      <Save className="h-3.5 w-3.5" /> Save Reflection
+                      <Save className="h-3.5 w-3.5" /> {t.journal.cardSaveReflection}
                     </Button>
                     <Button variant="ghost" size="sm" className="text-xs text-muted-foreground h-7 px-2" onClick={onDismissReflection}>
-                      Dismiss
+                      {t.journal.cardDismiss}
                     </Button>
                   </div>
                 )}
@@ -143,7 +130,7 @@ const JournalEntryCard = ({
             ) : !entry.reflection && (
               <Button variant="ghost" size="sm" className="rounded-2xl text-xs gap-1.5" onClick={onReflect} disabled={reflectDisabled}>
                 <Sparkles className="h-3.5 w-3.5" />
-                Reflect on this entry
+                {t.journal.cardReflect}
               </Button>
             )}
           </div>

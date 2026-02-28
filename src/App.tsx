@@ -2,15 +2,14 @@ import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "@/hooks/useAuth";
 import { LanguageProvider } from "@/hooks/useLanguage";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
-import Journal from "./pages/Journal";
-import SelfChecks from "./pages/SelfChecks";
+import CheckIn from "./pages/CheckIn";
 import Timeline from "./pages/Timeline";
 import Profile from "./pages/Profile";
 import Export from "./pages/Export";
@@ -27,20 +26,23 @@ const AppRoutes = () => (
     <Route path="/" element={<Index />} />
     <Route path="/auth" element={<Auth />} />
     <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
-    <Route path="/journal" element={<ProtectedRoute><Journal /></ProtectedRoute>} />
-    <Route path="/self-checks" element={<ProtectedRoute><SelfChecks /></ProtectedRoute>} />
+    <Route path="/check-in" element={<ProtectedRoute><CheckIn /></ProtectedRoute>} />
+    {/* Old routes redirect to unified check-in */}
+    <Route path="/journal" element={<Navigate to="/check-in" replace />} />
+    <Route path="/self-checks" element={<Navigate to="/check-in" replace />} />
     <Route path="/timeline" element={<ProtectedRoute><Timeline /></ProtectedRoute>} />
     <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
     <Route path="/export" element={<ProtectedRoute><Export /></ProtectedRoute>} />
     <Route path="/manage-library" element={<ProtectedRoute><ManageLibrary /></ProtectedRoute>} />
     <Route path="/manage-users" element={<ProtectedRoute><ManageUsers /></ProtectedRoute>} />
     <Route path="/analyst-export" element={<ProtectedRoute><AnalystExport /></ProtectedRoute>} />
-    {/* English prefix duplicates */}
+    {/* English prefix */}
     <Route path="/en" element={<Index />} />
     <Route path="/en/auth" element={<Auth />} />
     <Route path="/en/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
-    <Route path="/en/journal" element={<ProtectedRoute><Journal /></ProtectedRoute>} />
-    <Route path="/en/self-checks" element={<ProtectedRoute><SelfChecks /></ProtectedRoute>} />
+    <Route path="/en/check-in" element={<ProtectedRoute><CheckIn /></ProtectedRoute>} />
+    <Route path="/en/journal" element={<Navigate to="/en/check-in" replace />} />
+    <Route path="/en/self-checks" element={<Navigate to="/en/check-in" replace />} />
     <Route path="/en/timeline" element={<ProtectedRoute><Timeline /></ProtectedRoute>} />
     <Route path="/en/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
     <Route path="/en/export" element={<ProtectedRoute><Export /></ProtectedRoute>} />

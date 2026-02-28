@@ -3,11 +3,13 @@ import DashboardLayout from '@/components/DashboardLayout';
 import { useAuth } from '@/hooks/useAuth';
 import { useLanguage } from '@/hooks/useLanguage';
 import { supabase } from '@/integrations/supabase/client';
-import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, parseISO } from 'date-fns';
-import { ChevronLeft, ChevronRight, BookOpen, ClipboardCheck, Eye } from 'lucide-react';
+import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, parseISO, startOfWeek, endOfWeek } from 'date-fns';
+import { ChevronLeft, ChevronRight, BookOpen, ClipboardCheck, Eye, TrendingUp } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 interface TimelineItem { id: string; type: 'journal' | 'questionnaire' | 'observation'; title: string; date: string; detail?: string; }
+
+interface PatternNudge { name: string; count: number; }
 
 const Timeline = () => {
   const { user } = useAuth();
@@ -15,6 +17,7 @@ const Timeline = () => {
   const [items, setItems] = useState<TimelineItem[]>([]);
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
+  const [nudges, setNudges] = useState<PatternNudge[]>([]);
 
   useEffect(() => {
     if (!user) return;
@@ -24,10 +27,9 @@ const Timeline = () => {
         supabase.from('questionnaire_responses').select('id, questionnaire_id, completed_at, questionnaires(title)').eq('user_id', user.id),
         supabase.from('observation_logs').select('id, intensity, frequency, logged_at, concept_id').eq('user_id', user.id),
       ]);
-      const journalItems: TimelineItem[] = (journalRes.data ?? []).map(j => ({ id: j.id, type: 'journal', title: j.title, date: j.entry_date, detail: j.impact_level ? `Impact: ${j.impact_level}/5` : undefined }));
+      const journalItems: TimelineItem[] = (journalRes.data ?? []).map(j => ({ id: j.id, type: 'journal', title: j.title, date: j.entry_date, detail: j.impact_level ? `${t.journal.cardImpact}: ${j.impact_level}/5` : undefined }));
       const qItems: TimelineItem[] = (responseRes.data ?? []).map((r: any) => ({ id: r.id, type: 'questionnaire', title: r.questionnaires?.title ?? t.nav.selfChecks, date: r.completed_at.split('T')[0] }));
 
-      // Resolve observation concept names
       let obsItems: TimelineItem[] = [];
       const obsData = obsRes.data ?? [];
       if (obsData.length > 0) {
@@ -39,6 +41,23 @@ const Timeline = () => {
           const name = concept ? (lang === 'en' ? concept.name_en : concept.name_hu) : t.observations.tabObservations;
           return { id: o.id, type: 'observation' as const, title: name, date: o.logged_at, detail: `${t.observations.intensity}: ${o.intensity}/5` };
         });
+
+        // Pattern nudges: count observations this week
+        const now = new Date();
+        const weekStart = format(startOfWeek(now, { weekStartsOn: 1 }), 'yyyy-MM-dd');
+        const weekEnd = format(endOfWeek(now, { weekStartsOn: 1 }), 'yyyy-MM-dd');
+        const weekObs = obsData.filter(o => o.logged_at >= weekStart && o.logged_at <= weekEnd);
+        const countByConceptId: Record<string, number> = {};
+        weekObs.forEach(o => { countByConceptId[o.concept_id] = (countByConceptId[o.concept_id] || 0) + 1; });
+        const detectedNudges: PatternNudge[] = [];
+        for (const [cid, count] of Object.entries(countByConceptId)) {
+          if (count >= 3) {
+            const concept = conMap[cid];
+            const name = concept ? (lang === 'en' ? concept.name_en : concept.name_hu) : '';
+            if (name) detectedNudges.push({ name, count });
+          }
+        }
+        setNudges(detectedNudges);
       }
 
       setItems([...journalItems, ...qItems, ...obsItems].sort((a, b) => b.date.localeCompare(a.date)));
@@ -60,6 +79,20 @@ const Timeline = () => {
           <h1 className="text-xl font-bold tracking-tight text-foreground">{t.timeline.title}</h1>
           <p className="mt-1 text-sm text-muted-foreground leading-relaxed">{t.timeline.subtitle}</p>
         </div>
+
+        {/* Pattern nudges */}
+        {nudges.length > 0 && (
+          <div className="bg-primary/10 border border-primary/20 rounded-3xl p-4 flex items-start gap-3">
+            <TrendingUp className="h-4 w-4 text-primary mt-0.5 shrink-0" />
+            <div className="space-y-1">
+              {nudges.map(n => (
+                <p key={n.name} className="text-sm text-foreground">
+                  {t.timeline.patternNudge.replace('{name}', n.name).replace('{count}', String(n.count))}
+                </p>
+              ))}
+            </div>
+          </div>
+        )}
 
         <div className="bg-card/60 backdrop-blur border border-border rounded-3xl p-5">
           <div className="flex items-center justify-between mb-4">
