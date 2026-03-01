@@ -12,7 +12,7 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
-import { Plus, Trash2, Pencil, X, Save } from 'lucide-react';
+import { FPlus, FTrash, FPencil, FClose, FSave } from '@/components/icons/FreudIcons';
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
@@ -152,7 +152,7 @@ const SelfChecks = () => {
       {isEditor && (
         <div className="flex justify-end mb-4">
           <Button size="sm" variant="outline" className="rounded-2xl" onClick={openCreate}>
-            <Plus className="h-4 w-4 mr-1" /> {t.create}
+            <FPlus className="h-4 w-4 mr-1" /> {t.create}
           </Button>
         </div>
       )}
@@ -163,7 +163,7 @@ const SelfChecks = () => {
             <h2 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
               {editingId ? t.selfChecks.editSelfCheck : t.selfChecks.newSelfCheck}
             </h2>
-            <Button variant="ghost" size="icon" onClick={() => setShowForm(false)}><X className="h-4 w-4" /></Button>
+            <Button variant="ghost" size="icon" onClick={() => setShowForm(false)}><FClose className="h-4 w-4" /></Button>
           </div>
           <div className="space-y-2">
             <Label className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">{t.selfChecks.selfCheckTitle}</Label>
@@ -191,7 +191,7 @@ const SelfChecks = () => {
                     <option value="multiple_choice">Multiple Choice</option>
                   </select>
                   {formQuestions.length > 1 && (
-                    <Button type="button" variant="ghost" size="icon" onClick={() => setFormQuestions(q => q.filter((_, j) => j !== i))}><Trash2 className="h-4 w-4" /></Button>
+                    <Button type="button" variant="ghost" size="icon" onClick={() => setFormQuestions(q => q.filter((_, j) => j !== i))}><FTrash className="h-4 w-4" /></Button>
                   )}
                 </div>
                 {nq.type === 'multiple_choice' && (
@@ -203,7 +203,7 @@ const SelfChecks = () => {
           </div>
           <div className="flex gap-2">
             <Button size="sm" className="rounded-2xl" onClick={handleSave} disabled={saving}>
-              <Save className="h-4 w-4 mr-1" /> {saving ? t.saving : editingId ? t.update : t.create}
+              <FSave className="h-4 w-4 mr-1" /> {saving ? t.saving : editingId ? t.update : t.create}
             </Button>
             <Button size="sm" variant="outline" className="rounded-2xl" onClick={() => setShowForm(false)}>{t.cancel}</Button>
           </div>
@@ -244,10 +244,10 @@ const SelfChecks = () => {
                   <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => togglePublished(q)} title={q.is_published ? 'Unpublish' : 'Publish'}>
                     <Switch checked={q.is_published} className="pointer-events-none scale-75" />
                   </Button>
-                  <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => openEdit(q)}><Pencil className="h-3.5 w-3.5" /></Button>
+                  <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => openEdit(q)}><FPencil className="h-3.5 w-3.5" /></Button>
                   <AlertDialog>
                     <AlertDialogTrigger asChild>
-                      <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:text-destructive"><Trash2 className="h-3.5 w-3.5" /></Button>
+                      <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:text-destructive"><FTrash className="h-3.5 w-3.5" /></Button>
                     </AlertDialogTrigger>
                     <AlertDialogContent>
                       <AlertDialogHeader>

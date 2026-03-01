@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
-import { Plus, Search, Loader2, TrendingUp } from 'lucide-react';
+import { FPlus, FSearch, FLoader, FTrendingUp } from '@/components/icons/FreudIcons';
 import { readSSEStream } from '@/lib/sse-stream';
 import type { JournalEntry, JournalFormData } from '@/types/journal';
 import { emptyForm } from '@/types/journal';
@@ -160,19 +160,19 @@ const Journal = () => {
           <div className="flex gap-2">
             {entries.length >= 2 && (
               <Button size="sm" variant="outline" className="rounded-2xl gap-1.5" onClick={handlePatternAnalysis} disabled={analyzingPatterns}>
-                {analyzingPatterns ? <Loader2 className="h-4 w-4 animate-spin" /> : <TrendingUp className="h-4 w-4" />}
+                {analyzingPatterns ? <FLoader className="h-4 w-4 animate-spin" /> : <FTrendingUp className="h-4 w-4" />}
                 {t.journal.patterns}
               </Button>
             )}
             <Button size="sm" className="rounded-2xl" onClick={openCreate}>
-              <Plus className="h-4 w-4 mr-1" /> {t.journal.newEntry}
+              <FPlus className="h-4 w-4 mr-1" /> {t.journal.newEntry}
             </Button>
           </div>
         </div>
 
         <div className="flex flex-wrap gap-3">
           <div className="relative flex-1 min-w-[200px]">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <FSearch className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input value={searchQuery} onChange={e => setSearchQuery(e.target.value)} placeholder={t.journal.searchEntries} className="pl-9 rounded-2xl" />
           </div>
           <Input type="date" value={dateFrom} onChange={e => setDateFrom(e.target.value)} className="w-36 rounded-2xl" />

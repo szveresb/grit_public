@@ -4,7 +4,7 @@ import { useLanguage } from '@/hooks/useLanguage';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
-import { Download } from 'lucide-react';
+import { FDownload } from '@/components/icons/FreudIcons';
 
 const BNO_LABELS_HU: Record<string, string> = {
   'Z63.0': 'Házastárssal vagy partnerrel kapcsolatos problémák',
@@ -191,14 +191,14 @@ const Export = () => {
         <div className="bg-card/60 backdrop-blur border border-border rounded-3xl p-6 space-y-4">
           <p className="text-sm text-muted-foreground leading-relaxed">{t.export.desc}</p>
           <Button onClick={handleExport} size="sm" className="rounded-2xl">
-            <Download className="h-4 w-4 mr-1.5" /> {t.export.exportAll}
+            <FDownload className="h-4 w-4 mr-1.5" /> {t.export.exportAll}
           </Button>
         </div>
         <div className="bg-card/60 backdrop-blur border border-border rounded-3xl p-6 space-y-4">
           <h2 className="text-sm md:text-base font-semibold text-foreground">{t.export.therapistTitle}</h2>
           <p className="text-sm text-muted-foreground leading-relaxed">{t.export.therapistDesc}</p>
           <Button onClick={handleTherapistExport} size="sm" variant="secondary" className="rounded-2xl">
-            <Download className="h-4 w-4 mr-1.5" /> {t.export.therapistExport}
+            <FDownload className="h-4 w-4 mr-1.5" /> {t.export.therapistExport}
           </Button>
         </div>
       </div>

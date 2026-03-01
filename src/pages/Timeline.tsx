@@ -4,7 +4,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useLanguage } from '@/hooks/useLanguage';
 import { supabase } from '@/integrations/supabase/client';
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, parseISO, startOfWeek, endOfWeek } from 'date-fns';
-import { ChevronLeft, ChevronRight, BookOpen, ClipboardCheck, Eye, TrendingUp } from 'lucide-react';
+import { FChevronLeft, FChevronRight, FBookOpen, FClipboardCheck, FEye, FTrendingUp } from '@/components/icons/FreudIcons';
 import { Button } from '@/components/ui/button';
 
 interface TimelineItem { id: string; type: 'journal' | 'questionnaire' | 'observation'; title: string; date: string; detail?: string; }
@@ -82,7 +82,7 @@ const Timeline = () => {
         {/* Pattern nudges */}
         {nudges.length > 0 && (
           <div className="bg-primary/10 border border-primary/20 rounded-3xl p-4 flex items-start gap-3">
-            <TrendingUp className="h-4 w-4 text-primary mt-0.5 shrink-0" />
+            <FTrendingUp className="h-4 w-4 text-primary mt-0.5 shrink-0" />
             <div className="space-y-1">
               {nudges.map(n => (
                 <p key={n.name} className="text-sm text-foreground">
@@ -96,11 +96,11 @@ const Timeline = () => {
         <div className="bg-card/60 backdrop-blur border border-border rounded-3xl p-5">
           <div className="flex items-center justify-between mb-4">
             <Button variant="ghost" size="icon" className="rounded-full" onClick={() => setCurrentMonth(m => new Date(m.getFullYear(), m.getMonth() - 1))}>
-              <ChevronLeft className="h-4 w-4" />
+              <FChevronLeft className="h-4 w-4" />
             </Button>
             <span className="text-sm font-semibold">{format(currentMonth, 'MMMM yyyy')}</span>
             <Button variant="ghost" size="icon" className="rounded-full" onClick={() => setCurrentMonth(m => new Date(m.getFullYear(), m.getMonth() + 1))}>
-              <ChevronRight className="h-4 w-4" />
+              <FChevronRight className="h-4 w-4" />
             </Button>
           </div>
 
@@ -139,7 +139,7 @@ const Timeline = () => {
               <p className="text-sm text-muted-foreground">{t.timeline.noEntriesOnDay}</p>
             ) : selectedItems.map(item => (
               <div key={item.id} className="flex items-start gap-3 p-3 border border-border rounded-2xl">
-                {item.type === 'journal' ? <BookOpen className="h-4 w-4 text-primary mt-0.5" /> : item.type === 'observation' ? <Eye className="h-4 w-4 text-accent-foreground/60 mt-0.5" /> : <ClipboardCheck className="h-4 w-4 text-muted-foreground mt-0.5" />}
+                {item.type === 'journal' ? <FBookOpen className="h-4 w-4 text-primary mt-0.5" /> : item.type === 'observation' ? <FEye className="h-4 w-4 text-accent-foreground/60 mt-0.5" /> : <FClipboardCheck className="h-4 w-4 text-muted-foreground mt-0.5" />}
                 <div>
                   <span className="text-sm font-semibold">{item.title}</span>
                   <span className="ml-2 text-xs text-muted-foreground capitalize">{item.type === 'journal' ? t.timeline.journalLabel : item.type === 'observation' ? t.observations.tabObservations : t.timeline.selfCheckLabel}</span>
@@ -156,7 +156,7 @@ const Timeline = () => {
             <p className="text-sm text-muted-foreground">{t.timeline.noActivity}</p>
           ) : items.map(item => (
             <div key={item.id} className="flex items-center gap-3 py-2.5 border-b border-border/50 last:border-0">
-              {item.type === 'journal' ? <BookOpen className="h-3.5 w-3.5 text-primary" /> : item.type === 'observation' ? <Eye className="h-3.5 w-3.5 text-accent-foreground/60" /> : <ClipboardCheck className="h-3.5 w-3.5 text-muted-foreground" />}
+              {item.type === 'journal' ? <FBookOpen className="h-3.5 w-3.5 text-primary" /> : item.type === 'observation' ? <FEye className="h-3.5 w-3.5 text-accent-foreground/60" /> : <FClipboardCheck className="h-3.5 w-3.5 text-muted-foreground" />}
               <span className="text-sm flex-1">{item.title}</span>
               <span className="text-xs text-muted-foreground">{format(parseISO(item.date), 'MMM d')}</span>
             </div>

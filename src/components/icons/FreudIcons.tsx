@@ -337,3 +337,92 @@ export const FMoodStrong = icon(
   </>,
   'FMoodStrong'
 );
+
+// ─── Additional icons ────────────────────────────────
+
+/** Search – magnifying glass */
+export const FSearch = icon(
+  <>
+    <circle cx="11" cy="11" r="7" />
+    <path d="M21 21l-4.35-4.35" />
+  </>,
+  'FSearch'
+);
+
+/** Plus – rounded plus */
+export const FPlus = icon(
+  <>
+    <path d="M12 5v14" />
+    <path d="M5 12h14" />
+  </>,
+  'FPlus'
+);
+
+/** Log Out – door with arrow */
+export const FLogOut = icon(
+  <>
+    <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+    <path d="M16 17l5-5-5-5" />
+    <path d="M21 12H9" />
+  </>,
+  'FLogOut'
+);
+
+/** Arrow Right */
+export const FArrowRight = icon(
+  <>
+    <path d="M5 12h14" />
+    <path d="M12 5l7 7-7 7" />
+  </>,
+  'FArrowRight'
+);
+
+/** Chevron Left */
+export const FChevronLeft = icon(
+  <path d="M15 18l-6-6 6-6" />,
+  'FChevronLeft'
+);
+
+/** Chevron Right */
+export const FChevronRight = icon(
+  <path d="M9 6l6 6-6 6" />,
+  'FChevronRight'
+);
+
+/** Clipboard Check – completed task */
+export const FClipboardCheck = icon(
+  <>
+    <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" />
+    <rect x="8" y="2" width="8" height="4" rx="1.5" />
+    <path d="M9 14l2 2 4-4" />
+  </>,
+  'FClipboardCheck'
+);
+
+/** Book Open – open journal */
+export const FBookOpen = icon(
+  <>
+    <path d="M2 5c2-1.5 4-2 6-2s4 .5 4 2v14c-2-1-4-1.5-4-1.5S4 18 2 19V5z" />
+    <path d="M12 5c2-1.5 4-2 6-2s4 .5 4 2v14c-2-1-4-1.5-4-1.5s-4-.5-6 1.5V5z" />
+  </>,
+  'FBookOpen'
+);
+
+/** TrendingUp – rising trend line */
+export const FTrendingUp = icon(
+  <>
+    <path d="M22 7l-8.5 8.5-5-5L2 17" />
+    <path d="M16 7h6v6" />
+  </>,
+  'FTrendingUp'
+);
+
+/** Shield Alert – shield with exclamation */
+export const FShieldAlert = icon(
+  <>
+    <path d="M12 2l8 4v5c0 5.5-3.8 10.7-8 12-4.2-1.3-8-6.5-8-12V6l8-4z" />
+    <path d="M12 8v4" />
+    <circle cx="12" cy="15" r="0.5" fill="currentColor" stroke="none" />
+  </>,
+  'FShieldAlert'
+);

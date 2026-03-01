@@ -7,7 +7,7 @@ import LanguageToggle from '@/components/LanguageToggle';
 import { useAuth } from '@/hooks/useAuth';
 import { useLanguage } from '@/hooks/useLanguage';
 import { Button } from '@/components/ui/button';
-import { LogOut, User } from 'lucide-react';
+import { FLogOut, FUser } from '@/components/icons/FreudIcons';
 import bambooBg from '@/assets/bamboo-bg.jpg';
 
 interface DashboardLayoutProps {
@@ -51,11 +51,11 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
               {user && (
                 <>
                   <Button variant="ghost" size="sm" className="rounded-full gap-1.5" onClick={() => navigate(localePath('/profile'))}>
-                    <User className="h-4 w-4" />
+                    <FUser className="h-4 w-4" />
                     <span className="hidden sm:inline">{t.nav.account}</span>
                   </Button>
                   <Button variant="ghost" size="sm" className="rounded-full gap-1.5 text-muted-foreground" onClick={async () => { await signOut(); navigate(localePath('/')); }}>
-                    <LogOut className="h-4 w-4" />
+                    <FLogOut className="h-4 w-4" />
                     <span className="hidden sm:inline">{t.signOut}</span>
                   </Button>
                 </>

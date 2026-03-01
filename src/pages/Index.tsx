@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useLanguage } from '@/hooks/useLanguage';
 import { supabase } from '@/integrations/supabase/client';
-import { Lock, ArrowRight, FileText } from 'lucide-react';
+import { FLock, FArrowRight, FFileText } from '@/components/icons/FreudIcons';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -57,7 +57,7 @@ const Index = () => {
             <a href="#research" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">{t.nav.researchSummaries}</a>
             <button onClick={() => handleGatedClick('/journal')} className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1.5">
               {t.nav.checkIn}
-              {!user && <Lock className="h-3 w-3" />}
+              {!user && <FLock className="h-3 w-3" />}
             </button>
             <a href="#about" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">{t.nav.about}</a>
           </nav>
@@ -91,7 +91,7 @@ const Index = () => {
             </Button>
             <Button size="lg" variant="outline" className="rounded-2xl px-6" onClick={() => handleGatedClick('/journal')}>
               {t.landing.startSelfCheck}
-              {!user && <Lock className="h-4 w-4 ml-1.5" />}
+              {!user && <FLock className="h-4 w-4 ml-1.5" />}
             </Button>
           </div>
         </div>
@@ -162,7 +162,7 @@ const Index = () => {
               return (
                 <Wrapper key={study.id} {...linkProps} className={`bg-card/70 backdrop-blur border border-border rounded-3xl p-6 hover:shadow-md transition-all group ${study.url ? 'cursor-pointer' : ''}`}>
                   <div className="flex items-center gap-2 mb-2">
-                    <FileText className="h-4 w-4 text-primary" />
+                    <FFileText className="h-4 w-4 text-primary" />
                     <Badge variant="secondary" className="rounded-full text-[10px] font-semibold uppercase tracking-wider">{study.category}</Badge>
                   </div>
                   <h3 className="text-sm font-semibold text-foreground group-hover:text-primary transition-colors">{study.title}</h3>
@@ -200,13 +200,13 @@ const Index = () => {
             <div className="text-center pt-2">
               {user ? (
                 <Button className="rounded-2xl px-6" onClick={() => navigate(localePath('/journal'))}>
-                  {t.landing.goToSelfChecks} <ArrowRight className="h-4 w-4 ml-1" />
+                  {t.landing.goToSelfChecks} <FArrowRight className="h-4 w-4 ml-1" />
                 </Button>
               ) : (
                 <div className="space-y-3">
                   <p className="text-xs text-muted-foreground">{t.landing.createFreeAccount}</p>
                   <Button className="rounded-2xl px-6" onClick={() => navigate(localePath('/auth'))}>
-                    {t.landing.createYourSpace} <ArrowRight className="h-4 w-4 ml-1" />
+                    {t.landing.createYourSpace} <FArrowRight className="h-4 w-4 ml-1" />
                   </Button>
                 </div>
               )}
