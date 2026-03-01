@@ -251,7 +251,17 @@ A SNOMED CT-inspired three-level hierarchy for logging interpersonal patterns.
 
 ### Design Philosophy: "Clinical Core, Human Surface"
 
-The UI uses warm, low-cognitive-load language ("How heavy was it?", "My truth", "What happened?") while the backend silently records SNOMED CT and BNO-10 coded clinical data. Users experience a supportive sensemaking journal; practitioners receive standardized interoperable data. Monochrome iconography (filled-circle opacity scale for mood) aligns with the minimal bamboo aesthetic.
+The UI uses warm, low-cognitive-load language ("How heavy was it?", "My truth", "What happened?") while the backend silently records SNOMED CT and BNO-10 coded clinical data. Users experience a supportive sensemaking journal; practitioners receive standardized interoperable data.
+
+### Iconography: Freud Icon Set
+
+The app uses a custom icon library (`src/components/icons/FreudIcons.tsx`) inspired by the [freud Mental Health & Mindfulness UI Icon Set](https://dribbble.com/shots/23883954). Icons feature thick rounded strokes, organic bubbly shapes, and mental-health-themed metaphors — replacing generic Lucide icons throughout. Key icons include:
+
+- **Navigation:** `FHome`, `FHeartPulse` (check-in), `FTimeline`, `FUser`, `FDownload`, `FBook`, `FUsers`, `FBarChart`
+- **Actions:** `FSave`, `FClose`, `FPlus`, `FEdit`, `FTrash`, `FChevronDown/Right`, `FExternalLink`
+- **Domain:** `FShield` (boundaries), `FSparkles` (patterns), `FBrain` (mind), `FEye` (observation)
+- **Mood (QuickPulse):** `FMoodStruggling` (wilting sprout) → `FMoodUneasy` (drooping leaf) → `FMoodOkay` (balanced branch) → `FMoodGood` (blooming leaf) → `FMoodStrong` (full bamboo) — botanical metaphors with opacity-graded sage-green, matching the bamboo soft-UI aesthetic
+- **Roles:** `FUserCheck`, `FUserSearch`, `FShieldCheck`, `FPenTool`, `FUserPen`
 
 ### Pages
 
@@ -277,7 +287,7 @@ The UI uses warm, low-cognitive-load language ("How heavy was it?", "My truth", 
 - **`ProtectedRoute`** — Auth guard wrapper
 - **`EmergencyExit`** — Quick-exit safety button (always visible)
 - **`LanguageToggle`** — HU/EN language switcher
-- **`QuickPulse`** — 5 monochrome mood circles (opacity-graded sage-green ◌→●); one-tap creates a lightweight `journal_entry`
+- **`QuickPulse`** — 5 botanical Freud-style mood icons (wilting sprout → full bamboo, opacity-graded sage-green); one-tap creates a lightweight `journal_entry`
 - **`UnifiedFeed`** — Interleaved chronological list of journal entries, observation logs, and questionnaire completions
 - **`ObservationStepper`** — 3-step progressive disclosure with warm labels ("What's going on?" → "How heavy?" → "Anything to add?")
 - **`JournalForm` / `JournalEntryCard`** — Fully localized journal creation and display with progressive disclosure for clinical codes
