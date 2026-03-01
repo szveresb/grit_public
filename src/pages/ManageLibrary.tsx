@@ -11,7 +11,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
-import { Plus, Pencil, Trash2, X, Save, Search } from 'lucide-react';
+import { FPlus, FPencil, FTrash, FClose, FSave, FSearch } from '@/components/icons/FreudIcons';
 import { Navigate } from 'react-router-dom';
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
@@ -97,13 +97,13 @@ const ManageLibrary = () => {
             <p className="mt-1 text-sm text-muted-foreground leading-relaxed">{t.manageLibrary.subtitle}</p>
           </div>
           <Button size="sm" className="rounded-2xl" onClick={openCreate}>
-            <Plus className="h-4 w-4 mr-1" /> {t.manageLibrary.newArticle}
+            <FPlus className="h-4 w-4 mr-1" /> {t.manageLibrary.newArticle}
           </Button>
         </div>
 
         <div className="flex gap-3">
           <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <FSearch className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
             <Input value={searchQuery} onChange={e => setSearchQuery(e.target.value)} placeholder={t.manageLibrary.searchArticles} className="pl-9 rounded-2xl" />
           </div>
           <select value={filterCategory} onChange={e => setFilterCategory(e.target.value)} className="border border-input rounded-2xl px-3 h-10 text-sm bg-background">
@@ -118,7 +118,7 @@ const ManageLibrary = () => {
               <h2 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
                 {editingId ? t.manageLibrary.editArticle : t.manageLibrary.newArticle}
               </h2>
-              <Button variant="ghost" size="icon" onClick={() => setShowForm(false)}><X className="h-4 w-4" /></Button>
+              <Button variant="ghost" size="icon" onClick={() => setShowForm(false)}><FClose className="h-4 w-4" /></Button>
             </div>
             <div className="space-y-2">
               <Label className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">{t.manageLibrary.articleTitle}</Label>
@@ -150,7 +150,7 @@ const ManageLibrary = () => {
             </div>
             <div className="flex gap-2">
               <Button size="sm" className="rounded-2xl" onClick={handleSave} disabled={saving}>
-                <Save className="h-4 w-4 mr-1" /> {saving ? t.saving : editingId ? t.update : t.create}
+                <FSave className="h-4 w-4 mr-1" /> {saving ? t.saving : editingId ? t.update : t.create}
               </Button>
               <Button size="sm" variant="outline" className="rounded-2xl" onClick={() => setShowForm(false)}>{t.cancel}</Button>
             </div>
@@ -177,10 +177,10 @@ const ManageLibrary = () => {
                   {a.source && <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground mt-2">{a.source}</p>}
                 </div>
                 <div className="flex gap-1 shrink-0">
-                  <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => openEdit(a)}><Pencil className="h-3.5 w-3.5" /></Button>
+                  <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => openEdit(a)}><FPencil className="h-3.5 w-3.5" /></Button>
                   <AlertDialog>
                     <AlertDialogTrigger asChild>
-                      <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:text-destructive"><Trash2 className="h-3.5 w-3.5" /></Button>
+                      <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:text-destructive"><FTrash className="h-3.5 w-3.5" /></Button>
                     </AlertDialogTrigger>
                     <AlertDialogContent>
                       <AlertDialogHeader>

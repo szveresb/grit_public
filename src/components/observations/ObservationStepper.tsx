@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { toast } from 'sonner';
-import { ArrowLeft, Heart, MessageCircle, Shield, Check } from 'lucide-react';
+import { FArrowLeft, FHeart, FMessageCircle, FShield, FCheck } from '@/components/icons/FreudIcons';
 
 interface Category {
   id: string;
@@ -28,9 +28,9 @@ interface Concept {
 }
 
 const iconMap: Record<string, React.ReactNode> = {
-  heart: <Heart className="h-5 w-5" />,
-  'message-circle': <MessageCircle className="h-5 w-5" />,
-  shield: <Shield className="h-5 w-5" />,
+  heart: <FHeart className="h-5 w-5" />,
+  'message-circle': <FMessageCircle className="h-5 w-5" />,
+  shield: <FShield className="h-5 w-5" />,
 };
 
 const ObservationStepper = ({ onLogged }: { onLogged?: () => void }) => {
@@ -98,7 +98,7 @@ const ObservationStepper = ({ onLogged }: { onLogged?: () => void }) => {
             <div className={`h-7 w-7 rounded-full flex items-center justify-center text-xs font-semibold transition-all ${
               i <= step ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'
             }`}>
-              {i < step ? <Check className="h-3.5 w-3.5" /> : i + 1}
+              {i < step ? <FCheck className="h-3.5 w-3.5" /> : i + 1}
             </div>
             {i < stepLabels.length - 1 && <div className={`w-8 h-0.5 ${i < step ? 'bg-primary' : 'bg-border'}`} />}
           </div>
@@ -120,7 +120,7 @@ const ObservationStepper = ({ onLogged }: { onLogged?: () => void }) => {
                   className="bg-card/60 backdrop-blur border border-border rounded-3xl p-5 flex items-center gap-4 text-left hover:border-primary/50 transition-colors"
                 >
                   <div className="h-10 w-10 rounded-2xl bg-primary/10 flex items-center justify-center text-primary">
-                    {cat.icon && iconMap[cat.icon] ? iconMap[cat.icon] : <Heart className="h-5 w-5" />}
+                    {cat.icon && iconMap[cat.icon] ? iconMap[cat.icon] : <FHeart className="h-5 w-5" />}
                   </div>
                   <span className="text-sm font-semibold">{name(cat)}</span>
                 </button>
@@ -134,7 +134,7 @@ const ObservationStepper = ({ onLogged }: { onLogged?: () => void }) => {
       {step === 1 && (
         <div className="space-y-3 animate-fade-in">
           <Button variant="ghost" size="sm" className="rounded-2xl" onClick={() => setStep(0)}>
-            <ArrowLeft className="h-4 w-4 mr-1" /> {t.observations.back}
+            <FArrowLeft className="h-4 w-4 mr-1" /> {t.observations.back}
           </Button>
           <p className="text-sm font-medium text-muted-foreground text-center">{t.observations.pickObservation}</p>
           {concepts.length === 0 ? (
@@ -162,7 +162,7 @@ const ObservationStepper = ({ onLogged }: { onLogged?: () => void }) => {
       {step === 2 && (
         <div className="space-y-5 animate-fade-in">
           <Button variant="ghost" size="sm" className="rounded-2xl" onClick={() => setStep(1)}>
-            <ArrowLeft className="h-4 w-4 mr-1" /> {t.observations.back}
+            <FArrowLeft className="h-4 w-4 mr-1" /> {t.observations.back}
           </Button>
 
           {/* Intensity */}

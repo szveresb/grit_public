@@ -6,7 +6,7 @@ import { useLanguage } from '@/hooks/useLanguage';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
-import { BarChart3, Download, ShieldAlert } from 'lucide-react';
+import { FBarChart, FDownload, FShieldAlert } from '@/components/icons/FreudIcons';
 
 const AnalystExport = () => {
   const { user } = useAuth();
@@ -40,7 +40,7 @@ const AnalystExport = () => {
       <DashboardLayout>
         <div className="max-w-lg space-y-4">
           <div className="flex items-center gap-2 text-destructive">
-            <ShieldAlert className="h-5 w-5" />
+            <FShieldAlert className="h-5 w-5" />
             <h1 className="text-xl font-bold tracking-tight">{t.analystExport.accessDenied}</h1>
           </div>
           <p className="text-sm text-muted-foreground leading-relaxed">{t.analystExport.accessDeniedDesc}</p>
@@ -58,7 +58,7 @@ const AnalystExport = () => {
         </div>
         <div className="bg-card/60 backdrop-blur border border-border rounded-3xl p-6 space-y-4">
           <div className="flex items-start gap-3">
-            <BarChart3 className="h-5 w-5 text-primary mt-0.5 shrink-0" />
+            <FBarChart className="h-5 w-5 text-primary mt-0.5 shrink-0" />
             <div className="space-y-1 text-sm text-muted-foreground leading-relaxed">
               <p>{t.analystExport.depersonalised}</p>
               <ul className="list-disc list-inside space-y-0.5">
@@ -70,7 +70,7 @@ const AnalystExport = () => {
             </div>
           </div>
           <Button onClick={handleExport} disabled={downloading} size="sm" className="rounded-2xl">
-            <Download className="h-4 w-4 mr-1.5" />
+            <FDownload className="h-4 w-4 mr-1.5" />
             {downloading ? t.analystExport.exporting : t.analystExport.downloadData}
           </Button>
         </div>

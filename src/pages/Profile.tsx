@@ -10,7 +10,7 @@ import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
-import { Download } from 'lucide-react';
+import { FDownload } from '@/components/icons/FreudIcons';
 
 const Profile = () => {
   const { user, signOut } = useAuth();
@@ -119,7 +119,7 @@ const Profile = () => {
           <h2 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">{t.profile.yourData}</h2>
           <p className="text-sm text-muted-foreground leading-relaxed">{t.profile.yourDataDesc}</p>
           <Button onClick={handleExport} size="sm" variant="outline" className="rounded-2xl">
-            <Download className="h-4 w-4 mr-1.5" /> {t.profile.exportAllData}
+            <FDownload className="h-4 w-4 mr-1.5" /> {t.profile.exportAllData}
           </Button>
         </div>
 

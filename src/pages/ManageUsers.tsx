@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 import { Navigate } from 'react-router-dom';
-import { Shield, Plus, X } from 'lucide-react';
+import { FShield, FPlus, FClose } from '@/components/icons/FreudIcons';
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
@@ -72,7 +72,7 @@ const ManageUsers = () => {
               return (
                 <div key={u.user_id} className="bg-card/60 backdrop-blur border border-border rounded-3xl p-5 space-y-3">
                   <div className="flex items-center gap-2">
-                    <Shield className="h-4 w-4 text-muted-foreground" />
+                    <FShield className="h-4 w-4 text-muted-foreground" />
                     <span className="text-sm font-semibold text-foreground truncate">{u.display_name || 'Unnamed user'}</span>
                     {u.user_id === user?.id && <Badge variant="outline" className="rounded-full text-[10px]">{t.manageUsers.you}</Badge>}
                   </div>
@@ -84,7 +84,7 @@ const ManageUsers = () => {
                         <AlertDialog>
                           <AlertDialogTrigger asChild>
                             <button className="ml-0.5 rounded-full hover:bg-destructive/20 p-0.5" title={`Remove ${ROLE_LABELS[role]}`}>
-                              <X className="h-3 w-3" />
+                              <FClose className="h-3 w-3" />
                             </button>
                           </AlertDialogTrigger>
                           <AlertDialogContent>
@@ -105,7 +105,7 @@ const ManageUsers = () => {
                     <div className="flex flex-wrap gap-1.5">
                       {missingRoles.map(role => (
                         <Button key={role} variant="outline" size="sm" className="rounded-full text-[10px] h-7 px-2.5 font-semibold uppercase tracking-wider" onClick={() => addRole(u.user_id, role)}>
-                          <Plus className="h-3 w-3 mr-0.5" /> {ROLE_LABELS[role]}
+                          <FPlus className="h-3 w-3 mr-0.5" /> {ROLE_LABELS[role]}
                         </Button>
                       ))}
                     </div>

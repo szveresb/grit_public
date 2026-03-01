@@ -4,7 +4,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useLanguage } from '@/hooks/useLanguage';
 import { format } from 'date-fns';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import { ChevronDown } from 'lucide-react';
+import { FChevronDown } from '@/components/icons/FreudIcons';
 
 interface LogEntry {
   id: string;
@@ -100,7 +100,7 @@ const ObservationHistory = ({ refreshKey }: { refreshKey?: number }) => {
                     <span className="text-[10px] text-muted-foreground">{entry.concept?.category ? name(entry.concept.category) : ''}</span>
                   </div>
                 </div>
-                <ChevronDown className="h-4 w-4 text-muted-foreground shrink-0" />
+                <FChevronDown className="h-4 w-4 text-muted-foreground shrink-0" />
               </CollapsibleTrigger>
               <CollapsibleContent className="px-4 pb-3 pt-1 space-y-1">
                 {entry.frequency && <p className="text-xs text-muted-foreground">{t.observations.frequency}: {freqLabels[entry.frequency] ?? entry.frequency}</p>}

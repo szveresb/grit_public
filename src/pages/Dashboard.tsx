@@ -6,7 +6,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useLanguage } from '@/hooks/useLanguage';
 import { supabase } from '@/integrations/supabase/client';
 import { format, parseISO } from 'date-fns';
-import { BookOpen, ClipboardCheck } from 'lucide-react';
+import { FBookOpen, FClipboardCheck } from '@/components/icons/FreudIcons';
 
 interface RecentItem {
   id: string;
@@ -75,7 +75,7 @@ const Dashboard = () => {
                   onClick={() => navigate(localePath('/journal'))}
                   className="w-full flex items-center gap-3 py-2.5 px-3 rounded-2xl text-left hover:bg-accent/50 transition-colors"
                 >
-                  {item.type === 'journal' ? <BookOpen className="h-3.5 w-3.5 text-primary shrink-0" /> : <ClipboardCheck className="h-3.5 w-3.5 text-muted-foreground shrink-0" />}
+                  {item.type === 'journal' ? <FBookOpen className="h-3.5 w-3.5 text-primary shrink-0" /> : <FClipboardCheck className="h-3.5 w-3.5 text-muted-foreground shrink-0" />}
                   <span className="text-sm flex-1 truncate">{item.title}</span>
                   {item.detail && <span className="text-xs text-muted-foreground hidden sm:inline">{item.detail}</span>}
                   <span className="text-xs text-muted-foreground shrink-0">{format(parseISO(item.date), 'MMM d')}</span>

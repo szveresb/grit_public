@@ -1,5 +1,5 @@
 import { Button } from '@/components/ui/button';
-import { TrendingUp, Loader2, X } from 'lucide-react';
+import { FTrendingUp, FLoader, FClose } from '@/components/icons/FreudIcons';
 import ReactMarkdown from 'react-markdown';
 
 interface PatternSummaryProps {
@@ -15,13 +15,13 @@ const PatternSummary = ({ summary, isAnalyzing, onDismiss }: PatternSummaryProps
     <div className="bg-card/60 backdrop-blur border border-primary/20 rounded-3xl p-6 space-y-3 animate-fade-in">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
-          <TrendingUp className="h-4 w-4 text-primary" />
+          <FTrendingUp className="h-4 w-4 text-primary" />
           <span className="text-xs font-semibold uppercase tracking-widest text-primary">Pattern Summary</span>
-          {isAnalyzing && <Loader2 className="h-3 w-3 animate-spin text-muted-foreground" />}
+          {isAnalyzing && <FLoader className="h-3 w-3 animate-spin text-muted-foreground" />}
         </div>
         {!isAnalyzing && summary && (
           <Button variant="ghost" size="sm" className="text-xs text-muted-foreground h-7 px-2" onClick={onDismiss}>
-            <X className="h-3.5 w-3.5" />
+            <FClose className="h-3.5 w-3.5" />
           </Button>
         )}
       </div>

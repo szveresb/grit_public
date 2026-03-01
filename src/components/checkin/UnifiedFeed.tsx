@@ -3,7 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useLanguage } from '@/hooks/useLanguage';
 import { format, parseISO } from 'date-fns';
-import { BookOpen, Eye, ClipboardCheck, ChevronDown, ChevronUp } from 'lucide-react';
+import { FBookOpen, FEye, FClipboardCheck, FChevronDown, FChevronUp } from '@/components/icons/FreudIcons';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 
 interface FeedItem {
@@ -68,9 +68,9 @@ const UnifiedFeed = ({ refreshKey }: { refreshKey?: number }) => {
 
   const iconFor = (type: FeedItem['type']) => {
     switch (type) {
-      case 'journal': return <BookOpen className="h-3.5 w-3.5 text-primary shrink-0" />;
-      case 'observation': return <Eye className="h-3.5 w-3.5 text-accent-foreground/60 shrink-0" />;
-      case 'questionnaire': return <ClipboardCheck className="h-3.5 w-3.5 text-muted-foreground shrink-0" />;
+      case 'journal': return <FBookOpen className="h-3.5 w-3.5 text-primary shrink-0" />;
+      case 'observation': return <FEye className="h-3.5 w-3.5 text-accent-foreground/60 shrink-0" />;
+      case 'questionnaire': return <FClipboardCheck className="h-3.5 w-3.5 text-muted-foreground shrink-0" />;
     }
   };
 
@@ -90,7 +90,7 @@ const UnifiedFeed = ({ refreshKey }: { refreshKey?: number }) => {
               <span className="text-sm flex-1 truncate">{item.title}</span>
               <span className="text-xs text-muted-foreground shrink-0">{format(parseISO(item.date), 'MMM d')}</span>
               {(hasMeta || item.detail) && (
-                isExpanded ? <ChevronUp className="h-3.5 w-3.5 text-muted-foreground" /> : <ChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
+                isExpanded ? <FChevronUp className="h-3.5 w-3.5 text-muted-foreground" /> : <FChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
               )}
             </CollapsibleTrigger>
             {(hasMeta || item.detail) && (
