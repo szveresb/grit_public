@@ -119,6 +119,7 @@ export interface Dictionary {
     viewHistoryDesc: string;
     quickPulse: string;
     goDeeper: string;
+    weight: string;
   };
 
   // Journal
