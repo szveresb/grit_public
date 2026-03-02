@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useLanguage } from '@/hooks/useLanguage';
 import { supabase } from '@/integrations/supabase/client';
-import { FLock, FArrowRight, FFileText } from '@/components/icons/FreudIcons';
+import { FLock, FArrowRight, FFileText, FMenu, FClose } from '@/components/icons/FreudIcons';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -25,6 +25,7 @@ const Index = () => {
   const navigate = useNavigate();
   const [articles, setArticles] = useState<LibraryArticle[]>([]);
   const [articlesLoading, setArticlesLoading] = useState(true);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     supabase.from('library_articles').select('id, title, excerpt, source, category, url').eq('published', true).order('created_at', { ascending: false })
@@ -72,8 +73,28 @@ const Index = () => {
                 {t.getStarted}
               </Button>
             )}
+            <button
+              className="lg:hidden p-2 -mr-2 text-muted-foreground hover:text-foreground transition-colors"
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              aria-label="Menu"
+            >
+              {mobileMenuOpen ? <FClose className="h-5 w-5" /> : <FMenu className="h-5 w-5" />}
+            </button>
           </div>
         </div>
+
+        {/* Mobile menu */}
+        {mobileMenuOpen && (
+          <nav className="lg:hidden border-t border-border bg-card/90 backdrop-blur-xl px-4 py-4 space-y-1 animate-fade-in">
+            <a href="#library" onClick={() => setMobileMenuOpen(false)} className="block py-2.5 px-3 rounded-2xl text-sm font-medium text-foreground hover:bg-accent/50 transition-colors">{t.nav.library}</a>
+            <a href="#research" onClick={() => setMobileMenuOpen(false)} className="block py-2.5 px-3 rounded-2xl text-sm font-medium text-foreground hover:bg-accent/50 transition-colors">{t.nav.researchSummaries}</a>
+            <button onClick={() => { handleGatedClick('/journal'); setMobileMenuOpen(false); }} className="w-full text-left py-2.5 px-3 rounded-2xl text-sm font-medium text-foreground hover:bg-accent/50 transition-colors flex items-center gap-1.5">
+              {t.nav.checkIn}
+              {!user && <FLock className="h-3 w-3" />}
+            </button>
+            <Link to={localePath('/about-legal')} onClick={() => setMobileMenuOpen(false)} className="block py-2.5 px-3 rounded-2xl text-sm font-medium text-foreground hover:bg-accent/50 transition-colors">{t.nav.about}</Link>
+          </nav>
+        )}
       </header>
 
       {/* Hero */}

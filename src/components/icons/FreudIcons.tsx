@@ -192,6 +192,16 @@ export const FClose = icon(
   'FClose'
 );
 
+/** Menu / hamburger – three rounded lines */
+export const FMenu = icon(
+  <>
+    <path d="M4 7h16" />
+    <path d="M4 12h16" />
+    <path d="M4 17h16" />
+  </>,
+  'FMenu'
+);
+
 /** Chevron Down */
 export const FChevronDown = icon(
   <path d="M6 9l6 6 6-6" />,
