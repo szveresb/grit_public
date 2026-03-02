@@ -113,7 +113,6 @@ export const hu: Dictionary = {
     viewHistoryDesc: 'Tekintsd meg megfigyeléseidet és reflexióidat az idő során.',
     quickPulse: 'Hogy vagy most?',
     goDeeper: 'Szeretnél mélyebbre menni?',
-    weight: 'Súlyosság: {n}/5',
   },
 
   journal: {

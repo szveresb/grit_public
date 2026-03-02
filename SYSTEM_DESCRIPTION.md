@@ -172,18 +172,17 @@ A SNOMED CT-inspired three-level hierarchy for logging interpersonal patterns.
 |---|---|---|
 | `id` | uuid (PK) | |
 | `name_hu` / `name_en` | text | Bilingual labels |
-| `icon` | text | Icon key (mapped to Freud icon set in frontend) |
+| `icon` | text | Lucide icon name |
 | `sort_order` | integer | Default `0` |
 | `is_active` | boolean | Default `true` |
 | `created_at` | timestamptz | |
 
 **RLS:** Authenticated users see active categories. Editors (admin/editor) have full CRUD.
 
-**Seed data (4 categories, 9+ concepts):**
-- Kapcsolati dinamikák / Relational Dynamics
+**Seed data:**
 - Érzelmi állapot / Emotional State
-- Viselkedési minták / Behavioral Patterns
-- Testi/szomatikus / Physical/Somatic
+- Kommunikációs minták / Communication Patterns
+- Határok / Boundaries
 
 #### `observation_concepts` — Specific observations
 
@@ -208,7 +207,6 @@ A SNOMED CT-inspired three-level hierarchy for logging interpersonal patterns.
 | `id` | uuid (PK) | |
 | `user_id` | uuid | Auth user |
 | `concept_id` | uuid (FK) | → `observation_concepts.id` |
-| `journal_entry_id` | uuid (FK) | → `journal_entries.id`, ON DELETE SET NULL, nullable |
 | `intensity` | integer | 1–5, default `3`, validated by trigger |
 | `frequency` | text | `once` / `sometimes` / `often` / `constant` |
 | `context_modifier` | text | E.g. "at home", "at work" |

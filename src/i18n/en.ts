@@ -113,7 +113,6 @@ export const en: Dictionary = {
     viewHistoryDesc: 'See your observations and reflections over time.',
     quickPulse: 'How are you right now?',
     goDeeper: 'Want to go deeper?',
-    weight: 'Weight: {n}/5',
   },
 
   journal: {
