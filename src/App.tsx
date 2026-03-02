@@ -20,6 +20,7 @@ import NotFound from "./pages/NotFound";
 import Terms from "./pages/Terms";
 import Cookies from "./pages/Cookies";
 import Gdpr from "./pages/Gdpr";
+import AboutLegal from "./pages/AboutLegal";
 
 const queryClient = new QueryClient();
 
@@ -42,6 +43,7 @@ const AppRoutes = () => (
     <Route path="/terms" element={<Terms />} />
     <Route path="/cookies" element={<Cookies />} />
     <Route path="/gdpr" element={<Gdpr />} />
+    <Route path="/about-legal" element={<AboutLegal />} />
     {/* English prefix */}
     <Route path="/en" element={<Index />} />
     <Route path="/en/auth" element={<Auth />} />
@@ -58,6 +60,7 @@ const AppRoutes = () => (
     <Route path="/en/terms" element={<Terms />} />
     <Route path="/en/cookies" element={<Cookies />} />
     <Route path="/en/gdpr" element={<Gdpr />} />
+    <Route path="/en/about-legal" element={<AboutLegal />} />
     <Route path="*" element={<NotFound />} />
   </Routes>
 );
