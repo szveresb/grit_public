@@ -66,6 +66,7 @@ export interface Dictionary {
     terms: string;
     cookies: string;
     gdpr: string;
+    viewAll: string;
   };
 
   // Sample preview questions
