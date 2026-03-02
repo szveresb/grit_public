@@ -59,7 +59,7 @@ const Index = () => {
               {t.nav.checkIn}
               {!user && <FLock className="h-3 w-3" />}
             </button>
-            <a href="#about" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">{t.nav.about}</a>
+            <Link to={localePath('/about-legal')} className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">{t.nav.about}</Link>
           </nav>
           <div className="flex items-center gap-3">
             <LanguageToggle />
@@ -215,14 +215,6 @@ const Index = () => {
         </div>
       </section>
 
-      {/* About Section */}
-      <section id="about" className="relative z-10 px-4 md:px-8 py-12 max-w-7xl mx-auto">
-        <div className="max-w-2xl mx-auto bg-card/70 backdrop-blur border border-border rounded-[40px] p-8 md:p-10 text-center">
-          <h2 className="text-lg md:text-xl font-bold tracking-tight text-foreground">{t.landing.aboutTitle}</h2>
-          <p className="mt-4 text-sm text-muted-foreground leading-relaxed">{t.landing.aboutP1}</p>
-          <p className="mt-3 text-sm text-muted-foreground leading-relaxed">{t.landing.aboutP2}</p>
-        </div>
-      </section>
 
       {/* Footer */}
       <footer className="relative z-10 border-t border-border bg-card/40 backdrop-blur-xl">
