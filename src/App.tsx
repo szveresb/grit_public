@@ -17,6 +17,9 @@ import ManageLibrary from "./pages/ManageLibrary";
 import ManageUsers from "./pages/ManageUsers";
 import AnalystExport from "./pages/AnalystExport";
 import NotFound from "./pages/NotFound";
+import Terms from "./pages/Terms";
+import Cookies from "./pages/Cookies";
+import Gdpr from "./pages/Gdpr";
 
 const queryClient = new QueryClient();
 
@@ -36,6 +39,9 @@ const AppRoutes = () => (
     <Route path="/manage-library" element={<ProtectedRoute><ManageLibrary /></ProtectedRoute>} />
     <Route path="/manage-users" element={<ProtectedRoute><ManageUsers /></ProtectedRoute>} />
     <Route path="/analyst-export" element={<ProtectedRoute><AnalystExport /></ProtectedRoute>} />
+    <Route path="/terms" element={<Terms />} />
+    <Route path="/cookies" element={<Cookies />} />
+    <Route path="/gdpr" element={<Gdpr />} />
     {/* English prefix */}
     <Route path="/en" element={<Index />} />
     <Route path="/en/auth" element={<Auth />} />
@@ -49,6 +55,9 @@ const AppRoutes = () => (
     <Route path="/en/manage-library" element={<ProtectedRoute><ManageLibrary /></ProtectedRoute>} />
     <Route path="/en/manage-users" element={<ProtectedRoute><ManageUsers /></ProtectedRoute>} />
     <Route path="/en/analyst-export" element={<ProtectedRoute><AnalystExport /></ProtectedRoute>} />
+    <Route path="/en/terms" element={<Terms />} />
+    <Route path="/en/cookies" element={<Cookies />} />
+    <Route path="/en/gdpr" element={<Gdpr />} />
     <Route path="*" element={<NotFound />} />
   </Routes>
 );
