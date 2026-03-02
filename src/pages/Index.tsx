@@ -4,7 +4,7 @@ import { AnimatePresence, motion } from 'framer-motion';
 import { useAuth } from '@/hooks/useAuth';
 import { useLanguage } from '@/hooks/useLanguage';
 import { supabase } from '@/integrations/supabase/client';
-import { FLock, FArrowRight, FFileText, FMenu, FClose } from '@/components/icons/FreudIcons';
+import { FLock, FArrowRight, FMenu, FClose } from '@/components/icons/FreudIcons';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -29,7 +29,7 @@ const Index = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   useEffect(() => {
-    supabase.from('library_articles').select('id, title, excerpt, source, category, url').eq('published', true).order('created_at', { ascending: false })
+    supabase.from('library_articles').select('id, title, excerpt, source, category, url').eq('published', true).order('created_at', { ascending: false }).limit(6)
       .then(({ data }) => { setArticles((data as LibraryArticle[]) ?? []); setArticlesLoading(false); });
   }, []);
 
@@ -55,8 +55,7 @@ const Index = () => {
             {t.brand}
           </Link>
           <nav className="hidden lg:flex items-center justify-center flex-1 gap-8">
-            <a href="#library" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">{t.nav.library}</a>
-            <a href="#research" className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">{t.nav.researchSummaries}</a>
+            <Link to={localePath('/library')} className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">{t.nav.library}</Link>
             <button onClick={() => handleGatedClick('/journal')} className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1.5">
               {t.nav.checkIn}
               {!user && <FLock className="h-3 w-3" />}
@@ -94,8 +93,7 @@ const Index = () => {
               className="lg:hidden border-t border-border bg-card/90 backdrop-blur-xl overflow-hidden"
             >
               <div className="px-4 py-4 space-y-1">
-                <a href="#library" onClick={() => setMobileMenuOpen(false)} className="block py-2.5 px-3 rounded-2xl text-sm font-medium text-foreground hover:bg-accent/50 transition-colors">{t.nav.library}</a>
-                <a href="#research" onClick={() => setMobileMenuOpen(false)} className="block py-2.5 px-3 rounded-2xl text-sm font-medium text-foreground hover:bg-accent/50 transition-colors">{t.nav.researchSummaries}</a>
+                <Link to={localePath('/library')} onClick={() => setMobileMenuOpen(false)} className="block py-2.5 px-3 rounded-2xl text-sm font-medium text-foreground hover:bg-accent/50 transition-colors">{t.nav.library}</Link>
                 <button onClick={() => { handleGatedClick('/journal'); setMobileMenuOpen(false); }} className="w-full text-left py-2.5 px-3 rounded-2xl text-sm font-medium text-foreground hover:bg-accent/50 transition-colors flex items-center gap-1.5">
                   {t.nav.checkIn}
                   {!user && <FLock className="h-3 w-3" />}
@@ -118,7 +116,7 @@ const Index = () => {
           </p>
           <div className="mt-8 flex flex-wrap gap-3 justify-center">
             <Button size="lg" className="rounded-2xl px-6" asChild>
-              <a href="#library">{t.landing.browseLibrary}</a>
+              <Link to={localePath('/library')}>{t.landing.browseLibrary}</Link>
             </Button>
             <Button size="lg" variant="outline" className="rounded-2xl px-6" onClick={() => handleGatedClick('/journal')}>
               {t.landing.startSelfCheck}
@@ -175,35 +173,16 @@ const Index = () => {
             })
           )}
         </div>
-      </section>
-
-      {/* Research Summaries Section */}
-      <section id="research" className="relative z-10 px-4 md:px-8 py-12 max-w-7xl mx-auto">
-        <div className="mb-6">
-          <h2 className="text-lg md:text-xl font-bold tracking-tight text-foreground">{t.landing.researchTitle}</h2>
-          <p className="mt-1 text-sm text-muted-foreground">{t.landing.researchSubtitle}</p>
-        </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-5">
-          {articles.filter(a => a.category === 'Research' || a.category === 'Study Summary').length === 0 ? (
-            <p className="text-sm text-muted-foreground col-span-full">{t.landing.noResearch}</p>
-          ) : (
-            articles.filter(a => a.category === 'Research' || a.category === 'Study Summary').map(study => {
-              const Wrapper = study.url ? 'a' : 'div';
-              const linkProps = study.url ? { href: study.url, target: '_blank', rel: 'noopener noreferrer' } : {};
-              return (
-                <Wrapper key={study.id} {...linkProps} className={`bg-card/70 backdrop-blur border border-border rounded-3xl p-6 hover:shadow-md transition-all group ${study.url ? 'cursor-pointer' : ''}`}>
-                  <div className="flex items-center gap-2 mb-2">
-                    <FFileText className="h-4 w-4 text-primary" />
-                    <Badge variant="secondary" className="rounded-full text-[10px] font-semibold uppercase tracking-wider">{study.category}</Badge>
-                  </div>
-                  <h3 className="text-sm font-semibold text-foreground group-hover:text-primary transition-colors">{study.title}</h3>
-                  {study.excerpt && <p className="mt-2 text-xs text-muted-foreground leading-relaxed">{study.excerpt}</p>}
-                  {study.source && <p className="mt-2 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">{study.source}</p>}
-                </Wrapper>
-              );
-            })
-          )}
-        </div>
+        {/* View all link */}
+        {!articlesLoading && articles.length > 0 && (
+          <div className="mt-6 text-center">
+            <Button variant="outline" className="rounded-2xl px-6" asChild>
+              <Link to={localePath('/library')}>
+                {t.landing.viewAll} <FArrowRight className="h-4 w-4 ml-1" />
+              </Link>
+            </Button>
+          </div>
+        )}
       </section>
 
       {/* Self-Check Preview Section */}

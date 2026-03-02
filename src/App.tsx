@@ -21,6 +21,7 @@ import Terms from "./pages/Terms";
 import Cookies from "./pages/Cookies";
 import Gdpr from "./pages/Gdpr";
 import AboutLegal from "./pages/AboutLegal";
+import Library from "./pages/Library";
 
 const queryClient = new QueryClient();
 
@@ -40,6 +41,7 @@ const AppRoutes = () => (
     <Route path="/manage-library" element={<ProtectedRoute><ManageLibrary /></ProtectedRoute>} />
     <Route path="/manage-users" element={<ProtectedRoute><ManageUsers /></ProtectedRoute>} />
     <Route path="/analyst-export" element={<ProtectedRoute><AnalystExport /></ProtectedRoute>} />
+    <Route path="/library" element={<Library />} />
     <Route path="/terms" element={<Terms />} />
     <Route path="/cookies" element={<Cookies />} />
     <Route path="/gdpr" element={<Gdpr />} />
@@ -57,6 +59,7 @@ const AppRoutes = () => (
     <Route path="/en/manage-library" element={<ProtectedRoute><ManageLibrary /></ProtectedRoute>} />
     <Route path="/en/manage-users" element={<ProtectedRoute><ManageUsers /></ProtectedRoute>} />
     <Route path="/en/analyst-export" element={<ProtectedRoute><AnalystExport /></ProtectedRoute>} />
+    <Route path="/en/library" element={<Library />} />
     <Route path="/en/terms" element={<Terms />} />
     <Route path="/en/cookies" element={<Cookies />} />
     <Route path="/en/gdpr" element={<Gdpr />} />
