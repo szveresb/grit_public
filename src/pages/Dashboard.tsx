@@ -37,7 +37,7 @@ const Dashboard = () => {
 
       const jItems: RecentItem[] = (jRes.data ?? []).map(j => ({
         id: j.id, type: 'journal', title: j.title, date: j.entry_date,
-        detail: j.impact_level ? `Impact: ${j.impact_level}/5` : undefined,
+        detail: j.impact_level ? t.dash.weight.replace('{n}', String(j.impact_level)) : undefined,
       }));
       const qItems: RecentItem[] = (qRes.data ?? []).map((r: any) => ({
         id: r.id, type: 'questionnaire', title: r.questionnaires?.title ?? t.nav.selfChecks, date: r.completed_at.split('T')[0],

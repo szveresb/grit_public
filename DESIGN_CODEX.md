@@ -88,7 +88,7 @@ className="bg-green-600 text-white"
 
 ## 4. Spacing & Layout
 
-- **Max content width:** `max-w-2xl` for main content areas
+- **Max content width:** `max-w-2xl` for main content areas (exception: Dashboard uses `max-w-4xl` for its wider action grid layout)
 - **Vertical rhythm:** `space-y-6` between major sections, `space-y-3` within cards
 - **Grid gaps:** `gap-4` for form grids, `gap-2` for inline groups
 
@@ -167,7 +167,7 @@ Apply `animate-fade-in` to elements entering the viewport (forms, panels).
 | Ghost     | Tertiary (Edit, Reflect)      | `variant="ghost" rounded-2xl`       |
 | Destructive| Delete confirmations         | `bg-destructive text-destructive-foreground` |
 
-Small buttons use `size="sm"` with icon + text: `<Save className="h-4 w-4 mr-1" />`.
+Small buttons use `size="sm"` with icon + text: `<FSave className="h-4 w-4 mr-1" />`.
 
 ### Form Inputs
 
@@ -183,26 +183,65 @@ All inputs use `rounded-2xl`. Labels follow the uppercase pattern:
 
 - Collapsed: title, date badge, impact badge, edit/delete actions
 - Expanded: content sections + AI reflection area
-- Toggle via `ChevronDown`/`ChevronUp` icons
+- Toggle via `FChevronDown`/`FChevronUp` icons
 - Destructive actions require `AlertDialog` confirmation
 
 ### AI Reflection Sections
 
-- Header: `<Sparkles>` icon + uppercase label in `text-primary`
+- Header: `FSparkles` icon + uppercase label in `text-primary`
 - Content rendered via `ReactMarkdown` with `prose prose-sm`
-- States: streaming (with `Loader2` spinner), completed (Save/Dismiss), saved (New/Remove)
+- States: streaming (with `FLoader` spinner), completed (Save/Dismiss), saved (New/Remove)
+
+### ObservationTree (Guided Journal Wizard)
+
+3-step progressive disclosure wizard used in `JournalForm`:
+1. **Domain selection** — glassmorphism cards (`bg-card/60 backdrop-blur border-border rounded-3xl`) with Freud domain icons
+2. **Concept selection** — list within selected domain
+3. **Intensity/Frequency qualifiers** — slider + radio buttons
+
+Step indicator uses small circles with `animate-fade-in` transitions. Each step card uses `rounded-3xl`.
+
+### QuickPulse (Botanical Mood Widget)
+
+5 fixed-size mood buttons (`w-14 h-14 rounded-2xl`) arranged horizontally:
+- Each button contains a Freud botanical mood icon (`FMoodStruggling` → `FMoodStrong`)
+- Opacity-graded sage-green coloring (lighter = struggling, full opacity = strong)
+- External label below each button
+- One-tap creates a lightweight `journal_entry` with the selected mood
 
 ---
 
-## 9. Icon Usage
+## 9. Icon Usage — Freud Icon Set
 
-All icons from `lucide-react`. Standard sizes:
+All icons come from the custom **Freud Icon Set** (`src/components/icons/FreudIcons.tsx`), inspired by the [freud Mental Health & Mindfulness UI Icon Set](https://dribbble.com/shots/23883954). Icons use thick rounded strokes, organic bubbly shapes, and mental-health-themed metaphors.
+
+### Categories
+
+| Category | Icons |
+|---|---|
+| **Navigation** | `FHome`, `FHeartPulse`, `FTimeline`, `FUser`, `FDownload`, `FBook`, `FUsers`, `FBarChart` |
+| **Actions** | `FSave`, `FClose`, `FPlus`, `FEdit`, `FTrash`, `FChevronDown/Right`, `FExternalLink`, `FSearch`, `FLogOut`, `FLoader` |
+| **Domain** | `FShield` (boundaries), `FSparkles` (patterns), `FBrain` (mind), `FEye` (observation), `FHeart`, `FMessageCircle` |
+| **Mood (QuickPulse)** | `FMoodStruggling` → `FMoodUneasy` → `FMoodOkay` → `FMoodGood` → `FMoodStrong` — botanical metaphors |
+| **Roles** | `FUserCheck`, `FUserSearch`, `FShieldCheck`, `FPenTool`, `FUserPen` |
+
+### Standard Sizes
 
 | Context       | Size                  |
 |---------------|-----------------------|
 | Button inline | `h-4 w-4`            |
 | Card actions  | `h-3.5 w-3.5`        |
 | Status/header | `h-3 w-3`            |
+
+### Usage
+
+```tsx
+import { FHome, FPlus } from '@/components/icons/FreudIcons';
+
+<FHome className="h-4 w-4" />
+```
+
+> **Note:** `lucide-react` is still used internally by shadcn/ui primitives but must NOT be imported directly in application components.
 
 ---
 
@@ -236,25 +275,36 @@ AI-generated content (reflections, pattern summaries) enforces this at the syste
 
 ```
 src/
-├── types/journal.ts           # Shared types & form defaults
-├── lib/sse-stream.ts          # Reusable SSE stream parser
+├── types/journal.ts              # Shared types & form defaults
+├── lib/sse-stream.ts             # Reusable SSE stream parser
 ├── components/
+│   ├── icons/FreudIcons.tsx      # Custom Freud icon library
 │   ├── journal/
-│   │   ├── JournalForm.tsx    # Create/edit form
-│   │   ├── JournalEntryCard.tsx # Expandable entry with reflections
-│   │   └── PatternSummary.tsx # AI pattern analysis display
-│   ├── ui/                    # shadcn/ui primitives
-│   ├── DashboardLayout.tsx    # Shell with sidebar + top nav
-│   ├── AppSidebar.tsx         # Sidebar navigation
-│   └── EmergencyExit.tsx      # Quick-exit safety feature
+│   │   ├── JournalForm.tsx       # Create/edit form
+│   │   ├── JournalEntryCard.tsx  # Expandable entry with reflections
+│   │   ├── ObservationTree.tsx   # Guided 3-step domain/concept picker
+│   │   └── PatternSummary.tsx    # AI pattern analysis display
+│   ├── checkin/
+│   │   ├── QuickPulse.tsx        # Botanical mood widget (5 icons)
+│   │   └── UnifiedFeed.tsx       # Chronological interleaved feed
+│   ├── observations/
+│   │   ├── ObservationStepper.tsx # 3-step observation wizard
+│   │   └── ObservationHistory.tsx # Recent observation logs
+│   ├── ui/                       # shadcn/ui primitives
+│   ├── DashboardLayout.tsx       # Shell with sidebar + top nav
+│   ├── AppSidebar.tsx            # Sidebar navigation
+│   └── EmergencyExit.tsx         # Quick-exit safety feature
 ├── pages/
-│   ├── Journal.tsx            # Orchestrator (state + data flow)
+│   ├── CheckIn.tsx               # Unified journal + observations page
 │   ├── Dashboard.tsx
+│   ├── Journal.tsx               # Redirects → CheckIn (legacy)
 │   └── ...
 ├── hooks/
 │   ├── useAuth.tsx
+│   ├── useLanguage.tsx
 │   └── useUserRole.tsx
-└── index.css                  # Design tokens (source of truth)
+├── i18n/                         # HU/EN typed dictionaries
+└── index.css                     # Design tokens (source of truth)
 ```
 
 **Principle:** Pages orchestrate state; components render UI. Extract when a component exceeds ~150 lines or is reused.
