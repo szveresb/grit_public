@@ -1,119 +1,51 @@
 
 
-# Regulatory Compliance Audit: Grit.hu
+# Create Separate Library Page
 
-## Summary
+## What Changes
 
-The system is **largely compliant** with the regulatory guardrails but has **4 gaps** that need to be addressed.
+1. **New `/library` page** -- A public page showing all published library articles with search/filter, reusing the same card design from the landing page.
 
----
+2. **Landing page updates:**
+   - Library section limited to **max 6 articles** (newest first)
+   - Each card links to the article URL (external) or is a static card if no URL
+   - Add a "View All" link to `/library` page below the 6 cards
+   - **Remove** the entire "Research Summaries" section
+   - Update nav links from `#library` anchor to `/library` route
 
-## Audit Findings
+3. **Navigation updates** -- Both desktop and mobile nav: "Konyvtar" links to `/library` page, remove "Kutatasi osszefoglalok" link entirely.
 
-### PASS: Human-in-the-Loop Observation Tagging
-The `ObservationStepper` requires explicit 3-step user action: select category, select concept, confirm with qualifiers. No auto-tagging occurs.
-
-### PASS: AI System Prompts (Non-Diagnostic Language)
-Both `journal-reflect` and `journal-patterns` edge functions include strict system prompts that prohibit clinical/diagnostic language, DSM terminology, and treatment suggestions.
-
-### PASS: Analyst Export Privacy Threshold
-The `analyst-export` edge function enforces a 10+ user minimum before releasing anonymized data.
-
-### PASS: Timeline Pattern Nudges as Passive Notifications
-The Timeline page nudges ("X logged 3+ times this week") are static, user-data-driven threshold alerts -- not AI-generated. This aligns with the "passive notification system" requirement.
-
-### PASS: No Automated Clinical Decision-Making
-No code path evaluates user mental state or suggests treatment.
+4. **Routing** -- Add `/library` and `/en/library` routes in `App.tsx` (public, no auth required).
 
 ---
 
-### GAP 1: Exports Missing "Non-Diagnostic Data" Disclaimer (CRITICAL)
+## Technical Details
 
-**Requirement:** All system outputs (PDF, JSON exports, dashboards) must include the watermark: *"Non-Diagnostic Data: This report contains raw user observations mapped to standard medical terminology. It does not constitute a clinical assessment."*
+### New file: `src/pages/Library.tsx`
+- Public page (no ProtectedRoute)
+- Fetches all published `library_articles` ordered by `created_at desc`
+- Search input + category filter (reuse pattern from ManageLibrary)
+- Same card design as landing page
+- Uses landing page layout (bamboo bg, header, footer) or a simpler standalone layout
 
-**Current state:** The disclaimer text exists only on the About Legal page. The actual export files (`Export.tsx` personal export, therapist export, and `analyst-export` edge function) do **not** include this disclaimer in the exported JSON data.
+### Modified files:
 
-**Fix:** Add a `disclaimer` field to all three export payloads:
-- Personal export JSON in `Export.tsx` (`handleExport`)
-- Therapist export JSON in `Export.tsx` (`handleTherapistExport`)
-- Analyst export JSON in `analyst-export/index.ts`
+**`src/App.tsx`** -- Add routes:
+- `/library` and `/en/library` pointing to new Library component
 
-Both in English and Hungarian (bilingual).
+**`src/pages/Index.tsx`**:
+- Limit articles query to `.limit(6)` 
+- Remove Research Summaries section (lines 180-207)
+- Change nav links from `#library` / `#research` to `localePath('/library')`
+- Remove `#research` nav item from both desktop and mobile menus
+- Add "View all" link below the 6-card grid pointing to `/library`
+- Update hero "Browse Library" button to link to `/library`
 
----
+**`src/i18n/hu.ts`** and **`src/i18n/en.ts`**:
+- Add `landing.viewAll` key ("Osszes megtekintese" / "View all")
+- Keep existing keys, no removals needed
 
-### GAP 2: PatternSummary AI Output Missing Disclaimer (MODERATE)
+**`src/i18n/types.ts`**:
+- Add `viewAll` to the landing section type
 
-**Requirement:** All generated summaries must be labeled as non-diagnostic.
-
-**Current state:** The `PatternSummary` component displays AI-generated pattern analysis without any disclaimer. The AI system prompt avoids clinical language, but the output itself carries no visible "non-diagnostic" label.
-
-**Fix:** Add a small disclaimer text below the AI-generated pattern summary in `PatternSummary.tsx`.
-
----
-
-### GAP 3: Journal Reflection AI Output Missing Disclaimer (MODERATE)
-
-**Requirement:** Same as above.
-
-**Current state:** The journal reflection responses (from `journal-reflect`) are displayed in `JournalEntryCard` without a non-diagnostic disclaimer.
-
-**Fix:** Add a small disclaimer beneath reflected content in the journal entry card.
-
----
-
-### GAP 4: Dashboard Has No Disclaimer on Activity Summary (LOW)
-
-**Requirement:** Dashboard outputs should carry the watermark.
-
-**Current state:** The Dashboard shows recent activity (titles, impact levels) without a disclaimer. This is relatively low risk since it displays raw user input, not generated summaries. However, the impact level display ("Impact: 3/5") could be misinterpreted as a clinical score.
-
-**Fix:** Add a subtle footnote to the Dashboard recent activity section clarifying the data is user-reported, not clinically assessed.
-
----
-
-## Implementation Plan
-
-### 1. Add disclaimer to all export payloads
-Add a `disclaimer` object to each JSON export with bilingual text:
-
-```text
-// Added to each export JSON:
-{
-  "disclaimer": {
-    "en": "Non-Diagnostic Data: This report contains raw user observations mapped to standard medical terminology. It does not constitute a clinical assessment.",
-    "hu": "Nem diagnosztikai adat: A jelentes felhasznalo altal rogzitett megfigyeleseket tartalmaz, szabvanyos orvosi terminologiara lekepezve. Nem minosul klinikai ertekelesesnek."
-  },
-  // ... existing export data
-}
-```
-
-**Files:** `src/pages/Export.tsx`, `supabase/functions/analyst-export/index.ts`
-
-### 2. Add disclaimer to PatternSummary component
-Add a muted-text footnote below the AI-generated markdown content.
-
-**File:** `src/components/journal/PatternSummary.tsx`
-
-### 3. Add disclaimer to journal reflection display
-Add a similar footnote when AI reflection text is shown in journal entry cards.
-
-**File:** `src/components/journal/JournalEntryCard.tsx`
-
-### 4. Add footnote to Dashboard activity section
-Add a subtle `text-xs text-muted-foreground` note: "User-reported observations. Not a clinical assessment."
-
-**File:** `src/pages/Dashboard.tsx`
-
-### 5. Add i18n keys for disclaimer text
-Add the disclaimer strings to both `src/i18n/en.ts` and `src/i18n/hu.ts` so all UI disclaimers are properly localized.
-
----
-
-## Scope
-
-- **6 files modified** (Export.tsx, analyst-export/index.ts, PatternSummary.tsx, JournalEntryCard.tsx, Dashboard.tsx, i18n files)
-- **No database changes** required
-- **No new dependencies**
-- Edge function redeployment required for analyst-export
-
+### No database changes required.
