@@ -362,6 +362,13 @@ export interface Dictionary {
     stepAnythingElse: string;
   };
 
+  // Disclaimers
+  disclaimer: {
+    nonDiagnostic: string;
+    userReported: string;
+    aiGenerated: string;
+  };
+
   // Emergency exit
   emergencyExit: string;
 

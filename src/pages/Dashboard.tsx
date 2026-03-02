@@ -83,7 +83,8 @@ const Dashboard = () => {
                 </button>
               ))}
             </div>
-          )}
+           )}
+          <p className="text-[10px] text-muted-foreground/60 italic mt-3">{t.disclaimer.userReported}</p>
         </div>
       </div>
     </DashboardLayout>

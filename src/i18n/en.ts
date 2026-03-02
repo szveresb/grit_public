@@ -343,6 +343,12 @@ export const en: Dictionary = {
     stepAnythingElse: 'Anything to add?',
   },
 
+  disclaimer: {
+    nonDiagnostic: 'Non-Diagnostic Data: This report contains raw user observations mapped to standard medical terminology. It does not constitute a clinical assessment.',
+    userReported: 'User-reported observations. Not a clinical assessment.',
+    aiGenerated: 'AI-generated reflection — not a clinical or diagnostic assessment.',
+  },
+
   emergencyExit: 'Quick exit — leaves this site immediately',
 
   langToggle: {

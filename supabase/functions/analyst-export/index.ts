@@ -99,14 +99,21 @@ Deno.serve(async (req) => {
     const format = url.searchParams.get("format");
     const now = new Date().toISOString();
 
+    const disclaimer = {
+      en: "Non-Diagnostic Data: This report contains raw user observations mapped to standard medical terminology. It does not constitute a clinical assessment.",
+      hu: "Nem diagnosztikai adat: A jelentés felhasználó által rögzített megfigyeléseket tartalmaz, szabványos orvosi terminológiára leképezve. Nem minősül klinikai értékelésnek.",
+    };
+
     if (format === "fhir") {
       const bundle = buildFhirBundle(observationAgg.data, now);
+      (bundle as any).disclaimer = disclaimer;
       return new Response(JSON.stringify(bundle, null, 2), {
         headers: { ...corsHeaders, "Content-Type": "application/fhir+json" },
       });
     }
 
     const exportPayload = {
+      disclaimer,
       exported_at: now,
       active_user_count: activeUserCount,
       journal_aggregates: journalAgg.data ?? [],
