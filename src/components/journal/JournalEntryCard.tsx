@@ -1,6 +1,7 @@
 import { Button } from '@/components/ui/button';
 import { FChevronDown, FChevronUp, FPencil, FTrash, FSparkles, FLoader, FSave } from '@/components/icons/FreudIcons';
 import { format } from 'date-fns';
+import { getDateLocale } from '@/lib/date-locale';
 import ReactMarkdown from 'react-markdown';
 import { useLanguage } from '@/hooks/useLanguage';
 import {
@@ -29,7 +30,7 @@ const JournalEntryCard = ({
   streamedReflection, isReflecting, reflectDisabled, onReflect,
   onSaveReflection, onDismissReflection, onClearSavedReflection,
 }: JournalEntryCardProps) => {
-  const { t } = useLanguage();
+  const { t, lang } = useLanguage();
 
   return (
     <div className="bg-card/60 backdrop-blur border border-border rounded-3xl overflow-hidden">
@@ -37,7 +38,7 @@ const JournalEntryCard = ({
         <button onClick={onToggleExpand} className="flex-1 flex items-center justify-between p-4 text-left hover:bg-accent/30 transition-colors">
           <div className="flex items-center gap-2 flex-wrap">
             <span className="text-sm font-semibold">{entry.title}</span>
-            <span className="text-xs text-muted-foreground">{format(new Date(entry.entry_date), 'MMM d, yyyy')}</span>
+            <span className="text-xs text-muted-foreground">{format(new Date(entry.entry_date), 'MMM d, yyyy', { locale: getDateLocale(lang) })}</span>
             {entry.impact_level && (
               <span className={`text-xs px-2 py-0.5 rounded-full border ${entry.impact_level >= 4 ? 'border-destructive/40 text-destructive bg-destructive/10' : 'border-border text-muted-foreground'}`}>
                 {t.journal.cardImpact}: {entry.impact_level}/5

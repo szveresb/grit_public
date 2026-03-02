@@ -3,6 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useLanguage } from '@/hooks/useLanguage';
 import { format, parseISO } from 'date-fns';
+import { getDateLocale } from '@/lib/date-locale';
 import { FBookOpen, FEye, FClipboardCheck, FChevronDown, FChevronUp } from '@/components/icons/FreudIcons';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 
@@ -88,7 +89,7 @@ const UnifiedFeed = ({ refreshKey }: { refreshKey?: number }) => {
             <CollapsibleTrigger className="w-full flex items-center gap-3 py-2.5 px-3 rounded-2xl text-left hover:bg-accent/50 transition-colors">
               {iconFor(item.type)}
               <span className="text-sm flex-1 truncate">{item.title}</span>
-              <span className="text-xs text-muted-foreground shrink-0">{format(parseISO(item.date), 'MMM d')}</span>
+              <span className="text-xs text-muted-foreground shrink-0">{format(parseISO(item.date), 'MMM d', { locale: getDateLocale(lang) })}</span>
               {(hasMeta || item.detail) && (
                 isExpanded ? <FChevronUp className="h-3.5 w-3.5 text-muted-foreground" /> : <FChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
               )}

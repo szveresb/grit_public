@@ -6,6 +6,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useLanguage } from '@/hooks/useLanguage';
 import { supabase } from '@/integrations/supabase/client';
 import { format, parseISO } from 'date-fns';
+import { getDateLocale } from '@/lib/date-locale';
 import { FBookOpen, FClipboardCheck } from '@/components/icons/FreudIcons';
 
 interface RecentItem {
@@ -18,7 +19,7 @@ interface RecentItem {
 
 const Dashboard = () => {
   const { user } = useAuth();
-  const { t, localePath } = useLanguage();
+  const { t, lang, localePath } = useLanguage();
   const [items, setItems] = useState<RecentItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [displayName, setDisplayName] = useState<string | null>(null);
@@ -37,7 +38,7 @@ const Dashboard = () => {
 
       const jItems: RecentItem[] = (jRes.data ?? []).map(j => ({
         id: j.id, type: 'journal', title: j.title, date: j.entry_date,
-        detail: j.impact_level ? `Impact: ${j.impact_level}/5` : undefined,
+        detail: j.impact_level ? `${t.journal.cardImpact}: ${j.impact_level}/5` : undefined,
       }));
       const qItems: RecentItem[] = (qRes.data ?? []).map((r: any) => ({
         id: r.id, type: 'questionnaire', title: r.questionnaires?.title ?? t.nav.selfChecks, date: r.completed_at.split('T')[0],
@@ -78,7 +79,7 @@ const Dashboard = () => {
                   {item.type === 'journal' ? <FBookOpen className="h-3.5 w-3.5 text-primary shrink-0" /> : <FClipboardCheck className="h-3.5 w-3.5 text-muted-foreground shrink-0" />}
                   <span className="text-sm flex-1 truncate">{item.title}</span>
                   {item.detail && <span className="text-xs text-muted-foreground hidden sm:inline">{item.detail}</span>}
-                  <span className="text-xs text-muted-foreground shrink-0">{format(parseISO(item.date), 'MMM d')}</span>
+                  <span className="text-xs text-muted-foreground shrink-0">{format(parseISO(item.date), 'MMM d', { locale: getDateLocale(lang) })}</span>
                 </button>
               ))}
             </div>
