@@ -4,6 +4,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useLanguage } from '@/hooks/useLanguage';
 import { supabase } from '@/integrations/supabase/client';
 import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, parseISO, startOfWeek, endOfWeek } from 'date-fns';
+import { getDateLocale } from '@/lib/date-locale';
 import { FChevronLeft, FChevronRight, FBookOpen, FClipboardCheck, FEye, FTrendingUp } from '@/components/icons/FreudIcons';
 import { Button } from '@/components/ui/button';
 
@@ -98,7 +99,7 @@ const Timeline = () => {
             <Button variant="ghost" size="icon" className="rounded-full" onClick={() => setCurrentMonth(m => new Date(m.getFullYear(), m.getMonth() - 1))}>
               <FChevronLeft className="h-4 w-4" />
             </Button>
-            <span className="text-sm font-semibold">{format(currentMonth, 'MMMM yyyy')}</span>
+            <span className="text-sm font-semibold">{format(currentMonth, 'MMMM yyyy', { locale: getDateLocale(lang) })}</span>
             <Button variant="ghost" size="icon" className="rounded-full" onClick={() => setCurrentMonth(m => new Date(m.getFullYear(), m.getMonth() + 1))}>
               <FChevronRight className="h-4 w-4" />
             </Button>
@@ -134,7 +135,7 @@ const Timeline = () => {
 
         {selectedDate && (
           <div className="bg-card/60 backdrop-blur border border-border rounded-3xl p-5 space-y-3 animate-fade-in">
-            <h2 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">{format(selectedDate, 'EEEE, MMMM d, yyyy')}</h2>
+            <h2 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">{format(selectedDate, 'EEEE, MMMM d, yyyy', { locale: getDateLocale(lang) })}</h2>
             {selectedItems.length === 0 ? (
               <p className="text-sm text-muted-foreground">{t.timeline.noEntriesOnDay}</p>
             ) : selectedItems.map(item => (
@@ -158,7 +159,7 @@ const Timeline = () => {
             <div key={item.id} className="flex items-center gap-3 py-2.5 border-b border-border/50 last:border-0">
               {item.type === 'journal' ? <FBookOpen className="h-3.5 w-3.5 text-primary" /> : item.type === 'observation' ? <FEye className="h-3.5 w-3.5 text-accent-foreground/60" /> : <FClipboardCheck className="h-3.5 w-3.5 text-muted-foreground" />}
               <span className="text-sm flex-1">{item.title}</span>
-              <span className="text-xs text-muted-foreground">{format(parseISO(item.date), 'MMM d')}</span>
+              <span className="text-xs text-muted-foreground">{format(parseISO(item.date), 'MMM d', { locale: getDateLocale(lang) })}</span>
             </div>
           ))}
         </div>
