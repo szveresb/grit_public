@@ -98,6 +98,10 @@ const Export = () => {
     const fhirObservations = buildPersonalFhirObservations(logsRes.data ?? [], conceptMap);
 
     const exportData = {
+      disclaimer: {
+        en: 'Non-Diagnostic Data: This report contains raw user observations mapped to standard medical terminology. It does not constitute a clinical assessment.',
+        hu: 'Nem diagnosztikai adat: A jelentés felhasználó által rögzített megfigyeléseket tartalmaz, szabványos orvosi terminológiára leképezve. Nem minősül klinikai értékelésnek.',
+      },
       exported_at: new Date().toISOString(),
       journal_entries: entriesRes.data ?? [],
       questionnaire_responses: responsesRes.data ?? [],
@@ -166,6 +170,10 @@ const Export = () => {
     });
 
     const exportData = {
+      disclaimer: {
+        en: 'Non-Diagnostic Data: This report contains raw user observations mapped to standard medical terminology. It does not constitute a clinical assessment.',
+        hu: 'Nem diagnosztikai adat: A jelentés felhasználó által rögzített megfigyeléseket tartalmaz, szabványos orvosi terminológiára leképezve. Nem minősül klinikai értékelésnek.',
+      },
       export_type: 'therapist_summary',
       exported_at: new Date().toISOString(),
       bno_summary: bnoSummary,

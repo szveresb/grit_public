@@ -84,6 +84,7 @@ const JournalEntryCard = ({
                 <div className="prose prose-sm max-w-none text-sm text-foreground/90 leading-relaxed [&_p]:mb-2 [&_p:last-child]:mb-0">
                   <ReactMarkdown>{entry.reflection}</ReactMarkdown>
                 </div>
+                <p className="text-[10px] text-muted-foreground/70 italic leading-snug">{t.disclaimer.aiGenerated}</p>
                 <div className="flex gap-2">
                   <Button variant="ghost" size="sm" className="rounded-2xl text-xs gap-1.5" onClick={onReflect} disabled={reflectDisabled}>
                     <FSparkles className="h-3.5 w-3.5" /> {t.journal.cardNewReflection}
@@ -117,6 +118,7 @@ const JournalEntryCard = ({
                 <div className="prose prose-sm max-w-none text-sm text-foreground/90 leading-relaxed [&_p]:mb-2 [&_p:last-child]:mb-0">
                   <ReactMarkdown>{streamedReflection}</ReactMarkdown>
                 </div>
+                <p className="text-[10px] text-muted-foreground/70 italic leading-snug">{t.disclaimer.aiGenerated}</p>
                 {!isReflecting && (
                   <div className="flex gap-2">
                     <Button variant="default" size="sm" className="rounded-2xl text-xs gap-1.5" onClick={onSaveReflection}>

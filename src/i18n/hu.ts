@@ -343,6 +343,12 @@ export const hu: Dictionary = {
     stepAnythingElse: 'Van még valami?',
   },
 
+  disclaimer: {
+    nonDiagnostic: 'Nem diagnosztikai adat: A jelentés felhasználó által rögzített megfigyeléseket tartalmaz, szabványos orvosi terminológiára leképezve. Nem minősül klinikai értékelésnek.',
+    userReported: 'Felhasználó által rögzített megfigyelések. Nem klinikai értékelés.',
+    aiGenerated: 'AI által generált reflexió — nem klinikai vagy diagnosztikai értékelés.',
+  },
+
   emergencyExit: 'Gyors kilépés – azonnal elhagyja az oldalt',
 
   langToggle: {

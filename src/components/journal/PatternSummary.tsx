@@ -1,6 +1,7 @@
 import { Button } from '@/components/ui/button';
 import { FTrendingUp, FLoader, FClose } from '@/components/icons/FreudIcons';
 import ReactMarkdown from 'react-markdown';
+import { useLanguage } from '@/hooks/useLanguage';
 
 interface PatternSummaryProps {
   summary: string;
@@ -9,6 +10,7 @@ interface PatternSummaryProps {
 }
 
 const PatternSummary = ({ summary, isAnalyzing, onDismiss }: PatternSummaryProps) => {
+  const { t } = useLanguage();
   if (!summary && !isAnalyzing) return null;
 
   return (
@@ -26,9 +28,12 @@ const PatternSummary = ({ summary, isAnalyzing, onDismiss }: PatternSummaryProps
         )}
       </div>
       {summary && (
-        <div className="prose prose-sm max-w-none text-sm text-foreground/90 leading-relaxed [&_p]:mb-2 [&_p:last-child]:mb-0">
-          <ReactMarkdown>{summary}</ReactMarkdown>
-        </div>
+        <>
+          <div className="prose prose-sm max-w-none text-sm text-foreground/90 leading-relaxed [&_p]:mb-2 [&_p:last-child]:mb-0">
+            <ReactMarkdown>{summary}</ReactMarkdown>
+          </div>
+          <p className="text-[10px] text-muted-foreground/70 italic leading-snug">{t.disclaimer.aiGenerated}</p>
+        </>
       )}
     </div>
   );
