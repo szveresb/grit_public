@@ -40,7 +40,7 @@ export const hu: Dictionary = {
   },
 
   landing: {
-    heroTitle: 'Értelmező könyvtárad a magas konfliktusú dinamikák navigálásához',
+    heroTitle: 'Segítő útmutató kiélezett kapcsolati helyzetekhez családtagok és partnerek számára',
     heroSubtitle: 'Válogatott kutatások, strukturált önreflexiós eszközök és egy biztonságos tér, hogy megőrizd a valóságérzékedet.',
     browseLibrary: 'Könyvtár böngészése',
     startSelfCheck: 'Naplózás indítása',
