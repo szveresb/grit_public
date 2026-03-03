@@ -105,9 +105,11 @@ const Journal = () => {
     setReflectingId(entry.id);
     setReflections(prev => ({ ...prev, [entry.id]: '' }));
     try {
+      const { data: { session: currentSession } } = await supabase.auth.getSession();
+      if (!currentSession?.access_token) { toast.error('Please sign in to use reflections'); setReflectingId(null); return; }
       const resp = await fetch(REFLECT_URL, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}` },
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${currentSession.access_token}` },
         body: JSON.stringify({ entry }),
       });
       if (!resp.ok) { const err = await resp.json().catch(() => ({ error: 'Reflection unavailable' })); toast.error(err.error || 'Failed'); setReflectingId(null); return; }
@@ -137,9 +139,11 @@ const Journal = () => {
     setAnalyzingPatterns(true); setPatternSummary('');
     try {
       const sorted = [...entries].sort((a, b) => a.entry_date.localeCompare(b.entry_date));
+      const { data: { session: currentSession } } = await supabase.auth.getSession();
+      if (!currentSession?.access_token) { toast.error('Please sign in to analyze patterns'); setAnalyzingPatterns(false); return; }
       const resp = await fetch(PATTERNS_URL, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}` },
+        headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${currentSession.access_token}` },
         body: JSON.stringify({ entries: sorted }),
       });
       if (!resp.ok) { const err = await resp.json().catch(() => ({ error: 'Pattern analysis unavailable' })); toast.error(err.error || 'Failed'); setAnalyzingPatterns(false); return; }
