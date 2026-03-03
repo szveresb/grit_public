@@ -209,7 +209,7 @@ All icons from `lucide-react`. Standard sizes:
 ## 10. Navigation
 
 - **Brand:** "Grit.hu" logo in top-left, links to home
-- **Top menu:** Library, Research Summaries, Self-Checks, About (visible on desktop)
+- **Top menu:** Library, Self-Checks, About (visible on desktop)
 - **Sidebar:** Home as first item; on mobile, top menu items fold into "Explore" group
 - **Active route:** Highlighted via `NavLink` component
 
