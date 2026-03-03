@@ -1,4 +1,5 @@
 import { useEffect, useState, useMemo } from 'react';
+import { friendlyDbError } from '@/lib/db-error';
 import DashboardLayout from '@/components/DashboardLayout';
 import { useAuth } from '@/hooks/useAuth';
 import { useLanguage } from '@/hooks/useLanguage';
@@ -72,11 +73,11 @@ const ManageLibrary = () => {
     const payload = { title: form.title.trim(), excerpt: form.excerpt.trim() || null, source: form.source.trim() || null, url: form.url.trim() || null, category: form.category.trim() || 'Article', published: form.published };
     if (editingId) {
       const { error } = await supabase.from('library_articles').update(payload).eq('id', editingId);
-      if (error) { toast.error(error.message); setSaving(false); return; }
+      if (error) { toast.error(friendlyDbError(error)); setSaving(false); return; }
       toast.success(t.manageLibrary.articleUpdated);
     } else {
       const { error } = await supabase.from('library_articles').insert(payload);
-      if (error) { toast.error(error.message); setSaving(false); return; }
+      if (error) { toast.error(friendlyDbError(error)); setSaving(false); return; }
       toast.success(t.manageLibrary.articleCreated);
     }
     setSaving(false); setShowForm(false); setForm(emptyForm); setEditingId(null); fetchArticles();
@@ -84,7 +85,7 @@ const ManageLibrary = () => {
 
   const handleDelete = async (id: string) => {
     const { error } = await supabase.from('library_articles').delete().eq('id', id);
-    if (error) { toast.error(error.message); return; }
+    if (error) { toast.error(friendlyDbError(error)); return; }
     toast.success(t.manageLibrary.articleDeleted); fetchArticles();
   };
 

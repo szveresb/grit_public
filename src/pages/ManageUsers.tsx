@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { friendlyDbError } from '@/lib/db-error';
 import DashboardLayout from '@/components/DashboardLayout';
 import { useAuth } from '@/hooks/useAuth';
 import { useLanguage } from '@/hooks/useLanguage';
@@ -41,13 +42,13 @@ const ManageUsers = () => {
 
   const addRole = async (userId: string, role: AppRole) => {
     const { error } = await supabase.from('user_roles').insert({ user_id: userId, role });
-    if (error) { toast.error(error.message); return; }
+    if (error) { toast.error(friendlyDbError(error)); return; }
     toast.success(t.manageUsers.addedRole.replace('{role}', ROLE_LABELS[role])); fetchUsers();
   };
 
   const removeRole = async (userId: string, role: AppRole) => {
     const { error } = await supabase.from('user_roles').delete().eq('user_id', userId).eq('role', role);
-    if (error) { toast.error(error.message); return; }
+    if (error) { toast.error(friendlyDbError(error)); return; }
     toast.success(t.manageUsers.removedRole.replace('{role}', ROLE_LABELS[role])); fetchUsers();
   };
 

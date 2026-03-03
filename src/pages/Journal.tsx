@@ -1,4 +1,5 @@
 import { useEffect, useState, useMemo, useCallback } from 'react';
+import { friendlyDbError } from '@/lib/db-error';
 import DashboardLayout from '@/components/DashboardLayout';
 import { useAuth } from '@/hooks/useAuth';
 import { useLanguage } from '@/hooks/useLanguage';
@@ -86,17 +87,17 @@ const Journal = () => {
     };
     if (editingId) {
       const { error } = await supabase.from('journal_entries').update(payload).eq('id', editingId);
-      if (error) { toast.error(error.message); } else { toast.success(t.journal.entryUpdated); }
+      if (error) { toast.error(friendlyDbError(error)); } else { toast.success(t.journal.entryUpdated); }
     } else {
       const { error } = await supabase.from('journal_entries').insert({ user_id: user.id, ...payload });
-      if (error) { toast.error(error.message); } else { toast.success(t.journal.entryLogged); }
+      if (error) { toast.error(friendlyDbError(error)); } else { toast.success(t.journal.entryLogged); }
     }
     setForm(emptyForm); setShowForm(false); setEditingId(null); fetchEntries(); setSaving(false);
   };
 
   const handleDelete = async (id: string) => {
     const { error } = await supabase.from('journal_entries').delete().eq('id', id);
-    if (error) { toast.error(error.message); return; }
+    if (error) { toast.error(friendlyDbError(error)); return; }
     toast.success(t.journal.entryDeleted); fetchEntries();
   };
 
@@ -123,13 +124,13 @@ const Journal = () => {
     const text = reflections[entryId];
     if (!text) return;
     const { error } = await supabase.from('journal_entries').update({ reflection: text }).eq('id', entryId);
-    if (error) { toast.error(error.message); return; }
+    if (error) { toast.error(friendlyDbError(error)); return; }
     toast.success(t.journal.reflectionSaved); fetchEntries();
   };
 
   const clearReflection = async (entryId: string) => {
     const { error } = await supabase.from('journal_entries').update({ reflection: null }).eq('id', entryId);
-    if (error) { toast.error(error.message); return; }
+    if (error) { toast.error(friendlyDbError(error)); return; }
     setReflections(prev => { const n = { ...prev }; delete n[entryId]; return n; });
     toast.success(t.journal.reflectionRemoved); fetchEntries();
   };
