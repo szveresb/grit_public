@@ -179,6 +179,18 @@ const SelfChecks = () => {
             <Switch checked={formPublished} onCheckedChange={setFormPublished} />
             <Label className="text-sm">{t.published}</Label>
           </div>
+          <div className="space-y-2">
+            <Label className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">{t.selfChecks.repeatInterval}</Label>
+            <select value={formRepeat} onChange={e => setFormRepeat(e.target.value)}
+              className="w-full border border-input rounded-2xl px-3 py-2 text-sm bg-background">
+              <option value="">{t.selfChecks.repeatOnce}</option>
+              <option value="daily">{t.selfChecks.repeatDaily}</option>
+              <option value="weekly">{t.selfChecks.repeatWeekly}</option>
+              <option value="biweekly">{t.selfChecks.repeatBiweekly}</option>
+              <option value="monthly">{t.selfChecks.repeatMonthly}</option>
+              <option value="anytime">{t.selfChecks.repeatAnytime}</option>
+            </select>
+          </div>
           <div className="space-y-3">
             <Label className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">{t.selfChecks.questions}</Label>
             {formQuestions.map((nq, i) => (
