@@ -20,7 +20,7 @@ import {
 import ObservationStepper from '@/components/observations/ObservationStepper';
 import ObservationHistory from '@/components/observations/ObservationHistory';
 
-interface Questionnaire { id: string; title: string; description: string | null; is_published: boolean; created_at: string; }
+interface Questionnaire { id: string; title: string; description: string | null; is_published: boolean; created_at: string; repeat_interval: string | null; }
 interface Question { id: string; question_text: string; question_type: string; options: string[] | null; sort_order: number; }
 
 const SelfChecks = () => {
