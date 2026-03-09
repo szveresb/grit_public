@@ -4,7 +4,6 @@ import { useLanguage } from '@/hooks/useLanguage';
 import QuickPulse from '@/components/checkin/QuickPulse';
 import UnifiedFeed from '@/components/checkin/UnifiedFeed';
 import ObservationStepper from '@/components/observations/ObservationStepper';
-import QuestionnaireFiller from '@/components/checkin/QuestionnaireFiller';
 import JournalForm from '@/components/journal/JournalForm';
 import type { ObservationTreeResult } from '@/components/journal/ObservationTree';
 import { useAuth } from '@/hooks/useAuth';
@@ -13,6 +12,7 @@ import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { FChevronDown } from '@/components/icons/FreudIcons';
+// QuestionnaireFiller moved to dedicated /surveys page
 import type { JournalFormData } from '@/types/journal';
 import { emptyForm } from '@/types/journal';
 
@@ -98,19 +98,6 @@ const CheckIn = () => {
             showObservationTree={true}
           />
         )}
-
-        {/* Questionnaire section */}
-        <Collapsible>
-          <CollapsibleTrigger className="w-full bg-card/60 backdrop-blur border border-border rounded-3xl p-5 flex items-center justify-between hover:border-primary/30 transition-colors">
-            <h2 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
-              {t.nav.selfChecks}
-            </h2>
-            <FChevronDown className="h-4 w-4 text-muted-foreground transition-transform data-[state=open]:rotate-180" />
-          </CollapsibleTrigger>
-          <CollapsibleContent className="bg-card/60 backdrop-blur border border-border border-t-0 rounded-b-3xl p-6 -mt-3">
-            <QuestionnaireFiller onCompleted={refresh} />
-          </CollapsibleContent>
-        </Collapsible>
 
         {/* Observation Stepper (collapsible) */}
         <Collapsible open={observationOpen} onOpenChange={setObservationOpen}>

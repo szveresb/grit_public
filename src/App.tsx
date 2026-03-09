@@ -23,6 +23,7 @@ import Gdpr from "./pages/Gdpr";
 import AboutLegal from "./pages/AboutLegal";
 import Library from "./pages/Library";
 import SelfChecks from "./pages/SelfChecks";
+import Surveys from "./pages/Surveys";
 
 const queryClient = new QueryClient();
 
@@ -35,7 +36,8 @@ const AppRoutes = () => (
     <Route path="/journal" element={<ProtectedRoute><CheckIn /></ProtectedRoute>} />
     {/* Old routes redirect to journal */}
     <Route path="/check-in" element={<Navigate to="/journal" replace />} />
-    <Route path="/self-checks" element={<Navigate to="/journal" replace />} />
+    <Route path="/self-checks" element={<Navigate to="/surveys" replace />} />
+    <Route path="/surveys" element={<ProtectedRoute><Surveys /></ProtectedRoute>} />
     <Route path="/timeline" element={<ProtectedRoute><Timeline /></ProtectedRoute>} />
     <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
     <Route path="/export" element={<ProtectedRoute><Export /></ProtectedRoute>} />
@@ -54,7 +56,8 @@ const AppRoutes = () => (
     <Route path="/en/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
     <Route path="/en/journal" element={<ProtectedRoute><CheckIn /></ProtectedRoute>} />
     <Route path="/en/check-in" element={<Navigate to="/en/journal" replace />} />
-    <Route path="/en/self-checks" element={<Navigate to="/en/journal" replace />} />
+    <Route path="/en/self-checks" element={<Navigate to="/en/surveys" replace />} />
+    <Route path="/en/surveys" element={<ProtectedRoute><Surveys /></ProtectedRoute>} />
     <Route path="/en/timeline" element={<ProtectedRoute><Timeline /></ProtectedRoute>} />
     <Route path="/en/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
     <Route path="/en/export" element={<ProtectedRoute><Export /></ProtectedRoute>} />

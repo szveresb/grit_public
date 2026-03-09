@@ -151,7 +151,8 @@ const QuestionnaireFiller = ({ onCompleted }: { onCompleted?: () => void }) => {
     }
   };
 
-  if (loading || questionnaires.length === 0) return null;
+  if (loading) return <p className="text-sm text-muted-foreground">{t.loading}</p>;
+  if (questionnaires.length === 0) return <p className="text-sm text-muted-foreground">{t.selfChecks.noAvailable}</p>;
 
   // Filling a specific questionnaire
   if (selectedQ) {

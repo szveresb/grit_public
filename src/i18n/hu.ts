@@ -38,6 +38,7 @@ export const hu: Dictionary = {
     manageSelfChecks: 'Önellenőrzés kezelése',
     analystExport: 'Elemzői export',
     checkIn: 'Napló',
+    surveys: 'Kérdőívek',
   },
 
   landing: {
