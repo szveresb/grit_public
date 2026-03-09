@@ -40,6 +40,7 @@ export interface Dictionary {
     manageSelfChecks: string;
     analystExport: string;
     checkIn: string;
+    surveys: string;
   };
 
   // Index / Landing

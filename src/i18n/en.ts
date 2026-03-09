@@ -38,6 +38,7 @@ export const en: Dictionary = {
     manageSelfChecks: 'Manage Self-Checks',
     analystExport: 'Analyst Export',
     checkIn: 'Journal',
+    surveys: 'Surveys',
   },
 
   landing: {
