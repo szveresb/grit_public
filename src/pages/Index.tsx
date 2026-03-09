@@ -122,46 +122,64 @@ const Index = () => {
       </section>
 
       {/* Library Section */}
-      <section id="library" className="relative z-10 px-4 md:px-8 py-12 max-w-7xl mx-auto">
-        <div className="flex items-center justify-between mb-6">
+      <section id="library" className="relative z-10 px-4 md:px-8 py-16 max-w-7xl mx-auto">
+        <div className="flex items-center justify-between mb-8">
           <div>
             <h2 className="text-lg md:text-xl font-bold tracking-tight text-foreground">{t.landing.libraryTitle}</h2>
             <p className="mt-1 text-sm text-muted-foreground">{t.landing.librarySubtitle}</p>
           </div>
+          <Button variant="ghost" size="sm" className="rounded-full text-sm font-medium text-muted-foreground hover:text-foreground" asChild>
+            <Link to={localePath('/library')}>
+              {t.landing.viewAll} <FArrowRight className="h-4 w-4 ml-1" />
+            </Link>
+          </Button>
         </div>
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-          {articlesLoading ? (
-            Array.from({ length: 6 }).map((_, i) => (
-              <div key={i} className="bg-card/70 backdrop-blur border border-border rounded-3xl p-6 space-y-3">
-                <Skeleton className="h-5 w-20 rounded-full" />
-                <Skeleton className="h-4 w-full" />
-                <Skeleton className="h-3 w-full" />
-                <Skeleton className="h-3 w-2/3" />
-              </div>
-            ))
-          ) : articles.length === 0 ? (
-            <p className="text-sm text-muted-foreground col-span-full">{t.landing.noArticles}</p>
-          ) : (
-            articles.map((article) => (
-              <ArticleCard
-                key={article.id}
-                title={article.title}
-                excerpt={article.excerpt}
-                category={article.category}
-                source={article.source}
-                url={article.url}
-              />
-            ))
-          )}
-        </div>
-        {/* View all link */}
-        {!articlesLoading && articles.length > 0 && (
-          <div className="mt-6 text-center">
-            <Button variant="outline" className="rounded-2xl px-6" asChild>
-              <Link to={localePath('/library')}>
-                {t.landing.viewAll} <FArrowRight className="h-4 w-4 ml-1" />
-              </Link>
-            </Button>
+
+        {articlesLoading ? (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+            <div className="bg-card/70 backdrop-blur border border-border rounded-3xl p-8 space-y-4">
+              <Skeleton className="h-5 w-24 rounded-full" />
+              <Skeleton className="h-6 w-3/4" />
+              <Skeleton className="h-4 w-full" />
+              <Skeleton className="h-4 w-full" />
+              <Skeleton className="h-4 w-2/3" />
+            </div>
+            <div className="space-y-5">
+              {[1, 2].map(i => (
+                <div key={i} className="bg-card/70 backdrop-blur border border-border rounded-3xl p-6 space-y-3">
+                  <Skeleton className="h-5 w-20 rounded-full" />
+                  <Skeleton className="h-4 w-full" />
+                  <Skeleton className="h-3 w-full" />
+                </div>
+              ))}
+            </div>
+          </div>
+        ) : articles.length === 0 ? (
+          <p className="text-sm text-muted-foreground">{t.landing.noArticles}</p>
+        ) : (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+            {/* Featured article */}
+            <ArticleCard
+              title={articles[0].title}
+              excerpt={articles[0].excerpt}
+              category={articles[0].category}
+              source={articles[0].source}
+              url={articles[0].url}
+              featured
+            />
+            {/* Remaining articles */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+              {articles.slice(1).map((article) => (
+                <ArticleCard
+                  key={article.id}
+                  title={article.title}
+                  excerpt={article.excerpt}
+                  category={article.category}
+                  source={article.source}
+                  url={article.url}
+                />
+              ))}
+            </div>
           </div>
         )}
       </section>
