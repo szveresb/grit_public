@@ -36,7 +36,8 @@ const AppRoutes = () => (
     <Route path="/journal" element={<ProtectedRoute><CheckIn /></ProtectedRoute>} />
     {/* Old routes redirect to journal */}
     <Route path="/check-in" element={<Navigate to="/journal" replace />} />
-    <Route path="/self-checks" element={<Navigate to="/journal" replace />} />
+    <Route path="/self-checks" element={<Navigate to="/surveys" replace />} />
+    <Route path="/surveys" element={<ProtectedRoute><Surveys /></ProtectedRoute>} />
     <Route path="/timeline" element={<ProtectedRoute><Timeline /></ProtectedRoute>} />
     <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
     <Route path="/export" element={<ProtectedRoute><Export /></ProtectedRoute>} />
