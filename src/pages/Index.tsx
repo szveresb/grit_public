@@ -12,7 +12,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import LanguageToggle from '@/components/LanguageToggle';
 import ArticleCard from '@/components/ArticleCard';
 
-import bambooBg from '@/assets/bamboo-bg.jpg';
+import heroIllustration from '@/assets/hero-bamboo-illustration.jpg';
 
 interface LibraryArticle {
   id: string;
@@ -21,6 +21,7 @@ interface LibraryArticle {
   source: string | null;
   url: string | null;
   category: string;
+  image_url: string | null;
 }
 
 const Index = () => {
@@ -32,7 +33,7 @@ const Index = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   useEffect(() => {
-    supabase.from('library_articles').select('id, title, excerpt, source, category, url').eq('published', true).order('created_at', { ascending: false }).limit(6)
+    supabase.from('library_articles').select('id, title, excerpt, source, category, url, image_url').eq('published', true).order('created_at', { ascending: false }).limit(6)
       .then(({ data }) => { setArticles((data as LibraryArticle[]) ?? []); setArticlesLoading(false); });
   }, []);
 
@@ -43,8 +44,8 @@ const Index = () => {
 
   return (
     <div className="min-h-screen relative w-full overflow-x-hidden">
-      <div className="fixed inset-0 z-0 bg-cover bg-center" style={{ backgroundImage: `url(${bambooBg})`, opacity: 0.12 }} />
-      <div className="fixed inset-0 z-0 bg-background/80" />
+      <div className="fixed inset-0 z-0 bg-cover bg-center" style={{ backgroundImage: `url(${heroIllustration})`, opacity: 0.10 }} />
+      <div className="fixed inset-0 z-0 bg-background/85" />
 
       {/* Header */}
       <header className="relative z-10 border-b border-border bg-card/60 backdrop-blur-xl">
@@ -165,6 +166,7 @@ const Index = () => {
               category={articles[0].category}
               source={articles[0].source}
               url={articles[0].url}
+              imageUrl={articles[0].image_url}
               featured
             />
             {/* Remaining articles */}
@@ -177,6 +179,7 @@ const Index = () => {
                   category={article.category}
                   source={article.source}
                   url={article.url}
+                  imageUrl={article.image_url}
                 />
               ))}
             </div>

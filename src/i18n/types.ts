@@ -282,6 +282,8 @@ export interface Dictionary {
     noArticles: string;
     noMatch: string;
     loadingArticles: string;
+    imageUrl: string;
+    imageUrlHint: string;
   };
 
   // Manage Users

@@ -22,6 +22,7 @@ import {
 interface Article {
   id: string; title: string; excerpt: string | null; source: string | null;
   url: string | null; category: string; published: boolean; created_at: string;
+  image_url: string | null;
 }
 
 const categories = ['Article', 'Research', 'Book', 'Study Summary'];
@@ -34,7 +35,7 @@ const ManageLibrary = () => {
   const [loading, setLoading] = useState(true);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [showForm, setShowForm] = useState(false);
-  const emptyForm = { title: '', excerpt: '', source: '', url: '', category: 'Article', published: true };
+  const emptyForm = { title: '', excerpt: '', source: '', url: '', category: 'Article', published: true, image_url: '' };
   const [form, setForm] = useState(emptyForm);
   const [saving, setSaving] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -63,14 +64,14 @@ const ManageLibrary = () => {
   const openCreate = () => { setEditingId(null); setForm(emptyForm); setShowForm(true); };
   const openEdit = (a: Article) => {
     setEditingId(a.id);
-    setForm({ title: a.title, excerpt: a.excerpt ?? '', source: a.source ?? '', url: (a as any).url ?? '', category: a.category, published: a.published });
+    setForm({ title: a.title, excerpt: a.excerpt ?? '', source: a.source ?? '', url: (a as any).url ?? '', category: a.category, published: a.published, image_url: a.image_url ?? '' });
     setShowForm(true);
   };
 
   const handleSave = async () => {
     if (!form.title.trim()) { toast.error('Title is required'); return; }
     setSaving(true);
-    const payload = { title: form.title.trim(), excerpt: form.excerpt.trim() || null, source: form.source.trim() || null, url: form.url.trim() || null, category: form.category.trim() || 'Article', published: form.published };
+    const payload = { title: form.title.trim(), excerpt: form.excerpt.trim() || null, source: form.source.trim() || null, url: form.url.trim() || null, category: form.category.trim() || 'Article', published: form.published, image_url: form.image_url.trim() || null };
     if (editingId) {
       const { error } = await supabase.from('library_articles').update(payload).eq('id', editingId);
       if (error) { toast.error(friendlyDbError(error)); setSaving(false); return; }
@@ -132,6 +133,11 @@ const ManageLibrary = () => {
             <div className="space-y-2">
               <Label className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">{t.manageLibrary.url}</Label>
               <Input value={form.url} onChange={e => setForm(f => ({ ...f, url: e.target.value }))} placeholder="https://..." className="rounded-2xl" />
+            </div>
+            <div className="space-y-2">
+              <Label className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">{t.manageLibrary.imageUrl}</Label>
+              <Input value={form.image_url} onChange={e => setForm(f => ({ ...f, image_url: e.target.value }))} placeholder="https://images.unsplash.com/..." className="rounded-2xl" />
+              <p className="text-[10px] text-muted-foreground">{t.manageLibrary.imageUrlHint}</p>
             </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
