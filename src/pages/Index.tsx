@@ -179,6 +179,7 @@ const Index = () => {
                   category={article.category}
                   source={article.source}
                   url={article.url}
+                  imageUrl={article.image_url}
                 />
               ))}
             </div>
