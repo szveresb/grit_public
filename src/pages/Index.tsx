@@ -1,6 +1,7 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { AnimatePresence, motion } from 'framer-motion';
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { useAuth } from '@/hooks/useAuth';
 import { useLanguage } from '@/hooks/useLanguage';
 import { supabase } from '@/integrations/supabase/client';
@@ -72,34 +73,31 @@ const Index = () => {
             )}
             <button
               className="lg:hidden p-2 -mr-2 text-muted-foreground hover:text-foreground transition-colors"
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              onClick={() => setMobileMenuOpen(true)}
               aria-label="Menu"
             >
-              {mobileMenuOpen ? <FClose className="h-5 w-5" /> : <FMenu className="h-5 w-5" />}
+              <FMenu className="h-5 w-5" />
             </button>
           </div>
         </div>
 
-        <AnimatePresence>
-          {mobileMenuOpen && (
-            <motion.nav
-              initial={{ height: 0, opacity: 0 }}
-              animate={{ height: 'auto', opacity: 1 }}
-              exit={{ height: 0, opacity: 0 }}
-              transition={{ duration: 0.25, ease: 'easeInOut' }}
-              className="lg:hidden border-t border-border bg-card/90 backdrop-blur-xl overflow-hidden"
-            >
-              <div className="px-4 py-4 space-y-1">
-                <Link to={localePath('/library')} onClick={() => setMobileMenuOpen(false)} className="block py-2.5 px-3 rounded-2xl text-sm font-medium text-foreground hover:bg-accent/50 transition-colors">{t.nav.library}</Link>
-                <button onClick={() => { handleGatedClick('/journal'); setMobileMenuOpen(false); }} className="w-full text-left py-2.5 px-3 rounded-2xl text-sm font-medium text-foreground hover:bg-accent/50 transition-colors flex items-center gap-1.5">
-                  {t.nav.checkIn}
-                  {!user && <FLock className="h-3 w-3" />}
-                </button>
-                <Link to={localePath('/about-legal')} onClick={() => setMobileMenuOpen(false)} className="block py-2.5 px-3 rounded-2xl text-sm font-medium text-foreground hover:bg-accent/50 transition-colors">{t.nav.about}</Link>
-              </div>
-            </motion.nav>
-          )}
-        </AnimatePresence>
+        <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
+          <SheetContent side="left" className="w-72 p-0">
+            <SheetHeader className="px-5 py-5 border-b border-border">
+              <SheetTitle className="text-lg font-bold tracking-tight text-foreground text-left">
+                🌿 {t.brand}
+              </SheetTitle>
+            </SheetHeader>
+            <nav className="px-4 py-4 space-y-1">
+              <Link to={localePath('/library')} onClick={() => setMobileMenuOpen(false)} className="block py-2.5 px-3 rounded-2xl text-sm font-medium text-foreground hover:bg-accent/50 transition-colors">{t.nav.library}</Link>
+              <button onClick={() => { handleGatedClick('/journal'); setMobileMenuOpen(false); }} className="w-full text-left py-2.5 px-3 rounded-2xl text-sm font-medium text-foreground hover:bg-accent/50 transition-colors flex items-center gap-1.5">
+                {t.nav.checkIn}
+                {!user && <FLock className="h-3 w-3" />}
+              </button>
+              <Link to={localePath('/about-legal')} onClick={() => setMobileMenuOpen(false)} className="block py-2.5 px-3 rounded-2xl text-sm font-medium text-foreground hover:bg-accent/50 transition-colors">{t.nav.about}</Link>
+            </nav>
+          </SheetContent>
+        </Sheet>
       </header>
 
       {/* Hero */}
