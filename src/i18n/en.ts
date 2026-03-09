@@ -23,7 +23,7 @@ export const en: Dictionary = {
   nav: {
     home: 'Home',
     library: 'Library',
-    researchSummaries: 'Research Summaries',
+    
     selfChecks: 'Self-Checks',
     about: 'About',
     journal: 'Journal',
