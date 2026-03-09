@@ -23,6 +23,7 @@ import Gdpr from "./pages/Gdpr";
 import AboutLegal from "./pages/AboutLegal";
 import Library from "./pages/Library";
 import SelfChecks from "./pages/SelfChecks";
+import Surveys from "./pages/Surveys";
 
 const queryClient = new QueryClient();
 
