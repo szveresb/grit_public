@@ -49,7 +49,7 @@ const QuestionnaireFiller = ({ onCompleted }: { onCompleted?: () => void }) => {
   const [submitting, setSubmitting] = useState(false);
   const [loading, setLoading] = useState(true);
 
-  const dateLocale = getDateLocale(language);
+  const dateLocale = getDateLocale(lang);
 
   useEffect(() => {
     const load = async () => {
