@@ -39,6 +39,8 @@ const SelfChecks = () => {
   const [formDesc, setFormDesc] = useState('');
   const [formPublished, setFormPublished] = useState(true);
   const [formQuestions, setFormQuestions] = useState<{ id?: string; text: string; type: string; options: string }[]>([{ text: '', type: 'text', options: '' }]);
+  const [formRepeat, setFormRepeat] = useState<string>('');
+
   const [saving, setSaving] = useState(false);
   const [obsRefreshKey, setObsRefreshKey] = useState(0);
 
