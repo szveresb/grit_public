@@ -269,8 +269,6 @@ export const en: Dictionary = {
     noArticles: 'No articles yet. Create your first one above.',
     noMatch: 'No articles match your search.',
     loadingArticles: 'Loading articles...',
-    imageUrl: 'Image URL',
-    imageUrlHint: 'Optional. Falls back to category illustration if empty.',
   },
 
   manageUsers: {

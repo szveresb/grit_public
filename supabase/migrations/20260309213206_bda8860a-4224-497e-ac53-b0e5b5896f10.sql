@@ -1,1 +1,0 @@
-ALTER TABLE public.library_articles ADD COLUMN image_url text DEFAULT NULL;

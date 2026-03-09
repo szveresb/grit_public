@@ -269,8 +269,6 @@ export const hu: Dictionary = {
     noArticles: 'Még nincsenek cikkek. Hozd létre az elsőt fent.',
     noMatch: 'Nincs találat.',
     loadingArticles: 'Cikkek betöltése...',
-    imageUrl: 'Kép URL',
-    imageUrlHint: 'Opcionális. Ha üres, a kategória illusztrációja jelenik meg.',
   },
 
   manageUsers: {

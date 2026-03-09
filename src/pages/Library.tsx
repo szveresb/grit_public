@@ -19,7 +19,6 @@ interface LibraryArticle {
   source: string | null;
   url: string | null;
   category: string;
-  image_url: string | null;
 }
 
 const Library = () => {
@@ -32,7 +31,7 @@ const Library = () => {
   useEffect(() => {
     supabase
       .from('library_articles')
-      .select('id, title, title_localized, excerpt, excerpt_localized, source, category, url, image_url')
+      .select('id, title, title_localized, excerpt, excerpt_localized, source, category, url')
       .eq('published', true)
       .order('created_at', { ascending: false })
       .then(({ data }) => {
@@ -154,7 +153,6 @@ const Library = () => {
               category={filtered[0].category}
               source={filtered[0].source}
               url={filtered[0].url}
-              imageUrl={filtered[0].image_url}
               featured
             />
             {/* Remaining articles */}
@@ -167,7 +165,6 @@ const Library = () => {
                   category={article.category}
                   source={article.source}
                   url={article.url}
-                  imageUrl={article.image_url}
                 />
               ))}
             </div>

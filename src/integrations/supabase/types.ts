@@ -66,7 +66,6 @@ export type Database = {
           excerpt: string | null
           excerpt_localized: Json | null
           id: string
-          image_url: string | null
           published: boolean
           source: string | null
           title: string
@@ -80,7 +79,6 @@ export type Database = {
           excerpt?: string | null
           excerpt_localized?: Json | null
           id?: string
-          image_url?: string | null
           published?: boolean
           source?: string | null
           title: string
@@ -94,7 +92,6 @@ export type Database = {
           excerpt?: string | null
           excerpt_localized?: Json | null
           id?: string
-          image_url?: string | null
           published?: boolean
           source?: string | null
           title?: string
