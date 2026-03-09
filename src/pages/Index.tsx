@@ -12,7 +12,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import LanguageToggle from '@/components/LanguageToggle';
 import ArticleCard from '@/components/ArticleCard';
 
-import bambooBg from '@/assets/bamboo-bg.jpg';
+import heroIllustration from '@/assets/hero-bamboo-illustration.jpg';
 
 interface LibraryArticle {
   id: string;
