@@ -10,15 +10,18 @@ interface ArticleCardProps {
   category: string;
   source: string | null;
   url: string | null;
+  featured?: boolean;
 }
 
-const ArticleCard = ({ title, excerpt, category, source, url }: ArticleCardProps) => {
+const ArticleCard = ({ title, excerpt, category, source, url, featured = false }: ArticleCardProps) => {
   const [expanded, setExpanded] = useState(false);
   const { t } = useLanguage();
 
   return (
     <div
-      className="bg-card/70 backdrop-blur border border-border rounded-3xl p-6 hover:shadow-md transition-all cursor-pointer group"
+      className={`bg-card/70 backdrop-blur border border-border rounded-3xl hover:shadow-md transition-all cursor-pointer group ${
+        featured ? 'p-8' : 'p-6'
+      }`}
       onClick={() => setExpanded(!expanded)}
     >
       <div className="flex items-center gap-2 mb-3">
@@ -26,7 +29,9 @@ const ArticleCard = ({ title, excerpt, category, source, url }: ArticleCardProps
           {category}
         </Badge>
       </div>
-      <h3 className="text-sm font-semibold text-foreground leading-snug group-hover:text-primary transition-colors">
+      <h3 className={`font-semibold text-foreground leading-snug group-hover:text-primary transition-colors ${
+        featured ? 'text-lg md:text-xl' : 'text-sm'
+      }`}>
         {title}
       </h3>
       <AnimatePresence initial={false}>
