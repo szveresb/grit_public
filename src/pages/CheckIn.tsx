@@ -4,6 +4,7 @@ import { useLanguage } from '@/hooks/useLanguage';
 import QuickPulse from '@/components/checkin/QuickPulse';
 import UnifiedFeed from '@/components/checkin/UnifiedFeed';
 import ObservationStepper from '@/components/observations/ObservationStepper';
+import QuestionnaireFiller from '@/components/checkin/QuestionnaireFiller';
 import JournalForm from '@/components/journal/JournalForm';
 import type { ObservationTreeResult } from '@/components/journal/ObservationTree';
 import { useAuth } from '@/hooks/useAuth';
