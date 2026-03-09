@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import LanguageToggle from '@/components/LanguageToggle';
+import ArticleCard from '@/components/ArticleCard';
 import bambooBg from '@/assets/bamboo-bg.jpg';
 
 interface LibraryArticle {
@@ -147,30 +148,16 @@ const Index = () => {
           ) : articles.length === 0 ? (
             <p className="text-sm text-muted-foreground col-span-full">{t.landing.noArticles}</p>
           ) : (
-            articles.map((article) => {
-              const Wrapper = article.url ? 'a' : 'div';
-              const linkProps = article.url ? { href: article.url, target: '_blank', rel: 'noopener noreferrer' } : {};
-              return (
-                <Wrapper key={article.id} {...linkProps} className={`bg-card/70 backdrop-blur border border-border rounded-3xl p-6 hover:shadow-md transition-all group ${article.url ? 'cursor-pointer' : ''}`}>
-                  <div className="flex items-center gap-2 mb-3">
-                    <Badge variant="secondary" className="rounded-full text-[10px] font-semibold uppercase tracking-wider">
-                      {article.category}
-                    </Badge>
-                  </div>
-                  <h3 className="text-sm font-semibold text-foreground leading-snug group-hover:text-primary transition-colors">
-                    {article.title}
-                  </h3>
-                  <p className="mt-2 text-xs text-muted-foreground leading-relaxed line-clamp-3">
-                    {article.excerpt}
-                  </p>
-                  {article.source && (
-                    <p className="mt-3 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
-                      {article.source}
-                    </p>
-                  )}
-                </Wrapper>
-              );
-            })
+            articles.map((article) => (
+              <ArticleCard
+                key={article.id}
+                title={article.title}
+                excerpt={article.excerpt}
+                category={article.category}
+                source={article.source}
+                url={article.url}
+              />
+            ))
           )}
         </div>
         {/* View all link */}

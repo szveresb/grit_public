@@ -61,6 +61,7 @@ export const en: Dictionary = {
     cookies: 'Cookie Policy',
     gdpr: 'GDPR Compliance',
     viewAll: 'View all',
+    viewSource: 'View source',
   },
 
   sampleQuestions: {
