@@ -12,6 +12,7 @@ import { toast } from 'sonner';
 import { format } from 'date-fns';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { FChevronDown } from '@/components/icons/FreudIcons';
+// QuestionnaireFiller moved to dedicated /surveys page
 import type { JournalFormData } from '@/types/journal';
 import { emptyForm } from '@/types/journal';
 
