@@ -10,6 +10,7 @@ import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import LanguageToggle from '@/components/LanguageToggle';
 import ArticleCard from '@/components/ArticleCard';
+import LandingPreview from '@/components/LandingPreview';
 import bambooBg from '@/assets/bamboo-bg.jpg';
 
 interface LibraryArticle {
