@@ -9,6 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import LanguageToggle from '@/components/LanguageToggle';
+import ArticleCard from '@/components/ArticleCard';
 import bambooBg from '@/assets/bamboo-bg.jpg';
 
 interface LibraryArticle {
