@@ -33,7 +33,7 @@ const Index = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   useEffect(() => {
-    supabase.from('library_articles').select('id, title, excerpt, source, category, url').eq('published', true).order('created_at', { ascending: false }).limit(6)
+    supabase.from('library_articles').select('id, title, excerpt, source, category, url, image_url').eq('published', true).order('created_at', { ascending: false }).limit(6)
       .then(({ data }) => { setArticles((data as LibraryArticle[]) ?? []); setArticlesLoading(false); });
   }, []);
 
