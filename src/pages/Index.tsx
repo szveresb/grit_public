@@ -39,11 +39,6 @@ const Index = () => {
     navigate(user ? localePath(path) : localePath('/auth'));
   };
 
-  const samplePreviewQuestions = [
-    { text: t.sampleQuestions.q1, type: t.sampleQuestions.q1Type },
-    { text: t.sampleQuestions.q2, type: t.sampleQuestions.q2Type },
-    { text: t.sampleQuestions.q3, type: t.sampleQuestions.q3Type },
-  ];
 
   return (
     <div className="min-h-screen relative w-full overflow-x-hidden">
