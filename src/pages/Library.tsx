@@ -136,35 +136,16 @@ const Library = () => {
               {search.trim() ? t.manageLibrary.noMatch : t.landing.noArticles}
             </p>
           ) : (
-            filtered.map((article) => {
-              const Wrapper = article.url ? 'a' : 'div';
-              const linkProps = article.url ? { href: article.url, target: '_blank', rel: 'noopener noreferrer' } : {};
-              return (
-                <Wrapper key={article.id} {...linkProps} className={`bg-card/70 backdrop-blur border border-border rounded-3xl p-6 hover:shadow-md transition-all group ${article.url ? 'cursor-pointer' : ''}`}>
-                  <div className="flex items-center gap-2 mb-3">
-                    <Badge variant="secondary" className="rounded-full text-[10px] font-semibold uppercase tracking-wider">
-                      {article.category}
-                    </Badge>
-                  </div>
-                  <h3 className="text-sm font-semibold text-foreground leading-snug group-hover:text-primary transition-colors">
-                    {localizedTitle(article)}
-                  </h3>
-                  <p className="mt-2 text-xs text-muted-foreground leading-relaxed line-clamp-3">
-                    {localizedExcerpt(article)}
-                  </p>
-                  {article.source && (
-                    <p className="mt-3 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
-                      {article.source}
-                    </p>
-                  )}
-                  {article.url && (
-                    <div className="mt-3 flex items-center gap-1 text-xs text-primary font-medium opacity-0 group-hover:opacity-100 transition-opacity">
-                      <FArrowRight className="h-3 w-3" />
-                    </div>
-                  )}
-                </Wrapper>
-              );
-            })
+            filtered.map((article) => (
+              <ArticleCard
+                key={article.id}
+                title={localizedTitle(article)}
+                excerpt={localizedExcerpt(article)}
+                category={article.category}
+                source={article.source}
+                url={article.url}
+              />
+            ))
           )}
         </div>
       </section>
