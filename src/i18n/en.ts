@@ -47,7 +47,6 @@ export const en: Dictionary = {
     libraryTitle: 'The Library',
     librarySubtitle: 'Curated articles, studies, and book recommendations.',
     noArticles: 'No articles available yet.',
-    researchTitle: 'Research Summaries',
     researchSubtitle: 'Key findings distilled into accessible overviews.',
     noResearch: 'No research summaries available yet.',
     selfCheckPreviewTitle: 'Journal Preview',

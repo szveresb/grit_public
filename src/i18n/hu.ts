@@ -47,7 +47,6 @@ export const hu: Dictionary = {
     libraryTitle: 'A Könyvtár',
     librarySubtitle: 'Válogatott cikkek, tanulmányok és könyvajánlók.',
     noArticles: 'Még nincsenek elérhető cikkek.',
-    researchTitle: 'Kutatási összefoglalók',
     researchSubtitle: 'Kulcsfontosságú eredmények közérthető összefoglalókban.',
     noResearch: 'Még nincsenek kutatási összefoglalók.',
     selfCheckPreviewTitle: 'Napló – előnézet',
