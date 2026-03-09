@@ -25,7 +25,7 @@ export interface Dictionary {
   nav: {
     home: string;
     library: string;
-    researchSummaries: string;
+    
     selfChecks: string;
     about: string;
     journal: string;
@@ -50,9 +50,6 @@ export interface Dictionary {
     libraryTitle: string;
     librarySubtitle: string;
     noArticles: string;
-    researchTitle: string;
-    researchSubtitle: string;
-    noResearch: string;
     selfCheckPreviewTitle: string;
     selfCheckPreviewSubtitle: string;
     sampleQuestions: string;

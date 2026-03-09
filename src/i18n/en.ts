@@ -23,7 +23,7 @@ export const en: Dictionary = {
   nav: {
     home: 'Home',
     library: 'Library',
-    researchSummaries: 'Research Summaries',
+    
     selfChecks: 'Self-Checks',
     about: 'About',
     journal: 'Journal',
@@ -47,9 +47,6 @@ export const en: Dictionary = {
     libraryTitle: 'The Library',
     librarySubtitle: 'Curated articles, studies, and book recommendations.',
     noArticles: 'No articles available yet.',
-    researchTitle: 'Research Summaries',
-    researchSubtitle: 'Key findings distilled into accessible overviews.',
-    noResearch: 'No research summaries available yet.',
     selfCheckPreviewTitle: 'Journal Preview',
     selfCheckPreviewSubtitle: 'See what structured self-reflection looks like. Create an account to track your progress over time.',
     sampleQuestions: 'Sample Questions',
