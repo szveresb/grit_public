@@ -66,14 +66,6 @@ export const hu: Dictionary = {
     viewSource: 'Forrás megtekintése',
   },
 
-  sampleQuestions: {
-    q1: 'Hogyan értékelnéd az érzelmi stabilitásodat ma?',
-    q1Type: 'Skála 1–5',
-    q2: 'Tapasztaltál határátlépést ezen a héten?',
-    q2Type: 'Igen / Nem',
-    q3: 'Milyen megküzdési stratégiákat alkalmaztál?',
-    q3Type: 'Többszörös választás',
-  },
 
   auth: {
     createYourSpace: 'Saját tér létrehozása',

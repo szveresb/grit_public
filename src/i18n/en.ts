@@ -66,14 +66,6 @@ export const en: Dictionary = {
     viewSource: 'View source',
   },
 
-  sampleQuestions: {
-    q1: 'How would you rate your emotional stability today?',
-    q1Type: 'Scale 1–5',
-    q2: 'Did you experience any boundary violations this week?',
-    q2Type: 'Yes / No',
-    q3: 'Which coping strategies did you use?',
-    q3Type: 'Multiple Choice',
-  },
 
   auth: {
     createYourSpace: 'Create Your Space',

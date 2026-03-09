@@ -69,15 +69,6 @@ export interface Dictionary {
     viewSource: string;
   };
 
-  // Sample preview questions
-  sampleQuestions: {
-    q1: string;
-    q1Type: string;
-    q2: string;
-    q2Type: string;
-    q3: string;
-    q3Type: string;
-  };
 
   // Auth
   auth: {
