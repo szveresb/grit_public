@@ -6,7 +6,7 @@ import { useLanguage } from '@/hooks/useLanguage';
 import { supabase } from '@/integrations/supabase/client';
 import { FLock, FArrowRight, FMenu, FClose } from '@/components/icons/FreudIcons';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
+
 import { Skeleton } from '@/components/ui/skeleton';
 import LanguageToggle from '@/components/LanguageToggle';
 import ArticleCard from '@/components/ArticleCard';
