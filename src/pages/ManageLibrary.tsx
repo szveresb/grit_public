@@ -134,6 +134,11 @@ const ManageLibrary = () => {
               <Label className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">{t.manageLibrary.url}</Label>
               <Input value={form.url} onChange={e => setForm(f => ({ ...f, url: e.target.value }))} placeholder="https://..." className="rounded-2xl" />
             </div>
+            <div className="space-y-2">
+              <Label className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">{t.manageLibrary.imageUrl ?? 'Image URL'}</Label>
+              <Input value={form.image_url} onChange={e => setForm(f => ({ ...f, image_url: e.target.value }))} placeholder="https://images.unsplash.com/..." className="rounded-2xl" />
+              <p className="text-[10px] text-muted-foreground">{t.manageLibrary.imageUrlHint ?? 'Optional. Falls back to category illustration if empty.'}</p>
+            </div>
             <div className="grid grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">{t.manageLibrary.source}</Label>
