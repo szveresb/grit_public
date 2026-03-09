@@ -50,8 +50,6 @@ export interface Dictionary {
     libraryTitle: string;
     librarySubtitle: string;
     noArticles: string;
-    researchSubtitle: string;
-    noResearch: string;
     selfCheckPreviewTitle: string;
     selfCheckPreviewSubtitle: string;
     sampleQuestions: string;

@@ -47,8 +47,6 @@ export const hu: Dictionary = {
     libraryTitle: 'A Könyvtár',
     librarySubtitle: 'Válogatott cikkek, tanulmányok és könyvajánlók.',
     noArticles: 'Még nincsenek elérhető cikkek.',
-    researchSubtitle: 'Kulcsfontosságú eredmények közérthető összefoglalókban.',
-    noResearch: 'Még nincsenek kutatási összefoglalók.',
     selfCheckPreviewTitle: 'Napló – előnézet',
     selfCheckPreviewSubtitle: 'Nézd meg, hogyan néz ki a strukturált önreflexió. Hozz létre fiókot, hogy nyomon követhesd a fejlődésedet.',
     sampleQuestions: 'Mintakérdések',
