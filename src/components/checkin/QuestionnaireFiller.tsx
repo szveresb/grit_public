@@ -7,12 +7,15 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { toast } from 'sonner';
-import { FClipboardCheck, FArrowRight } from '@/components/icons/FreudIcons';
+import { FClipboardCheck, FArrowRight, FClock } from '@/components/icons/FreudIcons';
+import { formatDistanceToNow, differenceInDays, differenceInHours } from 'date-fns';
+import { getDateLocale } from '@/lib/date-locale';
 
 interface Questionnaire {
   id: string;
   title: string;
   description: string | null;
+  repeat_interval: string | null;
 }
 
 interface Question {
@@ -23,27 +26,88 @@ interface Question {
   sort_order: number;
 }
 
+interface LastResponse {
+  questionnaire_id: string;
+  completed_at: string;
+}
+
+const INTERVAL_DAYS: Record<string, number> = {
+  daily: 1,
+  weekly: 7,
+  biweekly: 14,
+  monthly: 30,
+};
+
 const QuestionnaireFiller = ({ onCompleted }: { onCompleted?: () => void }) => {
   const { user } = useAuth();
-  const { t } = useLanguage();
+  const { t, language } = useLanguage();
   const [questionnaires, setQuestionnaires] = useState<Questionnaire[]>([]);
+  const [lastResponses, setLastResponses] = useState<LastResponse[]>([]);
   const [selectedQ, setSelectedQ] = useState<string | null>(null);
   const [questions, setQuestions] = useState<Question[]>([]);
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState(false);
   const [loading, setLoading] = useState(true);
 
+  const dateLocale = getDateLocale(language);
+
   useEffect(() => {
-    supabase
-      .from('questionnaires')
-      .select('id, title, description')
-      .eq('is_published', true)
-      .order('created_at', { ascending: false })
-      .then(({ data }) => {
-        setQuestionnaires(data ?? []);
-        setLoading(false);
-      });
-  }, []);
+    const load = async () => {
+      const [qRes, rRes] = await Promise.all([
+        supabase
+          .from('questionnaires')
+          .select('id, title, description, repeat_interval')
+          .eq('is_published', true)
+          .order('created_at', { ascending: false }),
+        user
+          ? supabase
+              .from('questionnaire_responses')
+              .select('questionnaire_id, completed_at')
+              .eq('user_id', user.id)
+              .order('completed_at', { ascending: false })
+          : Promise.resolve({ data: [] }),
+      ]);
+      setQuestionnaires((qRes.data ?? []) as Questionnaire[]);
+      // Keep only the latest response per questionnaire
+      const seen = new Set<string>();
+      const latest: LastResponse[] = [];
+      for (const r of (rRes.data ?? []) as LastResponse[]) {
+        if (!seen.has(r.questionnaire_id)) {
+          seen.add(r.questionnaire_id);
+          latest.push(r);
+        }
+      }
+      setLastResponses(latest);
+      setLoading(false);
+    };
+    load();
+  }, [user]);
+
+  const getLastCompletion = (qId: string) =>
+    lastResponses.find((r) => r.questionnaire_id === qId);
+
+  const isAvailable = (q: Questionnaire): boolean => {
+    const last = getLastCompletion(q.id);
+    if (!last) return true; // never filled
+    if (!q.repeat_interval) return false; // one-time, already done
+    if (q.repeat_interval === 'anytime') return true;
+    const intervalDays = INTERVAL_DAYS[q.repeat_interval];
+    if (!intervalDays) return true;
+    const daysSince = differenceInHours(new Date(), new Date(last.completed_at)) / 24;
+    return daysSince >= intervalDays;
+  };
+
+  const getRepeatLabel = (interval: string | null): string => {
+    if (!interval) return t.selfChecks.repeatOnce;
+    const map: Record<string, string> = {
+      daily: t.selfChecks.repeatDaily,
+      weekly: t.selfChecks.repeatWeekly,
+      biweekly: t.selfChecks.repeatBiweekly,
+      monthly: t.selfChecks.repeatMonthly,
+      anytime: t.selfChecks.repeatAnytime,
+    };
+    return map[interval] ?? interval;
+  };
 
   const loadQuestions = async (qId: string) => {
     setSelectedQ(qId);
@@ -78,6 +142,11 @@ const QuestionnaireFiller = ({ onCompleted }: { onCompleted?: () => void }) => {
     }));
     if (answerRows.length) await supabase.from('questionnaire_answers').insert(answerRows);
     toast.success(t.selfChecks.completed);
+    // Update local last responses
+    setLastResponses((prev) => [
+      { questionnaire_id: selectedQ, completed_at: new Date().toISOString() },
+      ...prev.filter((r) => r.questionnaire_id !== selectedQ),
+    ]);
     setSelectedQ(null);
     setAnswers({});
     setSubmitting(false);
@@ -183,22 +252,53 @@ const QuestionnaireFiller = ({ onCompleted }: { onCompleted?: () => void }) => {
   // List available questionnaires
   return (
     <div className="space-y-3">
-      {questionnaires.map((q) => (
-        <button
-          key={q.id}
-          onClick={() => loadQuestions(q.id)}
-          className="w-full text-left flex items-center gap-3 py-2.5 px-3 rounded-2xl hover:bg-accent/50 transition-colors"
-        >
-          <FClipboardCheck className="h-4 w-4 text-muted-foreground shrink-0" />
-          <div className="flex-1 min-w-0">
-            <span className="text-sm font-medium">{q.title}</span>
-            {q.description && (
-              <p className="text-xs text-muted-foreground truncate">{q.description}</p>
-            )}
-          </div>
-          <FArrowRight className="h-3.5 w-3.5 text-muted-foreground shrink-0" />
-        </button>
-      ))}
+      {questionnaires.map((q) => {
+        const last = getLastCompletion(q.id);
+        const available = isAvailable(q);
+        const repeatLabel = getRepeatLabel(q.repeat_interval);
+
+        return (
+          <button
+            key={q.id}
+            onClick={() => available && loadQuestions(q.id)}
+            disabled={!available}
+            className={`w-full text-left flex items-start gap-3 py-3 px-4 rounded-2xl transition-colors ${
+              available
+                ? 'hover:bg-accent/50 cursor-pointer'
+                : 'opacity-60 cursor-not-allowed'
+            }`}
+          >
+            <FClipboardCheck className="h-4 w-4 text-muted-foreground shrink-0 mt-0.5" />
+            <div className="flex-1 min-w-0">
+              <div className="flex items-center gap-2">
+                <span className="text-sm font-medium">{q.title}</span>
+                {q.repeat_interval && (
+                  <span className="text-[10px] px-2 py-0.5 rounded-full border border-border text-muted-foreground">
+                    {repeatLabel}
+                  </span>
+                )}
+              </div>
+              {q.description && (
+                <p className="text-xs text-muted-foreground truncate">{q.description}</p>
+              )}
+              {last && (
+                <div className="flex items-center gap-1.5 mt-1">
+                  <FClock className="h-3 w-3 text-muted-foreground" />
+                  <span className="text-[11px] text-muted-foreground">
+                    {t.selfChecks.lastCompleted}: {formatDistanceToNow(new Date(last.completed_at), { addSuffix: true, locale: dateLocale })}
+                  </span>
+                </div>
+              )}
+              {!available && (
+                <span className="text-[11px] text-muted-foreground/70">
+                  {t.selfChecks.alreadyCompleted}
+                </span>
+              )}
+            </div>
+            {available && <FArrowRight className="h-3.5 w-3.5 text-muted-foreground shrink-0 mt-1" />}
+          </button>
+        );
+      })}
     </div>
   );
 };
