@@ -121,33 +121,55 @@ const Library = () => {
         </div>
 
         {/* Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-          {loading ? (
-            Array.from({ length: 9 }).map((_, i) => (
-              <div key={i} className="bg-card/70 backdrop-blur border border-border rounded-3xl p-6 space-y-3">
-                <Skeleton className="h-5 w-20 rounded-full" />
-                <Skeleton className="h-4 w-full" />
-                <Skeleton className="h-3 w-full" />
-                <Skeleton className="h-3 w-2/3" />
-              </div>
-            ))
-          ) : filtered.length === 0 ? (
-            <p className="text-sm text-muted-foreground col-span-full">
-              {search.trim() ? t.manageLibrary.noMatch : t.landing.noArticles}
-            </p>
-          ) : (
-            filtered.map((article) => (
-              <ArticleCard
-                key={article.id}
-                title={localizedTitle(article)}
-                excerpt={localizedExcerpt(article)}
-                category={article.category}
-                source={article.source}
-                url={article.url}
-              />
-            ))
-          )}
-        </div>
+        {loading ? (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+            <div className="bg-card/70 backdrop-blur border border-border rounded-3xl p-8 space-y-4">
+              <Skeleton className="h-5 w-24 rounded-full" />
+              <Skeleton className="h-6 w-3/4" />
+              <Skeleton className="h-4 w-full" />
+              <Skeleton className="h-4 w-full" />
+              <Skeleton className="h-4 w-2/3" />
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+              {Array.from({ length: 4 }).map((_, i) => (
+                <div key={i} className="bg-card/70 backdrop-blur border border-border rounded-3xl p-6 space-y-3">
+                  <Skeleton className="h-5 w-20 rounded-full" />
+                  <Skeleton className="h-4 w-full" />
+                  <Skeleton className="h-3 w-full" />
+                </div>
+              ))}
+            </div>
+          </div>
+        ) : filtered.length === 0 ? (
+          <p className="text-sm text-muted-foreground">
+            {search.trim() ? t.manageLibrary.noMatch : t.landing.noArticles}
+          </p>
+        ) : (
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+            {/* Featured article */}
+            <ArticleCard
+              title={localizedTitle(filtered[0])}
+              excerpt={localizedExcerpt(filtered[0])}
+              category={filtered[0].category}
+              source={filtered[0].source}
+              url={filtered[0].url}
+              featured
+            />
+            {/* Remaining articles */}
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+              {filtered.slice(1).map((article) => (
+                <ArticleCard
+                  key={article.id}
+                  title={localizedTitle(article)}
+                  excerpt={localizedExcerpt(article)}
+                  category={article.category}
+                  source={article.source}
+                  url={article.url}
+                />
+              ))}
+            </div>
+          </div>
+        )}
       </section>
 
       {/* Footer */}
