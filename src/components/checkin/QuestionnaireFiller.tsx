@@ -40,7 +40,7 @@ const INTERVAL_DAYS: Record<string, number> = {
 
 const QuestionnaireFiller = ({ onCompleted }: { onCompleted?: () => void }) => {
   const { user } = useAuth();
-  const { t, language } = useLanguage();
+  const { t, lang } = useLanguage();
   const [questionnaires, setQuestionnaires] = useState<Questionnaire[]>([]);
   const [lastResponses, setLastResponses] = useState<LastResponse[]>([]);
   const [selectedQ, setSelectedQ] = useState<string | null>(null);
