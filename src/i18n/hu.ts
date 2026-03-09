@@ -197,6 +197,17 @@ export const hu: Dictionary = {
     selfCheckCreated: 'Önellenőrzés létrehozva',
     selfCheckDeleted: 'Önellenőrzés törölve',
     submitting: 'Beküldés...',
+    repeatInterval: 'Ismétlődés',
+    repeatOnce: 'Egyszeri',
+    repeatDaily: 'Naponta',
+    repeatWeekly: 'Hetente',
+    repeatBiweekly: 'Kéthetente',
+    repeatMonthly: 'Havonta',
+    repeatAnytime: 'Bármikor',
+    lastCompleted: 'Legutóbb kitöltve',
+    availableNow: 'Kitölthető',
+    nextAvailable: 'Következő kitöltés',
+    alreadyCompleted: 'Már kitöltve',
   },
 
   timeline: {
