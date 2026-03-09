@@ -60,6 +60,7 @@ const AppRoutes = () => (
     <Route path="/en/export" element={<ProtectedRoute><Export /></ProtectedRoute>} />
     <Route path="/en/manage-library" element={<ProtectedRoute><ManageLibrary /></ProtectedRoute>} />
     <Route path="/en/manage-users" element={<ProtectedRoute><ManageUsers /></ProtectedRoute>} />
+    <Route path="/en/manage-self-checks" element={<ProtectedRoute><SelfChecks /></ProtectedRoute>} />
     <Route path="/en/analyst-export" element={<ProtectedRoute><AnalystExport /></ProtectedRoute>} />
     <Route path="/en/library" element={<Library />} />
     <Route path="/en/terms" element={<Terms />} />
