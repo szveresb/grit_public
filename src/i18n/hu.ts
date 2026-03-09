@@ -61,6 +61,7 @@ export const hu: Dictionary = {
     cookies: 'Cookie szabályzat',
     gdpr: 'GDPR megfelelőség',
     viewAll: 'Összes megtekintése',
+    viewSource: 'Forrás megtekintése',
   },
 
   sampleQuestions: {
