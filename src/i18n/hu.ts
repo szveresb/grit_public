@@ -23,7 +23,7 @@ export const hu: Dictionary = {
   nav: {
     home: 'Kezdőlap',
     library: 'Könyvtár',
-    researchSummaries: 'Kutatási összefoglalók',
+    
     selfChecks: 'Önellenőrzés',
     about: 'Rólunk',
     journal: 'Napló',
