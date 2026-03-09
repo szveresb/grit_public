@@ -166,6 +166,7 @@ const Index = () => {
               category={articles[0].category}
               source={articles[0].source}
               url={articles[0].url}
+              imageUrl={articles[0].image_url}
               featured
             />
             {/* Remaining articles */}
