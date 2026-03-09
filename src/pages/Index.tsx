@@ -21,6 +21,7 @@ interface LibraryArticle {
   source: string | null;
   url: string | null;
   category: string;
+  image_url: string | null;
 }
 
 const Index = () => {
