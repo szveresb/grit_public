@@ -52,8 +52,10 @@ export interface Dictionary {
     noArticles: string;
     selfCheckPreviewTitle: string;
     selfCheckPreviewSubtitle: string;
-    sampleQuestions: string;
     goToSelfChecks: string;
+    previewTypeScale: string;
+    previewTypeMultiple: string;
+    previewTypeText: string;
     createYourSpace: string;
     createFreeAccount: string;
     aboutTitle: string;
