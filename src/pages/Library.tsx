@@ -6,8 +6,8 @@ import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
-import { FArrowRight } from '@/components/icons/FreudIcons';
 import LanguageToggle from '@/components/LanguageToggle';
+import ArticleCard from '@/components/ArticleCard';
 import bambooBg from '@/assets/bamboo-bg.jpg';
 
 interface LibraryArticle {
