@@ -43,8 +43,8 @@ const Index = () => {
 
   return (
     <div className="min-h-screen relative w-full overflow-x-hidden">
-      <div className="fixed inset-0 z-0 bg-cover bg-center" style={{ backgroundImage: `url(${bambooBg})`, opacity: 0.12 }} />
-      <div className="fixed inset-0 z-0 bg-background/80" />
+      <div className="fixed inset-0 z-0 bg-cover bg-center" style={{ backgroundImage: `url(${heroIllustration})`, opacity: 0.10 }} />
+      <div className="fixed inset-0 z-0 bg-background/85" />
 
       {/* Header */}
       <header className="relative z-10 border-b border-border bg-card/60 backdrop-blur-xl">
