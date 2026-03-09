@@ -379,6 +379,7 @@ export type Database = {
           description_localized: Json | null
           id: string
           is_published: boolean
+          repeat_interval: string | null
           title: string
           title_localized: Json | null
           updated_at: string
@@ -390,6 +391,7 @@ export type Database = {
           description_localized?: Json | null
           id?: string
           is_published?: boolean
+          repeat_interval?: string | null
           title: string
           title_localized?: Json | null
           updated_at?: string
@@ -401,6 +403,7 @@ export type Database = {
           description_localized?: Json | null
           id?: string
           is_published?: boolean
+          repeat_interval?: string | null
           title?: string
           title_localized?: Json | null
           updated_at?: string

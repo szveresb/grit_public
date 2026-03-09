@@ -206,6 +206,17 @@ export interface Dictionary {
     selfCheckCreated: string;
     selfCheckDeleted: string;
     submitting: string;
+    repeatInterval: string;
+    repeatOnce: string;
+    repeatDaily: string;
+    repeatWeekly: string;
+    repeatBiweekly: string;
+    repeatMonthly: string;
+    repeatAnytime: string;
+    lastCompleted: string;
+    availableNow: string;
+    nextAvailable: string;
+    alreadyCompleted: string;
   };
 
   // Timeline

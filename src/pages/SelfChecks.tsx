@@ -20,7 +20,7 @@ import {
 import ObservationStepper from '@/components/observations/ObservationStepper';
 import ObservationHistory from '@/components/observations/ObservationHistory';
 
-interface Questionnaire { id: string; title: string; description: string | null; is_published: boolean; created_at: string; }
+interface Questionnaire { id: string; title: string; description: string | null; is_published: boolean; created_at: string; repeat_interval: string | null; }
 interface Question { id: string; question_text: string; question_type: string; options: string[] | null; sort_order: number; }
 
 const SelfChecks = () => {
@@ -39,6 +39,8 @@ const SelfChecks = () => {
   const [formDesc, setFormDesc] = useState('');
   const [formPublished, setFormPublished] = useState(true);
   const [formQuestions, setFormQuestions] = useState<{ id?: string; text: string; type: string; options: string }[]>([{ text: '', type: 'text', options: '' }]);
+  const [formRepeat, setFormRepeat] = useState<string>('');
+
   const [saving, setSaving] = useState(false);
   const [obsRefreshKey, setObsRefreshKey] = useState(0);
 
@@ -55,10 +57,10 @@ const SelfChecks = () => {
     setQuestions((data ?? []).map(q => ({ ...q, options: q.options as string[] | null })));
   };
 
-  const openCreate = () => { setEditingId(null); setFormTitle(''); setFormDesc(''); setFormPublished(false); setFormQuestions([{ text: '', type: 'text', options: '' }]); setShowForm(true); };
+  const openCreate = () => { setEditingId(null); setFormTitle(''); setFormDesc(''); setFormPublished(false); setFormRepeat(''); setFormQuestions([{ text: '', type: 'text', options: '' }]); setShowForm(true); };
 
   const openEdit = async (q: Questionnaire) => {
-    setEditingId(q.id); setFormTitle(q.title); setFormDesc(q.description ?? ''); setFormPublished(q.is_published);
+    setEditingId(q.id); setFormTitle(q.title); setFormDesc(q.description ?? ''); setFormPublished(q.is_published); setFormRepeat(q.repeat_interval ?? '');
     const { data } = await supabase.from('questionnaire_questions').select('*').eq('questionnaire_id', q.id).order('sort_order');
     setFormQuestions((data ?? []).map(qq => ({ id: qq.id, text: qq.question_text, type: qq.question_type, options: qq.question_type === 'multiple_choice' && qq.options ? (qq.options as string[]).join(', ') : '' })));
     setShowForm(true);
@@ -68,14 +70,14 @@ const SelfChecks = () => {
     if (!user || !formTitle.trim()) return;
     setSaving(true);
     if (editingId) {
-      const { error } = await supabase.from('questionnaires').update({ title: formTitle, description: formDesc || null, is_published: formPublished }).eq('id', editingId);
+      const { error } = await supabase.from('questionnaires').update({ title: formTitle, description: formDesc || null, is_published: formPublished, repeat_interval: formRepeat || null } as any).eq('id', editingId);
       if (error) { toast.error(error.message); setSaving(false); return; }
       await supabase.from('questionnaire_questions').delete().eq('questionnaire_id', editingId);
       const qRows = formQuestions.filter(nq => nq.text.trim()).map((nq, i) => ({ questionnaire_id: editingId, question_text: nq.text, question_type: nq.type, options: nq.type === 'multiple_choice' ? nq.options.split(',').map(s => s.trim()).filter(Boolean) : null, sort_order: i }));
       if (qRows.length) await supabase.from('questionnaire_questions').insert(qRows);
       toast.success(t.selfChecks.selfCheckUpdated);
     } else {
-      const { data: q, error } = await supabase.from('questionnaires').insert({ title: formTitle, description: formDesc || null, created_by: user.id, is_published: formPublished }).select('id').single();
+      const { data: q, error } = await supabase.from('questionnaires').insert({ title: formTitle, description: formDesc || null, created_by: user.id, is_published: formPublished, repeat_interval: formRepeat || null } as any).select('id').single();
       if (error || !q) { toast.error(error?.message ?? 'Failed'); setSaving(false); return; }
       const qRows = formQuestions.filter(nq => nq.text.trim()).map((nq, i) => ({ questionnaire_id: q.id, question_text: nq.text, question_type: nq.type, options: nq.type === 'multiple_choice' ? nq.options.split(',').map(s => s.trim()).filter(Boolean) : null, sort_order: i }));
       if (qRows.length) await supabase.from('questionnaire_questions').insert(qRows);
@@ -176,6 +178,18 @@ const SelfChecks = () => {
           <div className="flex items-center gap-3">
             <Switch checked={formPublished} onCheckedChange={setFormPublished} />
             <Label className="text-sm">{t.published}</Label>
+          </div>
+          <div className="space-y-2">
+            <Label className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">{t.selfChecks.repeatInterval}</Label>
+            <select value={formRepeat} onChange={e => setFormRepeat(e.target.value)}
+              className="w-full border border-input rounded-2xl px-3 py-2 text-sm bg-background">
+              <option value="">{t.selfChecks.repeatOnce}</option>
+              <option value="daily">{t.selfChecks.repeatDaily}</option>
+              <option value="weekly">{t.selfChecks.repeatWeekly}</option>
+              <option value="biweekly">{t.selfChecks.repeatBiweekly}</option>
+              <option value="monthly">{t.selfChecks.repeatMonthly}</option>
+              <option value="anytime">{t.selfChecks.repeatAnytime}</option>
+            </select>
           </div>
           <div className="space-y-3">
             <Label className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">{t.selfChecks.questions}</Label>

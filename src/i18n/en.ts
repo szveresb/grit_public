@@ -197,6 +197,17 @@ export const en: Dictionary = {
     selfCheckCreated: 'Self-check created',
     selfCheckDeleted: 'Self-check deleted',
     submitting: 'Submitting...',
+    repeatInterval: 'Repeat',
+    repeatOnce: 'One-time',
+    repeatDaily: 'Daily',
+    repeatWeekly: 'Weekly',
+    repeatBiweekly: 'Biweekly',
+    repeatMonthly: 'Monthly',
+    repeatAnytime: 'Anytime',
+    lastCompleted: 'Last completed',
+    availableNow: 'Available now',
+    nextAvailable: 'Next available',
+    alreadyCompleted: 'Already completed',
   },
 
   timeline: {
