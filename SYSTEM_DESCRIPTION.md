@@ -80,6 +80,7 @@ Curated research articles with bilingual support.
 | `category` | text | Default `'Article'` |
 | `source` | text | Nullable |
 | `url` | text | Nullable |
+| `image_url` | text | Nullable; cover image URL |
 | `published` | boolean | Default `true` |
 | `created_at` | timestamptz | Default `now()` |
 | `updated_at` | timestamptz | Default `now()` |
