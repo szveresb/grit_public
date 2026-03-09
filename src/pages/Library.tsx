@@ -154,6 +154,7 @@ const Library = () => {
               category={filtered[0].category}
               source={filtered[0].source}
               url={filtered[0].url}
+              imageUrl={filtered[0].image_url}
               featured
             />
             {/* Remaining articles */}
