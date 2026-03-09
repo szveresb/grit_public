@@ -6,10 +6,11 @@ import { useLanguage } from '@/hooks/useLanguage';
 import { supabase } from '@/integrations/supabase/client';
 import { FLock, FArrowRight, FMenu, FClose } from '@/components/icons/FreudIcons';
 import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
+
 import { Skeleton } from '@/components/ui/skeleton';
 import LanguageToggle from '@/components/LanguageToggle';
 import ArticleCard from '@/components/ArticleCard';
+import LandingPreview from '@/components/LandingPreview';
 import bambooBg from '@/assets/bamboo-bg.jpg';
 
 interface LibraryArticle {
@@ -38,11 +39,6 @@ const Index = () => {
     navigate(user ? localePath(path) : localePath('/auth'));
   };
 
-  const samplePreviewQuestions = [
-    { text: t.sampleQuestions.q1, type: t.sampleQuestions.q1Type },
-    { text: t.sampleQuestions.q2, type: t.sampleQuestions.q2Type },
-    { text: t.sampleQuestions.q3, type: t.sampleQuestions.q3Type },
-  ];
 
   return (
     <div className="min-h-screen relative w-full overflow-x-hidden">
@@ -179,36 +175,7 @@ const Index = () => {
             <h2 className="text-lg md:text-xl font-bold tracking-tight text-foreground">{t.landing.selfCheckPreviewTitle}</h2>
             <p className="mt-1 text-sm text-muted-foreground">{t.landing.selfCheckPreviewSubtitle}</p>
           </div>
-          <div className="bg-card/70 backdrop-blur border border-border rounded-[40px] p-6 md:p-8 space-y-5">
-            <h3 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">{t.landing.sampleQuestions}</h3>
-            {samplePreviewQuestions.map((q, i) => (
-              <div key={i} className="border border-border rounded-2xl p-4 space-y-2">
-                <p className="text-sm font-medium text-foreground">{i + 1}. {q.text}</p>
-                <Badge variant="outline" className="rounded-full text-[10px]">{q.type}</Badge>
-                {q.type === t.sampleQuestions.q1Type && (
-                  <div className="flex gap-2 pt-1">
-                    {[1, 2, 3, 4, 5].map(n => (
-                      <div key={n} className="h-9 w-9 rounded-full border border-border flex items-center justify-center text-xs text-muted-foreground">{n}</div>
-                    ))}
-                  </div>
-                )}
-              </div>
-            ))}
-            <div className="text-center pt-2">
-              {user ? (
-                <Button className="rounded-2xl px-6" onClick={() => navigate(localePath('/journal'))}>
-                  {t.landing.goToSelfChecks} <FArrowRight className="h-4 w-4 ml-1" />
-                </Button>
-              ) : (
-                <div className="space-y-3">
-                  <p className="text-xs text-muted-foreground">{t.landing.createFreeAccount}</p>
-                  <Button className="rounded-2xl px-6" onClick={() => navigate(localePath('/auth'))}>
-                    {t.landing.createYourSpace} <FArrowRight className="h-4 w-4 ml-1" />
-                  </Button>
-                </div>
-              )}
-            </div>
-          </div>
+          <LandingPreview />
         </div>
       </section>
 

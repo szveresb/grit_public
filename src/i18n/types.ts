@@ -52,8 +52,10 @@ export interface Dictionary {
     noArticles: string;
     selfCheckPreviewTitle: string;
     selfCheckPreviewSubtitle: string;
-    sampleQuestions: string;
     goToSelfChecks: string;
+    previewTypeScale: string;
+    previewTypeMultiple: string;
+    previewTypeText: string;
     createYourSpace: string;
     createFreeAccount: string;
     aboutTitle: string;
@@ -67,15 +69,6 @@ export interface Dictionary {
     viewSource: string;
   };
 
-  // Sample preview questions
-  sampleQuestions: {
-    q1: string;
-    q1Type: string;
-    q2: string;
-    q2Type: string;
-    q3: string;
-    q3Type: string;
-  };
 
   // Auth
   auth: {

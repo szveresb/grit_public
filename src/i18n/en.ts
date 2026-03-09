@@ -49,8 +49,10 @@ export const en: Dictionary = {
     noArticles: 'No articles available yet.',
     selfCheckPreviewTitle: 'Journal Preview',
     selfCheckPreviewSubtitle: 'See what structured self-reflection looks like. Create an account to track your progress over time.',
-    sampleQuestions: 'Sample Questions',
     goToSelfChecks: 'Go to Journal',
+    previewTypeScale: 'Scale 1–5',
+    previewTypeMultiple: 'Multiple Choice',
+    previewTypeText: 'Text',
     createYourSpace: 'Create Your Space',
     createFreeAccount: 'Create a free account to start tracking your patterns over time.',
     aboutTitle: 'About Grit.hu',
@@ -64,14 +66,6 @@ export const en: Dictionary = {
     viewSource: 'View source',
   },
 
-  sampleQuestions: {
-    q1: 'How would you rate your emotional stability today?',
-    q1Type: 'Scale 1–5',
-    q2: 'Did you experience any boundary violations this week?',
-    q2Type: 'Yes / No',
-    q3: 'Which coping strategies did you use?',
-    q3Type: 'Multiple Choice',
-  },
 
   auth: {
     createYourSpace: 'Create Your Space',
