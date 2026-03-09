@@ -35,6 +35,7 @@ export const hu: Dictionary = {
     management: 'Kezelés',
     manageLibrary: 'Könyvtár kezelése',
     manageUsers: 'Felhasználók kezelése',
+    manageSelfChecks: 'Önellenőrzés kezelése',
     analystExport: 'Elemzői export',
     checkIn: 'Napló',
   },

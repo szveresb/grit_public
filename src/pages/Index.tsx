@@ -11,7 +11,7 @@ import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import LanguageToggle from '@/components/LanguageToggle';
 import ArticleCard from '@/components/ArticleCard';
-import LandingPreview from '@/components/LandingPreview';
+
 import bambooBg from '@/assets/bamboo-bg.jpg';
 
 interface LibraryArticle {
@@ -166,16 +166,6 @@ const Index = () => {
         )}
       </section>
 
-      {/* Self-Check Preview Section */}
-      <section id="self-checks" className="relative z-10 px-4 md:px-8 py-12 max-w-7xl mx-auto">
-        <div className="max-w-2xl mx-auto">
-          <div className="text-center mb-8">
-            <h2 className="text-lg md:text-xl font-bold tracking-tight text-foreground">{t.landing.selfCheckPreviewTitle}</h2>
-            <p className="mt-1 text-sm text-muted-foreground">{t.landing.selfCheckPreviewSubtitle}</p>
-          </div>
-          <LandingPreview />
-        </div>
-      </section>
 
 
       {/* Footer */}

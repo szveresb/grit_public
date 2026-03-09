@@ -22,6 +22,7 @@ import Cookies from "./pages/Cookies";
 import Gdpr from "./pages/Gdpr";
 import AboutLegal from "./pages/AboutLegal";
 import Library from "./pages/Library";
+import SelfChecks from "./pages/SelfChecks";
 
 const queryClient = new QueryClient();
 
@@ -40,6 +41,7 @@ const AppRoutes = () => (
     <Route path="/export" element={<ProtectedRoute><Export /></ProtectedRoute>} />
     <Route path="/manage-library" element={<ProtectedRoute><ManageLibrary /></ProtectedRoute>} />
     <Route path="/manage-users" element={<ProtectedRoute><ManageUsers /></ProtectedRoute>} />
+    <Route path="/manage-self-checks" element={<ProtectedRoute><SelfChecks /></ProtectedRoute>} />
     <Route path="/analyst-export" element={<ProtectedRoute><AnalystExport /></ProtectedRoute>} />
     <Route path="/library" element={<Library />} />
     <Route path="/terms" element={<Terms />} />
@@ -58,6 +60,7 @@ const AppRoutes = () => (
     <Route path="/en/export" element={<ProtectedRoute><Export /></ProtectedRoute>} />
     <Route path="/en/manage-library" element={<ProtectedRoute><ManageLibrary /></ProtectedRoute>} />
     <Route path="/en/manage-users" element={<ProtectedRoute><ManageUsers /></ProtectedRoute>} />
+    <Route path="/en/manage-self-checks" element={<ProtectedRoute><SelfChecks /></ProtectedRoute>} />
     <Route path="/en/analyst-export" element={<ProtectedRoute><AnalystExport /></ProtectedRoute>} />
     <Route path="/en/library" element={<Library />} />
     <Route path="/en/terms" element={<Terms />} />
