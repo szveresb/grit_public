@@ -190,6 +190,7 @@ const ManageLibrary = () => {
                   <div className="flex items-center gap-2 mb-1">
                     <Badge variant="secondary" className="rounded-full text-[10px] font-semibold uppercase tracking-wider">{a.category}</Badge>
                     {!a.published && <Badge variant="outline" className="rounded-full text-[10px]">{t.draft}</Badge>}
+                    {a.featured && <Badge variant="default" className="rounded-full text-[10px]">⭐ {t.featured}</Badge>}
                   </div>
                   <h3 className="text-sm font-semibold text-foreground truncate">{a.title}</h3>
                   {a.excerpt && <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{a.excerpt}</p>}
