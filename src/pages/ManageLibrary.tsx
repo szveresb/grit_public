@@ -134,7 +134,7 @@ const ManageLibrary = () => {
               <Input value={form.url} onChange={e => setForm(f => ({ ...f, url: e.target.value }))} placeholder="https://..." className="rounded-2xl" />
             </div>
             <div className="space-y-2">
-              <Label className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">{t.manageLibrary.imageUrl ?? 'Kép URL'}</Label>
+              <Label className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">{t.manageLibrary.imageUrl}</Label>
               <Input value={form.image_url} onChange={e => setForm(f => ({ ...f, image_url: e.target.value }))} placeholder="https://images.unsplash.com/..." className="rounded-2xl" />
               {form.image_url && (
                 <img src={form.image_url} alt="Preview" className="mt-2 h-24 w-full object-cover rounded-2xl border border-border" onError={e => (e.currentTarget.style.display = 'none')} />
