@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo } from 'react';
+import { useEffect, useState, useMemo, useRef } from 'react';
 import { friendlyDbError } from '@/lib/db-error';
 import DashboardLayout from '@/components/DashboardLayout';
 import { useAuth } from '@/hooks/useAuth';
@@ -38,6 +38,7 @@ const ManageLibrary = () => {
   const [form, setForm] = useState(emptyForm);
   const [saving, setSaving] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const formRef = useRef<HTMLDivElement>(null);
   const [filterCategory, setFilterCategory] = useState('All');
 
   const isEditor = hasRole('admin') || hasRole('editor') || hasRole('guest_editor');
@@ -60,11 +61,12 @@ const ManageLibrary = () => {
   if (roleLoading) return <DashboardLayout><p className="text-sm text-muted-foreground">{t.loading}</p></DashboardLayout>;
   if (!isEditor) return <Navigate to="/dashboard" replace />;
 
-  const openCreate = () => { setEditingId(null); setForm(emptyForm); setShowForm(true); };
+  const openCreate = () => { setEditingId(null); setForm(emptyForm); setShowForm(true); setTimeout(() => formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 100); };
   const openEdit = (a: Article) => {
     setEditingId(a.id);
     setForm({ title: a.title, excerpt: a.excerpt ?? '', source: a.source ?? '', url: a.url ?? '', category: a.category, published: a.published, image_url: a.image_url ?? '' });
     setShowForm(true);
+    setTimeout(() => formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 100);
   };
 
   const handleSave = async () => {
@@ -114,7 +116,7 @@ const ManageLibrary = () => {
         </div>
 
         {showForm && (
-          <div className="bg-card/60 backdrop-blur border border-border rounded-3xl p-6 space-y-4 animate-fade-in">
+          <div ref={formRef} className="bg-card/60 backdrop-blur border border-border rounded-3xl p-6 space-y-4 animate-fade-in">
             <div className="flex items-center justify-between">
               <h2 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
                 {editingId ? t.manageLibrary.editArticle : t.manageLibrary.newArticle}
