@@ -272,6 +272,7 @@ export interface Dictionary {
     articleTitle: string;
     excerpt: string;
     url: string;
+    imageUrl: string;
     source: string;
     category: string;
     articleUpdated: string;

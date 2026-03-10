@@ -259,6 +259,7 @@ export const hu: Dictionary = {
     articleTitle: 'Cikk címe',
     excerpt: 'Kivonat',
     url: 'URL',
+    imageUrl: 'Kép URL',
     source: 'Forrás',
     category: 'Kategória',
     articleUpdated: 'Cikk frissítve',
