@@ -21,7 +21,7 @@ import {
 
 interface Article {
   id: string; title: string; excerpt: string | null; source: string | null;
-  url: string | null; image_url: string | null; category: string; published: boolean; created_at: string;
+  url: string | null; image_url: string | null; category: string; published: boolean; featured: boolean; created_at: string;
 }
 
 const categories = ['Article', 'Research', 'Book', 'Study Summary'];
