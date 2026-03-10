@@ -56,6 +56,8 @@ const Library = () => {
         return title.toLowerCase().includes(q) || excerpt.toLowerCase().includes(q);
       });
     }
+    // Featured articles first
+    list = [...list].sort((a, b) => (b.featured ? 1 : 0) - (a.featured ? 1 : 0));
     return list;
   }, [articles, search, selectedCategory, lang]);
 
