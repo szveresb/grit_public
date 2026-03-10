@@ -38,6 +38,7 @@ const ManageLibrary = () => {
   const [form, setForm] = useState(emptyForm);
   const [saving, setSaving] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
+  const formRef = useRef<HTMLDivElement>(null);
   const [filterCategory, setFilterCategory] = useState('All');
 
   const isEditor = hasRole('admin') || hasRole('editor') || hasRole('guest_editor');
