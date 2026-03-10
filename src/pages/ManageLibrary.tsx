@@ -116,7 +116,7 @@ const ManageLibrary = () => {
         </div>
 
         {showForm && (
-          <div className="bg-card/60 backdrop-blur border border-border rounded-3xl p-6 space-y-4 animate-fade-in">
+          <div ref={formRef} className="bg-card/60 backdrop-blur border border-border rounded-3xl p-6 space-y-4 animate-fade-in">
             <div className="flex items-center justify-between">
               <h2 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
                 {editingId ? t.manageLibrary.editArticle : t.manageLibrary.newArticle}
