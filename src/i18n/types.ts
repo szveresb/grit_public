@@ -20,6 +20,7 @@ export interface Dictionary {
   search: string;
   draft: string;
   published: string;
+  featured: string;
 
   // Nav
   nav: {

@@ -19,6 +19,7 @@ export const hu: Dictionary = {
   search: 'Keresés',
   draft: 'Vázlat',
   published: 'Publikált',
+  featured: 'Kiemelt',
 
   nav: {
     home: 'Kezdőlap',
