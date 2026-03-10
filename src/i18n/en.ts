@@ -259,6 +259,7 @@ export const en: Dictionary = {
     articleTitle: 'Article title',
     excerpt: 'Excerpt',
     url: 'URL',
+    imageUrl: 'Image URL',
     source: 'Source',
     category: 'Category',
     articleUpdated: 'Article updated',
