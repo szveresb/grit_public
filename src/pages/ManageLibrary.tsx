@@ -154,9 +154,15 @@ const ManageLibrary = () => {
                 </select>
               </div>
             </div>
-            <div className="flex items-center gap-3">
-              <Switch checked={form.published} onCheckedChange={v => setForm(f => ({ ...f, published: v }))} />
-              <Label className="text-sm">{t.published}</Label>
+            <div className="flex items-center gap-6">
+              <div className="flex items-center gap-3">
+                <Switch checked={form.published} onCheckedChange={v => setForm(f => ({ ...f, published: v }))} />
+                <Label className="text-sm">{t.published}</Label>
+              </div>
+              <div className="flex items-center gap-3">
+                <Switch checked={form.featured} onCheckedChange={v => setForm(f => ({ ...f, featured: v }))} />
+                <Label className="text-sm">⭐ {t.featured}</Label>
+              </div>
             </div>
             <div className="flex gap-2">
               <Button size="sm" className="rounded-2xl" onClick={handleSave} disabled={saving}>
