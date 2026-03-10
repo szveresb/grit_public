@@ -175,6 +175,9 @@ const ManageLibrary = () => {
           ) : (
             filteredArticles.map(a => (
               <div key={a.id} className="bg-card/60 backdrop-blur border border-border rounded-3xl p-5 flex items-start gap-4">
+                {a.image_url && (
+                  <img src={a.image_url} alt="" className="h-16 w-16 rounded-2xl object-cover shrink-0 border border-border" onError={e => (e.currentTarget.style.display = 'none')} />
+                )}
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 mb-1">
                     <Badge variant="secondary" className="rounded-full text-[10px] font-semibold uppercase tracking-wider">{a.category}</Badge>
