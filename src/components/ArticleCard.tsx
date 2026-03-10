@@ -71,7 +71,7 @@ const ArticleCard = ({ title, excerpt, category, source, url, featured = false }
             key="collapsed"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
-            className="mt-2 text-xs text-muted-foreground leading-relaxed line-clamp-3"
+            className={`mt-2 text-xs text-muted-foreground leading-relaxed ${featured ? '' : 'line-clamp-3'}`}
           >
             {excerpt}
           </motion.p>
