@@ -19,6 +19,7 @@ interface LibraryArticle {
   source: string | null;
   url: string | null;
   category: string;
+  featured: boolean;
 }
 
 const Library = () => {
@@ -31,7 +32,7 @@ const Library = () => {
   useEffect(() => {
     supabase
       .from('library_articles')
-      .select('id, title, title_localized, excerpt, excerpt_localized, source, category, url')
+      .select('id, title, title_localized, excerpt, excerpt_localized, source, category, url, featured')
       .eq('published', true)
       .order('created_at', { ascending: false })
       .then(({ data }) => {
@@ -56,6 +57,8 @@ const Library = () => {
         return title.toLowerCase().includes(q) || excerpt.toLowerCase().includes(q);
       });
     }
+    // Featured articles first
+    list = [...list].sort((a, b) => (b.featured ? 1 : 0) - (a.featured ? 1 : 0));
     return list;
   }, [articles, search, selectedCategory, lang]);
 

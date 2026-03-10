@@ -21,7 +21,7 @@ import {
 
 interface Article {
   id: string; title: string; excerpt: string | null; source: string | null;
-  url: string | null; image_url: string | null; category: string; published: boolean; created_at: string;
+  url: string | null; image_url: string | null; category: string; published: boolean; featured: boolean; created_at: string;
 }
 
 const categories = ['Article', 'Research', 'Book', 'Study Summary'];
@@ -34,7 +34,7 @@ const ManageLibrary = () => {
   const [loading, setLoading] = useState(true);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [showForm, setShowForm] = useState(false);
-  const emptyForm = { title: '', excerpt: '', source: '', url: '', category: 'Article', published: true, image_url: '' };
+  const emptyForm = { title: '', excerpt: '', source: '', url: '', category: 'Article', published: true, image_url: '', featured: false };
   const [form, setForm] = useState(emptyForm);
   const [saving, setSaving] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -64,7 +64,7 @@ const ManageLibrary = () => {
   const openCreate = () => { setEditingId(null); setForm(emptyForm); setShowForm(true); setTimeout(() => formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 100); };
   const openEdit = (a: Article) => {
     setEditingId(a.id);
-    setForm({ title: a.title, excerpt: a.excerpt ?? '', source: a.source ?? '', url: a.url ?? '', category: a.category, published: a.published, image_url: a.image_url ?? '' });
+    setForm({ title: a.title, excerpt: a.excerpt ?? '', source: a.source ?? '', url: a.url ?? '', category: a.category, published: a.published, image_url: a.image_url ?? '', featured: a.featured });
     setShowForm(true);
     setTimeout(() => formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 100);
   };
@@ -72,7 +72,7 @@ const ManageLibrary = () => {
   const handleSave = async () => {
     if (!form.title.trim()) { toast.error('Title is required'); return; }
     setSaving(true);
-    const payload = { title: form.title.trim(), excerpt: form.excerpt.trim() || null, source: form.source.trim() || null, url: form.url.trim() || null, image_url: form.image_url.trim() || null, category: form.category.trim() || 'Article', published: form.published };
+    const payload = { title: form.title.trim(), excerpt: form.excerpt.trim() || null, source: form.source.trim() || null, url: form.url.trim() || null, image_url: form.image_url.trim() || null, category: form.category.trim() || 'Article', published: form.published, featured: form.featured };
     if (editingId) {
       const { error } = await supabase.from('library_articles').update(payload).eq('id', editingId);
       if (error) { toast.error(friendlyDbError(error)); setSaving(false); return; }
@@ -154,9 +154,15 @@ const ManageLibrary = () => {
                 </select>
               </div>
             </div>
-            <div className="flex items-center gap-3">
-              <Switch checked={form.published} onCheckedChange={v => setForm(f => ({ ...f, published: v }))} />
-              <Label className="text-sm">{t.published}</Label>
+            <div className="flex items-center gap-6">
+              <div className="flex items-center gap-3">
+                <Switch checked={form.published} onCheckedChange={v => setForm(f => ({ ...f, published: v }))} />
+                <Label className="text-sm">{t.published}</Label>
+              </div>
+              <div className="flex items-center gap-3">
+                <Switch checked={form.featured} onCheckedChange={v => setForm(f => ({ ...f, featured: v }))} />
+                <Label className="text-sm">⭐ {t.featured}</Label>
+              </div>
             </div>
             <div className="flex gap-2">
               <Button size="sm" className="rounded-2xl" onClick={handleSave} disabled={saving}>
@@ -184,6 +190,7 @@ const ManageLibrary = () => {
                   <div className="flex items-center gap-2 mb-1">
                     <Badge variant="secondary" className="rounded-full text-[10px] font-semibold uppercase tracking-wider">{a.category}</Badge>
                     {!a.published && <Badge variant="outline" className="rounded-full text-[10px]">{t.draft}</Badge>}
+                    {a.featured && <Badge variant="default" className="rounded-full text-[10px]">⭐ {t.featured}</Badge>}
                   </div>
                   <h3 className="text-sm font-semibold text-foreground truncate">{a.title}</h3>
                   {a.excerpt && <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{a.excerpt}</p>}

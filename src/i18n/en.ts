@@ -19,6 +19,7 @@ export const en: Dictionary = {
   search: 'Search',
   draft: 'Draft',
   published: 'Published',
+  featured: 'Featured',
 
   nav: {
     home: 'Home',

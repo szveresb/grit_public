@@ -1,0 +1,1 @@
+ALTER TABLE public.library_articles ADD COLUMN featured boolean NOT NULL DEFAULT false;
