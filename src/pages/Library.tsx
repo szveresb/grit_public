@@ -19,6 +19,7 @@ interface LibraryArticle {
   source: string | null;
   url: string | null;
   category: string;
+  featured: boolean;
 }
 
 const Library = () => {
