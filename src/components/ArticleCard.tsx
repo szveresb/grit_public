@@ -50,9 +50,9 @@ const ArticleCard = ({ title, excerpt, category, source, url, author, featured =
                 {excerpt}
               </p>
             )}
-            {source && (
+            {(author || source) && (
               <p className="mt-3 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
-                {source}
+                {[author, source].filter(Boolean).join(' · ')}
               </p>
             )}
             {url && (

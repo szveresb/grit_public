@@ -169,6 +169,7 @@ const Library = () => {
                   category={article.category}
                   source={article.source}
                   url={article.url}
+                  author={article.author}
                 />
               ))}
             </div>
