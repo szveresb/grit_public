@@ -35,6 +35,7 @@ interface Question {
   question_type: string;
   options: string[] | null;
   sort_order: number;
+  answer_scores: Record<string, number> | null;
 }
 
 interface LastResponse {
