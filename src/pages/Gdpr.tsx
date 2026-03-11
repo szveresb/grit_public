@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { useLanguage } from '@/hooks/useLanguage';
 import { Button } from '@/components/ui/button';
+import LanguageToggle from '@/components/LanguageToggle';
 
 const Gdpr = () => {
   const { t, localePath } = useLanguage();
@@ -12,9 +13,12 @@ const Gdpr = () => {
           <Link to={localePath('/')} className="text-lg font-bold tracking-tight text-foreground">
             {t.brand}
           </Link>
-          <Button variant="outline" size="sm" className="rounded-full" asChild>
-            <Link to={localePath('/')}>← {t.nav.home}</Link>
-          </Button>
+          <div className="flex items-center gap-3">
+            <LanguageToggle />
+            <Button variant="outline" size="sm" className="rounded-full" asChild>
+              <Link to={localePath('/')}>← {t.nav.home}</Link>
+            </Button>
+          </div>
         </div>
       </header>
 
