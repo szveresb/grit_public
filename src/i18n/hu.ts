@@ -230,6 +230,13 @@ export const hu: Dictionary = {
     totalScore: 'Összpontszám',
     viewResults: 'Eredmények megtekintése',
     closeResults: 'Bezárás',
+    scoreHistory: 'Pontszám előzmények',
+    scoreHistoryEmpty: 'Még nincsenek pontozásos eredmények.',
+    scoreHistorySubtitle: 'Követd nyomon a fejlődésedet az idő során.',
+    scoreTrend: 'Trend',
+    noScoredSurveys: 'Nincs pontozással rendelkező kérdőív.',
+    completedOn: 'Kitöltve',
+    points: 'pont',
   },
 
   timeline: {

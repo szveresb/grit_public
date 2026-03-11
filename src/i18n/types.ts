@@ -241,6 +241,14 @@ export interface Dictionary {
     totalScore: string;
     viewResults: string;
     closeResults: string;
+    // Score history
+    scoreHistory: string;
+    scoreHistoryEmpty: string;
+    scoreHistorySubtitle: string;
+    scoreTrend: string;
+    noScoredSurveys: string;
+    completedOn: string;
+    points: string;
   };
 
   // Timeline
