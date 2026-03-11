@@ -22,6 +22,7 @@ import {
 interface Article {
   id: string; title: string; excerpt: string | null; source: string | null;
   url: string | null; image_url: string | null; category: string; published: boolean; featured: boolean; author: string; created_at: string;
+  title_localized: Record<string, string> | null; excerpt_localized: Record<string, string> | null;
 }
 
 const categories = ['Article', 'Research', 'Book', 'Study Summary'];
@@ -34,7 +35,7 @@ const ManageLibrary = () => {
   const [loading, setLoading] = useState(true);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [showForm, setShowForm] = useState(false);
-  const emptyForm = { title: '', excerpt: '', source: '', url: '', category: 'Article', published: true, image_url: '', featured: false, author: '' };
+  const emptyForm = { title: '', excerpt: '', source: '', url: '', category: 'Article', published: true, image_url: '', featured: false, author: '', title_en: '', excerpt_en: '' };
   const [form, setForm] = useState(emptyForm);
   const [saving, setSaving] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -45,7 +46,7 @@ const ManageLibrary = () => {
 
   const fetchArticles = async () => {
     const { data } = await supabase.from('library_articles').select('*').order('created_at', { ascending: false });
-    setArticles(data ?? []); setLoading(false);
+    setArticles((data as Article[]) ?? []); setLoading(false);
   };
 
   useEffect(() => { if (user && isEditor) fetchArticles(); }, [user, isEditor]);
@@ -64,7 +65,7 @@ const ManageLibrary = () => {
   const openCreate = () => { setEditingId(null); setForm(emptyForm); setShowForm(true); setTimeout(() => formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 100); };
   const openEdit = (a: Article) => {
     setEditingId(a.id);
-    setForm({ title: a.title, excerpt: a.excerpt ?? '', source: a.source ?? '', url: a.url ?? '', category: a.category, published: a.published, image_url: a.image_url ?? '', featured: a.featured, author: a.author === 'Grit.hu' ? '' : a.author });
+    setForm({ title: a.title, excerpt: a.excerpt ?? '', source: a.source ?? '', url: a.url ?? '', category: a.category, published: a.published, image_url: a.image_url ?? '', featured: a.featured, author: a.author === 'Grit.hu' ? '' : a.author, title_en: a.title_localized?.en ?? '', excerpt_en: a.excerpt_localized?.en ?? '' });
     setShowForm(true);
     setTimeout(() => formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 100);
   };
@@ -72,7 +73,9 @@ const ManageLibrary = () => {
   const handleSave = async () => {
     if (!form.title.trim()) { toast.error('Title is required'); return; }
     setSaving(true);
-    const payload = { title: form.title.trim(), excerpt: form.excerpt.trim() || null, source: form.source.trim() || null, url: form.url.trim() || null, image_url: form.image_url.trim() || null, category: form.category.trim() || 'Article', published: form.published, featured: form.featured, author: form.author.trim() || 'Grit.hu' };
+    const titleLocalized = form.title_en.trim() ? { en: form.title_en.trim() } : {};
+    const excerptLocalized = form.excerpt_en.trim() ? { en: form.excerpt_en.trim() } : {};
+    const payload = { title: form.title.trim(), excerpt: form.excerpt.trim() || null, source: form.source.trim() || null, url: form.url.trim() || null, image_url: form.image_url.trim() || null, category: form.category.trim() || 'Article', published: form.published, featured: form.featured, author: form.author.trim() || 'Grit.hu', title_localized: titleLocalized, excerpt_localized: excerptLocalized };
     if (editingId) {
       const { error } = await supabase.from('library_articles').update(payload).eq('id', editingId);
       if (error) { toast.error(friendlyDbError(error)); setSaving(false); return; }
@@ -123,13 +126,25 @@ const ManageLibrary = () => {
               </h2>
               <Button variant="ghost" size="icon" onClick={() => setShowForm(false)}><FClose className="h-4 w-4" /></Button>
             </div>
-            <div className="space-y-2">
-              <Label className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">{t.manageLibrary.articleTitle}</Label>
-              <Input value={form.title} onChange={e => setForm(f => ({ ...f, title: e.target.value }))} placeholder={t.manageLibrary.articleTitle} className="rounded-2xl" />
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">{t.manageLibrary.titleHu}</Label>
+                <Input value={form.title} onChange={e => setForm(f => ({ ...f, title: e.target.value }))} placeholder={t.manageLibrary.titleHu} className="rounded-2xl" />
+              </div>
+              <div className="space-y-2">
+                <Label className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">{t.manageLibrary.titleEn}</Label>
+                <Input value={form.title_en} onChange={e => setForm(f => ({ ...f, title_en: e.target.value }))} placeholder={t.manageLibrary.titleEn} className="rounded-2xl" />
+              </div>
             </div>
-            <div className="space-y-2">
-              <Label className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">{t.manageLibrary.excerpt}</Label>
-              <Textarea value={form.excerpt} onChange={e => setForm(f => ({ ...f, excerpt: e.target.value }))} rows={3} className="rounded-2xl" />
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">{t.manageLibrary.excerptHu}</Label>
+                <Textarea value={form.excerpt} onChange={e => setForm(f => ({ ...f, excerpt: e.target.value }))} rows={3} className="rounded-2xl" />
+              </div>
+              <div className="space-y-2">
+                <Label className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">{t.manageLibrary.excerptEn}</Label>
+                <Textarea value={form.excerpt_en} onChange={e => setForm(f => ({ ...f, excerpt_en: e.target.value }))} rows={3} className="rounded-2xl" />
+              </div>
             </div>
             <div className="space-y-2">
               <Label className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">{t.manageLibrary.url}</Label>

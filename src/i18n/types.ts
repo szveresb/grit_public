@@ -286,6 +286,10 @@ export interface Dictionary {
     noMatch: string;
     loadingArticles: string;
     author: string;
+    titleHu: string;
+    titleEn: string;
+    excerptHu: string;
+    excerptEn: string;
   };
 
   // Manage Users

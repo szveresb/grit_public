@@ -273,6 +273,10 @@ export const en: Dictionary = {
     noMatch: 'No articles match your search.',
     loadingArticles: 'Loading articles...',
     author: 'Author',
+    titleHu: 'Title (HU)',
+    titleEn: 'Title (EN)',
+    excerptHu: 'Excerpt (HU)',
+    excerptEn: 'Excerpt (EN)',
   },
 
   manageUsers: {
