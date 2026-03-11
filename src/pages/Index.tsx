@@ -1,15 +1,12 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
-import { AnimatePresence, motion } from 'framer-motion';
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { useAuth } from '@/hooks/useAuth';
 import { useLanguage } from '@/hooks/useLanguage';
 import { supabase } from '@/integrations/supabase/client';
-import { FLock, FArrowRight, FMenu, FClose } from '@/components/icons/FreudIcons';
+import { FLock, FArrowRight } from '@/components/icons/FreudIcons';
 import { Button } from '@/components/ui/button';
-
 import { Skeleton } from '@/components/ui/skeleton';
-import LanguageToggle from '@/components/LanguageToggle';
+import PublicHeader from '@/components/PublicHeader';
 import ArticleCard from '@/components/ArticleCard';
 
 import bambooBg from '@/assets/bamboo-bg.jpg';
