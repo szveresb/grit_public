@@ -46,7 +46,7 @@ const ManageLibrary = () => {
 
   const fetchArticles = async () => {
     const { data } = await supabase.from('library_articles').select('*').order('created_at', { ascending: false });
-    setArticles(data ?? []); setLoading(false);
+    setArticles((data as Article[]) ?? []); setLoading(false);
   };
 
   useEffect(() => { if (user && isEditor) fetchArticles(); }, [user, isEditor]);
