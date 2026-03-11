@@ -8,8 +8,9 @@ import { Textarea } from '@/components/ui/textarea';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { toast } from 'sonner';
 import { FClipboardCheck, FArrowRight, FClock } from '@/components/icons/FreudIcons';
-import { formatDistanceToNow, differenceInDays, differenceInHours } from 'date-fns';
+import { formatDistanceToNow, differenceInHours } from 'date-fns';
 import { getDateLocale } from '@/lib/date-locale';
+import ScoreResults from './ScoreResults';
 
 interface Questionnaire {
   id: string;
