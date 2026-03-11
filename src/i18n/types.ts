@@ -72,6 +72,11 @@ export interface Dictionary {
     viewSource: string;
   };
 
+  // Article detail
+  article: {
+    backToLibrary: string;
+    notFound: string;
+  };
 
   // Auth
   auth: {

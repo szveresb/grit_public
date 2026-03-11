@@ -69,6 +69,10 @@ export const hu: Dictionary = {
     viewSource: 'Forrás megtekintése',
   },
 
+  article: {
+    backToLibrary: 'Vissza a könyvtárba',
+    notFound: 'A cikk nem található.',
+  },
 
   auth: {
     createYourSpace: 'Saját tér létrehozása',

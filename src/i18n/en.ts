@@ -69,6 +69,10 @@ export const en: Dictionary = {
     viewSource: 'View source',
   },
 
+  article: {
+    backToLibrary: 'Back to Library',
+    notFound: 'Article not found.',
+  },
 
   auth: {
     createYourSpace: 'Create Your Space',
