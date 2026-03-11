@@ -1,26 +1,12 @@
-import { Link } from 'react-router-dom';
 import { useLanguage } from '@/hooks/useLanguage';
-import { Button } from '@/components/ui/button';
-import LanguageToggle from '@/components/LanguageToggle';
+import PublicHeader from '@/components/PublicHeader';
 
 const Gdpr = () => {
-  const { t, localePath } = useLanguage();
+  const { t } = useLanguage();
 
   return (
     <div className="min-h-screen bg-background">
-      <header className="border-b border-border bg-card/60 backdrop-blur-xl">
-        <div className="max-w-3xl mx-auto flex items-center justify-between px-4 md:px-8 py-4">
-          <Link to={localePath('/')} className="text-lg font-bold tracking-tight text-foreground">
-            {t.brand}
-          </Link>
-          <div className="flex items-center gap-3">
-            <LanguageToggle />
-            <Button variant="outline" size="sm" className="rounded-full" asChild>
-              <Link to={localePath('/')}>← {t.nav.home}</Link>
-            </Button>
-          </div>
-        </div>
-      </header>
+      <PublicHeader />
 
       <main className="max-w-3xl mx-auto px-4 md:px-8 py-12 space-y-8">
         <h1 className="text-2xl font-bold text-foreground">GDPR megfelelőség</h1>

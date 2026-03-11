@@ -55,20 +55,7 @@ const Article = () => {
       <div className="fixed inset-0 z-0 bg-cover bg-center" style={{ backgroundImage: `url(${bambooBg})`, opacity: 0.12 }} />
       <div className="fixed inset-0 z-0 bg-background/80" />
 
-      {/* Header */}
-      <header className="relative z-10 border-b border-border bg-card/60 backdrop-blur-xl">
-        <div className="max-w-7xl mx-auto flex items-center justify-between px-4 md:px-8 py-4">
-          <Link to={localePath('/')} className="text-lg font-bold tracking-tight text-foreground">
-            {t.brand}
-          </Link>
-          <div className="flex items-center gap-3">
-            <LanguageToggle />
-            <Button variant="outline" size="sm" className="rounded-full px-4" asChild>
-              <Link to={localePath('/library')}>{t.article.backToLibrary}</Link>
-            </Button>
-          </div>
-        </div>
-      </header>
+      <PublicHeader />
 
       {/* Content */}
       <article className="relative z-10 px-4 md:px-8 py-12 max-w-3xl mx-auto">
