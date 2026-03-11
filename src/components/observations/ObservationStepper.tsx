@@ -78,7 +78,7 @@ const ObservationStepper = ({ onLogged }: { onLogged?: () => void }) => {
     if (error) { toast.error(error.message); setSubmitting(false); return; }
     toast.success(t.observations.logged);
     setStep(0); setSelectedCategory(null); setSelectedConcept(null);
-    setIntensity(3); setFrequency(''); setContext(''); setNarrative('');
+    setIntensity(3); setContext(''); setNarrative('');
     setSubmitting(false);
     onLogged?.();
   };
