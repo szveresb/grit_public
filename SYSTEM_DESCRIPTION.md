@@ -304,6 +304,8 @@ The app uses a custom icon library (`src/components/icons/FreudIcons.tsx`) inspi
 - **`UnifiedFeed`** — Interleaved chronological list of journal entries, observation logs, and questionnaire completions
 - **`ObservationStepper`** — 3-step progressive disclosure with warm labels ("What's going on?" → "How heavy?" → "Anything to add?")
 - **`JournalForm` / `JournalEntryCard`** — Fully localized journal creation and display with progressive disclosure for clinical codes
+- **`ScoreResults`** — Post-completion scoring breakdown: total score with progress bar, matched range label/description, and per-question point breakdown
+- **`ScoreHistory`** — Historical score tracking with `recharts` LineChart for repeated questionnaires, trend indicators (↑/↓), and last-5-completions list
 
 ### Internationalization
 
