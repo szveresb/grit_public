@@ -164,6 +164,7 @@ const Index = () => {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
             {/* Featured article */}
             <ArticleCard
+              id={articles[0].id}
               title={(lang === 'en' && articles[0].title_localized?.en) || articles[0].title}
               excerpt={(lang === 'en' && articles[0].excerpt_localized?.en) || articles[0].excerpt}
               category={articles[0].category}
