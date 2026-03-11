@@ -192,22 +192,8 @@ const ObservationTree = ({ onComplete, onSkip }: ObservationTreeProps) => {
             </div>
           </div>
 
-          {/* Frequency */}
-          <div className="space-y-2">
-            <Label className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">{t.journal.guidedTreeFrequency}</Label>
-            <ToggleGroup type="single" value={frequency} onValueChange={v => setFrequency(v)} className="justify-start flex-wrap">
-              {[
-                { value: 'once', label: t.observations.freqOnce },
-                { value: 'sometimes', label: t.observations.freqSometimes },
-                { value: 'often', label: t.observations.freqOften },
-                { value: 'constant', label: t.observations.freqConstant },
-              ].map(f => (
-                <ToggleGroupItem key={f.value} value={f.value} className="rounded-2xl text-xs px-4">
-                  {f.label}
-                </ToggleGroupItem>
-              ))}
-            </ToggleGroup>
-          </div>
+
+
 
           <Button size="sm" className="rounded-2xl w-full" onClick={handleComplete}>
             {t.journal.guidedTreeContinue}
