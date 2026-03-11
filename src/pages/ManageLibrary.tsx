@@ -73,7 +73,9 @@ const ManageLibrary = () => {
   const handleSave = async () => {
     if (!form.title.trim()) { toast.error('Title is required'); return; }
     setSaving(true);
-    const payload = { title: form.title.trim(), excerpt: form.excerpt.trim() || null, source: form.source.trim() || null, url: form.url.trim() || null, image_url: form.image_url.trim() || null, category: form.category.trim() || 'Article', published: form.published, featured: form.featured, author: form.author.trim() || 'Grit.hu' };
+    const titleLocalized = form.title_en.trim() ? { en: form.title_en.trim() } : {};
+    const excerptLocalized = form.excerpt_en.trim() ? { en: form.excerpt_en.trim() } : {};
+    const payload = { title: form.title.trim(), excerpt: form.excerpt.trim() || null, source: form.source.trim() || null, url: form.url.trim() || null, image_url: form.image_url.trim() || null, category: form.category.trim() || 'Article', published: form.published, featured: form.featured, author: form.author.trim() || 'Grit.hu', title_localized: titleLocalized, excerpt_localized: excerptLocalized };
     if (editingId) {
       const { error } = await supabase.from('library_articles').update(payload).eq('id', editingId);
       if (error) { toast.error(friendlyDbError(error)); setSaving(false); return; }
