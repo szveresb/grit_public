@@ -1,7 +1,5 @@
-import { Link } from 'react-router-dom';
 import { useLanguage } from '@/hooks/useLanguage';
-import { Button } from '@/components/ui/button';
-import LanguageToggle from '@/components/LanguageToggle';
+import PublicHeader from '@/components/PublicHeader';
 
 const HuContent = () => (
   <>
