@@ -185,23 +185,6 @@ const ObservationStepper = ({ onLogged }: { onLogged?: () => void }) => {
             </div>
           </div>
 
-          {/* Frequency */}
-          <div className="space-y-2">
-            <Label className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">{t.observations.frequency}</Label>
-            <ToggleGroup type="single" value={frequency} onValueChange={v => setFrequency(v)} className="justify-start flex-wrap">
-              {[
-                { value: 'once', label: t.observations.freqOnce },
-                { value: 'sometimes', label: t.observations.freqSometimes },
-                { value: 'often', label: t.observations.freqOften },
-                { value: 'constant', label: t.observations.freqConstant },
-              ].map(f => (
-                <ToggleGroupItem key={f.value} value={f.value} className="rounded-2xl text-xs px-4">
-                  {f.label}
-                </ToggleGroupItem>
-              ))}
-            </ToggleGroup>
-          </div>
-
           {/* Context */}
           <div className="space-y-2">
             <Label className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">{t.observations.context}</Label>

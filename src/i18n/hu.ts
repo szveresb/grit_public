@@ -209,6 +209,7 @@ export const hu: Dictionary = {
     availableNow: 'Kitölthető',
     nextAvailable: 'Következő kitöltés',
     alreadyCompleted: 'Már kitöltve',
+    selfCheckJournalTitle: 'Önellenőrzés',
   },
 
   timeline: {
