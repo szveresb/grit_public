@@ -1,12 +1,10 @@
-import { Link } from 'react-router-dom';
 import { useEffect, useState, useMemo } from 'react';
 import { useLanguage } from '@/hooks/useLanguage';
 import { supabase } from '@/integrations/supabase/client';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Button } from '@/components/ui/button';
-import LanguageToggle from '@/components/LanguageToggle';
+import PublicHeader from '@/components/PublicHeader';
 import ArticleCard from '@/components/ArticleCard';
 import bambooBg from '@/assets/bamboo-bg.jpg';
 
