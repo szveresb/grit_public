@@ -272,6 +272,7 @@ export const hu: Dictionary = {
     noArticles: 'Még nincsenek cikkek. Hozd létre az elsőt fent.',
     noMatch: 'Nincs találat.',
     loadingArticles: 'Cikkek betöltése...',
+    author: 'Szerző',
   },
 
   manageUsers: {

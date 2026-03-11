@@ -1,0 +1,1 @@
+ALTER TABLE public.library_articles ADD COLUMN author text NOT NULL DEFAULT 'Grit.hu';

@@ -285,6 +285,7 @@ export interface Dictionary {
     noArticles: string;
     noMatch: string;
     loadingArticles: string;
+    author: string;
   };
 
   // Manage Users

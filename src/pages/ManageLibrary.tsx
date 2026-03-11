@@ -21,7 +21,7 @@ import {
 
 interface Article {
   id: string; title: string; excerpt: string | null; source: string | null;
-  url: string | null; image_url: string | null; category: string; published: boolean; featured: boolean; created_at: string;
+  url: string | null; image_url: string | null; category: string; published: boolean; featured: boolean; author: string; created_at: string;
 }
 
 const categories = ['Article', 'Research', 'Book', 'Study Summary'];
@@ -34,7 +34,7 @@ const ManageLibrary = () => {
   const [loading, setLoading] = useState(true);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [showForm, setShowForm] = useState(false);
-  const emptyForm = { title: '', excerpt: '', source: '', url: '', category: 'Article', published: true, image_url: '', featured: false };
+  const emptyForm = { title: '', excerpt: '', source: '', url: '', category: 'Article', published: true, image_url: '', featured: false, author: '' };
   const [form, setForm] = useState(emptyForm);
   const [saving, setSaving] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -64,7 +64,7 @@ const ManageLibrary = () => {
   const openCreate = () => { setEditingId(null); setForm(emptyForm); setShowForm(true); setTimeout(() => formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 100); };
   const openEdit = (a: Article) => {
     setEditingId(a.id);
-    setForm({ title: a.title, excerpt: a.excerpt ?? '', source: a.source ?? '', url: a.url ?? '', category: a.category, published: a.published, image_url: a.image_url ?? '', featured: a.featured });
+    setForm({ title: a.title, excerpt: a.excerpt ?? '', source: a.source ?? '', url: a.url ?? '', category: a.category, published: a.published, image_url: a.image_url ?? '', featured: a.featured, author: a.author === 'Grit.hu' ? '' : a.author });
     setShowForm(true);
     setTimeout(() => formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 100);
   };
@@ -72,7 +72,7 @@ const ManageLibrary = () => {
   const handleSave = async () => {
     if (!form.title.trim()) { toast.error('Title is required'); return; }
     setSaving(true);
-    const payload = { title: form.title.trim(), excerpt: form.excerpt.trim() || null, source: form.source.trim() || null, url: form.url.trim() || null, image_url: form.image_url.trim() || null, category: form.category.trim() || 'Article', published: form.published, featured: form.featured };
+    const payload = { title: form.title.trim(), excerpt: form.excerpt.trim() || null, source: form.source.trim() || null, url: form.url.trim() || null, image_url: form.image_url.trim() || null, category: form.category.trim() || 'Article', published: form.published, featured: form.featured, author: form.author.trim() || 'Grit.hu' };
     if (editingId) {
       const { error } = await supabase.from('library_articles').update(payload).eq('id', editingId);
       if (error) { toast.error(friendlyDbError(error)); setSaving(false); return; }
@@ -142,7 +142,11 @@ const ManageLibrary = () => {
                 <img src={form.image_url} alt="Preview" className="mt-2 h-24 w-full object-cover rounded-2xl border border-border" onError={e => (e.currentTarget.style.display = 'none')} />
               )}
             </div>
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-3 gap-4">
+              <div className="space-y-2">
+                <Label className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">{t.manageLibrary.author}</Label>
+                <Input value={form.author} onChange={e => setForm(f => ({ ...f, author: e.target.value }))} placeholder="Grit.hu" className="rounded-2xl" />
+              </div>
               <div className="space-y-2">
                 <Label className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">{t.manageLibrary.source}</Label>
                 <Input value={form.source} onChange={e => setForm(f => ({ ...f, source: e.target.value }))} className="rounded-2xl" />
@@ -194,7 +198,8 @@ const ManageLibrary = () => {
                   </div>
                   <h3 className="text-sm font-semibold text-foreground truncate">{a.title}</h3>
                   {a.excerpt && <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{a.excerpt}</p>}
-                  {a.source && <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground mt-2">{a.source}</p>}
+                  {a.source && <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground mt-2">{a.author} · {a.source}</p>}
+                  {!a.source && <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground mt-2">{a.author}</p>}
                 </div>
                 <div className="flex gap-1 shrink-0">
                   <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => openEdit(a)}><FPencil className="h-3.5 w-3.5" /></Button>
