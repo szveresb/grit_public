@@ -58,7 +58,7 @@ const SelfChecks = () => {
   const loadQuestions = async (qId: string) => {
     setSelectedQ(qId); setAnswers({});
     const { data } = await supabase.from('questionnaire_questions').select('*').eq('questionnaire_id', qId).order('sort_order');
-    setQuestions((data ?? []).map(q => ({ ...q, options: q.options as string[] | null })));
+    setQuestions((data ?? []).map(q => ({ ...q, options: q.options as string[] | null, answer_scores: q.answer_scores as Record<string, number> | null })));
   };
 
   const openCreate = () => { setEditingId(null); setFormTitle(''); setFormDesc(''); setFormPublished(false); setFormRepeat(''); setFormScoringEnabled(false); setFormScoringMode('sum'); setFormScoreRanges([]); setFormQuestions([{ text: '', type: 'text', options: '', answerScores: {} }]); setShowForm(true); };
