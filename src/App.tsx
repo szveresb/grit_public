@@ -22,6 +22,7 @@ import Cookies from "./pages/Cookies";
 import Gdpr from "./pages/Gdpr";
 import AboutLegal from "./pages/AboutLegal";
 import Library from "./pages/Library";
+import Article from "./pages/Article";
 import SelfChecks from "./pages/SelfChecks";
 import Surveys from "./pages/Surveys";
 
@@ -46,6 +47,7 @@ const AppRoutes = () => (
     <Route path="/manage-self-checks" element={<ProtectedRoute><SelfChecks /></ProtectedRoute>} />
     <Route path="/analyst-export" element={<ProtectedRoute><AnalystExport /></ProtectedRoute>} />
     <Route path="/library" element={<Library />} />
+    <Route path="/library/:id" element={<Article />} />
     <Route path="/terms" element={<Terms />} />
     <Route path="/cookies" element={<Cookies />} />
     <Route path="/gdpr" element={<Gdpr />} />
@@ -66,6 +68,7 @@ const AppRoutes = () => (
     <Route path="/en/manage-self-checks" element={<ProtectedRoute><SelfChecks /></ProtectedRoute>} />
     <Route path="/en/analyst-export" element={<ProtectedRoute><AnalystExport /></ProtectedRoute>} />
     <Route path="/en/library" element={<Library />} />
+    <Route path="/en/library/:id" element={<Article />} />
     <Route path="/en/terms" element={<Terms />} />
     <Route path="/en/cookies" element={<Cookies />} />
     <Route path="/en/gdpr" element={<Gdpr />} />

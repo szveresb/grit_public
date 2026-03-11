@@ -152,6 +152,7 @@ const Library = () => {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
             {/* Featured article */}
             <ArticleCard
+              id={filtered[0].id}
               title={localizedTitle(filtered[0])}
               excerpt={localizedExcerpt(filtered[0])}
               category={filtered[0].category}
@@ -165,6 +166,7 @@ const Library = () => {
               {filtered.slice(1).map((article) => (
                 <ArticleCard
                   key={article.id}
+                  id={article.id}
                   title={localizedTitle(article)}
                   excerpt={localizedExcerpt(article)}
                   category={article.category}
