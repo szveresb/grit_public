@@ -270,6 +270,7 @@ The app uses a custom icon library (`src/components/icons/FreudIcons.tsx`) inspi
 |---|---|---|---|
 | `/` | `Index` (landing) | No | Public — max 6 newest library articles |
 | `/library` | `Library` | No | Full library with search & category filter |
+| `/library/:id` | `Article` | No | Individual article detail page with bilingual content |
 | `/auth` | `Auth` (login/signup) | No | |
 | `/dashboard` | `Dashboard` | Yes | Quick Pulse widget + recent activity |
 | `/check-in` | `CheckIn` | Yes | **Unified** — Quick Pulse + ObservationStepper + chronological feed |
