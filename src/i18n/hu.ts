@@ -273,6 +273,10 @@ export const hu: Dictionary = {
     noMatch: 'Nincs találat.',
     loadingArticles: 'Cikkek betöltése...',
     author: 'Szerző',
+    titleHu: 'Cím (HU)',
+    titleEn: 'Cím (EN)',
+    excerptHu: 'Kivonat (HU)',
+    excerptEn: 'Kivonat (EN)',
   },
 
   manageUsers: {
