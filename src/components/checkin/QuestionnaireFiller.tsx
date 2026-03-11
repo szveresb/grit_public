@@ -323,6 +323,23 @@ const QuestionnaireFiller = ({ onCompleted }: { onCompleted?: () => void }) => {
   if (loading) return <p className="text-sm text-muted-foreground">{t.loading}</p>;
   if (questionnaires.length === 0) return <p className="text-sm text-muted-foreground">{t.selfChecks.noAvailable}</p>;
 
+  // Show score results after submission
+  if (selectedQ && scoreResult) {
+    return (
+      <ScoreResults
+        totalScore={scoreResult.totalScore}
+        maxPossibleScore={scoreResult.maxPossibleScore}
+        questionScores={scoreResult.questionScores}
+        scoreRanges={scoreResult.scoreRanges}
+        onClose={() => {
+          setSelectedQ(null);
+          setAnswers({});
+          setScoreResult(null);
+        }}
+      />
+    );
+  }
+
   // Filling a specific questionnaire
   if (selectedQ) {
     const qTitle = questionnaires.find((q) => q.id === selectedQ)?.title;
