@@ -196,6 +196,39 @@ const SelfChecks = () => {
               <option value="anytime">{t.selfChecks.repeatAnytime}</option>
             </select>
           </div>
+          {/* Scoring config */}
+          <div className="space-y-3 border border-border rounded-2xl p-4">
+            <div className="flex items-center gap-3">
+              <Switch checked={formScoringEnabled} onCheckedChange={setFormScoringEnabled} />
+              <Label className="text-sm">{t.selfChecks.scoringEnabled}</Label>
+            </div>
+            {formScoringEnabled && (
+              <>
+                <div className="space-y-2">
+                  <Label className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">{t.selfChecks.scoringMode}</Label>
+                  <select value={formScoringMode} onChange={e => setFormScoringMode(e.target.value)}
+                    className="w-full border border-input rounded-2xl px-3 py-2 text-sm bg-background">
+                    <option value="sum">{t.selfChecks.scoringModeSum}</option>
+                    <option value="weighted">{t.selfChecks.scoringModeWeighted}</option>
+                  </select>
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">{t.selfChecks.scoreRanges}</Label>
+                  {formScoreRanges.map((sr, i) => (
+                    <div key={i} className="flex gap-2 items-center">
+                      <Input type="number" value={sr.min} onChange={e => { const c = [...formScoreRanges]; c[i] = { ...c[i], min: Number(e.target.value) }; setFormScoreRanges(c); }} placeholder={t.selfChecks.scoreRangeMin} className="w-16 rounded-2xl text-xs" />
+                      <span className="text-xs text-muted-foreground">–</span>
+                      <Input type="number" value={sr.max} onChange={e => { const c = [...formScoreRanges]; c[i] = { ...c[i], max: Number(e.target.value) }; setFormScoreRanges(c); }} placeholder={t.selfChecks.scoreRangeMax} className="w-16 rounded-2xl text-xs" />
+                      <Input value={sr.label} onChange={e => { const c = [...formScoreRanges]; c[i] = { ...c[i], label: e.target.value }; setFormScoreRanges(c); }} placeholder={t.selfChecks.scoreRangeLabel} className="flex-1 rounded-2xl text-xs" />
+                      <Input value={sr.description ?? ''} onChange={e => { const c = [...formScoreRanges]; c[i] = { ...c[i], description: e.target.value }; setFormScoreRanges(c); }} placeholder={t.selfChecks.scoreRangeDescription} className="flex-1 rounded-2xl text-xs" />
+                      <Button type="button" variant="ghost" size="icon" className="h-7 w-7" onClick={() => setFormScoreRanges(r => r.filter((_, j) => j !== i))}><FTrash className="h-3 w-3" /></Button>
+                    </div>
+                  ))}
+                  <Button type="button" variant="outline" size="sm" className="rounded-2xl text-xs" onClick={() => setFormScoreRanges(r => [...r, { min: 0, max: 0, label: '', description: '' }])}><FPlus className="h-3 w-3 mr-1" /> {t.selfChecks.addScoreRange}</Button>
+                </div>
+              </>
+            )}
+          </div>
           <div className="space-y-3">
             <Label className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">{t.selfChecks.questions}</Label>
             {formQuestions.map((nq, i) => (
@@ -215,6 +248,20 @@ const SelfChecks = () => {
                 </div>
                 {nq.type === 'multiple_choice' && (
                   <Input value={nq.options} onChange={e => { const c = [...formQuestions]; c[i].options = e.target.value; setFormQuestions(c); }} placeholder="Options (comma-separated)" className="text-xs rounded-2xl" />
+                )}
+                {/* Weighted answer scores */}
+                {formScoringEnabled && formScoringMode === 'weighted' && nq.type !== 'text' && (
+                  <div className="space-y-1 pt-1 border-t border-border/50">
+                    <Label className="text-[10px] uppercase tracking-widest text-muted-foreground">{t.selfChecks.answerScores}</Label>
+                    <div className="flex flex-wrap gap-2">
+                      {(nq.type === 'scale' ? ['1','2','3','4','5'] : nq.type === 'yes_no' ? ['yes','no'] : nq.options.split(',').map(s => s.trim()).filter(Boolean)).map(opt => (
+                        <div key={opt} className="flex items-center gap-1">
+                          <span className="text-[11px] text-muted-foreground">{opt}:</span>
+                          <Input type="number" value={nq.answerScores[opt] ?? ''} onChange={e => { const c = [...formQuestions]; c[i].answerScores = { ...c[i].answerScores, [opt]: Number(e.target.value) }; setFormQuestions(c); }} className="w-14 h-7 rounded-xl text-xs" />
+                        </div>
+                      ))}
+                    </div>
+                  </div>
                 )}
               </div>
             ))}
