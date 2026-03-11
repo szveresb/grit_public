@@ -61,6 +61,7 @@ export type Database = {
       }
       library_articles: {
         Row: {
+          author: string
           category: string
           created_at: string
           excerpt: string | null
@@ -76,6 +77,7 @@ export type Database = {
           url: string | null
         }
         Insert: {
+          author?: string
           category?: string
           created_at?: string
           excerpt?: string | null
@@ -91,6 +93,7 @@ export type Database = {
           url?: string | null
         }
         Update: {
+          author?: string
           category?: string
           created_at?: string
           excerpt?: string | null
