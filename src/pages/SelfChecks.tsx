@@ -50,7 +50,7 @@ const SelfChecks = () => {
 
   const fetchQuestionnaires = async () => {
     const { data } = await supabase.from('questionnaires').select('*').order('created_at', { ascending: false });
-    setQuestionnaires(data ?? []);
+    setQuestionnaires((data ?? []) as unknown as Questionnaire[]);
   };
 
   useEffect(() => { fetchQuestionnaires(); }, []);
