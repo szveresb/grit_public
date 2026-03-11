@@ -41,6 +41,9 @@ const SelfChecks = () => {
   const [formPublished, setFormPublished] = useState(true);
   const [formQuestions, setFormQuestions] = useState<{ id?: string; text: string; type: string; options: string }[]>([{ text: '', type: 'text', options: '' }]);
   const [formRepeat, setFormRepeat] = useState<string>('');
+  const [formScoringEnabled, setFormScoringEnabled] = useState(false);
+  const [formScoringMode, setFormScoringMode] = useState<string>('sum');
+  const [formScoreRanges, setFormScoreRanges] = useState<ScoreRange[]>([]);
 
   const [saving, setSaving] = useState(false);
   const [obsRefreshKey, setObsRefreshKey] = useState(0);
