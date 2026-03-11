@@ -99,6 +99,10 @@ Curated research articles with bilingual support.
 | `title` / `title_localized` | text / jsonb | Bilingual |
 | `description` / `description_localized` | text / jsonb | Bilingual |
 | `is_published` | boolean | Default `false` |
+| `scoring_enabled` | boolean | Default `false`; enables score calculation |
+| `scoring_mode` | text | `'sum'` (default) or `'weighted'`; determines scoring method |
+| `score_ranges` | jsonb | Nullable; array of `{min, max, label, description?}` for result interpretation |
+| `repeat_interval` | text | Nullable; suggested repeat cadence |
 | `created_by` | uuid | Nullable |
 | `created_at` / `updated_at` | timestamptz | |
 
