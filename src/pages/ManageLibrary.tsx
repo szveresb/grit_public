@@ -34,7 +34,7 @@ const ManageLibrary = () => {
   const [loading, setLoading] = useState(true);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [showForm, setShowForm] = useState(false);
-  const emptyForm = { title: '', excerpt: '', source: '', url: '', category: 'Article', published: true, image_url: '', featured: false };
+  const emptyForm = { title: '', excerpt: '', source: '', url: '', category: 'Article', published: true, image_url: '', featured: false, author: '' };
   const [form, setForm] = useState(emptyForm);
   const [saving, setSaving] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
