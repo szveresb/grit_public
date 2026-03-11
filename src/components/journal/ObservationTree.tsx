@@ -48,7 +48,6 @@ const ObservationTree = ({ onComplete, onSkip }: ObservationTreeProps) => {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [selectedConcept, setSelectedConcept] = useState<string | null>(null);
   const [intensity, setIntensity] = useState(3);
-  const [frequency, setFrequency] = useState('');
 
   useEffect(() => {
     supabase.from('observation_categories').select('*').eq('is_active', true).order('sort_order')
