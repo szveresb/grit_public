@@ -17,6 +17,16 @@ interface Questionnaire {
   title: string;
   description: string | null;
   repeat_interval: string | null;
+  scoring_enabled: boolean;
+  scoring_mode: string;
+  score_ranges: ScoreRange[] | null;
+}
+
+interface ScoreRange {
+  min: number;
+  max: number;
+  label: string;
+  description?: string;
 }
 
 interface Question {
