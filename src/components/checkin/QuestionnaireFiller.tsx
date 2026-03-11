@@ -60,6 +60,12 @@ const QuestionnaireFiller = ({ onCompleted }: { onCompleted?: () => void }) => {
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [scoreResult, setScoreResult] = useState<{
+    totalScore: number;
+    maxPossibleScore: number;
+    questionScores: { questionText: string; answer: string; score: number }[];
+    scoreRanges: ScoreRange[];
+  } | null>(null);
 
   const dateLocale = getDateLocale(lang);
 
