@@ -1,15 +1,12 @@
 import { Link, useNavigate } from 'react-router-dom';
 import { useEffect, useState } from 'react';
-import { AnimatePresence, motion } from 'framer-motion';
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { useAuth } from '@/hooks/useAuth';
 import { useLanguage } from '@/hooks/useLanguage';
 import { supabase } from '@/integrations/supabase/client';
-import { FLock, FArrowRight, FMenu, FClose } from '@/components/icons/FreudIcons';
+import { FLock, FArrowRight } from '@/components/icons/FreudIcons';
 import { Button } from '@/components/ui/button';
-
 import { Skeleton } from '@/components/ui/skeleton';
-import LanguageToggle from '@/components/LanguageToggle';
+import PublicHeader from '@/components/PublicHeader';
 import ArticleCard from '@/components/ArticleCard';
 
 import bambooBg from '@/assets/bamboo-bg.jpg';
@@ -33,7 +30,6 @@ const Index = () => {
   const navigate = useNavigate();
   const [articles, setArticles] = useState<LibraryArticle[]>([]);
   const [articlesLoading, setArticlesLoading] = useState(true);
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   useEffect(() => {
     supabase.from('library_articles').select('id, title, title_localized, excerpt, excerpt_localized, source, category, url, featured, author').eq('published', true).order('featured', { ascending: false }).order('created_at', { ascending: false }).limit(6)
@@ -50,59 +46,7 @@ const Index = () => {
       <div className="fixed inset-0 z-0 bg-cover bg-center" style={{ backgroundImage: `url(${bambooBg})`, opacity: 0.12 }} />
       <div className="fixed inset-0 z-0 bg-background/80" />
 
-      {/* Header */}
-      <header className="relative z-10 border-b border-border bg-card/60 backdrop-blur-xl">
-        <div className="max-w-7xl mx-auto flex items-center justify-between px-4 md:px-8 py-4">
-          <Link to={localePath('/')} className="text-lg font-bold tracking-tight text-foreground">
-            {t.brand}
-          </Link>
-          <nav className="hidden lg:flex items-center justify-center flex-1 gap-8">
-            <Link to={localePath('/library')} className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">{t.nav.library}</Link>
-            <button onClick={() => handleGatedClick('/journal')} className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1.5">
-              {t.nav.checkIn}
-              {!user && <FLock className="h-3 w-3" />}
-            </button>
-            <Link to={localePath('/about-legal')} className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">{t.nav.about}</Link>
-          </nav>
-          <div className="flex items-center gap-3">
-            <LanguageToggle />
-            {user ? (
-              <Button variant="outline" size="sm" className="rounded-full px-4" onClick={() => navigate(localePath('/dashboard'))}>
-                {t.dashboard}
-              </Button>
-            ) : (
-              <Button size="sm" className="rounded-full px-4" onClick={() => navigate(localePath('/auth'))}>
-                {t.getStarted}
-              </Button>
-            )}
-            <button
-              className="lg:hidden p-2 -mr-2 text-muted-foreground hover:text-foreground transition-colors"
-              onClick={() => setMobileMenuOpen(true)}
-              aria-label="Menu"
-            >
-              <FMenu className="h-5 w-5" />
-            </button>
-          </div>
-        </div>
-
-        <Sheet open={mobileMenuOpen} onOpenChange={setMobileMenuOpen}>
-          <SheetContent side="left" className="w-72 p-0">
-            <SheetHeader className="px-5 py-5 border-b border-border">
-              <SheetTitle className="text-lg font-bold tracking-tight text-foreground text-left">
-                🌿 {t.brand}
-              </SheetTitle>
-            </SheetHeader>
-            <nav className="px-4 py-4 space-y-1">
-              <Link to={localePath('/library')} onClick={() => setMobileMenuOpen(false)} className="block py-2.5 px-3 rounded-2xl text-sm font-medium text-foreground hover:bg-accent/50 transition-colors">{t.nav.library}</Link>
-              <button onClick={() => { handleGatedClick('/journal'); setMobileMenuOpen(false); }} className="w-full text-left py-2.5 px-3 rounded-2xl text-sm font-medium text-foreground hover:bg-accent/50 transition-colors flex items-center gap-1.5">
-                {t.nav.checkIn}
-                {!user && <FLock className="h-3 w-3" />}
-              </button>
-              <Link to={localePath('/about-legal')} onClick={() => setMobileMenuOpen(false)} className="block py-2.5 px-3 rounded-2xl text-sm font-medium text-foreground hover:bg-accent/50 transition-colors">{t.nav.about}</Link>
-            </nav>
-          </SheetContent>
-        </Sheet>
-      </header>
+      <PublicHeader />
 
       {/* Hero */}
       <section className="relative z-10 px-4 md:px-8 pt-16 pb-12 max-w-7xl mx-auto text-center">

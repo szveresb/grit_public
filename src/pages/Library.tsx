@@ -5,8 +5,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Button } from '@/components/ui/button';
-import LanguageToggle from '@/components/LanguageToggle';
+import PublicHeader from '@/components/PublicHeader';
 import ArticleCard from '@/components/ArticleCard';
 import bambooBg from '@/assets/bamboo-bg.jpg';
 
@@ -73,20 +72,7 @@ const Library = () => {
       <div className="fixed inset-0 z-0 bg-cover bg-center" style={{ backgroundImage: `url(${bambooBg})`, opacity: 0.12 }} />
       <div className="fixed inset-0 z-0 bg-background/80" />
 
-      {/* Header */}
-      <header className="relative z-10 border-b border-border bg-card/60 backdrop-blur-xl">
-        <div className="max-w-7xl mx-auto flex items-center justify-between px-4 md:px-8 py-4">
-          <Link to={localePath('/')} className="text-lg font-bold tracking-tight text-foreground">
-            {t.brand}
-          </Link>
-          <div className="flex items-center gap-3">
-            <LanguageToggle />
-            <Button variant="outline" size="sm" className="rounded-full px-4" asChild>
-              <Link to={localePath('/')}>{t.nav.home}</Link>
-            </Button>
-          </div>
-        </div>
-      </header>
+      <PublicHeader />
 
       {/* Content */}
       <section className="relative z-10 px-4 md:px-8 py-12 max-w-7xl mx-auto">
