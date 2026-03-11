@@ -42,7 +42,7 @@ const ObservationStepper = ({ onLogged }: { onLogged?: () => void }) => {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [selectedConcept, setSelectedConcept] = useState<string | null>(null);
   const [intensity, setIntensity] = useState(3);
-  const [frequency, setFrequency] = useState('');
+  
   const [context, setContext] = useState('');
   const [narrative, setNarrative] = useState('');
   const [submitting, setSubmitting] = useState(false);
