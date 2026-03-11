@@ -17,7 +17,9 @@ import bambooBg from '@/assets/bamboo-bg.jpg';
 interface LibraryArticle {
   id: string;
   title: string;
+  title_localized: Record<string, string> | null;
   excerpt: string | null;
+  excerpt_localized: Record<string, string> | null;
   source: string | null;
   url: string | null;
   category: string;
@@ -27,14 +29,14 @@ interface LibraryArticle {
 
 const Index = () => {
   const { user } = useAuth();
-  const { t, localePath } = useLanguage();
+  const { t, lang, localePath } = useLanguage();
   const navigate = useNavigate();
   const [articles, setArticles] = useState<LibraryArticle[]>([]);
   const [articlesLoading, setArticlesLoading] = useState(true);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   useEffect(() => {
-    supabase.from('library_articles').select('id, title, excerpt, source, category, url, featured, author').eq('published', true).order('featured', { ascending: false }).order('created_at', { ascending: false }).limit(6)
+    supabase.from('library_articles').select('id, title, title_localized, excerpt, excerpt_localized, source, category, url, featured, author').eq('published', true).order('featured', { ascending: false }).order('created_at', { ascending: false }).limit(6)
       .then(({ data }) => { setArticles((data as LibraryArticle[]) ?? []); setArticlesLoading(false); });
   }, []);
 
@@ -162,8 +164,8 @@ const Index = () => {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
             {/* Featured article */}
             <ArticleCard
-              title={articles[0].title}
-              excerpt={articles[0].excerpt}
+              title={(lang === 'en' && articles[0].title_localized?.en) || articles[0].title}
+              excerpt={(lang === 'en' && articles[0].excerpt_localized?.en) || articles[0].excerpt}
               category={articles[0].category}
               source={articles[0].source}
               url={articles[0].url}
@@ -175,8 +177,8 @@ const Index = () => {
               {articles.slice(1).map((article) => (
                 <ArticleCard
                   key={article.id}
-                  title={article.title}
-                  excerpt={article.excerpt}
+                  title={(lang === 'en' && article.title_localized?.en) || article.title}
+                  excerpt={(lang === 'en' && article.excerpt_localized?.en) || article.excerpt}
                   category={article.category}
                   source={article.source}
                   url={article.url}
