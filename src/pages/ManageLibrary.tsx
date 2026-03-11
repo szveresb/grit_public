@@ -22,6 +22,7 @@ import {
 interface Article {
   id: string; title: string; excerpt: string | null; source: string | null;
   url: string | null; image_url: string | null; category: string; published: boolean; featured: boolean; author: string; created_at: string;
+  title_localized: Record<string, string> | null; excerpt_localized: Record<string, string> | null;
 }
 
 const categories = ['Article', 'Research', 'Book', 'Study Summary'];
