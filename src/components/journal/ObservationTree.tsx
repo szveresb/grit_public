@@ -26,7 +26,6 @@ interface Concept {
 export interface ObservationTreeResult {
   conceptId: string;
   intensity: number;
-  frequency: string;
 }
 
 interface ObservationTreeProps {
