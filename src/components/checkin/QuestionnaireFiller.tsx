@@ -130,14 +130,54 @@ const QuestionnaireFiller = ({ onCompleted }: { onCompleted?: () => void }) => {
   const loadQuestions = async (qId: string) => {
     setSelectedQ(qId);
     setAnswers({});
+    setScoreResult(null);
     const { data } = await supabase
       .from('questionnaire_questions')
-      .select('id, question_text, question_type, options, sort_order')
+      .select('id, question_text, question_type, options, sort_order, answer_scores')
       .eq('questionnaire_id', qId)
       .order('sort_order');
     setQuestions(
-      (data ?? []).map((q) => ({ ...q, options: q.options as string[] | null }))
+      (data ?? []).map((q) => ({ ...q, options: q.options as string[] | null, answer_scores: q.answer_scores as Record<string, number> | null }))
     );
+  };
+
+  const calculateScore = (questionnaire: Questionnaire): { totalScore: number; maxPossibleScore: number; questionScores: { questionText: string; answer: string; score: number }[] } => {
+    const qScores: { questionText: string; answer: string; score: number }[] = [];
+    let total = 0;
+    let maxTotal = 0;
+
+    for (const q of questions) {
+      const answer = answers[q.id];
+      if (!answer || q.question_type === 'text') continue;
+
+      let score = 0;
+      let maxScore = 0;
+
+      if (questionnaire.scoring_mode === 'weighted' && q.answer_scores) {
+        score = q.answer_scores[answer] ?? 0;
+        maxScore = Math.max(...Object.values(q.answer_scores), 0);
+      } else {
+        // Sum mode: scale value directly, yes=1/no=0
+        if (q.question_type === 'scale') {
+          score = Number(answer) || 0;
+          maxScore = 5;
+        } else if (q.question_type === 'yes_no') {
+          score = answer === 'yes' ? 1 : 0;
+          maxScore = 1;
+        } else if (q.question_type === 'multiple_choice') {
+          // In sum mode, multiple choice gets index+1
+          const idx = (q.options ?? []).indexOf(answer);
+          score = idx + 1;
+          maxScore = (q.options ?? []).length;
+        }
+      }
+
+      total += score;
+      maxTotal += maxScore;
+      qScores.push({ questionText: q.question_text, answer, score });
+    }
+
+    return { totalScore: total, maxPossibleScore: maxTotal, questionScores: qScores };
   };
 
   const handleSubmit = async () => {
