@@ -178,6 +178,7 @@ const Index = () => {
               {articles.slice(1).map((article) => (
                 <ArticleCard
                   key={article.id}
+                  id={article.id}
                   title={(lang === 'en' && article.title_localized?.en) || article.title}
                   excerpt={(lang === 'en' && article.excerpt_localized?.en) || article.excerpt}
                   category={article.category}

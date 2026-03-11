@@ -166,6 +166,7 @@ const Library = () => {
               {filtered.slice(1).map((article) => (
                 <ArticleCard
                   key={article.id}
+                  id={article.id}
                   title={localizedTitle(article)}
                   excerpt={localizedExcerpt(article)}
                   category={article.category}
