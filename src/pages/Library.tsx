@@ -32,7 +32,7 @@ const Library = () => {
   useEffect(() => {
     supabase
       .from('library_articles')
-      .select('id, title, title_localized, excerpt, excerpt_localized, source, category, url, featured')
+      .select('id, title, title_localized, excerpt, excerpt_localized, source, category, url, featured, author')
       .eq('published', true)
       .order('created_at', { ascending: false })
       .then(({ data }) => {
