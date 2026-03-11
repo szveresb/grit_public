@@ -1,9 +1,13 @@
+import { useState } from 'react';
 import DashboardLayout from '@/components/DashboardLayout';
 import { useLanguage } from '@/hooks/useLanguage';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import QuestionnaireFiller from '@/components/checkin/QuestionnaireFiller';
+import ScoreHistory from '@/components/checkin/ScoreHistory';
 
 const Surveys = () => {
   const { t } = useLanguage();
+  const [refreshKey, setRefreshKey] = useState(0);
 
   return (
     <DashboardLayout>
@@ -17,9 +21,34 @@ const Surveys = () => {
           </p>
         </div>
 
-        <div className="bg-card/60 backdrop-blur border border-border rounded-3xl p-6">
-          <QuestionnaireFiller />
-        </div>
+        <Tabs defaultValue="fill" className="w-full">
+          <TabsList className="rounded-2xl bg-card/60 backdrop-blur border border-border w-full">
+            <TabsTrigger value="fill" className="rounded-xl flex-1 text-xs">
+              {t.nav.surveys}
+            </TabsTrigger>
+            <TabsTrigger value="history" className="rounded-xl flex-1 text-xs">
+              {t.selfChecks.scoreHistory}
+            </TabsTrigger>
+          </TabsList>
+
+          <TabsContent value="fill" className="mt-4">
+            <div className="bg-card/60 backdrop-blur border border-border rounded-3xl p-6">
+              <QuestionnaireFiller onCompleted={() => setRefreshKey(k => k + 1)} />
+            </div>
+          </TabsContent>
+
+          <TabsContent value="history" className="mt-4">
+            <div className="bg-card/60 backdrop-blur border border-border rounded-3xl p-6">
+              <h3 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-1">
+                {t.selfChecks.scoreHistory}
+              </h3>
+              <p className="text-xs text-muted-foreground mb-4">
+                {t.selfChecks.scoreHistorySubtitle}
+              </p>
+              <ScoreHistory key={refreshKey} />
+            </div>
+          </TabsContent>
+        </Tabs>
       </div>
     </DashboardLayout>
   );
