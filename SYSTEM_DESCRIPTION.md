@@ -113,6 +113,7 @@ Curated research articles with bilingual support.
 | `question_text` / `question_text_localized` | text / jsonb | |
 | `question_type` | text | Default `'text'` |
 | `options` / `options_localized` | jsonb | For multiple-choice |
+| `answer_scores` | jsonb | Nullable; maps option values to numeric scores (weighted mode) |
 | `sort_order` | integer | Default `0` |
 
 **RLS:** Authenticated users see questions of published questionnaires (or observers). Editors have full CRUD.
@@ -124,6 +125,7 @@ Curated research articles with bilingual support.
 | `id` | uuid (PK) | |
 | `user_id` | uuid | Auth user |
 | `questionnaire_id` | uuid (FK) | → `questionnaires.id` |
+| `total_score` | integer | Nullable; computed total when scoring is enabled |
 | `completed_at` | timestamptz | Default `now()` |
 
 **RLS:** Users manage own responses only.
