@@ -22,6 +22,7 @@ interface LibraryArticle {
   url: string | null;
   category: string;
   featured: boolean;
+  author: string;
 }
 
 const Index = () => {
@@ -33,7 +34,7 @@ const Index = () => {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   useEffect(() => {
-    supabase.from('library_articles').select('id, title, excerpt, source, category, url, featured').eq('published', true).order('featured', { ascending: false }).order('created_at', { ascending: false }).limit(6)
+    supabase.from('library_articles').select('id, title, excerpt, source, category, url, featured, author').eq('published', true).order('featured', { ascending: false }).order('created_at', { ascending: false }).limit(6)
       .then(({ data }) => { setArticles((data as LibraryArticle[]) ?? []); setArticlesLoading(false); });
   }, []);
 
@@ -166,6 +167,7 @@ const Index = () => {
               category={articles[0].category}
               source={articles[0].source}
               url={articles[0].url}
+              author={articles[0].author}
               featured
             />
             {/* Remaining articles */}
@@ -178,6 +180,7 @@ const Index = () => {
                   category={article.category}
                   source={article.source}
                   url={article.url}
+                  author={article.author}
                 />
               ))}
             </div>

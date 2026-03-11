@@ -10,10 +10,11 @@ interface ArticleCardProps {
   category: string;
   source: string | null;
   url: string | null;
+  author?: string;
   featured?: boolean;
 }
 
-const ArticleCard = ({ title, excerpt, category, source, url, featured = false }: ArticleCardProps) => {
+const ArticleCard = ({ title, excerpt, category, source, url, author, featured = false }: ArticleCardProps) => {
   const [expanded, setExpanded] = useState(false);
   const { t } = useLanguage();
 
@@ -49,9 +50,9 @@ const ArticleCard = ({ title, excerpt, category, source, url, featured = false }
                 {excerpt}
               </p>
             )}
-            {source && (
+            {(author || source) && (
               <p className="mt-3 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
-                {source}
+                {[author, source].filter(Boolean).join(' · ')}
               </p>
             )}
             {url && (
