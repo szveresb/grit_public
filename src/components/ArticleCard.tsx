@@ -14,7 +14,7 @@ interface ArticleCardProps {
   featured?: boolean;
 }
 
-const ArticleCard = ({ title, excerpt, category, source, url, featured = false }: ArticleCardProps) => {
+const ArticleCard = ({ title, excerpt, category, source, url, author, featured = false }: ArticleCardProps) => {
   const [expanded, setExpanded] = useState(false);
   const { t } = useLanguage();
 
