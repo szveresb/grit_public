@@ -198,7 +198,8 @@ const ManageLibrary = () => {
                   </div>
                   <h3 className="text-sm font-semibold text-foreground truncate">{a.title}</h3>
                   {a.excerpt && <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{a.excerpt}</p>}
-                  {a.source && <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground mt-2">{a.source}</p>}
+                  {a.source && <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground mt-2">{a.author} · {a.source}</p>}
+                  {!a.source && <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground mt-2">{a.author}</p>}
                 </div>
                 <div className="flex gap-1 shrink-0">
                   <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => openEdit(a)}><FPencil className="h-3.5 w-3.5" /></Button>
