@@ -270,6 +270,7 @@ The app uses a custom icon library (`src/components/icons/FreudIcons.tsx`) inspi
 |---|---|---|---|
 | `/` | `Index` (landing) | No | Public — max 6 newest library articles |
 | `/library` | `Library` | No | Full library with search & category filter |
+| `/library/:id` | `Article` | No | Individual article detail page with bilingual content |
 | `/auth` | `Auth` (login/signup) | No | |
 | `/dashboard` | `Dashboard` | Yes | Quick Pulse widget + recent activity |
 | `/check-in` | `CheckIn` | Yes | **Unified** — Quick Pulse + ObservationStepper + chronological feed |
@@ -284,11 +285,13 @@ The app uses a custom icon library (`src/components/icons/FreudIcons.tsx`) inspi
 
 ### Key Components
 
-- **`DashboardLayout`** — Sidebar navigation + top header with auth controls
+- **`PublicHeader`** — Shared top navigation for all public/legal pages: brand link, nav links (Library, Check-in, About), `LanguageToggle`, auth/dashboard button, mobile hamburger menu (Sheet). Gated nav for protected routes redirects unauthenticated users to `/auth`.
+- **`DashboardLayout`** — Sidebar navigation + top header with auth controls (authenticated pages)
 - **`AppSidebar`** — Role-aware navigation; single "Check-in" entry replaces former Journal + Self-Checks
 - **`ProtectedRoute`** — Auth guard wrapper
 - **`EmergencyExit`** — Quick-exit safety button (always visible)
-- **`LanguageToggle`** — HU/EN language switcher
+- **`LanguageToggle`** — HU/EN language switcher; visible on every page (public header + dashboard)
+- **`ArticleCard`** — Library card linking to individual article detail page
 - **`QuickPulse`** — 5 botanical Freud-style mood icons (wilting sprout → full bamboo, opacity-graded sage-green); one-tap creates a lightweight `journal_entry`
 - **`UnifiedFeed`** — Interleaved chronological list of journal entries, observation logs, and questionnaire completions
 - **`ObservationStepper`** — 3-step progressive disclosure with warm labels ("What's going on?" → "How heavy?" → "Anything to add?")
