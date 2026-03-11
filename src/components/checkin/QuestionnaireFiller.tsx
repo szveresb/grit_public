@@ -85,7 +85,7 @@ const QuestionnaireFiller = ({ onCompleted }: { onCompleted?: () => void }) => {
               .order('completed_at', { ascending: false })
           : Promise.resolve({ data: [] }),
       ]);
-      setQuestionnaires((qRes.data ?? []) as Questionnaire[]);
+      setQuestionnaires((qRes.data ?? []) as unknown as Questionnaire[]);
       // Keep only the latest response per questionnaire
       const seen = new Set<string>();
       const latest: LastResponse[] = [];
