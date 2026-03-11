@@ -22,6 +22,7 @@ interface LibraryArticle {
   url: string | null;
   category: string;
   featured: boolean;
+  author: string;
 }
 
 const Index = () => {
