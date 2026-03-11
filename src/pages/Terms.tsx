@@ -13,9 +13,12 @@ const Terms = () => {
           <Link to={localePath('/')} className="text-lg font-bold tracking-tight text-foreground">
             {t.brand}
           </Link>
-          <Button variant="outline" size="sm" className="rounded-full" asChild>
-            <Link to={localePath('/')}>← {t.nav.home}</Link>
-          </Button>
+          <div className="flex items-center gap-3">
+            <LanguageToggle />
+            <Button variant="outline" size="sm" className="rounded-full" asChild>
+              <Link to={localePath('/')}>← {t.nav.home}</Link>
+            </Button>
+          </div>
         </div>
       </header>
 
