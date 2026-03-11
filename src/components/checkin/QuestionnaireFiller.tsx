@@ -141,6 +141,27 @@ const QuestionnaireFiller = ({ onCompleted }: { onCompleted?: () => void }) => {
       answer: JSON.stringify(answer),
     }));
     if (answerRows.length) await supabase.from('questionnaire_answers').insert(answerRows);
+
+    // Auto-create journal entry from self-check
+    const qTitle = questionnaires.find((q) => q.id === selectedQ)?.title ?? '';
+    const summaryLines = questions
+      .map((q, i) => `${i + 1}. ${q.question_text}: ${answers[q.id] ?? '-'}`)
+      .join('\n');
+    const scaleAnswers = questions
+      .filter((q) => q.question_type === 'scale' && answers[q.id])
+      .map((q) => Number(answers[q.id]));
+    const avgImpact = scaleAnswers.length
+      ? Math.round(scaleAnswers.reduce((a, b) => a + b, 0) / scaleAnswers.length)
+      : null;
+
+    await supabase.from('journal_entries').insert({
+      user_id: user.id,
+      title: `${t.selfChecks.selfCheckJournalTitle}: ${qTitle}`,
+      entry_date: new Date().toISOString().split('T')[0],
+      event_description: summaryLines,
+      impact_level: avgImpact,
+    });
+
     toast.success(t.selfChecks.completed);
     // Update local last responses
     setLastResponses((prev) => [

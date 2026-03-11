@@ -59,7 +59,7 @@ const CheckIn = () => {
         user_id: user.id,
         concept_id: observation.conceptId,
         intensity: observation.intensity,
-        frequency: observation.frequency || null,
+        
         journal_entry_id: journalData.id,
       } as any);
       if (obsError) { console.error('Observation link error:', obsError.message); }

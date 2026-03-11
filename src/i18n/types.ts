@@ -218,6 +218,7 @@ export interface Dictionary {
     availableNow: string;
     nextAvailable: string;
     alreadyCompleted: string;
+    selfCheckJournalTitle: string;
   };
 
   // Timeline

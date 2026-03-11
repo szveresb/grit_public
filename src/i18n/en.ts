@@ -209,6 +209,7 @@ export const en: Dictionary = {
     availableNow: 'Available now',
     nextAvailable: 'Next available',
     alreadyCompleted: 'Already completed',
+    selfCheckJournalTitle: 'Self-check',
   },
 
   timeline: {

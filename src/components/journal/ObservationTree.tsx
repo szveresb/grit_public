@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useLanguage } from '@/hooks/useLanguage';
 import { Button } from '@/components/ui/button';
-import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { Label } from '@/components/ui/label';
 import { FArrowLeft, FCheck, FHeart, FMessageCircle, FShield, FZap } from '@/components/icons/FreudIcons';
 
@@ -26,7 +25,6 @@ interface Concept {
 export interface ObservationTreeResult {
   conceptId: string;
   intensity: number;
-  frequency: string;
 }
 
 interface ObservationTreeProps {
@@ -49,7 +47,6 @@ const ObservationTree = ({ onComplete, onSkip }: ObservationTreeProps) => {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [selectedConcept, setSelectedConcept] = useState<string | null>(null);
   const [intensity, setIntensity] = useState(3);
-  const [frequency, setFrequency] = useState('');
 
   useEffect(() => {
     supabase.from('observation_categories').select('*').eq('is_active', true).order('sort_order')
@@ -71,7 +68,7 @@ const ObservationTree = ({ onComplete, onSkip }: ObservationTreeProps) => {
 
   const handleComplete = () => {
     if (!selectedConcept) return;
-    onComplete({ conceptId: selectedConcept, intensity, frequency });
+    onComplete({ conceptId: selectedConcept, intensity });
   };
 
   const name = (item: { name_hu: string; name_en: string }) => lang === 'en' ? item.name_en : item.name_hu;
@@ -194,22 +191,8 @@ const ObservationTree = ({ onComplete, onSkip }: ObservationTreeProps) => {
             </div>
           </div>
 
-          {/* Frequency */}
-          <div className="space-y-2">
-            <Label className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">{t.journal.guidedTreeFrequency}</Label>
-            <ToggleGroup type="single" value={frequency} onValueChange={v => setFrequency(v)} className="justify-start flex-wrap">
-              {[
-                { value: 'once', label: t.observations.freqOnce },
-                { value: 'sometimes', label: t.observations.freqSometimes },
-                { value: 'often', label: t.observations.freqOften },
-                { value: 'constant', label: t.observations.freqConstant },
-              ].map(f => (
-                <ToggleGroupItem key={f.value} value={f.value} className="rounded-2xl text-xs px-4">
-                  {f.label}
-                </ToggleGroupItem>
-              ))}
-            </ToggleGroup>
-          </div>
+
+
 
           <Button size="sm" className="rounded-2xl w-full" onClick={handleComplete}>
             {t.journal.guidedTreeContinue}

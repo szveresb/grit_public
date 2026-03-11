@@ -42,7 +42,7 @@ const ObservationStepper = ({ onLogged }: { onLogged?: () => void }) => {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [selectedConcept, setSelectedConcept] = useState<string | null>(null);
   const [intensity, setIntensity] = useState(3);
-  const [frequency, setFrequency] = useState('');
+  
   const [context, setContext] = useState('');
   const [narrative, setNarrative] = useState('');
   const [submitting, setSubmitting] = useState(false);
@@ -72,14 +72,13 @@ const ObservationStepper = ({ onLogged }: { onLogged?: () => void }) => {
       user_id: user.id,
       concept_id: selectedConcept,
       intensity,
-      frequency: frequency || null,
       context_modifier: context || null,
       user_narrative: narrative || null,
     });
     if (error) { toast.error(error.message); setSubmitting(false); return; }
     toast.success(t.observations.logged);
     setStep(0); setSelectedCategory(null); setSelectedConcept(null);
-    setIntensity(3); setFrequency(''); setContext(''); setNarrative('');
+    setIntensity(3); setContext(''); setNarrative('');
     setSubmitting(false);
     onLogged?.();
   };
@@ -184,23 +183,6 @@ const ObservationStepper = ({ onLogged }: { onLogged?: () => void }) => {
                 </button>
               ))}
             </div>
-          </div>
-
-          {/* Frequency */}
-          <div className="space-y-2">
-            <Label className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">{t.observations.frequency}</Label>
-            <ToggleGroup type="single" value={frequency} onValueChange={v => setFrequency(v)} className="justify-start flex-wrap">
-              {[
-                { value: 'once', label: t.observations.freqOnce },
-                { value: 'sometimes', label: t.observations.freqSometimes },
-                { value: 'often', label: t.observations.freqOften },
-                { value: 'constant', label: t.observations.freqConstant },
-              ].map(f => (
-                <ToggleGroupItem key={f.value} value={f.value} className="rounded-2xl text-xs px-4">
-                  {f.label}
-                </ToggleGroupItem>
-              ))}
-            </ToggleGroup>
           </div>
 
           {/* Context */}
