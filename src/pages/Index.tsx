@@ -17,7 +17,9 @@ import bambooBg from '@/assets/bamboo-bg.jpg';
 interface LibraryArticle {
   id: string;
   title: string;
+  title_localized: Record<string, string> | null;
   excerpt: string | null;
+  excerpt_localized: Record<string, string> | null;
   source: string | null;
   url: string | null;
   category: string;
