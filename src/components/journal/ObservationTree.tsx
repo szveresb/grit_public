@@ -3,7 +3,6 @@ import { supabase } from '@/integrations/supabase/client';
 import { useLanguage } from '@/hooks/useLanguage';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
-import { Label } from '@/components/ui/label';
 import { FArrowLeft, FCheck, FHeart, FMessageCircle, FShield, FZap } from '@/components/icons/FreudIcons';
 
 interface Category {
