@@ -74,7 +74,7 @@ const QuestionnaireFiller = ({ onCompleted }: { onCompleted?: () => void }) => {
       const [qRes, rRes] = await Promise.all([
         supabase
           .from('questionnaires')
-          .select('id, title, description, repeat_interval')
+          .select('id, title, description, repeat_interval, scoring_enabled, scoring_mode, score_ranges')
           .eq('is_published', true)
           .order('created_at', { ascending: false }),
         user
