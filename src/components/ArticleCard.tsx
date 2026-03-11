@@ -10,6 +10,7 @@ interface ArticleCardProps {
   category: string;
   source: string | null;
   url: string | null;
+  author?: string;
   featured?: boolean;
 }
 
