@@ -69,7 +69,7 @@ const ObservationTree = ({ onComplete, onSkip }: ObservationTreeProps) => {
 
   const handleComplete = () => {
     if (!selectedConcept) return;
-    onComplete({ conceptId: selectedConcept, intensity, frequency });
+    onComplete({ conceptId: selectedConcept, intensity });
   };
 
   const name = (item: { name_hu: string; name_en: string }) => lang === 'en' ? item.name_en : item.name_hu;
