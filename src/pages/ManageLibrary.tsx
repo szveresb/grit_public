@@ -65,7 +65,7 @@ const ManageLibrary = () => {
   const openCreate = () => { setEditingId(null); setForm(emptyForm); setShowForm(true); setTimeout(() => formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 100); };
   const openEdit = (a: Article) => {
     setEditingId(a.id);
-    setForm({ title: a.title, excerpt: a.excerpt ?? '', source: a.source ?? '', url: a.url ?? '', category: a.category, published: a.published, image_url: a.image_url ?? '', featured: a.featured, author: a.author === 'Grit.hu' ? '' : a.author });
+    setForm({ title: a.title, excerpt: a.excerpt ?? '', source: a.source ?? '', url: a.url ?? '', category: a.category, published: a.published, image_url: a.image_url ?? '', featured: a.featured, author: a.author === 'Grit.hu' ? '' : a.author, title_en: a.title_localized?.en ?? '', excerpt_en: a.excerpt_localized?.en ?? '' });
     setShowForm(true);
     setTimeout(() => formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 100);
   };
