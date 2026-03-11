@@ -72,7 +72,6 @@ const ObservationStepper = ({ onLogged }: { onLogged?: () => void }) => {
       user_id: user.id,
       concept_id: selectedConcept,
       intensity,
-      frequency: frequency || null,
       context_modifier: context || null,
       user_narrative: narrative || null,
     });
