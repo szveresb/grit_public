@@ -22,6 +22,7 @@ import Cookies from "./pages/Cookies";
 import Gdpr from "./pages/Gdpr";
 import AboutLegal from "./pages/AboutLegal";
 import Library from "./pages/Library";
+import Article from "./pages/Article";
 import SelfChecks from "./pages/SelfChecks";
 import Surveys from "./pages/Surveys";
 
