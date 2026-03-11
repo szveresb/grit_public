@@ -164,8 +164,8 @@ const Index = () => {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
             {/* Featured article */}
             <ArticleCard
-              title={articles[0].title}
-              excerpt={articles[0].excerpt}
+              title={(lang === 'en' && articles[0].title_localized?.en) || articles[0].title}
+              excerpt={(lang === 'en' && articles[0].excerpt_localized?.en) || articles[0].excerpt}
               category={articles[0].category}
               source={articles[0].source}
               url={articles[0].url}
@@ -177,8 +177,8 @@ const Index = () => {
               {articles.slice(1).map((article) => (
                 <ArticleCard
                   key={article.id}
-                  title={article.title}
-                  excerpt={article.excerpt}
+                  title={(lang === 'en' && article.title_localized?.en) || article.title}
+                  excerpt={(lang === 'en' && article.excerpt_localized?.en) || article.excerpt}
                   category={article.category}
                   source={article.source}
                   url={article.url}
