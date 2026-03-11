@@ -99,6 +99,10 @@ Curated research articles with bilingual support.
 | `title` / `title_localized` | text / jsonb | Bilingual |
 | `description` / `description_localized` | text / jsonb | Bilingual |
 | `is_published` | boolean | Default `false` |
+| `scoring_enabled` | boolean | Default `false`; enables score calculation |
+| `scoring_mode` | text | `'sum'` (default) or `'weighted'`; determines scoring method |
+| `score_ranges` | jsonb | Nullable; array of `{min, max, label, description?}` for result interpretation |
+| `repeat_interval` | text | Nullable; suggested repeat cadence |
 | `created_by` | uuid | Nullable |
 | `created_at` / `updated_at` | timestamptz | |
 
@@ -113,6 +117,7 @@ Curated research articles with bilingual support.
 | `question_text` / `question_text_localized` | text / jsonb | |
 | `question_type` | text | Default `'text'` |
 | `options` / `options_localized` | jsonb | For multiple-choice |
+| `answer_scores` | jsonb | Nullable; maps option values to numeric scores (weighted mode) |
 | `sort_order` | integer | Default `0` |
 
 **RLS:** Authenticated users see questions of published questionnaires (or observers). Editors have full CRUD.
@@ -124,6 +129,7 @@ Curated research articles with bilingual support.
 | `id` | uuid (PK) | |
 | `user_id` | uuid | Auth user |
 | `questionnaire_id` | uuid (FK) | → `questionnaires.id` |
+| `total_score` | integer | Nullable; computed total when scoring is enabled |
 | `completed_at` | timestamptz | Default `now()` |
 
 **RLS:** Users manage own responses only.
@@ -281,6 +287,8 @@ The app uses a custom icon library (`src/components/icons/FreudIcons.tsx`) inspi
 | `/manage-users` | `ManageUsers` | Yes (admin) | |
 | `/analyst-export` | `AnalystExport` | Yes (analyst) | |
 | `/journal` | redirect → `/check-in` | — | Legacy route |
+| `/surveys` | `Surveys` | Yes | Tabbed view: questionnaire filler + score history with trend charts |
+| `/manage-self-checks` | `SelfChecks` | Yes (editor+) | Questionnaire management with scoring configuration |
 | `/self-checks` | redirect → `/check-in` | — | Legacy route |
 
 ### Key Components
@@ -296,6 +304,8 @@ The app uses a custom icon library (`src/components/icons/FreudIcons.tsx`) inspi
 - **`UnifiedFeed`** — Interleaved chronological list of journal entries, observation logs, and questionnaire completions
 - **`ObservationStepper`** — 3-step progressive disclosure with warm labels ("What's going on?" → "How heavy?" → "Anything to add?")
 - **`JournalForm` / `JournalEntryCard`** — Fully localized journal creation and display with progressive disclosure for clinical codes
+- **`ScoreResults`** — Post-completion scoring breakdown: total score with progress bar, matched range label/description, and per-question point breakdown
+- **`ScoreHistory`** — Historical score tracking with `recharts` LineChart for repeated questionnaires, trend indicators (↑/↓), and last-5-completions list
 
 ### Internationalization
 
