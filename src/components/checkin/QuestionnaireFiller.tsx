@@ -183,9 +183,23 @@ const QuestionnaireFiller = ({ onCompleted }: { onCompleted?: () => void }) => {
   const handleSubmit = async () => {
     if (!user || !selectedQ) return;
     setSubmitting(true);
+
+    const questionnaire = questionnaires.find(q => q.id === selectedQ);
+
+    // Calculate score if scoring is enabled
+    let totalScore: number | null = null;
+    if (questionnaire?.scoring_enabled) {
+      const result = calculateScore(questionnaire);
+      totalScore = result.totalScore;
+      setScoreResult({
+        ...result,
+        scoreRanges: (questionnaire.score_ranges as ScoreRange[]) ?? [],
+      });
+    }
+
     const { data: resp, error } = await supabase
       .from('questionnaire_responses')
-      .insert({ user_id: user.id, questionnaire_id: selectedQ })
+      .insert({ user_id: user.id, questionnaire_id: selectedQ, total_score: totalScore } as any)
       .select('id')
       .single();
     if (error || !resp) {
@@ -201,7 +215,7 @@ const QuestionnaireFiller = ({ onCompleted }: { onCompleted?: () => void }) => {
     if (answerRows.length) await supabase.from('questionnaire_answers').insert(answerRows);
 
     // Auto-create journal entry from self-check
-    const qTitle = questionnaires.find((q) => q.id === selectedQ)?.title ?? '';
+    const qTitle = questionnaire?.title ?? '';
     const summaryLines = questions
       .map((q, i) => `${i + 1}. ${q.question_text}: ${answers[q.id] ?? '-'}`)
       .join('\n');
@@ -212,22 +226,29 @@ const QuestionnaireFiller = ({ onCompleted }: { onCompleted?: () => void }) => {
       ? Math.round(scaleAnswers.reduce((a, b) => a + b, 0) / scaleAnswers.length)
       : null;
 
+    const journalDesc = totalScore != null
+      ? `${summaryLines}\n\n${t.selfChecks.totalScore}: ${totalScore}`
+      : summaryLines;
+
     await supabase.from('journal_entries').insert({
       user_id: user.id,
       title: `${t.selfChecks.selfCheckJournalTitle}: ${qTitle}`,
       entry_date: new Date().toISOString().split('T')[0],
-      event_description: summaryLines,
+      event_description: journalDesc,
       impact_level: avgImpact,
     });
 
     toast.success(t.selfChecks.completed);
-    // Update local last responses
     setLastResponses((prev) => [
       { questionnaire_id: selectedQ, completed_at: new Date().toISOString() },
       ...prev.filter((r) => r.questionnaire_id !== selectedQ),
     ]);
-    setSelectedQ(null);
-    setAnswers({});
+
+    // If scoring enabled, keep showing results; otherwise reset
+    if (!questionnaire?.scoring_enabled) {
+      setSelectedQ(null);
+      setAnswers({});
+    }
     setSubmitting(false);
     onCompleted?.();
   };
