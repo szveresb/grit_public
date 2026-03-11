@@ -230,6 +230,13 @@ export const en: Dictionary = {
     totalScore: 'Total score',
     viewResults: 'View results',
     closeResults: 'Close',
+    scoreHistory: 'Score History',
+    scoreHistoryEmpty: 'No scored results yet.',
+    scoreHistorySubtitle: 'Track your progress over time.',
+    scoreTrend: 'Trend',
+    noScoredSurveys: 'No questionnaires with scoring enabled.',
+    completedOn: 'Completed on',
+    points: 'points',
   },
 
   timeline: {
