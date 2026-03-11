@@ -309,6 +309,7 @@ export type Database = {
       }
       questionnaire_questions: {
         Row: {
+          answer_scores: Json | null
           created_at: string
           id: string
           options: Json | null
@@ -320,6 +321,7 @@ export type Database = {
           sort_order: number
         }
         Insert: {
+          answer_scores?: Json | null
           created_at?: string
           id?: string
           options?: Json | null
@@ -331,6 +333,7 @@ export type Database = {
           sort_order?: number
         }
         Update: {
+          answer_scores?: Json | null
           created_at?: string
           id?: string
           options?: Json | null
@@ -356,18 +359,21 @@ export type Database = {
           completed_at: string
           id: string
           questionnaire_id: string
+          total_score: number | null
           user_id: string
         }
         Insert: {
           completed_at?: string
           id?: string
           questionnaire_id: string
+          total_score?: number | null
           user_id: string
         }
         Update: {
           completed_at?: string
           id?: string
           questionnaire_id?: string
+          total_score?: number | null
           user_id?: string
         }
         Relationships: [
@@ -389,6 +395,9 @@ export type Database = {
           id: string
           is_published: boolean
           repeat_interval: string | null
+          score_ranges: Json | null
+          scoring_enabled: boolean
+          scoring_mode: string
           title: string
           title_localized: Json | null
           updated_at: string
@@ -401,6 +410,9 @@ export type Database = {
           id?: string
           is_published?: boolean
           repeat_interval?: string | null
+          score_ranges?: Json | null
+          scoring_enabled?: boolean
+          scoring_mode?: string
           title: string
           title_localized?: Json | null
           updated_at?: string
@@ -413,6 +425,9 @@ export type Database = {
           id?: string
           is_published?: boolean
           repeat_interval?: string | null
+          score_ranges?: Json | null
+          scoring_enabled?: boolean
+          scoring_mode?: string
           title?: string
           title_localized?: Json | null
           updated_at?: string

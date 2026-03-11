@@ -20,8 +20,9 @@ import {
 import ObservationStepper from '@/components/observations/ObservationStepper';
 import ObservationHistory from '@/components/observations/ObservationHistory';
 
-interface Questionnaire { id: string; title: string; description: string | null; is_published: boolean; created_at: string; repeat_interval: string | null; }
-interface Question { id: string; question_text: string; question_type: string; options: string[] | null; sort_order: number; }
+interface Questionnaire { id: string; title: string; description: string | null; is_published: boolean; created_at: string; repeat_interval: string | null; scoring_enabled: boolean; scoring_mode: string; score_ranges: ScoreRange[] | null; }
+interface Question { id: string; question_text: string; question_type: string; options: string[] | null; sort_order: number; answer_scores: Record<string, number> | null; }
+interface ScoreRange { min: number; max: number; label: string; description?: string; }
 
 const SelfChecks = () => {
   const { user } = useAuth();
@@ -38,15 +39,18 @@ const SelfChecks = () => {
   const [formTitle, setFormTitle] = useState('');
   const [formDesc, setFormDesc] = useState('');
   const [formPublished, setFormPublished] = useState(true);
-  const [formQuestions, setFormQuestions] = useState<{ id?: string; text: string; type: string; options: string }[]>([{ text: '', type: 'text', options: '' }]);
+  const [formQuestions, setFormQuestions] = useState<{ id?: string; text: string; type: string; options: string; answerScores: Record<string, number> }[]>([{ text: '', type: 'text', options: '', answerScores: {} }]);
   const [formRepeat, setFormRepeat] = useState<string>('');
+  const [formScoringEnabled, setFormScoringEnabled] = useState(false);
+  const [formScoringMode, setFormScoringMode] = useState<string>('sum');
+  const [formScoreRanges, setFormScoreRanges] = useState<ScoreRange[]>([]);
 
   const [saving, setSaving] = useState(false);
   const [obsRefreshKey, setObsRefreshKey] = useState(0);
 
   const fetchQuestionnaires = async () => {
     const { data } = await supabase.from('questionnaires').select('*').order('created_at', { ascending: false });
-    setQuestionnaires(data ?? []);
+    setQuestionnaires((data ?? []) as unknown as Questionnaire[]);
   };
 
   useEffect(() => { fetchQuestionnaires(); }, []);
@@ -54,15 +58,16 @@ const SelfChecks = () => {
   const loadQuestions = async (qId: string) => {
     setSelectedQ(qId); setAnswers({});
     const { data } = await supabase.from('questionnaire_questions').select('*').eq('questionnaire_id', qId).order('sort_order');
-    setQuestions((data ?? []).map(q => ({ ...q, options: q.options as string[] | null })));
+    setQuestions((data ?? []).map(q => ({ ...q, options: q.options as string[] | null, answer_scores: q.answer_scores as Record<string, number> | null })));
   };
 
-  const openCreate = () => { setEditingId(null); setFormTitle(''); setFormDesc(''); setFormPublished(false); setFormRepeat(''); setFormQuestions([{ text: '', type: 'text', options: '' }]); setShowForm(true); };
+  const openCreate = () => { setEditingId(null); setFormTitle(''); setFormDesc(''); setFormPublished(false); setFormRepeat(''); setFormScoringEnabled(false); setFormScoringMode('sum'); setFormScoreRanges([]); setFormQuestions([{ text: '', type: 'text', options: '', answerScores: {} }]); setShowForm(true); };
 
   const openEdit = async (q: Questionnaire) => {
     setEditingId(q.id); setFormTitle(q.title); setFormDesc(q.description ?? ''); setFormPublished(q.is_published); setFormRepeat(q.repeat_interval ?? '');
+    setFormScoringEnabled(q.scoring_enabled ?? false); setFormScoringMode(q.scoring_mode ?? 'sum'); setFormScoreRanges((q.score_ranges as ScoreRange[]) ?? []);
     const { data } = await supabase.from('questionnaire_questions').select('*').eq('questionnaire_id', q.id).order('sort_order');
-    setFormQuestions((data ?? []).map(qq => ({ id: qq.id, text: qq.question_text, type: qq.question_type, options: qq.question_type === 'multiple_choice' && qq.options ? (qq.options as string[]).join(', ') : '' })));
+    setFormQuestions((data ?? []).map(qq => ({ id: qq.id, text: qq.question_text, type: qq.question_type, options: qq.question_type === 'multiple_choice' && qq.options ? (qq.options as string[]).join(', ') : '', answerScores: (qq.answer_scores as Record<string, number>) ?? {} })));
     setShowForm(true);
   };
 
@@ -70,16 +75,16 @@ const SelfChecks = () => {
     if (!user || !formTitle.trim()) return;
     setSaving(true);
     if (editingId) {
-      const { error } = await supabase.from('questionnaires').update({ title: formTitle, description: formDesc || null, is_published: formPublished, repeat_interval: formRepeat || null } as any).eq('id', editingId);
+      const { error } = await supabase.from('questionnaires').update({ title: formTitle, description: formDesc || null, is_published: formPublished, repeat_interval: formRepeat || null, scoring_enabled: formScoringEnabled, scoring_mode: formScoringMode, score_ranges: formScoreRanges.length ? formScoreRanges : null } as any).eq('id', editingId);
       if (error) { toast.error(error.message); setSaving(false); return; }
       await supabase.from('questionnaire_questions').delete().eq('questionnaire_id', editingId);
-      const qRows = formQuestions.filter(nq => nq.text.trim()).map((nq, i) => ({ questionnaire_id: editingId, question_text: nq.text, question_type: nq.type, options: nq.type === 'multiple_choice' ? nq.options.split(',').map(s => s.trim()).filter(Boolean) : null, sort_order: i }));
+      const qRows = formQuestions.filter(nq => nq.text.trim()).map((nq, i) => ({ questionnaire_id: editingId, question_text: nq.text, question_type: nq.type, options: nq.type === 'multiple_choice' ? nq.options.split(',').map(s => s.trim()).filter(Boolean) : null, sort_order: i, answer_scores: formScoringEnabled && formScoringMode === 'weighted' ? nq.answerScores : null }));
       if (qRows.length) await supabase.from('questionnaire_questions').insert(qRows);
       toast.success(t.selfChecks.selfCheckUpdated);
     } else {
-      const { data: q, error } = await supabase.from('questionnaires').insert({ title: formTitle, description: formDesc || null, created_by: user.id, is_published: formPublished, repeat_interval: formRepeat || null } as any).select('id').single();
+      const { data: q, error } = await supabase.from('questionnaires').insert({ title: formTitle, description: formDesc || null, created_by: user.id, is_published: formPublished, repeat_interval: formRepeat || null, scoring_enabled: formScoringEnabled, scoring_mode: formScoringMode, score_ranges: formScoreRanges.length ? formScoreRanges : null } as any).select('id').single();
       if (error || !q) { toast.error(error?.message ?? 'Failed'); setSaving(false); return; }
-      const qRows = formQuestions.filter(nq => nq.text.trim()).map((nq, i) => ({ questionnaire_id: q.id, question_text: nq.text, question_type: nq.type, options: nq.type === 'multiple_choice' ? nq.options.split(',').map(s => s.trim()).filter(Boolean) : null, sort_order: i }));
+      const qRows = formQuestions.filter(nq => nq.text.trim()).map((nq, i) => ({ questionnaire_id: q.id, question_text: nq.text, question_type: nq.type, options: nq.type === 'multiple_choice' ? nq.options.split(',').map(s => s.trim()).filter(Boolean) : null, sort_order: i, answer_scores: formScoringEnabled && formScoringMode === 'weighted' ? nq.answerScores : null }));
       if (qRows.length) await supabase.from('questionnaire_questions').insert(qRows);
       toast.success(t.selfChecks.selfCheckCreated);
     }
@@ -191,6 +196,39 @@ const SelfChecks = () => {
               <option value="anytime">{t.selfChecks.repeatAnytime}</option>
             </select>
           </div>
+          {/* Scoring config */}
+          <div className="space-y-3 border border-border rounded-2xl p-4">
+            <div className="flex items-center gap-3">
+              <Switch checked={formScoringEnabled} onCheckedChange={setFormScoringEnabled} />
+              <Label className="text-sm">{t.selfChecks.scoringEnabled}</Label>
+            </div>
+            {formScoringEnabled && (
+              <>
+                <div className="space-y-2">
+                  <Label className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">{t.selfChecks.scoringMode}</Label>
+                  <select value={formScoringMode} onChange={e => setFormScoringMode(e.target.value)}
+                    className="w-full border border-input rounded-2xl px-3 py-2 text-sm bg-background">
+                    <option value="sum">{t.selfChecks.scoringModeSum}</option>
+                    <option value="weighted">{t.selfChecks.scoringModeWeighted}</option>
+                  </select>
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">{t.selfChecks.scoreRanges}</Label>
+                  {formScoreRanges.map((sr, i) => (
+                    <div key={i} className="flex gap-2 items-center">
+                      <Input type="number" value={sr.min} onChange={e => { const c = [...formScoreRanges]; c[i] = { ...c[i], min: Number(e.target.value) }; setFormScoreRanges(c); }} placeholder={t.selfChecks.scoreRangeMin} className="w-16 rounded-2xl text-xs" />
+                      <span className="text-xs text-muted-foreground">–</span>
+                      <Input type="number" value={sr.max} onChange={e => { const c = [...formScoreRanges]; c[i] = { ...c[i], max: Number(e.target.value) }; setFormScoreRanges(c); }} placeholder={t.selfChecks.scoreRangeMax} className="w-16 rounded-2xl text-xs" />
+                      <Input value={sr.label} onChange={e => { const c = [...formScoreRanges]; c[i] = { ...c[i], label: e.target.value }; setFormScoreRanges(c); }} placeholder={t.selfChecks.scoreRangeLabel} className="flex-1 rounded-2xl text-xs" />
+                      <Input value={sr.description ?? ''} onChange={e => { const c = [...formScoreRanges]; c[i] = { ...c[i], description: e.target.value }; setFormScoreRanges(c); }} placeholder={t.selfChecks.scoreRangeDescription} className="flex-1 rounded-2xl text-xs" />
+                      <Button type="button" variant="ghost" size="icon" className="h-7 w-7" onClick={() => setFormScoreRanges(r => r.filter((_, j) => j !== i))}><FTrash className="h-3 w-3" /></Button>
+                    </div>
+                  ))}
+                  <Button type="button" variant="outline" size="sm" className="rounded-2xl text-xs" onClick={() => setFormScoreRanges(r => [...r, { min: 0, max: 0, label: '', description: '' }])}><FPlus className="h-3 w-3 mr-1" /> {t.selfChecks.addScoreRange}</Button>
+                </div>
+              </>
+            )}
+          </div>
           <div className="space-y-3">
             <Label className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">{t.selfChecks.questions}</Label>
             {formQuestions.map((nq, i) => (
@@ -211,9 +249,23 @@ const SelfChecks = () => {
                 {nq.type === 'multiple_choice' && (
                   <Input value={nq.options} onChange={e => { const c = [...formQuestions]; c[i].options = e.target.value; setFormQuestions(c); }} placeholder="Options (comma-separated)" className="text-xs rounded-2xl" />
                 )}
+                {/* Weighted answer scores */}
+                {formScoringEnabled && formScoringMode === 'weighted' && nq.type !== 'text' && (
+                  <div className="space-y-1 pt-1 border-t border-border/50">
+                    <Label className="text-[10px] uppercase tracking-widest text-muted-foreground">{t.selfChecks.answerScores}</Label>
+                    <div className="flex flex-wrap gap-2">
+                      {(nq.type === 'scale' ? ['1','2','3','4','5'] : nq.type === 'yes_no' ? ['yes','no'] : nq.options.split(',').map(s => s.trim()).filter(Boolean)).map(opt => (
+                        <div key={opt} className="flex items-center gap-1">
+                          <span className="text-[11px] text-muted-foreground">{opt}:</span>
+                          <Input type="number" value={nq.answerScores[opt] ?? ''} onChange={e => { const c = [...formQuestions]; c[i].answerScores = { ...c[i].answerScores, [opt]: Number(e.target.value) }; setFormQuestions(c); }} className="w-14 h-7 rounded-xl text-xs" />
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
             ))}
-            <Button type="button" variant="outline" size="sm" className="rounded-2xl" onClick={() => setFormQuestions(q => [...q, { text: '', type: 'text', options: '' }])}>{t.selfChecks.addQuestion}</Button>
+            <Button type="button" variant="outline" size="sm" className="rounded-2xl" onClick={() => setFormQuestions(q => [...q, { text: '', type: 'text', options: '', answerScores: {} }])}>{t.selfChecks.addQuestion}</Button>
           </div>
           <div className="flex gap-2">
             <Button size="sm" className="rounded-2xl" onClick={handleSave} disabled={saving}>

@@ -8,14 +8,25 @@ import { Textarea } from '@/components/ui/textarea';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { toast } from 'sonner';
 import { FClipboardCheck, FArrowRight, FClock } from '@/components/icons/FreudIcons';
-import { formatDistanceToNow, differenceInDays, differenceInHours } from 'date-fns';
+import { formatDistanceToNow, differenceInHours } from 'date-fns';
 import { getDateLocale } from '@/lib/date-locale';
+import ScoreResults from './ScoreResults';
 
 interface Questionnaire {
   id: string;
   title: string;
   description: string | null;
   repeat_interval: string | null;
+  scoring_enabled: boolean;
+  scoring_mode: string;
+  score_ranges: ScoreRange[] | null;
+}
+
+interface ScoreRange {
+  min: number;
+  max: number;
+  label: string;
+  description?: string;
 }
 
 interface Question {
@@ -24,6 +35,7 @@ interface Question {
   question_type: string;
   options: string[] | null;
   sort_order: number;
+  answer_scores: Record<string, number> | null;
 }
 
 interface LastResponse {
@@ -48,6 +60,12 @@ const QuestionnaireFiller = ({ onCompleted }: { onCompleted?: () => void }) => {
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [scoreResult, setScoreResult] = useState<{
+    totalScore: number;
+    maxPossibleScore: number;
+    questionScores: { questionText: string; answer: string; score: number }[];
+    scoreRanges: ScoreRange[];
+  } | null>(null);
 
   const dateLocale = getDateLocale(lang);
 
@@ -56,7 +74,7 @@ const QuestionnaireFiller = ({ onCompleted }: { onCompleted?: () => void }) => {
       const [qRes, rRes] = await Promise.all([
         supabase
           .from('questionnaires')
-          .select('id, title, description, repeat_interval')
+          .select('id, title, description, repeat_interval, scoring_enabled, scoring_mode, score_ranges')
           .eq('is_published', true)
           .order('created_at', { ascending: false }),
         user
@@ -67,7 +85,7 @@ const QuestionnaireFiller = ({ onCompleted }: { onCompleted?: () => void }) => {
               .order('completed_at', { ascending: false })
           : Promise.resolve({ data: [] }),
       ]);
-      setQuestionnaires((qRes.data ?? []) as Questionnaire[]);
+      setQuestionnaires((qRes.data ?? []) as unknown as Questionnaire[]);
       // Keep only the latest response per questionnaire
       const seen = new Set<string>();
       const latest: LastResponse[] = [];
@@ -112,22 +130,76 @@ const QuestionnaireFiller = ({ onCompleted }: { onCompleted?: () => void }) => {
   const loadQuestions = async (qId: string) => {
     setSelectedQ(qId);
     setAnswers({});
+    setScoreResult(null);
     const { data } = await supabase
       .from('questionnaire_questions')
-      .select('id, question_text, question_type, options, sort_order')
+      .select('id, question_text, question_type, options, sort_order, answer_scores')
       .eq('questionnaire_id', qId)
       .order('sort_order');
     setQuestions(
-      (data ?? []).map((q) => ({ ...q, options: q.options as string[] | null }))
+      (data ?? []).map((q) => ({ ...q, options: q.options as string[] | null, answer_scores: q.answer_scores as Record<string, number> | null }))
     );
+  };
+
+  const calculateScore = (questionnaire: Questionnaire): { totalScore: number; maxPossibleScore: number; questionScores: { questionText: string; answer: string; score: number }[] } => {
+    const qScores: { questionText: string; answer: string; score: number }[] = [];
+    let total = 0;
+    let maxTotal = 0;
+
+    for (const q of questions) {
+      const answer = answers[q.id];
+      if (!answer || q.question_type === 'text') continue;
+
+      let score = 0;
+      let maxScore = 0;
+
+      if (questionnaire.scoring_mode === 'weighted' && q.answer_scores) {
+        score = q.answer_scores[answer] ?? 0;
+        maxScore = Math.max(...Object.values(q.answer_scores), 0);
+      } else {
+        // Sum mode: scale value directly, yes=1/no=0
+        if (q.question_type === 'scale') {
+          score = Number(answer) || 0;
+          maxScore = 5;
+        } else if (q.question_type === 'yes_no') {
+          score = answer === 'yes' ? 1 : 0;
+          maxScore = 1;
+        } else if (q.question_type === 'multiple_choice') {
+          // In sum mode, multiple choice gets index+1
+          const idx = (q.options ?? []).indexOf(answer);
+          score = idx + 1;
+          maxScore = (q.options ?? []).length;
+        }
+      }
+
+      total += score;
+      maxTotal += maxScore;
+      qScores.push({ questionText: q.question_text, answer, score });
+    }
+
+    return { totalScore: total, maxPossibleScore: maxTotal, questionScores: qScores };
   };
 
   const handleSubmit = async () => {
     if (!user || !selectedQ) return;
     setSubmitting(true);
+
+    const questionnaire = questionnaires.find(q => q.id === selectedQ);
+
+    // Calculate score if scoring is enabled
+    let totalScore: number | null = null;
+    if (questionnaire?.scoring_enabled) {
+      const result = calculateScore(questionnaire);
+      totalScore = result.totalScore;
+      setScoreResult({
+        ...result,
+        scoreRanges: (questionnaire.score_ranges as ScoreRange[]) ?? [],
+      });
+    }
+
     const { data: resp, error } = await supabase
       .from('questionnaire_responses')
-      .insert({ user_id: user.id, questionnaire_id: selectedQ })
+      .insert({ user_id: user.id, questionnaire_id: selectedQ, total_score: totalScore } as any)
       .select('id')
       .single();
     if (error || !resp) {
@@ -143,7 +215,7 @@ const QuestionnaireFiller = ({ onCompleted }: { onCompleted?: () => void }) => {
     if (answerRows.length) await supabase.from('questionnaire_answers').insert(answerRows);
 
     // Auto-create journal entry from self-check
-    const qTitle = questionnaires.find((q) => q.id === selectedQ)?.title ?? '';
+    const qTitle = questionnaire?.title ?? '';
     const summaryLines = questions
       .map((q, i) => `${i + 1}. ${q.question_text}: ${answers[q.id] ?? '-'}`)
       .join('\n');
@@ -154,22 +226,29 @@ const QuestionnaireFiller = ({ onCompleted }: { onCompleted?: () => void }) => {
       ? Math.round(scaleAnswers.reduce((a, b) => a + b, 0) / scaleAnswers.length)
       : null;
 
+    const journalDesc = totalScore != null
+      ? `${summaryLines}\n\n${t.selfChecks.totalScore}: ${totalScore}`
+      : summaryLines;
+
     await supabase.from('journal_entries').insert({
       user_id: user.id,
       title: `${t.selfChecks.selfCheckJournalTitle}: ${qTitle}`,
       entry_date: new Date().toISOString().split('T')[0],
-      event_description: summaryLines,
+      event_description: journalDesc,
       impact_level: avgImpact,
     });
 
     toast.success(t.selfChecks.completed);
-    // Update local last responses
     setLastResponses((prev) => [
       { questionnaire_id: selectedQ, completed_at: new Date().toISOString() },
       ...prev.filter((r) => r.questionnaire_id !== selectedQ),
     ]);
-    setSelectedQ(null);
-    setAnswers({});
+
+    // If scoring enabled, keep showing results; otherwise reset
+    if (!questionnaire?.scoring_enabled) {
+      setSelectedQ(null);
+      setAnswers({});
+    }
     setSubmitting(false);
     onCompleted?.();
   };
@@ -243,6 +322,23 @@ const QuestionnaireFiller = ({ onCompleted }: { onCompleted?: () => void }) => {
 
   if (loading) return <p className="text-sm text-muted-foreground">{t.loading}</p>;
   if (questionnaires.length === 0) return <p className="text-sm text-muted-foreground">{t.selfChecks.noAvailable}</p>;
+
+  // Show score results after submission
+  if (selectedQ && scoreResult) {
+    return (
+      <ScoreResults
+        totalScore={scoreResult.totalScore}
+        maxPossibleScore={scoreResult.maxPossibleScore}
+        questionScores={scoreResult.questionScores}
+        scoreRanges={scoreResult.scoreRanges}
+        onClose={() => {
+          setSelectedQ(null);
+          setAnswers({});
+          setScoreResult(null);
+        }}
+      />
+    );
+  }
 
   // Filling a specific questionnaire
   if (selectedQ) {

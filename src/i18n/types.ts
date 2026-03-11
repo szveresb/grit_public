@@ -224,6 +224,23 @@ export interface Dictionary {
     nextAvailable: string;
     alreadyCompleted: string;
     selfCheckJournalTitle: string;
+    // Scoring
+    scoringEnabled: string;
+    scoringMode: string;
+    scoringModeSum: string;
+    scoringModeWeighted: string;
+    scoreRanges: string;
+    scoreRangeMin: string;
+    scoreRangeMax: string;
+    scoreRangeLabel: string;
+    scoreRangeDescription: string;
+    addScoreRange: string;
+    answerScores: string;
+    yourScore: string;
+    scoreBreakdown: string;
+    totalScore: string;
+    viewResults: string;
+    closeResults: string;
   };
 
   // Timeline
