@@ -287,6 +287,8 @@ The app uses a custom icon library (`src/components/icons/FreudIcons.tsx`) inspi
 | `/manage-users` | `ManageUsers` | Yes (admin) | |
 | `/analyst-export` | `AnalystExport` | Yes (analyst) | |
 | `/journal` | redirect → `/check-in` | — | Legacy route |
+| `/surveys` | `Surveys` | Yes | Tabbed view: questionnaire filler + score history with trend charts |
+| `/manage-self-checks` | `SelfChecks` | Yes (editor+) | Questionnaire management with scoring configuration |
 | `/self-checks` | redirect → `/check-in` | — | Legacy route |
 
 ### Key Components
