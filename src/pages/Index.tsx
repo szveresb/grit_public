@@ -29,7 +29,7 @@ interface LibraryArticle {
 
 const Index = () => {
   const { user } = useAuth();
-  const { t, localePath } = useLanguage();
+  const { t, lang, localePath } = useLanguage();
   const navigate = useNavigate();
   const [articles, setArticles] = useState<LibraryArticle[]>([]);
   const [articlesLoading, setArticlesLoading] = useState(true);
