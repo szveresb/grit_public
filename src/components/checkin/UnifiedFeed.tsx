@@ -16,7 +16,7 @@ interface FeedItem {
   meta?: Record<string, string>;
 }
 
-const UnifiedFeed = ({ refreshKey }: { refreshKey?: number }) => {
+const UnifiedFeed = ({ refreshKey, onItemsLoaded }: { refreshKey?: number; onItemsLoaded?: (items: FeedItem[]) => void }) => {
   const { user } = useAuth();
   const { t, lang } = useLanguage();
   const [items, setItems] = useState<FeedItem[]>([]);
