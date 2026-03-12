@@ -8,7 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
-import { FPlus, FSearch, FLoader, FTrendingUp } from '@/components/icons/FreudIcons';
+import { FPlus, FSearch, FLoader, FTrendingUp, FCalendar, FList } from '@/components/icons/FreudIcons';
 import { readSSEStream } from '@/lib/sse-stream';
 import type { JournalEntry, JournalFormData } from '@/types/journal';
 import { emptyForm } from '@/types/journal';

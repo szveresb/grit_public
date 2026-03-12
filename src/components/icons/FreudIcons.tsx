@@ -436,3 +436,27 @@ export const FShieldAlert = icon(
   </>,
   'FShieldAlert'
 );
+
+/** Calendar – calendar icon */
+export const FCalendar = icon(
+  <>
+    <rect x="3" y="4" width="18" height="18" rx="2" />
+    <path d="M16 2v4" />
+    <path d="M8 2v4" />
+    <path d="M3 10h18" />
+  </>,
+  'FCalendar'
+);
+
+/** List – list icon */
+export const FList = icon(
+  <>
+    <path d="M8 6h13" />
+    <path d="M8 12h13" />
+    <path d="M8 18h13" />
+    <circle cx="3.5" cy="6" r="1" fill="currentColor" stroke="none" />
+    <circle cx="3.5" cy="12" r="1" fill="currentColor" stroke="none" />
+    <circle cx="3.5" cy="18" r="1" fill="currentColor" stroke="none" />
+  </>,
+  'FList'
+);
