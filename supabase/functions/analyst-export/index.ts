@@ -115,7 +115,7 @@ Deno.serve(async (req) => {
     const exportPayload = {
       disclaimer,
       exported_at: now,
-      active_user_count: activeUserCount,
+      active_user_count: Math.floor((activeUserCount ?? 0) / 10) * 10,
       journal_aggregates: journalAgg.data ?? [],
       questionnaire_aggregates: questionnaireAgg.data ?? [],
       role_distribution: roleDist.data ?? [],
