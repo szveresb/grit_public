@@ -8,6 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { toast } from 'sonner';
+import { friendlyDbError } from '@/lib/db-error';
 import { FArrowLeft, FHeart, FMessageCircle, FShield, FCheck } from '@/components/icons/FreudIcons';
 
 interface Category {
