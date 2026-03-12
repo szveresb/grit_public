@@ -3,6 +3,8 @@ import DashboardLayout from '@/components/DashboardLayout';
 import { useLanguage } from '@/hooks/useLanguage';
 import QuickPulse from '@/components/checkin/QuickPulse';
 import UnifiedFeed from '@/components/checkin/UnifiedFeed';
+import FeedCalendar from '@/components/checkin/FeedCalendar';
+import type { CalendarFeedItem } from '@/components/checkin/FeedCalendar';
 import ObservationStepper from '@/components/observations/ObservationStepper';
 import JournalForm from '@/components/journal/JournalForm';
 import type { ObservationTreeResult } from '@/components/journal/ObservationTree';
@@ -12,8 +14,8 @@ import { toast } from 'sonner';
 import { friendlyDbError } from '@/lib/db-error';
 import { format } from 'date-fns';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import { FChevronDown } from '@/components/icons/FreudIcons';
-// QuestionnaireFiller moved to dedicated /surveys page
+import { FChevronDown, FCalendar, FList } from '@/components/icons/FreudIcons';
+import { Button } from '@/components/ui/button';
 import type { JournalFormData } from '@/types/journal';
 import { emptyForm } from '@/types/journal';
 
@@ -25,8 +27,17 @@ const CheckIn = () => {
   const [form, setForm] = useState<JournalFormData>(emptyForm);
   const [saving, setSaving] = useState(false);
   const [observationOpen, setObservationOpen] = useState(false);
+  const [viewMode, setViewMode] = useState<'list' | 'calendar'>('list');
+  const [calendarMonth, setCalendarMonth] = useState(new Date());
+  const [calendarSelectedDate, setCalendarSelectedDate] = useState<Date | null>(null);
+  const [calendarItems, setCalendarItems] = useState<CalendarFeedItem[]>([]);
 
   const refresh = useCallback(() => setRefreshKey(k => k + 1), []);
+
+  // Callback from UnifiedFeed to share items for calendar view
+  const handleItemsLoaded = useCallback((items: CalendarFeedItem[]) => {
+    setCalendarItems(items);
+  }, []);
 
   const openJournalForm = () => {
     setForm({ ...emptyForm, entry_date: format(new Date(), 'yyyy-MM-dd') });
@@ -54,13 +65,11 @@ const CheckIn = () => {
 
     if (error) { toast.error(friendlyDbError(error)); setSaving(false); return; }
 
-    // If an observation was selected via the guided tree, create linked observation_log
     if (observation && journalData) {
       const { error: obsError } = await supabase.from('observation_logs').insert({
         user_id: user.id,
         concept_id: observation.conceptId,
         intensity: observation.intensity,
-        
         journal_entry_id: journalData.id,
       } as any);
       if (obsError) { console.error('Observation link error:', obsError.message); }
@@ -113,12 +122,40 @@ const CheckIn = () => {
           </CollapsibleContent>
         </Collapsible>
 
-        {/* Unified feed */}
+        {/* Feed with calendar toggle */}
         <div className="bg-card/60 backdrop-blur border border-border rounded-3xl p-6">
-          <h2 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-4">
-            {t.checkIn.yourStoryTitle}
-          </h2>
-          <UnifiedFeed refreshKey={refreshKey} />
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+              {t.checkIn.yourStoryTitle}
+            </h2>
+            <div className="flex bg-muted rounded-2xl p-0.5">
+              <Button size="sm" variant={viewMode === 'list' ? 'default' : 'ghost'} className="rounded-xl px-2.5 h-7" onClick={() => setViewMode('list')}>
+                <FList className="h-3.5 w-3.5" />
+              </Button>
+              <Button size="sm" variant={viewMode === 'calendar' ? 'default' : 'ghost'} className="rounded-xl px-2.5 h-7" onClick={() => setViewMode('calendar')}>
+                <FCalendar className="h-3.5 w-3.5" />
+              </Button>
+            </div>
+          </div>
+
+          {viewMode === 'calendar' ? (
+            <FeedCalendar
+              items={calendarItems}
+              currentMonth={calendarMonth}
+              onMonthChange={setCalendarMonth}
+              selectedDate={calendarSelectedDate}
+              onSelectDate={setCalendarSelectedDate}
+            />
+          ) : (
+            <UnifiedFeed refreshKey={refreshKey} onItemsLoaded={handleItemsLoaded} />
+          )}
+
+          {/* Hidden feed to keep data flowing when in calendar mode */}
+          {viewMode === 'calendar' && (
+            <div className="hidden">
+              <UnifiedFeed refreshKey={refreshKey} onItemsLoaded={handleItemsLoaded} />
+            </div>
+          )}
         </div>
       </div>
     </DashboardLayout>
