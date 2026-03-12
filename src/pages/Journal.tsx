@@ -167,6 +167,14 @@ const Journal = () => {
             <p className="mt-1 text-sm text-muted-foreground leading-relaxed">{t.journal.subtitle}</p>
           </div>
           <div className="flex gap-2">
+            <div className="flex bg-muted rounded-2xl p-0.5">
+              <Button size="sm" variant={viewMode === 'list' ? 'default' : 'ghost'} className="rounded-xl px-2.5" onClick={() => setViewMode('list')}>
+                <FList className="h-4 w-4" />
+              </Button>
+              <Button size="sm" variant={viewMode === 'calendar' ? 'default' : 'ghost'} className="rounded-xl px-2.5" onClick={() => setViewMode('calendar')}>
+                <FCalendar className="h-4 w-4" />
+              </Button>
+            </div>
             {entries.length >= 2 && (
               <Button size="sm" variant="outline" className="rounded-2xl gap-1.5" onClick={handlePatternAnalysis} disabled={analyzingPatterns}>
                 {analyzingPatterns ? <FLoader className="h-4 w-4 animate-spin" /> : <FTrendingUp className="h-4 w-4" />}
