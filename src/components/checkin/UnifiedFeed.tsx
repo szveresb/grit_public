@@ -16,7 +16,7 @@ interface FeedItem {
   meta?: Record<string, string>;
 }
 
-const UnifiedFeed = ({ refreshKey }: { refreshKey?: number }) => {
+const UnifiedFeed = ({ refreshKey, onItemsLoaded }: { refreshKey?: number; onItemsLoaded?: (items: FeedItem[]) => void }) => {
   const { user } = useAuth();
   const { t, lang } = useLanguage();
   const [items, setItems] = useState<FeedItem[]>([]);
@@ -62,7 +62,9 @@ const UnifiedFeed = ({ refreshKey }: { refreshKey?: number }) => {
         id: `q-${r.id}`, type: 'questionnaire', title: r.questionnaires?.title ?? t.nav.selfChecks, date: r.completed_at.split('T')[0],
       }));
 
-      setItems([...journalItems, ...obsItems, ...qItems].sort((a, b) => b.date.localeCompare(a.date)));
+      const allItems = [...journalItems, ...obsItems, ...qItems].sort((a, b) => b.date.localeCompare(a.date));
+      setItems(allItems);
+      onItemsLoaded?.(allItems);
     };
     fetchAll();
   }, [user, refreshKey, lang]);
