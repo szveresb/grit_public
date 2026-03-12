@@ -100,7 +100,7 @@ const SelfChecks = () => {
 
   const togglePublished = async (q: Questionnaire) => {
     const { error } = await supabase.from('questionnaires').update({ is_published: !q.is_published }).eq('id', q.id);
-    if (error) { toast.error(error.message); return; }
+    if (error) { toast.error(friendlyDbError(error)); return; }
     toast.success(q.is_published ? 'Unpublished' : 'Published'); fetchQuestionnaires();
   };
 

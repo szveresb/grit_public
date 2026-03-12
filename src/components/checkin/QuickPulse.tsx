@@ -4,6 +4,7 @@ import { useLanguage } from '@/hooks/useLanguage';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
+import { friendlyDbError } from '@/lib/db-error';
 import {
   FMoodStruggling, FMoodUneasy, FMoodOkay, FMoodGood, FMoodStrong,
 } from '@/components/icons/FreudIcons';

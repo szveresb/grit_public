@@ -52,7 +52,7 @@ const CheckIn = () => {
       .select('id')
       .single();
 
-    if (error) { toast.error(error.message); setSaving(false); return; }
+    if (error) { toast.error(friendlyDbError(error)); setSaving(false); return; }
 
     // If an observation was selected via the guided tree, create linked observation_log
     if (observation && journalData) {

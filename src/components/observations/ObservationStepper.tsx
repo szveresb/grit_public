@@ -76,7 +76,7 @@ const ObservationStepper = ({ onLogged }: { onLogged?: () => void }) => {
       context_modifier: context || null,
       user_narrative: narrative || null,
     });
-    if (error) { toast.error(error.message); setSubmitting(false); return; }
+    if (error) { toast.error(friendlyDbError(error)); setSubmitting(false); return; }
     toast.success(t.observations.logged);
     setStep(0); setSelectedCategory(null); setSelectedConcept(null);
     setIntensity(3); setContext(''); setNarrative('');
