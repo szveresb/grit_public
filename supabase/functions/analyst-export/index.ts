@@ -77,11 +77,11 @@ Deno.serve(async (req) => {
       .from("profiles")
       .select("id", { count: "exact", head: true });
 
-    if ((activeUserCount ?? 0) < 10) {
+    if ((activeUserCount ?? 0) < 20) {
       return new Response(
         JSON.stringify({
           error: "Threshold not met",
-          message: `Anonymised data export requires at least 10 active users. Currently ${activeUserCount ?? 0} registered.`,
+          message: `Anonymised data export requires at least 20 active users. Threshold not yet met.`,
         }),
         { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
@@ -115,7 +115,7 @@ Deno.serve(async (req) => {
     const exportPayload = {
       disclaimer,
       exported_at: now,
-      active_user_count: activeUserCount,
+      active_user_count: Math.floor((activeUserCount ?? 0) / 10) * 10,
       journal_aggregates: journalAgg.data ?? [],
       questionnaire_aggregates: questionnaireAgg.data ?? [],
       role_distribution: roleDist.data ?? [],
@@ -126,7 +126,8 @@ Deno.serve(async (req) => {
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });
   } catch (err) {
-    return new Response(JSON.stringify({ error: "Internal server error", details: String(err) }), {
+    console.error("analyst-export error:", err);
+    return new Response(JSON.stringify({ error: "Internal server error" }), {
       status: 500,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
     });

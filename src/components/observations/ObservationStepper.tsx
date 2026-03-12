@@ -8,6 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { toast } from 'sonner';
+import { friendlyDbError } from '@/lib/db-error';
 import { FArrowLeft, FHeart, FMessageCircle, FShield, FCheck } from '@/components/icons/FreudIcons';
 
 interface Category {
@@ -75,7 +76,7 @@ const ObservationStepper = ({ onLogged }: { onLogged?: () => void }) => {
       context_modifier: context || null,
       user_narrative: narrative || null,
     });
-    if (error) { toast.error(error.message); setSubmitting(false); return; }
+    if (error) { toast.error(friendlyDbError(error)); setSubmitting(false); return; }
     toast.success(t.observations.logged);
     setStep(0); setSelectedCategory(null); setSelectedConcept(null);
     setIntensity(3); setContext(''); setNarrative('');

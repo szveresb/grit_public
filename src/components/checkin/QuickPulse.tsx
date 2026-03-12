@@ -4,6 +4,7 @@ import { useLanguage } from '@/hooks/useLanguage';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
+import { friendlyDbError } from '@/lib/db-error';
 import {
   FMoodStruggling, FMoodUneasy, FMoodOkay, FMoodGood, FMoodStrong,
 } from '@/components/icons/FreudIcons';
@@ -51,7 +52,7 @@ const QuickPulse = ({ onPulseSaved, onGoDeeper, compact = false }: QuickPulsePro
     });
 
     if (error) {
-      toast.error(error.message);
+      toast.error(friendlyDbError(error));
     } else {
       toast.success(t.checkIn.pulseSaved);
       setSaved(true);

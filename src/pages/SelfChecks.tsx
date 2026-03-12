@@ -12,6 +12,7 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
+import { friendlyDbError } from '@/lib/db-error';
 import { FPlus, FTrash, FPencil, FClose, FSave } from '@/components/icons/FreudIcons';
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
@@ -76,14 +77,14 @@ const SelfChecks = () => {
     setSaving(true);
     if (editingId) {
       const { error } = await supabase.from('questionnaires').update({ title: formTitle, description: formDesc || null, is_published: formPublished, repeat_interval: formRepeat || null, scoring_enabled: formScoringEnabled, scoring_mode: formScoringMode, score_ranges: formScoreRanges.length ? formScoreRanges : null } as any).eq('id', editingId);
-      if (error) { toast.error(error.message); setSaving(false); return; }
+      if (error) { toast.error(friendlyDbError(error)); setSaving(false); return; }
       await supabase.from('questionnaire_questions').delete().eq('questionnaire_id', editingId);
       const qRows = formQuestions.filter(nq => nq.text.trim()).map((nq, i) => ({ questionnaire_id: editingId, question_text: nq.text, question_type: nq.type, options: nq.type === 'multiple_choice' ? nq.options.split(',').map(s => s.trim()).filter(Boolean) : null, sort_order: i, answer_scores: formScoringEnabled && formScoringMode === 'weighted' ? nq.answerScores : null }));
       if (qRows.length) await supabase.from('questionnaire_questions').insert(qRows);
       toast.success(t.selfChecks.selfCheckUpdated);
     } else {
       const { data: q, error } = await supabase.from('questionnaires').insert({ title: formTitle, description: formDesc || null, created_by: user.id, is_published: formPublished, repeat_interval: formRepeat || null, scoring_enabled: formScoringEnabled, scoring_mode: formScoringMode, score_ranges: formScoreRanges.length ? formScoreRanges : null } as any).select('id').single();
-      if (error || !q) { toast.error(error?.message ?? 'Failed'); setSaving(false); return; }
+      if (error || !q) { toast.error(error ? friendlyDbError(error) : 'Failed'); setSaving(false); return; }
       const qRows = formQuestions.filter(nq => nq.text.trim()).map((nq, i) => ({ questionnaire_id: q.id, question_text: nq.text, question_type: nq.type, options: nq.type === 'multiple_choice' ? nq.options.split(',').map(s => s.trim()).filter(Boolean) : null, sort_order: i, answer_scores: formScoringEnabled && formScoringMode === 'weighted' ? nq.answerScores : null }));
       if (qRows.length) await supabase.from('questionnaire_questions').insert(qRows);
       toast.success(t.selfChecks.selfCheckCreated);
@@ -94,13 +95,13 @@ const SelfChecks = () => {
   const handleDelete = async (id: string) => {
     await supabase.from('questionnaire_questions').delete().eq('questionnaire_id', id);
     const { error } = await supabase.from('questionnaires').delete().eq('id', id);
-    if (error) { toast.error(error.message); return; }
+    if (error) { toast.error(friendlyDbError(error)); return; }
     toast.success(t.selfChecks.selfCheckDeleted); fetchQuestionnaires();
   };
 
   const togglePublished = async (q: Questionnaire) => {
     const { error } = await supabase.from('questionnaires').update({ is_published: !q.is_published }).eq('id', q.id);
-    if (error) { toast.error(error.message); return; }
+    if (error) { toast.error(friendlyDbError(error)); return; }
     toast.success(q.is_published ? 'Unpublished' : 'Published'); fetchQuestionnaires();
   };
 
