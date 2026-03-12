@@ -9,6 +9,7 @@ import type { ObservationTreeResult } from '@/components/journal/ObservationTree
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
+import { friendlyDbError } from '@/lib/db-error';
 import { format } from 'date-fns';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { FChevronDown } from '@/components/icons/FreudIcons';
