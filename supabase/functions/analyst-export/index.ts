@@ -81,7 +81,7 @@ Deno.serve(async (req) => {
       return new Response(
         JSON.stringify({
           error: "Threshold not met",
-          message: `Anonymised data export requires at least 10 active users. Currently ${activeUserCount ?? 0} registered.`,
+          message: `Anonymised data export requires at least 20 active users. Threshold not yet met.`,
         }),
         { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
       );
