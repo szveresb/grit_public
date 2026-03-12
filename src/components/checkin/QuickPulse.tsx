@@ -51,7 +51,7 @@ const QuickPulse = ({ onPulseSaved, onGoDeeper, compact = false }: QuickPulsePro
     });
 
     if (error) {
-      toast.error(error.message);
+      toast.error(friendlyDbError(error));
     } else {
       toast.success(t.checkIn.pulseSaved);
       setSaved(true);
