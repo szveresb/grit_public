@@ -15,6 +15,7 @@ import { emptyForm } from '@/types/journal';
 import JournalForm from '@/components/journal/JournalForm';
 import JournalEntryCard from '@/components/journal/JournalEntryCard';
 import PatternSummary from '@/components/journal/PatternSummary';
+import JournalCalendar from '@/components/journal/JournalCalendar';
 
 const REFLECT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/journal-reflect`;
 const PATTERNS_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/journal-patterns`;
