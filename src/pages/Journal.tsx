@@ -187,14 +187,16 @@ const Journal = () => {
           </div>
         </div>
 
-        <div className="flex flex-wrap gap-3">
-          <div className="relative flex-1 min-w-[200px]">
-            <FSearch className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input value={searchQuery} onChange={e => setSearchQuery(e.target.value)} placeholder={t.journal.searchEntries} className="pl-9 rounded-2xl" />
+        {viewMode === 'list' && (
+          <div className="flex flex-wrap gap-3">
+            <div className="relative flex-1 min-w-[200px]">
+              <FSearch className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input value={searchQuery} onChange={e => setSearchQuery(e.target.value)} placeholder={t.journal.searchEntries} className="pl-9 rounded-2xl" />
+            </div>
+            <Input type="date" value={dateFrom} onChange={e => setDateFrom(e.target.value)} className="w-36 rounded-2xl" />
+            <Input type="date" value={dateTo} onChange={e => setDateTo(e.target.value)} className="w-36 rounded-2xl" />
           </div>
-          <Input type="date" value={dateFrom} onChange={e => setDateFrom(e.target.value)} className="w-36 rounded-2xl" />
-          <Input type="date" value={dateTo} onChange={e => setDateTo(e.target.value)} className="w-36 rounded-2xl" />
-        </div>
+        )}
 
         <PatternSummary summary={patternSummary} isAnalyzing={analyzingPatterns} onDismiss={() => setPatternSummary('')} />
 
@@ -202,25 +204,35 @@ const Journal = () => {
           <JournalForm form={form} onChange={setForm} onSubmit={handleSubmit} onClose={() => setShowForm(false)} saving={saving} isEditing={!!editingId} />
         )}
 
-        <div className="space-y-3">
-          {filteredEntries.length === 0 ? (
-            <div className="bg-card/60 backdrop-blur border border-border rounded-3xl p-6">
-              <p className="text-sm text-muted-foreground">{entries.length === 0 ? t.journal.noEntries : t.journal.noMatch}</p>
-            </div>
-          ) : filteredEntries.map(entry => (
-            <JournalEntryCard
-              key={entry.id} entry={entry}
-              isExpanded={expandedId === entry.id}
-              onToggleExpand={() => setExpandedId(expandedId === entry.id ? null : entry.id)}
-              onEdit={() => openEdit(entry)} onDelete={() => handleDelete(entry.id)}
-              streamedReflection={reflections[entry.id]} isReflecting={reflectingId === entry.id}
-              reflectDisabled={reflectingId !== null} onReflect={() => handleReflect(entry)}
-              onSaveReflection={() => saveReflection(entry.id)}
-              onDismissReflection={() => setReflections(prev => { const n = { ...prev }; delete n[entry.id]; return n; })}
-              onClearSavedReflection={() => clearReflection(entry.id)}
-            />
-          ))}
-        </div>
+        {viewMode === 'calendar' ? (
+          <JournalCalendar
+            entries={entries}
+            currentMonth={calendarMonth}
+            onMonthChange={setCalendarMonth}
+            selectedDate={calendarSelectedDate}
+            onSelectDate={setCalendarSelectedDate}
+          />
+        ) : (
+          <div className="space-y-3">
+            {filteredEntries.length === 0 ? (
+              <div className="bg-card/60 backdrop-blur border border-border rounded-3xl p-6">
+                <p className="text-sm text-muted-foreground">{entries.length === 0 ? t.journal.noEntries : t.journal.noMatch}</p>
+              </div>
+            ) : filteredEntries.map(entry => (
+              <JournalEntryCard
+                key={entry.id} entry={entry}
+                isExpanded={expandedId === entry.id}
+                onToggleExpand={() => setExpandedId(expandedId === entry.id ? null : entry.id)}
+                onEdit={() => openEdit(entry)} onDelete={() => handleDelete(entry.id)}
+                streamedReflection={reflections[entry.id]} isReflecting={reflectingId === entry.id}
+                reflectDisabled={reflectingId !== null} onReflect={() => handleReflect(entry)}
+                onSaveReflection={() => saveReflection(entry.id)}
+                onDismissReflection={() => setReflections(prev => { const n = { ...prev }; delete n[entry.id]; return n; })}
+                onClearSavedReflection={() => clearReflection(entry.id)}
+              />
+            ))}
+          </div>
+        )}
       </div>
     </DashboardLayout>
   );
