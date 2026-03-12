@@ -12,6 +12,7 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
+import { friendlyDbError } from '@/lib/db-error';
 import { FPlus, FTrash, FPencil, FClose, FSave } from '@/components/icons/FreudIcons';
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
