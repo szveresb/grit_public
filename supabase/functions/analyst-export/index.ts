@@ -77,7 +77,7 @@ Deno.serve(async (req) => {
       .from("profiles")
       .select("id", { count: "exact", head: true });
 
-    if ((activeUserCount ?? 0) < 10) {
+    if ((activeUserCount ?? 0) < 20) {
       return new Response(
         JSON.stringify({
           error: "Threshold not met",
