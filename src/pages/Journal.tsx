@@ -8,13 +8,14 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
-import { FPlus, FSearch, FLoader, FTrendingUp } from '@/components/icons/FreudIcons';
+import { FPlus, FSearch, FLoader, FTrendingUp, FCalendar, FList } from '@/components/icons/FreudIcons';
 import { readSSEStream } from '@/lib/sse-stream';
 import type { JournalEntry, JournalFormData } from '@/types/journal';
 import { emptyForm } from '@/types/journal';
 import JournalForm from '@/components/journal/JournalForm';
 import JournalEntryCard from '@/components/journal/JournalEntryCard';
 import PatternSummary from '@/components/journal/PatternSummary';
+import JournalCalendar from '@/components/journal/JournalCalendar';
 
 const REFLECT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/journal-reflect`;
 const PATTERNS_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/journal-patterns`;
@@ -35,6 +36,9 @@ const Journal = () => {
   const [reflectingId, setReflectingId] = useState<string | null>(null);
   const [patternSummary, setPatternSummary] = useState('');
   const [analyzingPatterns, setAnalyzingPatterns] = useState(false);
+  const [viewMode, setViewMode] = useState<'list' | 'calendar'>('list');
+  const [calendarMonth, setCalendarMonth] = useState(new Date());
+  const [calendarSelectedDate, setCalendarSelectedDate] = useState<Date | null>(null);
 
   const fetchEntries = useCallback(async () => {
     if (!user) return;
@@ -163,6 +167,14 @@ const Journal = () => {
             <p className="mt-1 text-sm text-muted-foreground leading-relaxed">{t.journal.subtitle}</p>
           </div>
           <div className="flex gap-2">
+            <div className="flex bg-muted rounded-2xl p-0.5">
+              <Button size="sm" variant={viewMode === 'list' ? 'default' : 'ghost'} className="rounded-xl px-2.5" onClick={() => setViewMode('list')}>
+                <FList className="h-4 w-4" />
+              </Button>
+              <Button size="sm" variant={viewMode === 'calendar' ? 'default' : 'ghost'} className="rounded-xl px-2.5" onClick={() => setViewMode('calendar')}>
+                <FCalendar className="h-4 w-4" />
+              </Button>
+            </div>
             {entries.length >= 2 && (
               <Button size="sm" variant="outline" className="rounded-2xl gap-1.5" onClick={handlePatternAnalysis} disabled={analyzingPatterns}>
                 {analyzingPatterns ? <FLoader className="h-4 w-4 animate-spin" /> : <FTrendingUp className="h-4 w-4" />}
@@ -175,14 +187,16 @@ const Journal = () => {
           </div>
         </div>
 
-        <div className="flex flex-wrap gap-3">
-          <div className="relative flex-1 min-w-[200px]">
-            <FSearch className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-            <Input value={searchQuery} onChange={e => setSearchQuery(e.target.value)} placeholder={t.journal.searchEntries} className="pl-9 rounded-2xl" />
+        {viewMode === 'list' && (
+          <div className="flex flex-wrap gap-3">
+            <div className="relative flex-1 min-w-[200px]">
+              <FSearch className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input value={searchQuery} onChange={e => setSearchQuery(e.target.value)} placeholder={t.journal.searchEntries} className="pl-9 rounded-2xl" />
+            </div>
+            <Input type="date" value={dateFrom} onChange={e => setDateFrom(e.target.value)} className="w-36 rounded-2xl" />
+            <Input type="date" value={dateTo} onChange={e => setDateTo(e.target.value)} className="w-36 rounded-2xl" />
           </div>
-          <Input type="date" value={dateFrom} onChange={e => setDateFrom(e.target.value)} className="w-36 rounded-2xl" />
-          <Input type="date" value={dateTo} onChange={e => setDateTo(e.target.value)} className="w-36 rounded-2xl" />
-        </div>
+        )}
 
         <PatternSummary summary={patternSummary} isAnalyzing={analyzingPatterns} onDismiss={() => setPatternSummary('')} />
 
@@ -190,25 +204,35 @@ const Journal = () => {
           <JournalForm form={form} onChange={setForm} onSubmit={handleSubmit} onClose={() => setShowForm(false)} saving={saving} isEditing={!!editingId} />
         )}
 
-        <div className="space-y-3">
-          {filteredEntries.length === 0 ? (
-            <div className="bg-card/60 backdrop-blur border border-border rounded-3xl p-6">
-              <p className="text-sm text-muted-foreground">{entries.length === 0 ? t.journal.noEntries : t.journal.noMatch}</p>
-            </div>
-          ) : filteredEntries.map(entry => (
-            <JournalEntryCard
-              key={entry.id} entry={entry}
-              isExpanded={expandedId === entry.id}
-              onToggleExpand={() => setExpandedId(expandedId === entry.id ? null : entry.id)}
-              onEdit={() => openEdit(entry)} onDelete={() => handleDelete(entry.id)}
-              streamedReflection={reflections[entry.id]} isReflecting={reflectingId === entry.id}
-              reflectDisabled={reflectingId !== null} onReflect={() => handleReflect(entry)}
-              onSaveReflection={() => saveReflection(entry.id)}
-              onDismissReflection={() => setReflections(prev => { const n = { ...prev }; delete n[entry.id]; return n; })}
-              onClearSavedReflection={() => clearReflection(entry.id)}
-            />
-          ))}
-        </div>
+        {viewMode === 'calendar' ? (
+          <JournalCalendar
+            entries={entries}
+            currentMonth={calendarMonth}
+            onMonthChange={setCalendarMonth}
+            selectedDate={calendarSelectedDate}
+            onSelectDate={setCalendarSelectedDate}
+          />
+        ) : (
+          <div className="space-y-3">
+            {filteredEntries.length === 0 ? (
+              <div className="bg-card/60 backdrop-blur border border-border rounded-3xl p-6">
+                <p className="text-sm text-muted-foreground">{entries.length === 0 ? t.journal.noEntries : t.journal.noMatch}</p>
+              </div>
+            ) : filteredEntries.map(entry => (
+              <JournalEntryCard
+                key={entry.id} entry={entry}
+                isExpanded={expandedId === entry.id}
+                onToggleExpand={() => setExpandedId(expandedId === entry.id ? null : entry.id)}
+                onEdit={() => openEdit(entry)} onDelete={() => handleDelete(entry.id)}
+                streamedReflection={reflections[entry.id]} isReflecting={reflectingId === entry.id}
+                reflectDisabled={reflectingId !== null} onReflect={() => handleReflect(entry)}
+                onSaveReflection={() => saveReflection(entry.id)}
+                onDismissReflection={() => setReflections(prev => { const n = { ...prev }; delete n[entry.id]; return n; })}
+                onClearSavedReflection={() => clearReflection(entry.id)}
+              />
+            ))}
+          </div>
+        )}
       </div>
     </DashboardLayout>
   );
