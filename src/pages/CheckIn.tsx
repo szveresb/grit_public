@@ -146,16 +146,11 @@ const CheckIn = () => {
               selectedDate={calendarSelectedDate}
               onSelectDate={setCalendarSelectedDate}
             />
-          ) : (
-            <UnifiedFeed refreshKey={refreshKey} onItemsLoaded={handleItemsLoaded} />
-          )}
+          ) : null}
 
-          {/* Hidden feed to keep data flowing when in calendar mode */}
-          {viewMode === 'calendar' && (
-            <div className="hidden">
-              <UnifiedFeed refreshKey={refreshKey} onItemsLoaded={handleItemsLoaded} />
-            </div>
-          )}
+          <div className={viewMode === 'calendar' ? 'hidden' : ''}>
+            <UnifiedFeed refreshKey={refreshKey} onItemsLoaded={handleItemsLoaded} />
+          </div>
         </div>
       </div>
     </DashboardLayout>
