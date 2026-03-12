@@ -36,6 +36,9 @@ const Journal = () => {
   const [reflectingId, setReflectingId] = useState<string | null>(null);
   const [patternSummary, setPatternSummary] = useState('');
   const [analyzingPatterns, setAnalyzingPatterns] = useState(false);
+  const [viewMode, setViewMode] = useState<'list' | 'calendar'>('list');
+  const [calendarMonth, setCalendarMonth] = useState(new Date());
+  const [calendarSelectedDate, setCalendarSelectedDate] = useState<Date | null>(null);
 
   const fetchEntries = useCallback(async () => {
     if (!user) return;
