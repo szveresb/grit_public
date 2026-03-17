@@ -95,7 +95,11 @@ const HorizontalTimeline = ({ items, lang, t }: Props) => {
   // Find the selected item for detail card
   const selectedItem = selectedId ? items.find(i => i.id === selectedId) : null;
 
-  const trackWidth = Math.max(groupedLTR.length * DOT_GAP, 400);
+  // Only force a min-width if there are many groups; otherwise let flex fill the card
+  const needsScroll = groupedLTR.length > 12;
+  const trackStyle = needsScroll
+    ? { width: `${groupedLTR.length * DOT_GAP * scale}px`, minHeight: 80 }
+    : { width: '100%', minHeight: 80 };
 
   return (
     <div className="space-y-3">
