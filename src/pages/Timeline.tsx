@@ -163,17 +163,14 @@ const Timeline = () => {
           </div>
         )}
 
-        <div className="bg-card/60 backdrop-blur border border-border rounded-3xl p-5 space-y-2">
-          <h2 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-3">{t.timeline.allActivity}</h2>
+        {/* Linear timeline grouped by date */}
+        <div className="bg-card/60 backdrop-blur border border-border rounded-3xl p-5">
+          <h2 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-4">{t.timeline.allActivity}</h2>
           {items.length === 0 ? (
             <p className="text-sm text-muted-foreground">{t.timeline.noActivity}</p>
-          ) : items.map(item => (
-            <div key={item.id} className="flex items-center gap-3 py-2.5 border-b border-border/50 last:border-0">
-              {item.type === 'journal' ? <FBookOpen className="h-3.5 w-3.5 text-primary" /> : item.type === 'observation' ? <FEye className="h-3.5 w-3.5 text-accent-foreground/60" /> : <FClipboardCheck className="h-3.5 w-3.5 text-muted-foreground" />}
-              <span className="text-sm flex-1">{item.title}</span>
-              <span className="text-xs text-muted-foreground">{format(parseISO(item.date), 'MMM d', { locale: getDateLocale(lang) })}</span>
-            </div>
-          ))}
+          ) : (
+            <LinearTimeline items={items} lang={lang} t={t} />
+          )}
         </div>
       </div>
     </DashboardLayout>
