@@ -256,10 +256,14 @@ const QuestionnaireFiller = ({ onCompleted }: { onCompleted?: () => void }) => {
   const renderInput = (q: Question) => {
     const val = answers[q.id] ?? '';
     switch (q.question_type) {
-      case 'scale':
+      case 'scale': {
+        const opts = q.options as string[] | null;
+        const sMin = opts && opts.length >= 2 ? Number(opts[0]) || 1 : 1;
+        const sMax = opts && opts.length >= 2 ? Number(opts[1]) || 5 : 5;
+        const points = Array.from({ length: sMax - sMin + 1 }, (_, i) => sMin + i);
         return (
-          <div className="flex gap-2">
-            {[1, 2, 3, 4, 5].map((n) => (
+          <div className="flex gap-2 flex-wrap">
+            {points.map((n) => (
               <button
                 key={n}
                 type="button"
@@ -275,6 +279,7 @@ const QuestionnaireFiller = ({ onCompleted }: { onCompleted?: () => void }) => {
             ))}
           </div>
         );
+      }
       case 'yes_no':
         return (
           <RadioGroup value={val} onValueChange={(v) => setAnswers((a) => ({ ...a, [q.id]: v }))}>
