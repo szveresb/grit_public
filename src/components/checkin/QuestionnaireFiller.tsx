@@ -36,6 +36,7 @@ interface Question {
   options: string[] | null;
   sort_order: number;
   answer_scores: Record<string, number> | null;
+  options_localized: Record<string, string> | null;
 }
 
 interface LastResponse {
