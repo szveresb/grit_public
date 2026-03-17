@@ -114,8 +114,8 @@ export interface Dictionary {
     noActivity: string;
     logObservation: string;
     logObservationDesc: string;
-    completeSelfCheck: string;
-    completeSelfCheckDesc: string;
+    completeJournal: string;
+    completeJournalDesc: string;
     viewHistory: string;
     viewHistoryDesc: string;
     quickPulse: string;
