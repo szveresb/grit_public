@@ -37,7 +37,6 @@ const CheckIn = () => {
   const [entryModalDate, setEntryModalDate] = useState(format(new Date(), 'yyyy-MM-dd'));
   const [entryModalPrefill, setEntryModalPrefill] = useState<EntryModalPrefill | null>(null);
   const [observationOpen, setObservationOpen] = useState(false);
-  const [observationOpen, setObservationOpen] = useState(false);
   const [calendarMonth, setCalendarMonth] = useState(new Date());
   const [calendarSelectedDate, setCalendarSelectedDate] = useState<Date | null>(null);
   const [calendarItems, setCalendarItems] = useState<CalendarFeedItem[]>([]);
