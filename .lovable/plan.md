@@ -1,51 +1,54 @@
 
 
-# Create Separate Library Page
+## Problem
 
-## What Changes
+QuickPulse mood taps and full journal entries (created via EntryModal) both write to `journal_entries.impact_level`. The "Hangulati trend" chart reads ALL `journal_entries` with `impact_level != null`, mixing observation-based entries with quick mood pulses. These are two different data streams that must stay separate.
 
-1. **New `/library` page** -- A public page showing all published library articles with search/filter, reusing the same card design from the landing page.
+## Solution
 
-2. **Landing page updates:**
-   - Library section limited to **max 6 articles** (newest first)
-   - Each card links to the article URL (external) or is a static card if no URL
-   - Add a "View All" link to `/library` page below the 6 cards
-   - **Remove** the entire "Research Summaries" section
-   - Update nav links from `#library` anchor to `/library` route
+Create a dedicated `mood_pulses` table for QuickPulse data. The MoodTrendChart reads exclusively from this table. Journal entries keep their `impact_level` for their own purposes but no longer feed the mood trend.
 
-3. **Navigation updates** -- Both desktop and mobile nav: "Konyvtar" links to `/library` page, remove "Kutatasi osszefoglalok" link entirely.
+### 1. New table: `mood_pulses`
 
-4. **Routing** -- Add `/library` and `/en/library` routes in `App.tsx` (public, no auth required).
+```sql
+create table public.mood_pulses (
+  id uuid primary key default gen_random_uuid(),
+  user_id uuid references auth.users(id) on delete cascade not null,
+  level integer not null check (level between 1 and 5),
+  label text not null,
+  entry_date date not null default current_date,
+  created_at timestamptz default now()
+);
 
----
+alter table public.mood_pulses enable row level security;
 
-## Technical Details
+create policy "Users manage own pulses"
+  on public.mood_pulses for all to authenticated
+  using (user_id = auth.uid())
+  with check (user_id = auth.uid());
+```
 
-### New file: `src/pages/Library.tsx`
-- Public page (no ProtectedRoute)
-- Fetches all published `library_articles` ordered by `created_at desc`
-- Search input + category filter (reuse pattern from ManageLibrary)
-- Same card design as landing page
-- Uses landing page layout (bamboo bg, header, footer) or a simpler standalone layout
+### 2. QuickPulse component (`QuickPulse.tsx`)
 
-### Modified files:
+- When `onMoodSelected` callback exists (CheckIn page flow): call the callback as today, **and** insert into `mood_pulses` (level, label, entry_date = today).
+- Standalone fallback path: insert into `mood_pulses` instead of `journal_entries`.
+- QuickPulse no longer writes to `journal_entries` at all.
 
-**`src/App.tsx`** -- Add routes:
-- `/library` and `/en/library` pointing to new Library component
+### 3. CheckIn.tsx data fetch
 
-**`src/pages/Index.tsx`**:
-- Limit articles query to `.limit(6)` 
-- Remove Research Summaries section (lines 180-207)
-- Change nav links from `#library` / `#research` to `localePath('/library')`
-- Remove `#research` nav item from both desktop and mobile menus
-- Add "View all" link below the 6-card grid pointing to `/library`
-- Update hero "Browse Library" button to link to `/library`
+- Add a separate query: `supabase.from('mood_pulses').select('level, entry_date').eq('user_id', user.id)`
+- Feed `moodData` from `mood_pulses` rows (not journal entries).
+- Remove the current `journalData.filter(j => j.impact_level != null)` → `setMoodData(...)` line.
 
-**`src/i18n/hu.ts`** and **`src/i18n/en.ts`**:
-- Add `landing.viewAll` key ("Osszes megtekintese" / "View all")
-- Keep existing keys, no removals needed
+### 4. MoodTrendChart — no changes needed
 
-**`src/i18n/types.ts`**:
-- Add `viewAll` to the landing section type
+It already accepts `{ date, level }[]`; the data source change happens in CheckIn.tsx.
 
-### No database changes required.
+### Files
+
+| Action | File |
+|--------|------|
+| Create | Migration SQL (mood_pulses table + RLS) |
+| Modify | `src/components/checkin/QuickPulse.tsx` — write to `mood_pulses` |
+| Modify | `src/pages/CheckIn.tsx` — fetch from `mood_pulses` for chart data |
+
