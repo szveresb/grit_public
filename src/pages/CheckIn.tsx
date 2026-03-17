@@ -1,6 +1,6 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { differenceInDays, parseISO, format, startOfWeek, endOfWeek } from 'date-fns';
+import { differenceInDays, parseISO, format, startOfWeek, endOfWeek, isFuture, startOfDay } from 'date-fns';
 import DashboardLayout from '@/components/DashboardLayout';
 import { useLanguage } from '@/hooks/useLanguage';
 import QuickPulse from '@/components/checkin/QuickPulse';
@@ -140,7 +140,10 @@ const CheckIn = () => {
   }, []);
 
   const openEntryModal = (date?: Date, prefill?: EntryModalPrefill) => {
-    setEntryModalDate(format(date ?? new Date(), 'yyyy-MM-dd'));
+    const d = date ?? new Date();
+    // Never allow future dates
+    if (isFuture(startOfDay(d))) return;
+    setEntryModalDate(format(d, 'yyyy-MM-dd'));
     setEntryModalPrefill(prefill ?? null);
     setEntryModalOpen(true);
   };
