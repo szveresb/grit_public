@@ -127,19 +127,19 @@ const FeedCalendar = ({ items, currentMonth, onMonthChange, selectedDate, onSele
       {/* Selected day detail */}
       {selectedDate && (
         <div className="space-y-2 animate-fade-in pt-2 border-t border-border/50">
-          <h3 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
-            {format(selectedDate, 'EEEE, MMMM d', { locale: getDateLocale(lang) })}
-            <span className="ml-2 normal-case">{getMoonPhase(selectedDate).emoji}</span>
-          </h3>
+          <div className="flex items-center justify-between gap-2">
+            <h3 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+              {format(selectedDate, 'EEEE, MMMM d', { locale: getDateLocale(lang) })}
+              <span className="ml-2 normal-case">{getMoonPhase(selectedDate).emoji}</span>
+            </h3>
+            {onCreateEntry && (
+              <Button variant="ghost" size="sm" className="rounded-2xl text-xs gap-1.5" onClick={() => onCreateEntry(selectedDate)}>
+                <FPlus className="h-3.5 w-3.5" /> {t.journal.newEntry}
+              </Button>
+            )}
+          </div>
           {getItemsForDate(selectedDate).length === 0 ? (
-            <div className="flex items-center justify-between">
-              <p className="text-sm text-muted-foreground">{t.timeline.noEntriesOnDay}</p>
-              {onCreateEntry && (
-                <Button variant="ghost" size="sm" className="rounded-2xl text-xs gap-1.5" onClick={() => onCreateEntry(selectedDate)}>
-                  <FPlus className="h-3.5 w-3.5" /> {t.journal.newEntry}
-                </Button>
-              )}
-            </div>
+            <p className="text-sm text-muted-foreground">{t.timeline.noEntriesOnDay}</p>
           ) : (
             getItemsForDate(selectedDate).map(item => (
               <div
