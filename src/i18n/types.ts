@@ -50,7 +50,7 @@ export interface Dictionary {
     heroTitle: string;
     heroSubtitle: string;
     browseLibrary: string;
-    startSelfCheck: string;
+    startJournal: string;
     libraryTitle: string;
     librarySubtitle: string;
     noArticles: string;
