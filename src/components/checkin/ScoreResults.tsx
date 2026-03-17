@@ -44,7 +44,7 @@ const ScoreResults = ({ totalScore, maxPossibleScore, questionScores, scoreRange
         <div className="text-3xl font-bold text-foreground">{totalScore}</div>
         <Progress value={pct} className="h-2 rounded-full" />
         <p className="text-xs text-muted-foreground">
-          {t.selfChecks.totalScore}: {totalScore} / {maxPossibleScore}
+          {t.questionnaires_manage.totalScore}: {totalScore} / {maxPossibleScore}
         </p>
         {matchedRange && (
           <div className="mt-2 space-y-1">
