@@ -42,6 +42,7 @@ const CheckIn = () => {
   const [calendarSelectedDate, setCalendarSelectedDate] = useState<Date | null>(null);
   const [calendarItems, setCalendarItems] = useState<CalendarFeedItem[]>([]);
   const [reflectEntryId, setReflectEntryId] = useState<string | null>(null);
+  const [reflectObsId, setReflectObsId] = useState<string | null>(null);
   const [daysSinceLastEntry, setDaysSinceLastEntry] = useState<number | null>(null);
   const [recapDismissed, setRecapDismissed] = useState(false);
   const [highlightDate, setHighlightDate] = useState<string | null>(null);
