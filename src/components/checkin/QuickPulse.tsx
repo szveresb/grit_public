@@ -17,13 +17,19 @@ const moodIcons = [
   <FMoodStrong key="4" className="w-6 h-6" />,
 ];
 
+export interface MoodSelection {
+  impact_level: number;
+  emotional_state: string;
+}
+
 interface QuickPulseProps {
   onPulseSaved?: () => void;
-  onGoDeeper?: () => void;
+  /** Called when user taps a mood — parent should open journal form pre-filled */
+  onMoodSelected?: (mood: MoodSelection) => void;
   compact?: boolean;
 }
 
-const QuickPulse = ({ onPulseSaved, onGoDeeper, compact = false }: QuickPulseProps) => {
+const QuickPulse = ({ onPulseSaved, onMoodSelected, compact = false }: QuickPulseProps) => {
   const { user } = useAuth();
   const { t } = useLanguage();
   const [saving, setSaving] = useState(false);
@@ -39,10 +45,17 @@ const QuickPulse = ({ onPulseSaved, onGoDeeper, compact = false }: QuickPulsePro
 
   const handleMoodTap = async (index: number) => {
     if (!user || saving) return;
-    setSaving(true);
     const impact = index + 1;
     const label = moodLabels[index];
 
+    // If parent handles mood selection (consolidated flow), delegate to parent
+    if (onMoodSelected) {
+      onMoodSelected({ impact_level: impact, emotional_state: label });
+      return;
+    }
+
+    // Fallback: save a quick pulse entry directly (standalone usage)
+    setSaving(true);
     const { error } = await supabase.from('journal_entries').insert({
       user_id: user.id,
       title: label,
@@ -88,14 +101,6 @@ const QuickPulse = ({ onPulseSaved, onGoDeeper, compact = false }: QuickPulsePro
           );
         })}
       </div>
-      {onGoDeeper && (
-        <button
-          onClick={onGoDeeper}
-          className="text-xs text-primary hover:text-primary/80 transition-colors mx-auto block"
-        >
-          {t.checkIn.goDeeper} →
-        </button>
-      )}
     </div>
   );
 };
