@@ -102,7 +102,7 @@ const LandingPreview = () => {
         <div key={q.id} className="border border-border rounded-2xl p-4 space-y-2">
           <p className="text-sm font-medium text-foreground">{i + 1}. {q.question_text}</p>
           <Badge variant="outline" className="rounded-full text-[10px]">
-            {questionTypeLabel(q.question_type, t)}
+            {questionTypeLabel(q.question_type, t, q.options)}
           </Badge>
           {q.question_type === 'scale' && (() => {
             const sMin = q.options && q.options.length >= 2 ? Number(q.options[0]) || 1 : 1;
