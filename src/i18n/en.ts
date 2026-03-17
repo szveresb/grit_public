@@ -235,6 +235,8 @@ export const en: Dictionary = {
     scoreRangeDescription: 'Description',
     addScoreRange: 'Add range',
     answerScores: 'Answer scores',
+    scaleType: 'Scale',
+    scaleRange: 'Range',
     yourScore: 'Your result',
     scoreBreakdown: 'Detailed breakdown',
     totalScore: 'Total score',

@@ -235,6 +235,8 @@ export const hu: Dictionary = {
     scoreRangeDescription: 'Leírás',
     addScoreRange: 'Tartomány hozzáadása',
     answerScores: 'Válasz pontszámok',
+    scaleType: 'Skála',
+    scaleRange: 'Tartomány',
     yourScore: 'Az eredményed',
     scoreBreakdown: 'Részletes bontás',
     totalScore: 'Összpontszám',
