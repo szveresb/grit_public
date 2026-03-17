@@ -169,7 +169,7 @@ const SelfChecks = () => {
         <div className="bg-card/60 backdrop-blur border border-border rounded-3xl p-6 space-y-4 animate-fade-in mb-4">
           <div className="flex items-center justify-between">
             <h2 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
-              {editingId ? t.selfChecks.editSelfCheck : t.selfChecks.newSelfCheck}
+              {editingId ? t.questionnaires_manage.editQuestionnaire : t.questionnaires_manage.newQuestionnaire}
             </h2>
             <Button variant="ghost" size="icon" onClick={() => setShowForm(false)}><FClose className="h-4 w-4" /></Button>
           </div>
