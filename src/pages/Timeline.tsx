@@ -108,6 +108,9 @@ const Timeline = () => {
           </div>
         )}
 
+        {/* Mood trend chart */}
+        <MoodTrendChart data={moodData} lang={lang} t={t} />
+
         {/* 8-week pattern frequency chart */}
         <PatternChart logs={obsLogs} conceptMap={conceptMap} />
 
