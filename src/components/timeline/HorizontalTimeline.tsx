@@ -17,7 +17,7 @@ interface Props {
   t: any;
 }
 
-const DOT_GAP = 56; // px per entry group
+const DOT_GAP = 56; // px per entry group (used only when content overflows)
 const MIN_SCALE = 1;
 const MAX_SCALE = 3;
 
