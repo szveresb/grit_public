@@ -218,7 +218,7 @@ const EntryModal = ({ open, onOpenChange, entryDate, prefill, onSaved }: EntryMo
                 {categories.map(cat => (
                   <button
                     key={cat.id}
-                    onClick={() => selectCategory(cat.id)}
+                    onClick={() => selectCategory(cat)}
                     className="bg-background/60 backdrop-blur border border-border rounded-2xl p-4 flex items-center gap-4 text-left hover:border-primary/50 transition-colors"
                   >
                     <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
