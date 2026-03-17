@@ -102,12 +102,19 @@ const EntryModal = ({ open, onOpenChange, entryDate, prefill, onSaved }: EntryMo
   const name = (item: { name_hu: string; name_en: string }) => lang === 'en' ? item.name_en : item.name_hu;
   const desc = (item: { description_hu: string | null; description_en: string | null }) => lang === 'en' ? item.description_en : item.description_hu;
 
-  const selectCategory = async (catId: string) => {
-    setSelectedCategory(catId);
+  const selectCategory = async (cat: Category) => {
+    setSelectedCategory(cat.id);
     const { data } = await supabase.from('observation_concepts').select('*')
-      .eq('category_id', catId).eq('is_active', true).order('sort_order');
-    setConcepts((data as Concept[]) ?? []);
-    setStep('concept');
+      .eq('category_id', cat.id).eq('is_active', true).order('sort_order');
+    const conceptList = (data as Concept[]) ?? [];
+    setConcepts(conceptList);
+    if (conceptList.length === 0) {
+      // No concepts — use category name as title, skip to intensity
+      setSelectedConcept({ id: null, name_hu: cat.name_hu, name_en: cat.name_en });
+      setStep('intensity');
+    } else {
+      setStep('concept');
+    }
   };
 
   const selectConcept = (concept: Concept) => {
