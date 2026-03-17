@@ -54,9 +54,9 @@ export interface Dictionary {
     libraryTitle: string;
     librarySubtitle: string;
     noArticles: string;
-    selfCheckPreviewTitle: string;
-    selfCheckPreviewSubtitle: string;
-    goToSelfChecks: string;
+    journalPreviewTitle: string;
+    journalPreviewSubtitle: string;
+    goToJournal: string;
     previewTypeScale: string;
     previewTypeMultiple: string;
     previewTypeText: string;
