@@ -253,7 +253,7 @@ const SelfChecks = () => {
                 {/* Weighted answer scores */}
                 {formScoringEnabled && formScoringMode === 'weighted' && nq.type !== 'text' && (
                   <div className="space-y-1 pt-1 border-t border-border/50">
-                    <Label className="text-[10px] uppercase tracking-widest text-muted-foreground">{t.selfChecks.answerScores}</Label>
+                    <Label className="text-[10px] uppercase tracking-widest text-muted-foreground">{t.questionnaires_manage.answerScores}</Label>
                     <div className="flex flex-wrap gap-2">
                       {(nq.type === 'scale' ? ['1','2','3','4','5'] : nq.type === 'yes_no' ? ['yes','no'] : nq.options.split(',').map(s => s.trim()).filter(Boolean)).map(opt => (
                         <div key={opt} className="flex items-center gap-1">
