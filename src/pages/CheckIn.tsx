@@ -71,15 +71,17 @@ const CheckIn = () => {
   useEffect(() => {
     if (!user) return;
     const fetchAll = async () => {
-      const [journalRes, responseRes, obsRes] = await Promise.all([
+      const [journalRes, responseRes, obsRes, pulseRes] = await Promise.all([
         supabase.from('journal_entries').select('id, title, entry_date, impact_level').eq('user_id', user.id),
         supabase.from('questionnaire_responses').select('id, questionnaire_id, completed_at, questionnaires(title)').eq('user_id', user.id),
         supabase.from('observation_logs').select('id, intensity, frequency, logged_at, concept_id, user_narrative').eq('user_id', user.id),
+        supabase.from('mood_pulses').select('level, entry_date').eq('user_id', user.id),
       ]);
 
       const journalData = journalRes.data ?? [];
       const journalItems: TimelineItem[] = journalData.map(j => ({ id: j.id, type: 'journal', title: j.title, date: j.entry_date, detail: j.impact_level ? `${t.journal.cardImpact}: ${j.impact_level}/5` : undefined }));
-      setMoodData(journalData.filter(j => j.impact_level != null).map(j => ({ date: j.entry_date, level: j.impact_level! })));
+      // Mood trend chart fed exclusively from mood_pulses
+      setMoodData((pulseRes.data ?? []).map(p => ({ date: p.entry_date, level: p.level })));
 
       // Check inactivity
       if (journalData.length > 0) {
