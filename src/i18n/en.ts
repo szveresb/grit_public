@@ -36,7 +36,7 @@ export const en: Dictionary = {
     management: 'Management',
     manageLibrary: 'Manage Library',
     manageUsers: 'Manage Users',
-    manageSelfChecks: 'Manage Self-Checks',
+    manageQuestionnaires: 'Manage Questionnaires',
     analystExport: 'Analyst Export',
     checkIn: 'Journal',
     surveys: 'Surveys',
