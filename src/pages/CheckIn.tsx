@@ -17,7 +17,7 @@ import { toast } from 'sonner';
 import { friendlyDbError } from '@/lib/db-error';
 import { format } from 'date-fns';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import { FChevronDown, FCalendar, FList } from '@/components/icons/FreudIcons';
+import { FChevronDown, FCalendar, FList, FChevronLeft } from '@/components/icons/FreudIcons';
 import { Button } from '@/components/ui/button';
 import type { JournalFormData } from '@/types/journal';
 import { emptyForm } from '@/types/journal';
