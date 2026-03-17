@@ -16,11 +16,13 @@ interface FeedItem {
   meta?: Record<string, string>;
 }
 
-const UnifiedFeed = ({ refreshKey, onItemsLoaded, onEntryClick }: { refreshKey?: number; onItemsLoaded?: (items: FeedItem[]) => void; onEntryClick?: (type: FeedItem['type'], dbId: string) => void }) => {
+const UnifiedFeed = ({ refreshKey, onItemsLoaded, onEntryClick, highlightDate }: { refreshKey?: number; onItemsLoaded?: (items: FeedItem[]) => void; onEntryClick?: (type: FeedItem['type'], dbId: string) => void; highlightDate?: string | null }) => {
   const { user } = useAuth();
   const { t, lang } = useLanguage();
   const [items, setItems] = useState<FeedItem[]>([]);
   const [expandedId, setExpandedId] = useState<string | null>(null);
+  const highlightRef = useRef<HTMLDivElement>(null);
+  const didScroll = useRef(false);
 
   useEffect(() => {
     if (!user) return;
