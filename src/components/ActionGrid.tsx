@@ -71,7 +71,7 @@ const ActionGrid = () => {
           description={t.dash.viewHistoryDesc}
           icon={FClock}
           variant="mist"
-          onClick={() => navigate(localePath('/timeline'))}
+          onClick={() => navigate(localePath('/journal'))}
         />
       </div>
     </div>

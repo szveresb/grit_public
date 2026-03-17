@@ -33,7 +33,7 @@ const AppSidebar = () => {
     { title: t.dashboard, url: '/dashboard', icon: FDashboard },
     { title: t.nav.checkIn, url: '/journal', icon: FHeartPulse },
     { title: t.nav.surveys, url: '/surveys', icon: FFileText },
-    { title: t.nav.history, url: '/timeline', icon: FClock },
+    
     { title: t.nav.dataExport, url: '/export', icon: FDownload },
     { title: t.nav.account, url: '/profile', icon: FUser },
   ];
