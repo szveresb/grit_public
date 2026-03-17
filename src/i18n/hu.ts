@@ -40,6 +40,7 @@ export const hu: Dictionary = {
     analystExport: 'Elemzői export',
     checkIn: 'Napló',
     surveys: 'Kérdőívek',
+    manageLanding: 'Landing kezelése',
   },
 
   landing: {

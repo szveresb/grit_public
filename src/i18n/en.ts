@@ -40,6 +40,7 @@ export const en: Dictionary = {
     analystExport: 'Analyst Export',
     checkIn: 'Journal',
     surveys: 'Surveys',
+    manageLanding: 'Manage Landing',
   },
 
   landing: {
