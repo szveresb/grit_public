@@ -38,6 +38,8 @@ const dotBg = (type: string) => {
 
 const HorizontalTimeline = ({ items, lang, t }: Props) => {
   const locale = getDateLocale(lang as any);
+  const navigate = useNavigate();
+  const { localePath } = useLanguage();
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [scale, setScale] = useState(1);
   const containerRef = useRef<HTMLDivElement>(null);
