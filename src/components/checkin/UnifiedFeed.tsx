@@ -79,32 +79,52 @@ const UnifiedFeed = ({ refreshKey, onItemsLoaded, onEntryClick, highlightDate }:
     }
   };
 
+  // Scroll to first highlighted item after items load
+  useEffect(() => {
+    if (highlightDate && items.length > 0 && !didScroll.current) {
+      didScroll.current = true;
+      setTimeout(() => {
+        highlightRef.current?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+      }, 150);
+    }
+  }, [items, highlightDate]);
+
   if (items.length === 0) {
     return <p className="text-sm text-muted-foreground text-center py-6">{t.checkIn.noStory}</p>;
   }
+
+  let firstHighlightAssigned = false;
 
   return (
     <div className="space-y-2">
       {items.map(item => {
         const isExpanded = expandedId === item.id;
         const hasMeta = item.meta && Object.keys(item.meta).length > 0;
+        const isHighlighted = highlightDate ? item.date.slice(0, 10) === highlightDate : false;
+        const isFirstHighlight = isHighlighted && !firstHighlightAssigned;
+        if (isFirstHighlight) firstHighlightAssigned = true;
+
         return (
           <Collapsible key={item.id} open={isExpanded} onOpenChange={() => setExpandedId(isExpanded ? null : item.id)}>
-            <CollapsibleTrigger className="w-full flex items-center gap-3 py-2.5 px-3 rounded-2xl text-left hover:bg-accent/50 transition-colors"
-              onClick={(e) => {
-                if (item.type === 'journal' && onEntryClick) {
-                  e.preventDefault();
-                  onEntryClick(item.type, item.id.slice(2)); // strip 'j-' prefix
-                }
-              }}
-            >
-              {iconFor(item.type)}
-              <span className="text-sm flex-1 truncate">{item.title}</span>
-              <span className="text-xs text-muted-foreground shrink-0">{format(parseISO(item.date), 'MMM d', { locale: getDateLocale(lang) })}</span>
-              {(hasMeta || item.detail) && (
-                isExpanded ? <FChevronUp className="h-3.5 w-3.5 text-muted-foreground" /> : <FChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
-              )}
-            </CollapsibleTrigger>
+            <div ref={isFirstHighlight ? highlightRef : undefined}>
+              <CollapsibleTrigger
+                className={`w-full flex items-center gap-3 py-2.5 px-3 rounded-2xl text-left transition-colors
+                  ${isHighlighted ? 'bg-primary/10 ring-1 ring-primary/30' : 'hover:bg-accent/50'}`}
+                onClick={(e) => {
+                  if (item.type === 'journal' && onEntryClick) {
+                    e.preventDefault();
+                    onEntryClick(item.type, item.id.slice(2));
+                  }
+                }}
+              >
+                {iconFor(item.type)}
+                <span className="text-sm flex-1 truncate">{item.title}</span>
+                <span className="text-xs text-muted-foreground shrink-0">{format(parseISO(item.date), 'MMM d', { locale: getDateLocale(lang) })}</span>
+                {(hasMeta || item.detail) && (
+                  isExpanded ? <FChevronUp className="h-3.5 w-3.5 text-muted-foreground" /> : <FChevronDown className="h-3.5 w-3.5 text-muted-foreground" />
+                )}
+              </CollapsibleTrigger>
+            </div>
             {(hasMeta || item.detail) && (
               <CollapsibleContent className="px-9 pb-2 space-y-1">
                 {item.detail && <p className="text-xs text-foreground/80 leading-relaxed">{item.detail}</p>}
