@@ -134,7 +134,7 @@ const QuestionnaireFiller = ({ onCompleted }: { onCompleted?: () => void }) => {
     setScoreResult(null);
     const { data } = await supabase
       .from('questionnaire_questions')
-      .select('id, question_text, question_type, options, sort_order, answer_scores')
+      .select('id, question_text, question_type, options, sort_order, answer_scores, options_localized')
       .eq('questionnaire_id', qId)
       .order('sort_order');
     setQuestions(
