@@ -32,7 +32,7 @@ const iconFor = (type: CalendarFeedItem['type']) => {
   }
 };
 
-const FeedCalendar = ({ items, currentMonth, onMonthChange, selectedDate, onSelectDate }: Props) => {
+const FeedCalendar = ({ items, currentMonth, onMonthChange, selectedDate, onSelectDate, onEntryClick }: Props) => {
   const { t, lang } = useLanguage();
 
   const monthStart = startOfMonth(currentMonth);
