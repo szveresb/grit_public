@@ -139,6 +139,7 @@ const CheckIn = () => {
 
   const handleEntryClick = useCallback((type: string, dbId: string) => {
     if (type === 'journal') setReflectEntryId(dbId);
+    if (type === 'observation') setReflectObsId(dbId);
   }, []);
 
   const openEntryModal = (date?: Date, prefill?: EntryModalPrefill) => {
