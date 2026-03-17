@@ -97,6 +97,8 @@ const CheckIn = () => {
 
       let obsItems: TimelineItem[] = [];
       const obsData = obsRes.data ?? [];
+      // Filter out observations already linked to a journal entry (avoid duplicates)
+      const standaloneObs = obsData.filter(o => !o.journal_entry_id);
       if (obsData.length > 0) {
         const conceptIds = [...new Set(obsData.map(o => o.concept_id))];
         const { data: concepts } = await supabase.from('observation_concepts').select('id, name_hu, name_en').in('id', conceptIds);
@@ -104,7 +106,7 @@ const CheckIn = () => {
         setConceptMap(conMap);
         setObsLogs(obsData.map(o => ({ concept_id: o.concept_id, logged_at: o.logged_at, intensity: o.intensity, user_narrative: o.user_narrative })));
 
-        obsItems = obsData.map(o => {
+        obsItems = standaloneObs.map(o => {
           const concept = conMap[o.concept_id];
           const name = concept ? (lang === 'en' ? concept.name_en : concept.name_hu) : t.observations.tabObservations;
           return { id: o.id, type: 'observation' as const, title: name, date: o.logged_at, detail: `${t.observations.intensity}: ${o.intensity}/5` };
