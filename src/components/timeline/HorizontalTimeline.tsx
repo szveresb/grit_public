@@ -121,7 +121,7 @@ const HorizontalTimeline = ({ items, lang, t }: Props) => {
           <div className="absolute left-0 right-0 top-[24px] h-px bg-border" />
 
           {/* Date groups */}
-          <div className="relative flex" style={{ gap: `${(DOT_GAP - 24) * scale}px`, paddingLeft: 12, paddingRight: 12 }}>
+          <div className="relative flex justify-between" style={{ paddingLeft: 12, paddingRight: 12 }}>
             {groupedLTR.map(([dateKey, dayItems], groupIdx) => {
               const isMonthBoundary = monthBoundaries.has(groupIdx);
               return (
