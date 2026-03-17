@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import DashboardLayout from '@/components/DashboardLayout';
 import { useAuth } from '@/hooks/useAuth';
 import { useLanguage } from '@/hooks/useLanguage';
@@ -163,20 +163,95 @@ const Timeline = () => {
           </div>
         )}
 
-        <div className="bg-card/60 backdrop-blur border border-border rounded-3xl p-5 space-y-2">
-          <h2 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-3">{t.timeline.allActivity}</h2>
+        {/* Linear timeline grouped by date */}
+        <div className="bg-card/60 backdrop-blur border border-border rounded-3xl p-5">
+          <h2 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-4">{t.timeline.allActivity}</h2>
           {items.length === 0 ? (
             <p className="text-sm text-muted-foreground">{t.timeline.noActivity}</p>
-          ) : items.map(item => (
-            <div key={item.id} className="flex items-center gap-3 py-2.5 border-b border-border/50 last:border-0">
-              {item.type === 'journal' ? <FBookOpen className="h-3.5 w-3.5 text-primary" /> : item.type === 'observation' ? <FEye className="h-3.5 w-3.5 text-accent-foreground/60" /> : <FClipboardCheck className="h-3.5 w-3.5 text-muted-foreground" />}
-              <span className="text-sm flex-1">{item.title}</span>
-              <span className="text-xs text-muted-foreground">{format(parseISO(item.date), 'MMM d', { locale: getDateLocale(lang) })}</span>
-            </div>
-          ))}
+          ) : (
+            <LinearTimeline items={items} lang={lang} t={t} />
+          )}
         </div>
       </div>
     </DashboardLayout>
+  );
+};
+
+/* ── Linear timeline sub-component ── */
+
+interface LinearTimelineProps {
+  items: TimelineItem[];
+  lang: string;
+  t: any;
+}
+
+const LinearTimeline = ({ items, lang, t }: LinearTimelineProps) => {
+  const locale = getDateLocale(lang as any);
+
+  // Group items by date
+  const grouped = useMemo(() => {
+    const map = new Map<string, TimelineItem[]>();
+    for (const item of items) {
+      const key = item.date.slice(0, 10);
+      if (!map.has(key)) map.set(key, []);
+      map.get(key)!.push(item);
+    }
+    return Array.from(map.entries()); // already sorted desc from items
+  }, [items]);
+
+  const iconFor = (type: string) => {
+    if (type === 'journal') return <FBookOpen className="h-3.5 w-3.5 text-primary" />;
+    if (type === 'observation') return <FEye className="h-3.5 w-3.5 text-accent-foreground/60" />;
+    return <FClipboardCheck className="h-3.5 w-3.5 text-muted-foreground" />;
+  };
+
+  const dotColor = (type: string) => {
+    if (type === 'journal') return 'bg-primary';
+    if (type === 'observation') return 'bg-accent-foreground/60';
+    return 'bg-muted-foreground';
+  };
+
+  const labelFor = (type: string) => {
+    if (type === 'journal') return t.timeline.journalLabel;
+    if (type === 'observation') return t.observations.tabObservations;
+    return t.timeline.selfCheckLabel;
+  };
+
+  return (
+    <div className="relative">
+      {/* Vertical line */}
+      <div className="absolute left-[7px] top-2 bottom-2 w-px bg-border" />
+
+      <div className="space-y-5">
+        {grouped.map(([dateKey, dayItems]) => (
+          <div key={dateKey} className="relative pl-7">
+            {/* Date dot */}
+            <div className="absolute left-0 top-0.5 h-3.5 w-3.5 rounded-full border-2 border-primary bg-card z-10" />
+
+            {/* Date heading */}
+            <p className="text-xs font-semibold text-muted-foreground mb-1.5">
+              {format(parseISO(dateKey), 'EEEE, MMM d', { locale })}
+            </p>
+
+            {/* Entries for this date */}
+            <div className="space-y-1.5">
+              {dayItems.map(item => (
+                <div key={item.id} className="flex items-start gap-2.5 py-1.5">
+                  <div className="mt-0.5">{iconFor(item.type)}</div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-baseline gap-2">
+                      <span className="text-sm font-medium text-foreground truncate">{item.title}</span>
+                      <span className="text-[10px] text-muted-foreground capitalize shrink-0">{labelFor(item.type)}</span>
+                    </div>
+                    {item.detail && <p className="text-xs text-muted-foreground mt-0.5">{item.detail}</p>}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
   );
 };
 
