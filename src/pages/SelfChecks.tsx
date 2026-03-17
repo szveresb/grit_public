@@ -107,7 +107,12 @@ const SelfChecks = () => {
     } else {
       const { data: q, error } = await supabase.from('questionnaires').insert({ title: formTitle, description: formDesc || null, created_by: user.id, is_published: formPublished, repeat_interval: formRepeat || null, scoring_enabled: formScoringEnabled, scoring_mode: formScoringMode, score_ranges: formScoreRanges.length ? formScoreRanges : null } as any).select('id').single();
       if (error || !q) { toast.error(error ? friendlyDbError(error) : 'Failed'); setSaving(false); return; }
-      const qRows = formQuestions.filter(nq => nq.text.trim()).map((nq, i) => ({ questionnaire_id: q.id, question_text: nq.text, question_type: nq.type, options: nq.type === 'multiple_choice' ? nq.options.split(',').map(s => s.trim()).filter(Boolean) : nq.type === 'scale' ? [String(nq.scaleMin), String(nq.scaleMax)] : null, sort_order: i, answer_scores: formScoringEnabled && formScoringMode === 'weighted' ? nq.answerScores : null, options_localized: nq.type === 'scale' && Object.keys(nq.scaleLabels).length > 0 ? nq.scaleLabels : null }));
+      const qRows = formQuestions.filter(nq => nq.text.trim()).map((nq, i) => {
+        let answerScores: Record<string, number> | null = null;
+        if (formScoringEnabled && formScoringMode === 'weighted') answerScores = nq.answerScores;
+        else if (formScoringEnabled && nq.reverseScored && nq.type === 'scale') answerScores = nq.answerScores;
+        return { questionnaire_id: q.id, question_text: nq.text, question_type: nq.type, options: nq.type === 'multiple_choice' ? nq.options.split(',').map(s => s.trim()).filter(Boolean) : nq.type === 'scale' ? [String(nq.scaleMin), String(nq.scaleMax)] : null, sort_order: i, answer_scores: answerScores, options_localized: nq.type === 'scale' && Object.keys(nq.scaleLabels).length > 0 ? nq.scaleLabels : null };
+      });
       if (qRows.length) await supabase.from('questionnaire_questions').insert(qRows);
       toast.success(t.questionnaires_manage.questionnaireCreated);
     }
