@@ -22,6 +22,7 @@ interface Props {
   selectedDate: Date | null;
   onSelectDate: (date: Date | null) => void;
   onEntryClick?: (type: CalendarFeedItem['type'], dbId: string) => void;
+  onCreateEntry?: (date: Date) => void;
 }
 
 const iconFor = (type: CalendarFeedItem['type']) => {
