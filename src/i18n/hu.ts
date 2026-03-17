@@ -255,7 +255,7 @@ export const hu: Dictionary = {
     allActivity: 'Összes tevékenység',
     noActivity: 'Még nincs rögzített tevékenység.',
     noEntriesOnDay: 'Nincs bejegyzés ezen a napon.',
-    dayNames: ['V', 'H', 'K', 'Sz', 'Cs', 'P', 'Szo'],
+    dayNames: ['Va', 'Hé', 'Ke', 'Sz', 'Cs', 'Pé', 'Szo'],
     journalLabel: 'Napló',
     selfCheckLabel: 'Önellenőrzés',
     patternNudge: '„{name}" mintát {count} alkalommal észlelted ezen a héten.',
