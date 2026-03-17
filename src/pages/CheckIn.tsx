@@ -8,6 +8,7 @@ import FeedCalendar from '@/components/checkin/FeedCalendar';
 import type { CalendarFeedItem } from '@/components/checkin/FeedCalendar';
 import ObservationStepper from '@/components/observations/ObservationStepper';
 import EntryReflectDialog from '@/components/checkin/EntryReflectDialog';
+import ObservationReflectDialog from '@/components/checkin/ObservationReflectDialog';
 import EntryModal from '@/components/checkin/EntryModal';
 import type { EntryModalPrefill } from '@/components/checkin/EntryModal';
 import { useAuth } from '@/hooks/useAuth';
@@ -41,6 +42,7 @@ const CheckIn = () => {
   const [calendarSelectedDate, setCalendarSelectedDate] = useState<Date | null>(null);
   const [calendarItems, setCalendarItems] = useState<CalendarFeedItem[]>([]);
   const [reflectEntryId, setReflectEntryId] = useState<string | null>(null);
+  const [reflectObsId, setReflectObsId] = useState<string | null>(null);
   const [daysSinceLastEntry, setDaysSinceLastEntry] = useState<number | null>(null);
   const [recapDismissed, setRecapDismissed] = useState(false);
   const [highlightDate, setHighlightDate] = useState<string | null>(null);
@@ -137,6 +139,7 @@ const CheckIn = () => {
 
   const handleEntryClick = useCallback((type: string, dbId: string) => {
     if (type === 'journal') setReflectEntryId(dbId);
+    if (type === 'observation') setReflectObsId(dbId);
   }, []);
 
   const openEntryModal = (date?: Date, prefill?: EntryModalPrefill) => {
@@ -231,6 +234,12 @@ const CheckIn = () => {
       <EntryReflectDialog
         entryId={reflectEntryId}
         onClose={() => setReflectEntryId(null)}
+        onSaved={refresh}
+      />
+
+      <ObservationReflectDialog
+        observationId={reflectObsId}
+        onClose={() => setReflectObsId(null)}
         onSaved={refresh}
       />
 

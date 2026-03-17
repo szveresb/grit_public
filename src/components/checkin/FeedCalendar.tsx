@@ -146,8 +146,8 @@ const FeedCalendar = ({ items, currentMonth, onMonthChange, selectedDate, onSele
             getItemsForDate(selectedDate).map(item => (
               <div
                 key={item.id}
-                className={`flex items-start gap-3 p-3 border border-border rounded-2xl ${item.type === 'journal' ? 'cursor-pointer hover:bg-accent/50 transition-colors' : ''}`}
-                onClick={() => item.type === 'journal' && onEntryClick?.(item.type, item.id)}
+                className={`flex items-start gap-3 p-3 border border-border rounded-2xl ${(item.type === 'journal' || item.type === 'observation') ? 'cursor-pointer hover:bg-accent/50 transition-colors' : ''}`}
+                onClick={() => (item.type === 'journal' || item.type === 'observation') && onEntryClick?.(item.type, item.id)}
               >
                 {iconFor(item.type)}
                 <div className="flex-1 min-w-0">
