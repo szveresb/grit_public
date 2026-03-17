@@ -20,6 +20,9 @@ import {
 interface Category {
   id: string; name_hu: string; name_en: string; icon: string | null; sort_order: number;
 }
+interface SelectedConceptLike {
+  id: string | null; name_hu: string; name_en: string;
+}
 interface Concept {
   id: string; name_hu: string; name_en: string; description_hu: string | null; description_en: string | null; sort_order: number;
 }
@@ -54,7 +57,7 @@ const EntryModal = ({ open, onOpenChange, entryDate, prefill, onSaved }: EntryMo
   const [categories, setCategories] = useState<Category[]>([]);
   const [concepts, setConcepts] = useState<Concept[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
-  const [selectedConcept, setSelectedConcept] = useState<Concept | null>(null);
+  const [selectedConcept, setSelectedConcept] = useState<SelectedConceptLike | null>(null);
   const [intensity, setIntensity] = useState(3);
   const [saving, setSaving] = useState(false);
 
@@ -99,12 +102,19 @@ const EntryModal = ({ open, onOpenChange, entryDate, prefill, onSaved }: EntryMo
   const name = (item: { name_hu: string; name_en: string }) => lang === 'en' ? item.name_en : item.name_hu;
   const desc = (item: { description_hu: string | null; description_en: string | null }) => lang === 'en' ? item.description_en : item.description_hu;
 
-  const selectCategory = async (catId: string) => {
-    setSelectedCategory(catId);
+  const selectCategory = async (cat: Category) => {
+    setSelectedCategory(cat.id);
     const { data } = await supabase.from('observation_concepts').select('*')
-      .eq('category_id', catId).eq('is_active', true).order('sort_order');
-    setConcepts((data as Concept[]) ?? []);
-    setStep('concept');
+      .eq('category_id', cat.id).eq('is_active', true).order('sort_order');
+    const conceptList = (data as Concept[]) ?? [];
+    setConcepts(conceptList);
+    if (conceptList.length === 0) {
+      // No concepts — use category name as title, skip to intensity
+      setSelectedConcept({ id: null, name_hu: cat.name_hu, name_en: cat.name_en });
+      setStep('intensity');
+    } else {
+      setStep('concept');
+    }
   };
 
   const selectConcept = (concept: Concept) => {
@@ -134,8 +144,8 @@ const EntryModal = ({ open, onOpenChange, entryDate, prefill, onSaved }: EntryMo
 
     if (error) { toast.error(friendlyDbError(error)); setSaving(false); return; }
 
-    // Link observation log
-    if (journalData) {
+    // Link observation log (only if a real concept was selected)
+    if (journalData && selectedConcept.id) {
       const { error: obsError } = await supabase.from('observation_logs').insert({
         user_id: user.id,
         concept_id: selectedConcept.id,
@@ -208,7 +218,7 @@ const EntryModal = ({ open, onOpenChange, entryDate, prefill, onSaved }: EntryMo
                 {categories.map(cat => (
                   <button
                     key={cat.id}
-                    onClick={() => selectCategory(cat.id)}
+                    onClick={() => selectCategory(cat)}
                     className="bg-background/60 backdrop-blur border border-border rounded-2xl p-4 flex items-center gap-4 text-left hover:border-primary/50 transition-colors"
                   >
                     <div className="h-10 w-10 rounded-xl bg-primary/10 flex items-center justify-center text-primary">
@@ -251,7 +261,7 @@ const EntryModal = ({ open, onOpenChange, entryDate, prefill, onSaved }: EntryMo
         {/* Step 2: Intensity */}
         {step === 'intensity' && (
           <div className="space-y-5 animate-fade-in">
-            <Button variant="ghost" size="sm" className="rounded-2xl" onClick={() => setStep('concept')}>
+            <Button variant="ghost" size="sm" className="rounded-2xl" onClick={() => setStep(concepts.length === 0 ? 'category' : 'concept')}>
               <FArrowLeft className="h-4 w-4 mr-1" /> {t.observations.back}
             </Button>
 
