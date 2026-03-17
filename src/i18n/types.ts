@@ -195,6 +195,7 @@ export interface Dictionary {
     reflectPlaceholder: string;
     commentSaved: string;
     addComment: string;
+    addDetails: string;
     recapTitle: string;
     recapMessage: string;
     recapCta: string;

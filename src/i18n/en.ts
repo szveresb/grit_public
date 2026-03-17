@@ -187,6 +187,7 @@ export const en: Dictionary = {
     reflectPlaceholder: 'Write what you see differently now...',
     commentSaved: 'Reflection saved ✨',
     addComment: 'Add comment',
+    addDetails: 'Add more details',
     recapTitle: 'It\'s been a while 🌱',
     recapMessage: 'You haven\'t written in {days} days. How have you been?',
     recapCta: 'Catch up',
