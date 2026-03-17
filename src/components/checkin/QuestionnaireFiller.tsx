@@ -356,7 +356,7 @@ const QuestionnaireFiller = ({ onCompleted }: { onCompleted?: () => void }) => {
         ))}
         <div className="flex gap-2">
           <Button size="sm" className="rounded-2xl" onClick={handleSubmit} disabled={submitting}>
-            {submitting ? t.selfChecks.submitting : t.submit}
+            {submitting ? t.questionnaires_manage.submitting : t.submit}
           </Button>
           <Button size="sm" variant="outline" className="rounded-2xl" onClick={() => setSelectedQ(null)}>
             {t.cancel}
