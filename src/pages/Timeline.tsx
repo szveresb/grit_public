@@ -170,7 +170,7 @@ const Timeline = () => {
           {items.length === 0 ? (
             <p className="text-sm text-muted-foreground">{t.timeline.noActivity}</p>
           ) : (
-            <LinearTimeline items={items} lang={lang} t={t} />
+            <HorizontalTimeline items={items} lang={lang} t={t} />
           )}
         </div>
       </div>
