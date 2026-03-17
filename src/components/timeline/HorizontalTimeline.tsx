@@ -195,8 +195,9 @@ const HorizontalTimeline = ({ items, lang, t }: Props) => {
       {selectedItem && (
         <button
           onClick={() => {
-            const path = selectedItem.type === 'journal' ? '/journal' : selectedItem.type === 'questionnaire' ? '/surveys' : '/journal';
-            navigate(localePath(path));
+            const basePath = selectedItem.type === 'journal' ? '/journal' : selectedItem.type === 'questionnaire' ? '/surveys' : '/journal';
+            const dateParam = selectedItem.date.slice(0, 10);
+            navigate(`${localePath(basePath)}?date=${dateParam}`);
           }}
           className="w-full text-left bg-card/80 backdrop-blur border border-border rounded-2xl p-4 animate-fade-in hover:bg-accent/50 transition-colors group"
         >
