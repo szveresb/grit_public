@@ -237,6 +237,8 @@ export const hu: Dictionary = {
     answerScores: 'Válasz pontszámok',
     scaleType: 'Skála',
     scaleRange: 'Tartomány',
+    scaleLabels: 'Pont címkék',
+    scaleLabelsPlaceholder: 'Címke',
     yourScore: 'Az eredményed',
     scoreBreakdown: 'Részletes bontás',
     totalScore: 'Összpontszám',

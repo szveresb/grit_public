@@ -36,6 +36,7 @@ interface Question {
   options: string[] | null;
   sort_order: number;
   answer_scores: Record<string, number> | null;
+  options_localized: Record<string, string> | null;
 }
 
 interface LastResponse {
@@ -133,11 +134,11 @@ const QuestionnaireFiller = ({ onCompleted }: { onCompleted?: () => void }) => {
     setScoreResult(null);
     const { data } = await supabase
       .from('questionnaire_questions')
-      .select('id, question_text, question_type, options, sort_order, answer_scores')
+      .select('id, question_text, question_type, options, sort_order, answer_scores, options_localized')
       .eq('questionnaire_id', qId)
       .order('sort_order');
     setQuestions(
-      (data ?? []).map((q) => ({ ...q, options: q.options as string[] | null, answer_scores: q.answer_scores as Record<string, number> | null }))
+      (data ?? []).map((q) => ({ ...q, options: q.options as string[] | null, answer_scores: q.answer_scores as Record<string, number> | null, options_localized: q.options_localized as Record<string, string> | null }))
     );
   };
 
@@ -263,22 +264,31 @@ const QuestionnaireFiller = ({ onCompleted }: { onCompleted?: () => void }) => {
         const sMin = opts && opts.length >= 2 ? Number(opts[0]) || 1 : 1;
         const sMax = opts && opts.length >= 2 ? Number(opts[1]) || 5 : 5;
         const points = Array.from({ length: sMax - sMin + 1 }, (_, i) => sMin + i);
+        const labels = (q.options_localized ?? {}) as Record<string, string>;
         return (
-          <div className="flex gap-2 flex-wrap">
-            {points.map((n) => (
-              <button
-                key={n}
-                type="button"
-                onClick={() => setAnswers((a) => ({ ...a, [q.id]: String(n) }))}
-                className={`h-10 w-10 rounded-full border text-sm font-semibold transition-all ${
-                  val === String(n)
-                    ? 'bg-primary text-primary-foreground border-primary shadow-md'
-                    : 'border-border text-muted-foreground hover:border-primary/50'
-                }`}
-              >
-                {n}
-              </button>
-            ))}
+          <div className="flex flex-col gap-2">
+            <div className="flex gap-2 flex-wrap">
+              {points.map((n) => (
+                <button
+                  key={n}
+                  type="button"
+                  onClick={() => setAnswers((a) => ({ ...a, [q.id]: String(n) }))}
+                  className={`h-10 w-10 rounded-full border text-sm font-semibold transition-all ${
+                    val === String(n)
+                      ? 'bg-primary text-primary-foreground border-primary shadow-md'
+                      : 'border-border text-muted-foreground hover:border-primary/50'
+                  }`}
+                >
+                  {n}
+                </button>
+              ))}
+            </div>
+            {Object.keys(labels).length > 0 && (
+              <div className="flex justify-between text-[10px] text-muted-foreground px-1">
+                {labels[String(sMin)] && <span>{sMin} = {labels[String(sMin)]}</span>}
+                {labels[String(sMax)] && <span>{sMax} = {labels[String(sMax)]}</span>}
+              </div>
+            )}
           </div>
         );
       }
