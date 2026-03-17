@@ -9,7 +9,9 @@ import { FChevronLeft, FChevronRight, FBookOpen, FClipboardCheck, FEye, FTrendin
 import { Button } from '@/components/ui/button';
 import PatternChart from '@/components/timeline/PatternChart';
 import HorizontalTimeline from '@/components/timeline/HorizontalTimeline';
+import MoodTrendChart from '@/components/timeline/MoodTrendChart';
 
+interface MoodPoint { date: string; level: number; }
 interface TimelineItem { id: string; type: 'journal' | 'questionnaire' | 'observation'; title: string; date: string; detail?: string; }
 interface PatternNudge { name: string; count: number; }
 interface ObsLog { concept_id: string; logged_at: string; intensity: number; user_narrative?: string | null; }
@@ -24,6 +26,7 @@ const Timeline = () => {
   const [nudges, setNudges] = useState<PatternNudge[]>([]);
   const [obsLogs, setObsLogs] = useState<ObsLog[]>([]);
   const [conceptMap, setConceptMap] = useState<Record<string, ConceptEntry>>({});
+  const [moodData, setMoodData] = useState<MoodPoint[]>([]);
 
   useEffect(() => {
     if (!user) return;
@@ -33,7 +36,9 @@ const Timeline = () => {
         supabase.from('questionnaire_responses').select('id, questionnaire_id, completed_at, questionnaires(title)').eq('user_id', user.id),
         supabase.from('observation_logs').select('id, intensity, frequency, logged_at, concept_id, user_narrative').eq('user_id', user.id),
       ]);
-      const journalItems: TimelineItem[] = (journalRes.data ?? []).map(j => ({ id: j.id, type: 'journal', title: j.title, date: j.entry_date, detail: j.impact_level ? `${t.journal.cardImpact}: ${j.impact_level}/5` : undefined }));
+      const journalData = journalRes.data ?? [];
+      const journalItems: TimelineItem[] = journalData.map(j => ({ id: j.id, type: 'journal', title: j.title, date: j.entry_date, detail: j.impact_level ? `${t.journal.cardImpact}: ${j.impact_level}/5` : undefined }));
+      setMoodData(journalData.filter(j => j.impact_level != null).map(j => ({ date: j.entry_date, level: j.impact_level! })));
       const qItems: TimelineItem[] = (responseRes.data ?? []).map((r: any) => ({ id: r.id, type: 'questionnaire', title: r.questionnaires?.title ?? t.nav.selfChecks, date: r.completed_at.split('T')[0] }));
 
       let obsItems: TimelineItem[] = [];
@@ -102,6 +107,9 @@ const Timeline = () => {
             </div>
           </div>
         )}
+
+        {/* Mood trend chart */}
+        <MoodTrendChart data={moodData} lang={lang} t={t} />
 
         {/* 8-week pattern frequency chart */}
         <PatternChart logs={obsLogs} conceptMap={conceptMap} />

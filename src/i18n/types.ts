@@ -275,6 +275,9 @@ export interface Dictionary {
     patternChartSubtitle: string;
     weekLabel: string;
     timesPerWeek: string;
+    moodTrendTitle: string;
+    moodTrendSubtitle: string;
+    moodTrendEmpty: string;
   };
 
   // Profile
