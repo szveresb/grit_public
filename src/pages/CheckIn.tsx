@@ -41,16 +41,18 @@ const CheckIn = () => {
   const [daysSinceLastEntry, setDaysSinceLastEntry] = useState<number | null>(null);
   const [recapDismissed, setRecapDismissed] = useState(false);
   const [highlightDate, setHighlightDate] = useState<string | null>(null);
+  const [cameFromTimeline, setCameFromTimeline] = useState(false);
+  const navigate = useNavigate();
+  const { localePath } = useLanguage();
 
   // Read ?date param on mount and scroll to feed
   useEffect(() => {
     const dateParam = searchParams.get('date');
     if (dateParam) {
       setHighlightDate(dateParam);
-      // Clear the param from URL to avoid stale state on refresh
+      setCameFromTimeline(true);
       searchParams.delete('date');
       setSearchParams(searchParams, { replace: true });
-      // Scroll to feed section after render
       setTimeout(() => {
         feedRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
       }, 300);
