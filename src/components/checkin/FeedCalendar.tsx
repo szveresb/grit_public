@@ -78,6 +78,7 @@ const FeedCalendar = ({ items, currentMonth, onMonthChange, selectedDate, onSele
             const dayItems = getItemsForDate(day);
             const isSelected = selectedDate && isSameDay(day, selectedDate);
             const today = isToday(day);
+            const future = isFuture(day);
             const moon = getMoonPhase(day);
             const isKeyPhase = moon.index === 0 || moon.index === 4;
 
@@ -85,9 +86,10 @@ const FeedCalendar = ({ items, currentMonth, onMonthChange, selectedDate, onSele
               <Tooltip key={day.toISOString()}>
                 <TooltipTrigger asChild>
                   <button
-                    onClick={() => onSelectDate(isSelected ? null : day)}
+                    onClick={() => !future && onSelectDate(isSelected ? null : day)}
+                    disabled={future}
                     className={`relative flex flex-col items-center justify-center p-1.5 text-center rounded-2xl transition-all min-h-[3.2rem]
-                      ${isSelected ? 'bg-primary text-primary-foreground shadow-md' : today ? 'bg-accent' : 'hover:bg-accent/50'}
+                      ${future ? 'opacity-30 cursor-not-allowed' : isSelected ? 'bg-primary text-primary-foreground shadow-md' : today ? 'bg-accent' : 'hover:bg-accent/50'}
                     `}
                   >
                     <span className="text-sm leading-none">{format(day, 'd')}</span>

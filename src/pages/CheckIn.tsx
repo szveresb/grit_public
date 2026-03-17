@@ -140,7 +140,10 @@ const CheckIn = () => {
   }, []);
 
   const openEntryModal = (date?: Date, prefill?: EntryModalPrefill) => {
-    setEntryModalDate(format(date ?? new Date(), 'yyyy-MM-dd'));
+    const d = date ?? new Date();
+    // Never allow future dates
+    if (isFuture(startOfDay(d))) return;
+    setEntryModalDate(format(d, 'yyyy-MM-dd'));
     setEntryModalPrefill(prefill ?? null);
     setEntryModalOpen(true);
   };
