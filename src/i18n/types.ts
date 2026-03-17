@@ -42,6 +42,7 @@ export interface Dictionary {
     analystExport: string;
     checkIn: string;
     surveys: string;
+    manageLanding: string;
   };
 
   // Index / Landing

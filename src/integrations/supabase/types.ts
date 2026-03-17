@@ -59,6 +59,51 @@ export type Database = {
         }
         Relationships: []
       }
+      landing_sections: {
+        Row: {
+          config: Json | null
+          created_at: string
+          cta_text: string | null
+          cta_text_localized: Json | null
+          id: string
+          is_active: boolean
+          section_key: string
+          subtitle: string | null
+          subtitle_localized: Json | null
+          title: string
+          title_localized: Json | null
+          updated_at: string
+        }
+        Insert: {
+          config?: Json | null
+          created_at?: string
+          cta_text?: string | null
+          cta_text_localized?: Json | null
+          id?: string
+          is_active?: boolean
+          section_key: string
+          subtitle?: string | null
+          subtitle_localized?: Json | null
+          title?: string
+          title_localized?: Json | null
+          updated_at?: string
+        }
+        Update: {
+          config?: Json | null
+          created_at?: string
+          cta_text?: string | null
+          cta_text_localized?: Json | null
+          id?: string
+          is_active?: boolean
+          section_key?: string
+          subtitle?: string | null
+          subtitle_localized?: Json | null
+          title?: string
+          title_localized?: Json | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       library_articles: {
         Row: {
           author: string

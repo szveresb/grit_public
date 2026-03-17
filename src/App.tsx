@@ -25,6 +25,7 @@ import Library from "./pages/Library";
 import Article from "./pages/Article";
 import SelfChecks from "./pages/SelfChecks";
 import Surveys from "./pages/Surveys";
+import ManageLanding from "./pages/ManageLanding";
 
 const queryClient = new QueryClient();
 
@@ -46,6 +47,7 @@ const AppRoutes = () => (
     <Route path="/manage-users" element={<ProtectedRoute><ManageUsers /></ProtectedRoute>} />
     <Route path="/manage-self-checks" element={<ProtectedRoute><SelfChecks /></ProtectedRoute>} />
     <Route path="/analyst-export" element={<ProtectedRoute><AnalystExport /></ProtectedRoute>} />
+    <Route path="/manage-landing" element={<ProtectedRoute><ManageLanding /></ProtectedRoute>} />
     <Route path="/library" element={<Library />} />
     <Route path="/library/:id" element={<Article />} />
     <Route path="/terms" element={<Terms />} />
@@ -67,6 +69,7 @@ const AppRoutes = () => (
     <Route path="/en/manage-users" element={<ProtectedRoute><ManageUsers /></ProtectedRoute>} />
     <Route path="/en/manage-self-checks" element={<ProtectedRoute><SelfChecks /></ProtectedRoute>} />
     <Route path="/en/analyst-export" element={<ProtectedRoute><AnalystExport /></ProtectedRoute>} />
+    <Route path="/en/manage-landing" element={<ProtectedRoute><ManageLanding /></ProtectedRoute>} />
     <Route path="/en/library" element={<Library />} />
     <Route path="/en/library/:id" element={<Article />} />
     <Route path="/en/terms" element={<Terms />} />

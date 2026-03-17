@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import PublicHeader from '@/components/PublicHeader';
 import ArticleCard from '@/components/ArticleCard';
+import LandingMoodPreview from '@/components/LandingMoodPreview';
 
 import bambooBg from '@/assets/bamboo-bg.jpg';
 
@@ -30,10 +31,14 @@ const Index = () => {
   const navigate = useNavigate();
   const [articles, setArticles] = useState<LibraryArticle[]>([]);
   const [articlesLoading, setArticlesLoading] = useState(true);
+  const [moodSection, setMoodSection] = useState<{ title: string; subtitle: string; cta_text: string; config: Record<string, any> } | null>(null);
 
   useEffect(() => {
     supabase.from('library_articles').select('id, title, title_localized, excerpt, excerpt_localized, source, category, url, featured, author').eq('published', true).order('featured', { ascending: false }).order('created_at', { ascending: false }).limit(6)
       .then(({ data }) => { setArticles((data as LibraryArticle[]) ?? []); setArticlesLoading(false); });
+
+    supabase.from('landing_sections').select('*').eq('section_key', 'mood_preview').eq('is_active', true).maybeSingle()
+      .then(({ data }) => { if (data) setMoodSection(data as any); });
   }, []);
 
   const handleGatedClick = (path: string) => {
@@ -69,7 +74,17 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Library Section */}
+      {/* Mood Preview */}
+      {moodSection && !user && (
+        <LandingMoodPreview
+          title={(lang === 'en' && (moodSection as any).title_localized?.en) || moodSection.title}
+          subtitle={(lang === 'en' && (moodSection as any).subtitle_localized?.en) || moodSection.subtitle}
+          ctaText={(lang === 'en' && (moodSection as any).cta_text_localized?.en) || moodSection.cta_text}
+          moodLabels={lang === 'en' ? (moodSection.config?.mood_labels_en ?? []) : (moodSection.config?.mood_labels ?? [])}
+        />
+      )}
+
+
       <section id="library" className="relative z-10 px-4 md:px-8 py-16 max-w-7xl mx-auto">
         <div className="flex items-center justify-between mb-8">
           <div>

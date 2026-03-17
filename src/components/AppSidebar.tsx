@@ -45,9 +45,12 @@ const AppSidebar = () => {
 
   const canManageSelfChecks = hasAnyRole('admin', 'editor');
 
+  const canManageLanding = hasAnyRole('admin', 'editor');
+
   const editorItems = [
     ...(canManageLibrary ? [{ title: t.nav.manageLibrary, url: '/manage-library', icon: FLibrary }] : []),
     ...(canManageSelfChecks ? [{ title: t.nav.manageSelfChecks, url: '/manage-self-checks', icon: FFileText }] : []),
+    ...(canManageLanding ? [{ title: t.nav.manageLanding, url: '/manage-landing', icon: FHome }] : []),
     ...(isAdmin ? [{ title: t.nav.manageUsers, url: '/manage-users', icon: FUsers }] : []),
     ...(canAnalyse ? [{ title: t.nav.analystExport, url: '/analyst-export', icon: FBarChart }] : []),
   ];
