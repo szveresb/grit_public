@@ -252,7 +252,7 @@ const SelfChecks = () => {
                   <select value={nq.type} onChange={e => { const c = [...formQuestions]; c[i].type = e.target.value; setFormQuestions(c); }}
                     className="border border-input rounded-2xl px-3 text-sm bg-background">
                     <option value="text">Text</option>
-                    <option value="scale">Scale (1–5)</option>
+                    <option value="scale">{t.questionnaires_manage.scaleType}</option>
                     <option value="yes_no">{t.yes}/{t.no}</option>
                     <option value="multiple_choice">Multiple Choice</option>
                   </select>
