@@ -227,18 +227,18 @@ const QuestionnaireFiller = ({ onCompleted }: { onCompleted?: () => void }) => {
       : null;
 
     const journalDesc = totalScore != null
-      ? `${summaryLines}\n\n${t.selfChecks.totalScore}: ${totalScore}`
+      ? `${summaryLines}\n\n${t.questionnaires_manage.totalScore}: ${totalScore}`
       : summaryLines;
 
     await supabase.from('journal_entries').insert({
       user_id: user.id,
-      title: `${t.selfChecks.selfCheckJournalTitle}: ${qTitle}`,
+      title: `${t.questionnaires_manage.questionnaireJournalTitle}: ${qTitle}`,
       entry_date: new Date().toISOString().split('T')[0],
       event_description: journalDesc,
       impact_level: avgImpact,
     });
 
-    toast.success(t.selfChecks.completed);
+    toast.success(t.questionnaires_manage.completed);
     setLastResponses((prev) => [
       { questionnaire_id: selectedQ, completed_at: new Date().toISOString() },
       ...prev.filter((r) => r.questionnaire_id !== selectedQ),
