@@ -189,6 +189,11 @@ export interface Dictionary {
     pulseSaved: string;
     goDeeper: string;
     noStory: string;
+    reflectDialogTitle: string;
+    reflectDialogHint: string;
+    reflectPlaceholder: string;
+    commentSaved: string;
+    addComment: string;
   };
 
   // Impact labels (warm)

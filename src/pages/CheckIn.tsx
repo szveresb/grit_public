@@ -6,6 +6,7 @@ import UnifiedFeed from '@/components/checkin/UnifiedFeed';
 import FeedCalendar from '@/components/checkin/FeedCalendar';
 import type { CalendarFeedItem } from '@/components/checkin/FeedCalendar';
 import ObservationStepper from '@/components/observations/ObservationStepper';
+import EntryReflectDialog from '@/components/checkin/EntryReflectDialog';
 import JournalForm from '@/components/journal/JournalForm';
 import type { ObservationTreeResult } from '@/components/journal/ObservationTree';
 import { useAuth } from '@/hooks/useAuth';
@@ -31,12 +32,17 @@ const CheckIn = () => {
   const [calendarMonth, setCalendarMonth] = useState(new Date());
   const [calendarSelectedDate, setCalendarSelectedDate] = useState<Date | null>(null);
   const [calendarItems, setCalendarItems] = useState<CalendarFeedItem[]>([]);
+  const [reflectEntryId, setReflectEntryId] = useState<string | null>(null);
 
   const refresh = useCallback(() => setRefreshKey(k => k + 1), []);
 
   // Callback from UnifiedFeed to share items for calendar view
   const handleItemsLoaded = useCallback((items: CalendarFeedItem[]) => {
     setCalendarItems(items);
+  }, []);
+
+  const handleEntryClick = useCallback((type: string, dbId: string) => {
+    if (type === 'journal') setReflectEntryId(dbId);
   }, []);
 
   const openJournalForm = () => {
@@ -145,14 +151,21 @@ const CheckIn = () => {
               onMonthChange={setCalendarMonth}
               selectedDate={calendarSelectedDate}
               onSelectDate={setCalendarSelectedDate}
+              onEntryClick={handleEntryClick}
             />
           ) : null}
 
           <div className={viewMode === 'calendar' ? 'hidden' : ''}>
-            <UnifiedFeed refreshKey={refreshKey} onItemsLoaded={handleItemsLoaded} />
+            <UnifiedFeed refreshKey={refreshKey} onItemsLoaded={handleItemsLoaded} onEntryClick={handleEntryClick} />
           </div>
         </div>
       </div>
+
+      <EntryReflectDialog
+        entryId={reflectEntryId}
+        onClose={() => setReflectEntryId(null)}
+        onSaved={refresh}
+      />
     </DashboardLayout>
   );
 };

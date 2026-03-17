@@ -21,6 +21,7 @@ interface Props {
   onMonthChange: (month: Date) => void;
   selectedDate: Date | null;
   onSelectDate: (date: Date | null) => void;
+  onEntryClick?: (type: CalendarFeedItem['type'], dbId: string) => void;
 }
 
 const iconFor = (type: CalendarFeedItem['type']) => {
@@ -31,7 +32,7 @@ const iconFor = (type: CalendarFeedItem['type']) => {
   }
 };
 
-const FeedCalendar = ({ items, currentMonth, onMonthChange, selectedDate, onSelectDate }: Props) => {
+const FeedCalendar = ({ items, currentMonth, onMonthChange, selectedDate, onSelectDate, onEntryClick }: Props) => {
   const { t, lang } = useLanguage();
 
   const monthStart = startOfMonth(currentMonth);
@@ -133,7 +134,11 @@ const FeedCalendar = ({ items, currentMonth, onMonthChange, selectedDate, onSele
             <p className="text-sm text-muted-foreground">{t.timeline.noEntriesOnDay}</p>
           ) : (
             getItemsForDate(selectedDate).map(item => (
-              <div key={item.id} className="flex items-start gap-3 p-3 border border-border rounded-2xl">
+              <div
+                key={item.id}
+                className={`flex items-start gap-3 p-3 border border-border rounded-2xl ${item.type === 'journal' ? 'cursor-pointer hover:bg-accent/50 transition-colors' : ''}`}
+                onClick={() => item.type === 'journal' && onEntryClick?.(item.type, item.id.slice(2))}
+              >
                 {iconFor(item.type)}
                 <div className="flex-1 min-w-0">
                   <span className="text-sm font-semibold">{item.title}</span>
