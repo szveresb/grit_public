@@ -52,6 +52,9 @@ const HorizontalTimeline = ({ items, lang, t }: Props) => {
     return Array.from(map.entries()); // sorted desc from items
   }, [items]);
 
+  // Reverse so oldest is on the left (items come sorted newest-first)
+  const groupedLTR = useMemo(() => [...grouped].reverse(), [grouped]);
+
   // Detect month boundaries for separators
   const monthBoundaries = useMemo(() => {
     const set = new Set<number>();
