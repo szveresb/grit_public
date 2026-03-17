@@ -40,7 +40,7 @@ const SelfChecks = () => {
   const [formTitle, setFormTitle] = useState('');
   const [formDesc, setFormDesc] = useState('');
   const [formPublished, setFormPublished] = useState(true);
-  const [formQuestions, setFormQuestions] = useState<{ id?: string; text: string; type: string; options: string; answerScores: Record<string, number>; scaleMin: number; scaleMax: number; scaleLabels: Record<string, string> }[]>([{ text: '', type: 'text', options: '', answerScores: {}, scaleMin: 1, scaleMax: 5, scaleLabels: {} }]);
+  const [formQuestions, setFormQuestions] = useState<{ id?: string; text: string; type: string; options: string; answerScores: Record<string, number>; scaleMin: number; scaleMax: number; scaleLabels: Record<string, string>; reverseScored: boolean }[]>([{ text: '', type: 'text', options: '', answerScores: {}, scaleMin: 1, scaleMax: 5, scaleLabels: {}, reverseScored: false }]);
   const [formRepeat, setFormRepeat] = useState<string>('');
   const [formScoringEnabled, setFormScoringEnabled] = useState(false);
   const [formScoringMode, setFormScoringMode] = useState<string>('sum');
@@ -62,7 +62,7 @@ const SelfChecks = () => {
     setQuestions((data ?? []).map(q => ({ ...q, options: q.options as string[] | null, answer_scores: q.answer_scores as Record<string, number> | null, options_localized: q.options_localized as Record<string, string> | null })));
   };
 
-  const openCreate = () => { setEditingId(null); setFormTitle(''); setFormDesc(''); setFormPublished(false); setFormRepeat(''); setFormScoringEnabled(false); setFormScoringMode('sum'); setFormScoreRanges([]); setFormQuestions([{ text: '', type: 'text', options: '', answerScores: {}, scaleMin: 1, scaleMax: 5, scaleLabels: {} }]); setShowForm(true); };
+  const openCreate = () => { setEditingId(null); setFormTitle(''); setFormDesc(''); setFormPublished(false); setFormRepeat(''); setFormScoringEnabled(false); setFormScoringMode('sum'); setFormScoreRanges([]); setFormQuestions([{ text: '', type: 'text', options: '', answerScores: {}, scaleMin: 1, scaleMax: 5, scaleLabels: {}, reverseScored: false }]); setShowForm(true); };
 
   const openEdit = async (q: Questionnaire) => {
     setEditingId(q.id); setFormTitle(q.title); setFormDesc(q.description ?? ''); setFormPublished(q.is_published); setFormRepeat(q.repeat_interval ?? '');
@@ -75,7 +75,16 @@ const SelfChecks = () => {
         scaleMin = Number(opts[0]) || 1;
         scaleMax = Number(opts[1]) || 5;
       }
-      return { id: qq.id, text: qq.question_text, type: qq.question_type, options: qq.question_type === 'multiple_choice' && opts ? opts.join(', ') : '', answerScores: (qq.answer_scores as Record<string, number>) ?? {}, scaleMin, scaleMax, scaleLabels: (qq.options_localized as Record<string, string>) ?? {} };
+      // Detect reverse scoring pattern: answer_scores exist and match reversed values
+      const scores = (qq.answer_scores as Record<string, number>) ?? {};
+      let isReverse = false;
+      if (qq.question_type === 'scale' && Object.keys(scores).length > 0) {
+        isReverse = true;
+        for (let n = scaleMin; n <= scaleMax; n++) {
+          if (scores[String(n)] !== (scaleMin + scaleMax) - n) { isReverse = false; break; }
+        }
+      }
+      return { id: qq.id, text: qq.question_text, type: qq.question_type, options: qq.question_type === 'multiple_choice' && opts ? opts.join(', ') : '', answerScores: scores, scaleMin, scaleMax, scaleLabels: (qq.options_localized as Record<string, string>) ?? {}, reverseScored: isReverse };
     }));
     setShowForm(true);
   };
@@ -87,13 +96,23 @@ const SelfChecks = () => {
       const { error } = await supabase.from('questionnaires').update({ title: formTitle, description: formDesc || null, is_published: formPublished, repeat_interval: formRepeat || null, scoring_enabled: formScoringEnabled, scoring_mode: formScoringMode, score_ranges: formScoreRanges.length ? formScoreRanges : null } as any).eq('id', editingId);
       if (error) { toast.error(friendlyDbError(error)); setSaving(false); return; }
       await supabase.from('questionnaire_questions').delete().eq('questionnaire_id', editingId);
-      const qRows = formQuestions.filter(nq => nq.text.trim()).map((nq, i) => ({ questionnaire_id: editingId, question_text: nq.text, question_type: nq.type, options: nq.type === 'multiple_choice' ? nq.options.split(',').map(s => s.trim()).filter(Boolean) : nq.type === 'scale' ? [String(nq.scaleMin), String(nq.scaleMax)] : null, sort_order: i, answer_scores: formScoringEnabled && formScoringMode === 'weighted' ? nq.answerScores : null, options_localized: nq.type === 'scale' && Object.keys(nq.scaleLabels).length > 0 ? nq.scaleLabels : null }));
+      const qRows = formQuestions.filter(nq => nq.text.trim()).map((nq, i) => {
+        let answerScores: Record<string, number> | null = null;
+        if (formScoringEnabled && formScoringMode === 'weighted') answerScores = nq.answerScores;
+        else if (formScoringEnabled && nq.reverseScored && nq.type === 'scale') answerScores = nq.answerScores;
+        return { questionnaire_id: editingId, question_text: nq.text, question_type: nq.type, options: nq.type === 'multiple_choice' ? nq.options.split(',').map(s => s.trim()).filter(Boolean) : nq.type === 'scale' ? [String(nq.scaleMin), String(nq.scaleMax)] : null, sort_order: i, answer_scores: answerScores, options_localized: nq.type === 'scale' && Object.keys(nq.scaleLabels).length > 0 ? nq.scaleLabels : null };
+      });
       if (qRows.length) await supabase.from('questionnaire_questions').insert(qRows);
       toast.success(t.questionnaires_manage.questionnaireUpdated);
     } else {
       const { data: q, error } = await supabase.from('questionnaires').insert({ title: formTitle, description: formDesc || null, created_by: user.id, is_published: formPublished, repeat_interval: formRepeat || null, scoring_enabled: formScoringEnabled, scoring_mode: formScoringMode, score_ranges: formScoreRanges.length ? formScoreRanges : null } as any).select('id').single();
       if (error || !q) { toast.error(error ? friendlyDbError(error) : 'Failed'); setSaving(false); return; }
-      const qRows = formQuestions.filter(nq => nq.text.trim()).map((nq, i) => ({ questionnaire_id: q.id, question_text: nq.text, question_type: nq.type, options: nq.type === 'multiple_choice' ? nq.options.split(',').map(s => s.trim()).filter(Boolean) : nq.type === 'scale' ? [String(nq.scaleMin), String(nq.scaleMax)] : null, sort_order: i, answer_scores: formScoringEnabled && formScoringMode === 'weighted' ? nq.answerScores : null, options_localized: nq.type === 'scale' && Object.keys(nq.scaleLabels).length > 0 ? nq.scaleLabels : null }));
+      const qRows = formQuestions.filter(nq => nq.text.trim()).map((nq, i) => {
+        let answerScores: Record<string, number> | null = null;
+        if (formScoringEnabled && formScoringMode === 'weighted') answerScores = nq.answerScores;
+        else if (formScoringEnabled && nq.reverseScored && nq.type === 'scale') answerScores = nq.answerScores;
+        return { questionnaire_id: q.id, question_text: nq.text, question_type: nq.type, options: nq.type === 'multiple_choice' ? nq.options.split(',').map(s => s.trim()).filter(Boolean) : nq.type === 'scale' ? [String(nq.scaleMin), String(nq.scaleMax)] : null, sort_order: i, answer_scores: answerScores, options_localized: nq.type === 'scale' && Object.keys(nq.scaleLabels).length > 0 ? nq.scaleLabels : null };
+      });
       if (qRows.length) await supabase.from('questionnaire_questions').insert(qRows);
       toast.success(t.questionnaires_manage.questionnaireCreated);
     }
@@ -287,6 +306,34 @@ const SelfChecks = () => {
                         ))}
                       </div>
                     </div>
+                    {formScoringEnabled && formScoringMode !== 'weighted' && (
+                      <div className="flex items-center gap-3 pt-1">
+                        <Switch checked={nq.reverseScored} onCheckedChange={(checked) => {
+                          const c = [...formQuestions];
+                          c[i].reverseScored = checked;
+                          if (checked) {
+                            // Auto-generate reversed scores
+                            const scores: Record<string, number> = {};
+                            for (let n = nq.scaleMin; n <= nq.scaleMax; n++) {
+                              scores[String(n)] = (nq.scaleMin + nq.scaleMax) - n;
+                            }
+                            c[i].answerScores = scores;
+                          } else {
+                            c[i].answerScores = {};
+                          }
+                          setFormQuestions(c);
+                        }} />
+                        <Label className="text-xs text-muted-foreground">{t.questionnaires_manage.reverseScoring}</Label>
+                        {nq.reverseScored && (
+                          <span className="text-[10px] text-muted-foreground/70">
+                            ({Array.from({ length: nq.scaleMax - nq.scaleMin + 1 }, (_, k) => {
+                              const n = nq.scaleMin + k;
+                              return `${n}→${(nq.scaleMin + nq.scaleMax) - n}`;
+                            }).join(', ')})
+                          </span>
+                        )}
+                      </div>
+                    )}
                   </div>
                 )}
                 {/* Weighted answer scores */}
@@ -305,7 +352,7 @@ const SelfChecks = () => {
                 )}
               </div>
             ))}
-            <Button type="button" variant="outline" size="sm" className="rounded-2xl" onClick={() => setFormQuestions(q => [...q, { text: '', type: 'text', options: '', answerScores: {}, scaleMin: 1, scaleMax: 5, scaleLabels: {} }])}>{t.questionnaires_manage.addQuestion}</Button>
+            <Button type="button" variant="outline" size="sm" className="rounded-2xl" onClick={() => setFormQuestions(q => [...q, { text: '', type: 'text', options: '', answerScores: {}, scaleMin: 1, scaleMax: 5, scaleLabels: {}, reverseScored: false }])}>{t.questionnaires_manage.addQuestion}</Button>
           </div>
           <div className="flex gap-2">
             <Button size="sm" className="rounded-2xl" onClick={handleSave} disabled={saving}>

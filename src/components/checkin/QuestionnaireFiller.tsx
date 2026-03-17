@@ -159,11 +159,17 @@ const QuestionnaireFiller = ({ onCompleted }: { onCompleted?: () => void }) => {
         maxScore = Math.max(...Object.values(q.answer_scores), 0);
       } else {
         // Sum mode: scale value directly, yes=1/no=0
+        // If answer_scores exist (e.g. reverse scoring), use them
         if (q.question_type === 'scale') {
           const opts = q.options as string[] | null;
           const sMax = opts && opts.length >= 2 ? Number(opts[1]) || 5 : 5;
-          score = Number(answer) || 0;
-          maxScore = sMax;
+          if (q.answer_scores && Object.keys(q.answer_scores).length > 0) {
+            score = q.answer_scores[answer] ?? 0;
+            maxScore = Math.max(...Object.values(q.answer_scores), 0);
+          } else {
+            score = Number(answer) || 0;
+            maxScore = sMax;
+          }
         } else if (q.question_type === 'yes_no') {
           score = answer === 'yes' ? 1 : 0;
           maxScore = 1;

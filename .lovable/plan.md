@@ -1,38 +1,51 @@
 
 
-## Reverse Scoring for Questionnaire Scale Questions
+# Create Separate Library Page
 
-### What it does
-Adds a "Reverse scoring" toggle per question in the questionnaire editor. When enabled, the system automatically generates reversed score values (e.g., for a 0–4 scale: 0→4, 1→3, 2→2, 3→1, 4→0). Users see the same scale as any other question — the reversal only affects score calculation.
+## What Changes
 
-### How it works
+1. **New `/library` page** -- A public page showing all published library articles with search/filter, reusing the same card design from the landing page.
 
-**No database changes needed** — reverse scores are stored in the existing `answer_scores` JSONB column on `questionnaire_questions`.
+2. **Landing page updates:**
+   - Library section limited to **max 6 articles** (newest first)
+   - Each card links to the article URL (external) or is a static card if no URL
+   - Add a "View All" link to `/library` page below the 6 cards
+   - **Remove** the entire "Research Summaries" section
+   - Update nav links from `#library` anchor to `/library` route
 
-#### 1. Editor UI (`src/pages/SelfChecks.tsx`)
-- Add `reverseScored: boolean` to the per-question form state
-- Show a "Reverse scoring" Switch for scale-type questions when scoring is enabled (in both sum and weighted modes)
-- When the toggle is on, auto-populate `answerScores` with reversed values based on the scale range
-- When loading for edit, detect if stored `answer_scores` match a reverse pattern and set the toggle accordingly
+3. **Navigation updates** -- Both desktop and mobile nav: "Konyvtar" links to `/library` page, remove "Kutatasi osszefoglalok" link entirely.
 
-#### 2. Scoring logic (`src/components/checkin/QuestionnaireFiller.tsx`)
-- In **sum mode**, check if `answer_scores` exist on the question — if so, use them instead of the raw scale value
-- This is already how weighted mode works; we just extend sum mode to also respect per-question `answer_scores`
+4. **Routing** -- Add `/library` and `/en/library` routes in `App.tsx` (public, no auth required).
 
-#### 3. I18n (`src/i18n/en.ts`, `src/i18n/hu.ts`, `src/i18n/types.ts`)
-- Add `reverseScoring` label: EN "Reverse scoring", HU "Fordított pontozás"
+---
 
-### Auto-generation logic
-When `reverseScored` is toggled on for a scale question with range `[min, max]`:
-```
-answerScores = { "0": 4, "1": 3, "2": 2, "3": 1, "4": 0 }
-// Formula: score(n) = (min + max) - n
-```
+## Technical Details
 
-When toggled off, `answerScores` is cleared (unless in weighted mode with manual scores).
+### New file: `src/pages/Library.tsx`
+- Public page (no ProtectedRoute)
+- Fetches all published `library_articles` ordered by `created_at desc`
+- Search input + category filter (reuse pattern from ManageLibrary)
+- Same card design as landing page
+- Uses landing page layout (bamboo bg, header, footer) or a simpler standalone layout
 
-### Files to modify
-- `src/pages/SelfChecks.tsx` — editor toggle + auto-fill logic
-- `src/components/checkin/QuestionnaireFiller.tsx` — sum mode respects `answer_scores`
-- `src/i18n/en.ts`, `src/i18n/hu.ts`, `src/i18n/types.ts` — new label
+### Modified files:
 
+**`src/App.tsx`** -- Add routes:
+- `/library` and `/en/library` pointing to new Library component
+
+**`src/pages/Index.tsx`**:
+- Limit articles query to `.limit(6)` 
+- Remove Research Summaries section (lines 180-207)
+- Change nav links from `#library` / `#research` to `localePath('/library')`
+- Remove `#research` nav item from both desktop and mobile menus
+- Add "View all" link below the 6-card grid pointing to `/library`
+- Update hero "Browse Library" button to link to `/library`
+
+**`src/i18n/hu.ts`** and **`src/i18n/en.ts`**:
+- Add `landing.viewAll` key ("Osszes megtekintese" / "View all")
+- Keep existing keys, no removals needed
+
+**`src/i18n/types.ts`**:
+- Add `viewAll` to the landing section type
+
+### No database changes required.
