@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, parseISO, isToday } from 'date-fns';
+import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, parseISO, isToday, isFuture } from 'date-fns';
 import { getDateLocale } from '@/lib/date-locale';
 import { getMoonPhase } from '@/lib/moon-phase';
 import { useLanguage } from '@/hooks/useLanguage';
