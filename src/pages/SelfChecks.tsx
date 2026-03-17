@@ -75,7 +75,7 @@ const SelfChecks = () => {
         scaleMin = Number(opts[0]) || 1;
         scaleMax = Number(opts[1]) || 5;
       }
-      return { id: qq.id, text: qq.question_text, type: qq.question_type, options: qq.question_type === 'multiple_choice' && opts ? opts.join(', ') : '', answerScores: (qq.answer_scores as Record<string, number>) ?? {}, scaleMin, scaleMax };
+      return { id: qq.id, text: qq.question_text, type: qq.question_type, options: qq.question_type === 'multiple_choice' && opts ? opts.join(', ') : '', answerScores: (qq.answer_scores as Record<string, number>) ?? {}, scaleMin, scaleMax, scaleLabels: (qq.options_localized as Record<string, string>) ?? {} };
     }));
     setShowForm(true);
   };
