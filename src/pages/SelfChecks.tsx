@@ -231,7 +231,7 @@ const SelfChecks = () => {
             )}
           </div>
           <div className="space-y-3">
-            <Label className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">{t.selfChecks.questions}</Label>
+            <Label className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">{t.questionnaires_manage.questions}</Label>
             {formQuestions.map((nq, i) => (
               <div key={i} className="border border-border rounded-2xl p-3 space-y-2">
                 <div className="flex gap-2">
