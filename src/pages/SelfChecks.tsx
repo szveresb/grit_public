@@ -81,13 +81,13 @@ const SelfChecks = () => {
       await supabase.from('questionnaire_questions').delete().eq('questionnaire_id', editingId);
       const qRows = formQuestions.filter(nq => nq.text.trim()).map((nq, i) => ({ questionnaire_id: editingId, question_text: nq.text, question_type: nq.type, options: nq.type === 'multiple_choice' ? nq.options.split(',').map(s => s.trim()).filter(Boolean) : null, sort_order: i, answer_scores: formScoringEnabled && formScoringMode === 'weighted' ? nq.answerScores : null }));
       if (qRows.length) await supabase.from('questionnaire_questions').insert(qRows);
-      toast.success(t.selfChecks.selfCheckUpdated);
+      toast.success(t.questionnaires_manage.questionnaireUpdated);
     } else {
       const { data: q, error } = await supabase.from('questionnaires').insert({ title: formTitle, description: formDesc || null, created_by: user.id, is_published: formPublished, repeat_interval: formRepeat || null, scoring_enabled: formScoringEnabled, scoring_mode: formScoringMode, score_ranges: formScoreRanges.length ? formScoreRanges : null } as any).select('id').single();
       if (error || !q) { toast.error(error ? friendlyDbError(error) : 'Failed'); setSaving(false); return; }
       const qRows = formQuestions.filter(nq => nq.text.trim()).map((nq, i) => ({ questionnaire_id: q.id, question_text: nq.text, question_type: nq.type, options: nq.type === 'multiple_choice' ? nq.options.split(',').map(s => s.trim()).filter(Boolean) : null, sort_order: i, answer_scores: formScoringEnabled && formScoringMode === 'weighted' ? nq.answerScores : null }));
       if (qRows.length) await supabase.from('questionnaire_questions').insert(qRows);
-      toast.success(t.selfChecks.selfCheckCreated);
+      toast.success(t.questionnaires_manage.questionnaireCreated);
     }
     setSaving(false); setShowForm(false); setEditingId(null); fetchQuestionnaires();
   };
@@ -96,7 +96,7 @@ const SelfChecks = () => {
     await supabase.from('questionnaire_questions').delete().eq('questionnaire_id', id);
     const { error } = await supabase.from('questionnaires').delete().eq('id', id);
     if (error) { toast.error(friendlyDbError(error)); return; }
-    toast.success(t.selfChecks.selfCheckDeleted); fetchQuestionnaires();
+    toast.success(t.questionnaires_manage.questionnaireDeleted); fetchQuestionnaires();
   };
 
   const togglePublished = async (q: Questionnaire) => {
@@ -112,7 +112,7 @@ const SelfChecks = () => {
     if (error || !resp) { toast.error('Failed to submit'); setSubmitting(false); return; }
     const answerRows = Object.entries(answers).map(([question_id, answer]) => ({ response_id: resp.id, question_id, answer: JSON.stringify(answer) }));
     if (answerRows.length) await supabase.from('questionnaire_answers').insert(answerRows);
-    toast.success(t.selfChecks.completed); setSelectedQ(null); setAnswers({}); setSubmitting(false);
+    toast.success(t.questionnaires_manage.completed); setSelectedQ(null); setAnswers({}); setSubmitting(false);
   };
 
   const renderQuestionInput = (q: Question) => {
@@ -169,73 +169,73 @@ const SelfChecks = () => {
         <div className="bg-card/60 backdrop-blur border border-border rounded-3xl p-6 space-y-4 animate-fade-in mb-4">
           <div className="flex items-center justify-between">
             <h2 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
-              {editingId ? t.selfChecks.editSelfCheck : t.selfChecks.newSelfCheck}
+              {editingId ? t.questionnaires_manage.editQuestionnaire : t.questionnaires_manage.newQuestionnaire}
             </h2>
             <Button variant="ghost" size="icon" onClick={() => setShowForm(false)}><FClose className="h-4 w-4" /></Button>
           </div>
           <div className="space-y-2">
-            <Label className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">{t.selfChecks.selfCheckTitle}</Label>
-            <Input value={formTitle} onChange={e => setFormTitle(e.target.value)} placeholder={t.selfChecks.selfCheckTitle} className="rounded-2xl" />
+            <Label className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">{t.questionnaires_manage.questionnaireTitle}</Label>
+            <Input value={formTitle} onChange={e => setFormTitle(e.target.value)} placeholder={t.questionnaires_manage.questionnaireTitle} className="rounded-2xl" />
           </div>
           <div className="space-y-2">
-            <Label className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">{t.selfChecks.description}</Label>
-            <Textarea value={formDesc} onChange={e => setFormDesc(e.target.value)} placeholder={t.selfChecks.description} rows={2} className="rounded-2xl" />
+            <Label className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">{t.questionnaires_manage.description}</Label>
+            <Textarea value={formDesc} onChange={e => setFormDesc(e.target.value)} placeholder={t.questionnaires_manage.description} rows={2} className="rounded-2xl" />
           </div>
           <div className="flex items-center gap-3">
             <Switch checked={formPublished} onCheckedChange={setFormPublished} />
             <Label className="text-sm">{t.published}</Label>
           </div>
           <div className="space-y-2">
-            <Label className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">{t.selfChecks.repeatInterval}</Label>
+            <Label className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">{t.questionnaires_manage.repeatInterval}</Label>
             <select value={formRepeat} onChange={e => setFormRepeat(e.target.value)}
               className="w-full border border-input rounded-2xl px-3 py-2 text-sm bg-background">
-              <option value="">{t.selfChecks.repeatOnce}</option>
-              <option value="daily">{t.selfChecks.repeatDaily}</option>
-              <option value="weekly">{t.selfChecks.repeatWeekly}</option>
-              <option value="biweekly">{t.selfChecks.repeatBiweekly}</option>
-              <option value="monthly">{t.selfChecks.repeatMonthly}</option>
-              <option value="anytime">{t.selfChecks.repeatAnytime}</option>
+              <option value="">{t.questionnaires_manage.repeatOnce}</option>
+              <option value="daily">{t.questionnaires_manage.repeatDaily}</option>
+              <option value="weekly">{t.questionnaires_manage.repeatWeekly}</option>
+              <option value="biweekly">{t.questionnaires_manage.repeatBiweekly}</option>
+              <option value="monthly">{t.questionnaires_manage.repeatMonthly}</option>
+              <option value="anytime">{t.questionnaires_manage.repeatAnytime}</option>
             </select>
           </div>
           {/* Scoring config */}
           <div className="space-y-3 border border-border rounded-2xl p-4">
             <div className="flex items-center gap-3">
               <Switch checked={formScoringEnabled} onCheckedChange={setFormScoringEnabled} />
-              <Label className="text-sm">{t.selfChecks.scoringEnabled}</Label>
+              <Label className="text-sm">{t.questionnaires_manage.scoringEnabled}</Label>
             </div>
             {formScoringEnabled && (
               <>
                 <div className="space-y-2">
-                  <Label className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">{t.selfChecks.scoringMode}</Label>
+                  <Label className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">{t.questionnaires_manage.scoringMode}</Label>
                   <select value={formScoringMode} onChange={e => setFormScoringMode(e.target.value)}
                     className="w-full border border-input rounded-2xl px-3 py-2 text-sm bg-background">
-                    <option value="sum">{t.selfChecks.scoringModeSum}</option>
-                    <option value="weighted">{t.selfChecks.scoringModeWeighted}</option>
+                    <option value="sum">{t.questionnaires_manage.scoringModeSum}</option>
+                    <option value="weighted">{t.questionnaires_manage.scoringModeWeighted}</option>
                   </select>
                 </div>
                 <div className="space-y-2">
-                  <Label className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">{t.selfChecks.scoreRanges}</Label>
+                  <Label className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">{t.questionnaires_manage.scoreRanges}</Label>
                   {formScoreRanges.map((sr, i) => (
                     <div key={i} className="flex gap-2 items-center">
-                      <Input type="number" value={sr.min} onChange={e => { const c = [...formScoreRanges]; c[i] = { ...c[i], min: Number(e.target.value) }; setFormScoreRanges(c); }} placeholder={t.selfChecks.scoreRangeMin} className="w-16 rounded-2xl text-xs" />
+                      <Input type="number" value={sr.min} onChange={e => { const c = [...formScoreRanges]; c[i] = { ...c[i], min: Number(e.target.value) }; setFormScoreRanges(c); }} placeholder={t.questionnaires_manage.scoreRangeMin} className="w-16 rounded-2xl text-xs" />
                       <span className="text-xs text-muted-foreground">–</span>
-                      <Input type="number" value={sr.max} onChange={e => { const c = [...formScoreRanges]; c[i] = { ...c[i], max: Number(e.target.value) }; setFormScoreRanges(c); }} placeholder={t.selfChecks.scoreRangeMax} className="w-16 rounded-2xl text-xs" />
-                      <Input value={sr.label} onChange={e => { const c = [...formScoreRanges]; c[i] = { ...c[i], label: e.target.value }; setFormScoreRanges(c); }} placeholder={t.selfChecks.scoreRangeLabel} className="flex-1 rounded-2xl text-xs" />
-                      <Input value={sr.description ?? ''} onChange={e => { const c = [...formScoreRanges]; c[i] = { ...c[i], description: e.target.value }; setFormScoreRanges(c); }} placeholder={t.selfChecks.scoreRangeDescription} className="flex-1 rounded-2xl text-xs" />
+                      <Input type="number" value={sr.max} onChange={e => { const c = [...formScoreRanges]; c[i] = { ...c[i], max: Number(e.target.value) }; setFormScoreRanges(c); }} placeholder={t.questionnaires_manage.scoreRangeMax} className="w-16 rounded-2xl text-xs" />
+                      <Input value={sr.label} onChange={e => { const c = [...formScoreRanges]; c[i] = { ...c[i], label: e.target.value }; setFormScoreRanges(c); }} placeholder={t.questionnaires_manage.scoreRangeLabel} className="flex-1 rounded-2xl text-xs" />
+                      <Input value={sr.description ?? ''} onChange={e => { const c = [...formScoreRanges]; c[i] = { ...c[i], description: e.target.value }; setFormScoreRanges(c); }} placeholder={t.questionnaires_manage.scoreRangeDescription} className="flex-1 rounded-2xl text-xs" />
                       <Button type="button" variant="ghost" size="icon" className="h-7 w-7" onClick={() => setFormScoreRanges(r => r.filter((_, j) => j !== i))}><FTrash className="h-3 w-3" /></Button>
                     </div>
                   ))}
-                  <Button type="button" variant="outline" size="sm" className="rounded-2xl text-xs" onClick={() => setFormScoreRanges(r => [...r, { min: 0, max: 0, label: '', description: '' }])}><FPlus className="h-3 w-3 mr-1" /> {t.selfChecks.addScoreRange}</Button>
+                  <Button type="button" variant="outline" size="sm" className="rounded-2xl text-xs" onClick={() => setFormScoreRanges(r => [...r, { min: 0, max: 0, label: '', description: '' }])}><FPlus className="h-3 w-3 mr-1" /> {t.questionnaires_manage.addScoreRange}</Button>
                 </div>
               </>
             )}
           </div>
           <div className="space-y-3">
-            <Label className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">{t.selfChecks.questions}</Label>
+            <Label className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">{t.questionnaires_manage.questions}</Label>
             {formQuestions.map((nq, i) => (
               <div key={i} className="border border-border rounded-2xl p-3 space-y-2">
                 <div className="flex gap-2">
-                  <Input value={nq.text} onChange={e => { const c = [...formQuestions]; c[i].text = e.target.value; setFormQuestions(c); }} placeholder={`${t.selfChecks.questions} ${i + 1}`} className="flex-1 rounded-2xl" />
+                  <Input value={nq.text} onChange={e => { const c = [...formQuestions]; c[i].text = e.target.value; setFormQuestions(c); }} placeholder={`${t.questionnaires_manage.questions} ${i + 1}`} className="flex-1 rounded-2xl" />
                   <select value={nq.type} onChange={e => { const c = [...formQuestions]; c[i].type = e.target.value; setFormQuestions(c); }}
                     className="border border-input rounded-2xl px-3 text-sm bg-background">
                     <option value="text">Text</option>
@@ -253,7 +253,7 @@ const SelfChecks = () => {
                 {/* Weighted answer scores */}
                 {formScoringEnabled && formScoringMode === 'weighted' && nq.type !== 'text' && (
                   <div className="space-y-1 pt-1 border-t border-border/50">
-                    <Label className="text-[10px] uppercase tracking-widest text-muted-foreground">{t.selfChecks.answerScores}</Label>
+                    <Label className="text-[10px] uppercase tracking-widest text-muted-foreground">{t.questionnaires_manage.answerScores}</Label>
                     <div className="flex flex-wrap gap-2">
                       {(nq.type === 'scale' ? ['1','2','3','4','5'] : nq.type === 'yes_no' ? ['yes','no'] : nq.options.split(',').map(s => s.trim()).filter(Boolean)).map(opt => (
                         <div key={opt} className="flex items-center gap-1">
@@ -266,7 +266,7 @@ const SelfChecks = () => {
                 )}
               </div>
             ))}
-            <Button type="button" variant="outline" size="sm" className="rounded-2xl" onClick={() => setFormQuestions(q => [...q, { text: '', type: 'text', options: '', answerScores: {} }])}>{t.selfChecks.addQuestion}</Button>
+            <Button type="button" variant="outline" size="sm" className="rounded-2xl" onClick={() => setFormQuestions(q => [...q, { text: '', type: 'text', options: '', answerScores: {} }])}>{t.questionnaires_manage.addQuestion}</Button>
           </div>
           <div className="flex gap-2">
             <Button size="sm" className="rounded-2xl" onClick={handleSave} disabled={saving}>
@@ -287,7 +287,7 @@ const SelfChecks = () => {
             </div>
           ))}
           <div className="flex gap-2">
-            <Button size="sm" className="rounded-2xl" onClick={handleSubmitAnswers} disabled={submitting}>{submitting ? t.selfChecks.submitting : t.submit}</Button>
+            <Button size="sm" className="rounded-2xl" onClick={handleSubmitAnswers} disabled={submitting}>{submitting ? t.questionnaires_manage.submitting : t.submit}</Button>
             <Button size="sm" variant="outline" className="rounded-2xl" onClick={() => setSelectedQ(null)}>{t.cancel}</Button>
           </div>
         </div>
@@ -295,7 +295,7 @@ const SelfChecks = () => {
         <div className="space-y-3">
           {questionnaires.length === 0 ? (
             <div className="bg-card/60 backdrop-blur border border-border rounded-3xl p-6">
-              <p className="text-sm text-muted-foreground">{t.selfChecks.noAvailable}</p>
+              <p className="text-sm text-muted-foreground">{t.questionnaires_manage.noAvailable}</p>
             </div>
           ) : questionnaires.map(q => (
             <div key={q.id} className="bg-card/60 backdrop-blur border border-border rounded-3xl p-5 flex items-start gap-4">
@@ -318,8 +318,8 @@ const SelfChecks = () => {
                     </AlertDialogTrigger>
                     <AlertDialogContent>
                       <AlertDialogHeader>
-                        <AlertDialogTitle>{t.selfChecks.deleteConfirmTitle}</AlertDialogTitle>
-                        <AlertDialogDescription>{t.selfChecks.deleteConfirmDesc.replace('{title}', q.title)}</AlertDialogDescription>
+                        <AlertDialogTitle>{t.questionnaires_manage.deleteConfirmTitle}</AlertDialogTitle>
+                        <AlertDialogDescription>{t.questionnaires_manage.deleteConfirmDesc.replace('{title}', q.title)}</AlertDialogDescription>
                       </AlertDialogHeader>
                       <AlertDialogFooter>
                         <AlertDialogCancel>{t.cancel}</AlertDialogCancel>
@@ -340,8 +340,8 @@ const SelfChecks = () => {
     <DashboardLayout>
       <div className="max-w-2xl space-y-6">
         <div>
-          <h1 className="text-xl font-bold tracking-tight text-foreground">{t.selfChecks.title}</h1>
-          <p className="mt-1 text-sm text-muted-foreground leading-relaxed">{t.selfChecks.subtitle}</p>
+          <h1 className="text-xl font-bold tracking-tight text-foreground">{t.questionnaires_manage.title}</h1>
+          <p className="mt-1 text-sm text-muted-foreground leading-relaxed">{t.questionnaires_manage.subtitle}</p>
         </div>
 
         <Tabs defaultValue="questionnaires" className="w-full">

@@ -79,7 +79,7 @@ const ScoreHistory = () => {
   }, [user]);
 
   if (loading) return <p className="text-sm text-muted-foreground">{t.loading}</p>;
-  if (groups.length === 0) return <p className="text-sm text-muted-foreground">{t.selfChecks.scoreHistoryEmpty}</p>;
+  if (groups.length === 0) return <p className="text-sm text-muted-foreground">{t.questionnaires_manage.scoreHistoryEmpty}</p>;
 
   return (
     <div className="space-y-6">
@@ -158,7 +158,7 @@ const ScoreHistory = () => {
                     <span>{format(new Date(e.completed_at), 'PPp', { locale: dateLocale })}</span>
                   </div>
                   <span className="font-semibold text-foreground">
-                    {e.total_score} {t.selfChecks.points}
+                    {e.total_score} {t.questionnaires_manage.points}
                   </span>
                 </div>
               ))}

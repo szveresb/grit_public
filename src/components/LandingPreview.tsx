@@ -119,7 +119,7 @@ const LandingPreview = () => {
       <div className="text-center pt-2">
         {user ? (
           <Button className="rounded-2xl px-6" onClick={() => navigate(localePath('/journal'))}>
-            {t.landing.goToSelfChecks} <FArrowRight className="h-4 w-4 ml-1" />
+            {t.landing.goToJournal} <FArrowRight className="h-4 w-4 ml-1" />
           </Button>
         ) : (
           <div className="space-y-3">

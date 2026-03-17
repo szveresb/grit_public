@@ -27,7 +27,7 @@ export interface Dictionary {
     home: string;
     library: string;
     
-    selfChecks: string;
+    questionnaires: string;
     about: string;
     journal: string;
     history: string;
@@ -38,7 +38,7 @@ export interface Dictionary {
     management: string;
     manageLibrary: string;
     manageUsers: string;
-    manageSelfChecks: string;
+    manageQuestionnaires: string;
     analystExport: string;
     checkIn: string;
     surveys: string;
@@ -50,13 +50,13 @@ export interface Dictionary {
     heroTitle: string;
     heroSubtitle: string;
     browseLibrary: string;
-    startSelfCheck: string;
+    startJournal: string;
     libraryTitle: string;
     librarySubtitle: string;
     noArticles: string;
-    selfCheckPreviewTitle: string;
-    selfCheckPreviewSubtitle: string;
-    goToSelfChecks: string;
+    journalPreviewTitle: string;
+    journalPreviewSubtitle: string;
+    goToJournal: string;
     previewTypeScale: string;
     previewTypeMultiple: string;
     previewTypeText: string;
@@ -114,8 +114,8 @@ export interface Dictionary {
     noActivity: string;
     logObservation: string;
     logObservationDesc: string;
-    completeSelfCheck: string;
-    completeSelfCheckDesc: string;
+    completeJournal: string;
+    completeJournalDesc: string;
     viewHistory: string;
     viewHistoryDesc: string;
     quickPulse: string;
@@ -204,23 +204,23 @@ export interface Dictionary {
   // Impact labels (warm)
   impactLabels: string[];
 
-  // Self-Checks
-  selfChecks: {
+  // Questionnaires
+  questionnaires_manage: {
     title: string;
     subtitle: string;
     noAvailable: string;
     completed: string;
     deleteConfirmTitle: string;
     deleteConfirmDesc: string;
-    editSelfCheck: string;
-    newSelfCheck: string;
-    selfCheckTitle: string;
+    editQuestionnaire: string;
+    newQuestionnaire: string;
+    questionnaireTitle: string;
     description: string;
     questions: string;
     addQuestion: string;
-    selfCheckUpdated: string;
-    selfCheckCreated: string;
-    selfCheckDeleted: string;
+    questionnaireUpdated: string;
+    questionnaireCreated: string;
+    questionnaireDeleted: string;
     submitting: string;
     repeatInterval: string;
     repeatOnce: string;
@@ -233,7 +233,7 @@ export interface Dictionary {
     availableNow: string;
     nextAvailable: string;
     alreadyCompleted: string;
-    selfCheckJournalTitle: string;
+    questionnaireJournalTitle: string;
     // Scoring
     scoringEnabled: string;
     scoringMode: string;
@@ -270,7 +270,7 @@ export interface Dictionary {
     noEntriesOnDay: string;
     dayNames: string[];
     journalLabel: string;
-    selfCheckLabel: string;
+    questionnaireLabel: string;
     patternNudge: string;
     patternChartTitle: string;
     patternChartSubtitle: string;

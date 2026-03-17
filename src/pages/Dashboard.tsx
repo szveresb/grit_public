@@ -41,7 +41,7 @@ const Dashboard = () => {
         detail: j.impact_level ? `${t.journal.cardImpact}: ${j.impact_level}/5` : undefined,
       }));
       const qItems: RecentItem[] = (qRes.data ?? []).map((r: any) => ({
-        id: r.id, type: 'questionnaire', title: r.questionnaires?.title ?? t.nav.selfChecks, date: r.completed_at.split('T')[0],
+        id: r.id, type: 'questionnaire', title: r.questionnaires?.title ?? t.nav.questionnaires, date: r.completed_at.split('T')[0],
       }));
 
       setItems([...jItems, ...qItems].sort((a, b) => b.date.localeCompare(a.date)).slice(0, 8));

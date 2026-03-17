@@ -93,7 +93,7 @@ const CheckIn = () => {
         setDaysSinceLastEntry(null);
       }
 
-      const qItems: TimelineItem[] = (responseRes.data ?? []).map((r: any) => ({ id: r.id, type: 'questionnaire', title: r.questionnaires?.title ?? t.nav.selfChecks, date: r.completed_at.split('T')[0] }));
+      const qItems: TimelineItem[] = (responseRes.data ?? []).map((r: any) => ({ id: r.id, type: 'questionnaire', title: r.questionnaires?.title ?? t.nav.questionnaires, date: r.completed_at.split('T')[0] }));
 
       let obsItems: TimelineItem[] = [];
       const obsData = obsRes.data ?? [];

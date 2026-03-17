@@ -17,7 +17,7 @@ const Surveys = () => {
             {t.nav.surveys}
           </h1>
           <p className="mt-1 text-sm text-muted-foreground leading-relaxed">
-            {t.selfChecks.subtitle}
+            {t.questionnaires_manage.subtitle}
           </p>
         </div>
 
@@ -27,7 +27,7 @@ const Surveys = () => {
               {t.nav.surveys}
             </TabsTrigger>
             <TabsTrigger value="history" className="rounded-xl flex-1 text-xs">
-              {t.selfChecks.scoreHistory}
+              {t.questionnaires_manage.scoreHistory}
             </TabsTrigger>
           </TabsList>
 
@@ -40,10 +40,10 @@ const Surveys = () => {
           <TabsContent value="history" className="mt-4">
             <div className="bg-card/60 backdrop-blur border border-border rounded-3xl p-6">
               <h3 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-1">
-                {t.selfChecks.scoreHistory}
+                {t.questionnaires_manage.scoreHistory}
               </h3>
               <p className="text-xs text-muted-foreground mb-4">
-                {t.selfChecks.scoreHistorySubtitle}
+                {t.questionnaires_manage.scoreHistorySubtitle}
               </p>
               <ScoreHistory key={refreshKey} />
             </div>

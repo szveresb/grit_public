@@ -119,7 +119,7 @@ const HorizontalTimeline = ({ items, lang, t }: Props) => {
         </div>
         <div className="flex items-center gap-1.5">
           <span className="h-2.5 w-2.5 rounded-full bg-muted-foreground" />
-          <span className="text-[10px] text-muted-foreground">{t.timeline.selfCheckLabel}</span>
+          <span className="text-[10px] text-muted-foreground">{t.timeline.questionnaireLabel}</span>
         </div>
       </div>
 
@@ -207,7 +207,7 @@ const HorizontalTimeline = ({ items, lang, t }: Props) => {
               <div className="flex items-baseline gap-2 flex-wrap">
                 <span className="text-sm font-semibold text-foreground">{selectedItem.title}</span>
                 <span className="text-[10px] text-muted-foreground capitalize shrink-0">
-                  {selectedItem.type === 'journal' ? t.timeline.journalLabel : selectedItem.type === 'observation' ? t.observations.tabObservations : t.timeline.selfCheckLabel}
+                  {selectedItem.type === 'journal' ? t.timeline.journalLabel : selectedItem.type === 'observation' ? t.observations.tabObservations : t.timeline.questionnaireLabel}
                 </span>
               </div>
               <p className="text-xs text-muted-foreground mt-0.5">

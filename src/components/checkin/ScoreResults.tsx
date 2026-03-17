@@ -33,7 +33,7 @@ const ScoreResults = ({ totalScore, maxPossibleScore, questionScores, scoreRange
   return (
     <div className="space-y-5 animate-fade-in">
       <div className="flex items-center justify-between">
-        <h3 className="text-sm font-semibold text-foreground">{t.selfChecks.yourScore}</h3>
+        <h3 className="text-sm font-semibold text-foreground">{t.questionnaires_manage.yourScore}</h3>
         <Button variant="ghost" size="icon" className="h-7 w-7" onClick={onClose}>
           <FClose className="h-4 w-4" />
         </Button>
@@ -44,7 +44,7 @@ const ScoreResults = ({ totalScore, maxPossibleScore, questionScores, scoreRange
         <div className="text-3xl font-bold text-foreground">{totalScore}</div>
         <Progress value={pct} className="h-2 rounded-full" />
         <p className="text-xs text-muted-foreground">
-          {t.selfChecks.totalScore}: {totalScore} / {maxPossibleScore}
+          {t.questionnaires_manage.totalScore}: {totalScore} / {maxPossibleScore}
         </p>
         {matchedRange && (
           <div className="mt-2 space-y-1">
@@ -61,7 +61,7 @@ const ScoreResults = ({ totalScore, maxPossibleScore, questionScores, scoreRange
       {/* Per-question breakdown */}
       <div className="space-y-2">
         <h4 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
-          {t.selfChecks.scoreBreakdown}
+          {t.questionnaires_manage.scoreBreakdown}
         </h4>
         {questionScores.map((qs, i) => (
           <div key={i} className="flex items-center justify-between border border-border rounded-xl px-3 py-2">
@@ -75,7 +75,7 @@ const ScoreResults = ({ totalScore, maxPossibleScore, questionScores, scoreRange
       </div>
 
       <Button size="sm" variant="outline" className="rounded-2xl w-full" onClick={onClose}>
-        {t.selfChecks.closeResults}
+        {t.questionnaires_manage.closeResults}
       </Button>
     </div>
   );

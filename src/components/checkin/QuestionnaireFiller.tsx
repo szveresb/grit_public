@@ -116,13 +116,13 @@ const QuestionnaireFiller = ({ onCompleted }: { onCompleted?: () => void }) => {
   };
 
   const getRepeatLabel = (interval: string | null): string => {
-    if (!interval) return t.selfChecks.repeatOnce;
+    if (!interval) return t.questionnaires_manage.repeatOnce;
     const map: Record<string, string> = {
-      daily: t.selfChecks.repeatDaily,
-      weekly: t.selfChecks.repeatWeekly,
-      biweekly: t.selfChecks.repeatBiweekly,
-      monthly: t.selfChecks.repeatMonthly,
-      anytime: t.selfChecks.repeatAnytime,
+      daily: t.questionnaires_manage.repeatDaily,
+      weekly: t.questionnaires_manage.repeatWeekly,
+      biweekly: t.questionnaires_manage.repeatBiweekly,
+      monthly: t.questionnaires_manage.repeatMonthly,
+      anytime: t.questionnaires_manage.repeatAnytime,
     };
     return map[interval] ?? interval;
   };
@@ -227,18 +227,18 @@ const QuestionnaireFiller = ({ onCompleted }: { onCompleted?: () => void }) => {
       : null;
 
     const journalDesc = totalScore != null
-      ? `${summaryLines}\n\n${t.selfChecks.totalScore}: ${totalScore}`
+      ? `${summaryLines}\n\n${t.questionnaires_manage.totalScore}: ${totalScore}`
       : summaryLines;
 
     await supabase.from('journal_entries').insert({
       user_id: user.id,
-      title: `${t.selfChecks.selfCheckJournalTitle}: ${qTitle}`,
+      title: `${t.questionnaires_manage.questionnaireJournalTitle}: ${qTitle}`,
       entry_date: new Date().toISOString().split('T')[0],
       event_description: journalDesc,
       impact_level: avgImpact,
     });
 
-    toast.success(t.selfChecks.completed);
+    toast.success(t.questionnaires_manage.completed);
     setLastResponses((prev) => [
       { questionnaire_id: selectedQ, completed_at: new Date().toISOString() },
       ...prev.filter((r) => r.questionnaire_id !== selectedQ),
@@ -321,7 +321,7 @@ const QuestionnaireFiller = ({ onCompleted }: { onCompleted?: () => void }) => {
   };
 
   if (loading) return <p className="text-sm text-muted-foreground">{t.loading}</p>;
-  if (questionnaires.length === 0) return <p className="text-sm text-muted-foreground">{t.selfChecks.noAvailable}</p>;
+  if (questionnaires.length === 0) return <p className="text-sm text-muted-foreground">{t.questionnaires_manage.noAvailable}</p>;
 
   // Show score results after submission
   if (selectedQ && scoreResult) {
@@ -356,7 +356,7 @@ const QuestionnaireFiller = ({ onCompleted }: { onCompleted?: () => void }) => {
         ))}
         <div className="flex gap-2">
           <Button size="sm" className="rounded-2xl" onClick={handleSubmit} disabled={submitting}>
-            {submitting ? t.selfChecks.submitting : t.submit}
+            {submitting ? t.questionnaires_manage.submitting : t.submit}
           </Button>
           <Button size="sm" variant="outline" className="rounded-2xl" onClick={() => setSelectedQ(null)}>
             {t.cancel}
@@ -402,13 +402,13 @@ const QuestionnaireFiller = ({ onCompleted }: { onCompleted?: () => void }) => {
                 <div className="flex items-center gap-1.5 mt-1">
                   <FClock className="h-3 w-3 text-muted-foreground" />
                   <span className="text-[11px] text-muted-foreground">
-                    {t.selfChecks.lastCompleted}: {formatDistanceToNow(new Date(last.completed_at), { addSuffix: true, locale: dateLocale })}
+                    {t.questionnaires_manage.lastCompleted}: {formatDistanceToNow(new Date(last.completed_at), { addSuffix: true, locale: dateLocale })}
                   </span>
                 </div>
               )}
               {!available && (
                 <span className="text-[11px] text-muted-foreground/70">
-                  {t.selfChecks.alreadyCompleted}
+                  {t.questionnaires_manage.alreadyCompleted}
                 </span>
               )}
             </div>

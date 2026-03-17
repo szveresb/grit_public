@@ -60,8 +60,8 @@ const ActionGrid = () => {
       {/* Action cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
         <ActionCard
-          title={t.dash.completeSelfCheck}
-          description={t.dash.completeSelfCheckDesc}
+          title={t.dash.completeJournal}
+          description={t.dash.completeJournalDesc}
           icon={FHeartPulse}
           variant="sage"
           onClick={() => navigate(localePath('/journal'))}
