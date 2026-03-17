@@ -1,51 +1,35 @@
 
 
-# Create Separate Library Page
+## Recap / Catch-Up CTA for Inactive Users
 
-## What Changes
+**Goal**: Show a prominent banner when the user hasn't logged a journal entry in 14+ days, encouraging them to catch up and optionally create a backdated entry.
 
-1. **New `/library` page** -- A public page showing all published library articles with search/filter, reusing the same card design from the landing page.
+### Approach
 
-2. **Landing page updates:**
-   - Library section limited to **max 6 articles** (newest first)
-   - Each card links to the article URL (external) or is a static card if no URL
-   - Add a "View All" link to `/library` page below the 6 cards
-   - **Remove** the entire "Research Summaries" section
-   - Update nav links from `#library` anchor to `/library` route
+1. **Detect inactivity**: In `CheckIn.tsx`, after entries load (via `calendarItems` or a dedicated query), compute `daysSinceLastEntry` from the most recent `entry_date`. If ≥ 14 days, show the CTA.
 
-3. **Navigation updates** -- Both desktop and mobile nav: "Konyvtar" links to `/library` page, remove "Kutatasi osszefoglalok" link entirely.
+2. **New component `RecapBanner.tsx`** (`src/components/checkin/RecapBanner.tsx`):
+   - Warm, encouraging card with the number of days since last entry
+   - "Catch up" button that opens `JournalForm` pre-filled with today's date
+   - Dismiss button (session-only, state in parent)
+   - Styled consistently with existing `bg-card/60 backdrop-blur border rounded-3xl` pattern
 
-4. **Routing** -- Add `/library` and `/en/library` routes in `App.tsx` (public, no auth required).
+3. **Placement**: Between the QuickPulse section and the observation stepper in `CheckIn.tsx`. Also show on the `/journal` page above the entry list.
 
----
+4. **i18n**: Add to `checkIn` section in types/en/hu:
+   - `recapTitle` — e.g. "It's been a while" / "Rég jártál itt"
+   - `recapMessage` — e.g. "You haven't logged in {days} days. How have you been?" / "Nem írtál {days} napja. Hogy vagy?"
+   - `recapCta` — "Catch up" / "Írj pár sort"
 
-## Technical Details
+5. **Logic details**:
+   - Query `journal_entries` for `max(entry_date)` for the current user
+   - Compare against today; if diff ≥ 14, render `RecapBanner`
+   - Clicking CTA calls `openJournalForm()` (existing function)
+   - Banner hides after dismiss or after a new entry is saved (via `refreshKey` change)
 
-### New file: `src/pages/Library.tsx`
-- Public page (no ProtectedRoute)
-- Fetches all published `library_articles` ordered by `created_at desc`
-- Search input + category filter (reuse pattern from ManageLibrary)
-- Same card design as landing page
-- Uses landing page layout (bamboo bg, header, footer) or a simpler standalone layout
+### Files to create/modify
+- **Create** `src/components/checkin/RecapBanner.tsx`
+- **Edit** `src/pages/CheckIn.tsx` — add inactivity check + render banner
+- **Edit** `src/pages/Journal.tsx` — same banner above entry list
+- **Edit** `src/i18n/types.ts`, `src/i18n/en.ts`, `src/i18n/hu.ts` — new strings
 
-### Modified files:
-
-**`src/App.tsx`** -- Add routes:
-- `/library` and `/en/library` pointing to new Library component
-
-**`src/pages/Index.tsx`**:
-- Limit articles query to `.limit(6)` 
-- Remove Research Summaries section (lines 180-207)
-- Change nav links from `#library` / `#research` to `localePath('/library')`
-- Remove `#research` nav item from both desktop and mobile menus
-- Add "View all" link below the 6-card grid pointing to `/library`
-- Update hero "Browse Library" button to link to `/library`
-
-**`src/i18n/hu.ts`** and **`src/i18n/en.ts`**:
-- Add `landing.viewAll` key ("Osszes megtekintese" / "View all")
-- Keep existing keys, no removals needed
-
-**`src/i18n/types.ts`**:
-- Add `viewAll` to the landing section type
-
-### No database changes required.
