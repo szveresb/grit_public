@@ -112,7 +112,7 @@ const SelfChecks = () => {
     if (error || !resp) { toast.error('Failed to submit'); setSubmitting(false); return; }
     const answerRows = Object.entries(answers).map(([question_id, answer]) => ({ response_id: resp.id, question_id, answer: JSON.stringify(answer) }));
     if (answerRows.length) await supabase.from('questionnaire_answers').insert(answerRows);
-    toast.success(t.selfChecks.completed); setSelectedQ(null); setAnswers({}); setSubmitting(false);
+    toast.success(t.questionnaires_manage.completed); setSelectedQ(null); setAnswers({}); setSubmitting(false);
   };
 
   const renderQuestionInput = (q: Question) => {
