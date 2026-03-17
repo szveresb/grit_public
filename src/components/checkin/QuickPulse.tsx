@@ -50,7 +50,7 @@ const QuickPulse = ({ onPulseSaved, onMoodSelected, compact = false }: QuickPuls
 
     setSaving(true);
     // Always write to mood_pulses
-    const { error } = await supabase.from('mood_pulses').insert({
+    const { error } = await (supabase.from as any)('mood_pulses').insert({
       user_id: user.id,
       level,
       label,

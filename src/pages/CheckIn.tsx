@@ -75,7 +75,7 @@ const CheckIn = () => {
         supabase.from('journal_entries').select('id, title, entry_date, impact_level').eq('user_id', user.id),
         supabase.from('questionnaire_responses').select('id, questionnaire_id, completed_at, questionnaires(title)').eq('user_id', user.id),
         supabase.from('observation_logs').select('id, intensity, frequency, logged_at, concept_id, user_narrative').eq('user_id', user.id),
-        supabase.from('mood_pulses').select('level, entry_date').eq('user_id', user.id),
+        (supabase.from as any)('mood_pulses').select('level, entry_date').eq('user_id', user.id),
       ]);
 
       const journalData = journalRes.data ?? [];
