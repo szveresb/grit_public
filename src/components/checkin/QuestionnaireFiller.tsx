@@ -116,13 +116,13 @@ const QuestionnaireFiller = ({ onCompleted }: { onCompleted?: () => void }) => {
   };
 
   const getRepeatLabel = (interval: string | null): string => {
-    if (!interval) return t.selfChecks.repeatOnce;
+    if (!interval) return t.questionnaires_manage.repeatOnce;
     const map: Record<string, string> = {
-      daily: t.selfChecks.repeatDaily,
-      weekly: t.selfChecks.repeatWeekly,
-      biweekly: t.selfChecks.repeatBiweekly,
-      monthly: t.selfChecks.repeatMonthly,
-      anytime: t.selfChecks.repeatAnytime,
+      daily: t.questionnaires_manage.repeatDaily,
+      weekly: t.questionnaires_manage.repeatWeekly,
+      biweekly: t.questionnaires_manage.repeatBiweekly,
+      monthly: t.questionnaires_manage.repeatMonthly,
+      anytime: t.questionnaires_manage.repeatAnytime,
     };
     return map[interval] ?? interval;
   };
