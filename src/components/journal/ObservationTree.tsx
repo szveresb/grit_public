@@ -57,8 +57,14 @@ const ObservationTree = ({ onComplete, onSkip }: ObservationTreeProps) => {
     setSelectedCategory(catId);
     const { data } = await supabase.from('observation_concepts').select('*')
       .eq('category_id', catId).eq('is_active', true).order('sort_order');
-    setConcepts((data as Concept[]) ?? []);
-    setStep(1);
+    const items = (data as Concept[]) ?? [];
+    setConcepts(items);
+    if (items.length === 0) {
+      // No sub-concepts — skip directly to journal form
+      onSkip();
+    } else {
+      setStep(1);
+    }
   };
 
   const selectConcept = (conceptId: string) => {
