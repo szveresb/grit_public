@@ -158,7 +158,7 @@ const ScoreHistory = () => {
                     <span>{format(new Date(e.completed_at), 'PPp', { locale: dateLocale })}</span>
                   </div>
                   <span className="font-semibold text-foreground">
-                    {e.total_score} {t.selfChecks.points}
+                    {e.total_score} {t.questionnaires_manage.points}
                   </span>
                 </div>
               ))}

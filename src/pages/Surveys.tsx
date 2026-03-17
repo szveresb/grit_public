@@ -40,10 +40,10 @@ const Surveys = () => {
           <TabsContent value="history" className="mt-4">
             <div className="bg-card/60 backdrop-blur border border-border rounded-3xl p-6">
               <h3 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-1">
-                {t.selfChecks.scoreHistory}
+                {t.questionnaires_manage.scoreHistory}
               </h3>
               <p className="text-xs text-muted-foreground mb-4">
-                {t.selfChecks.scoreHistorySubtitle}
+                {t.questionnaires_manage.scoreHistorySubtitle}
               </p>
               <ScoreHistory key={refreshKey} />
             </div>

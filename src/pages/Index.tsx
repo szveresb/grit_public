@@ -67,7 +67,7 @@ const Index = () => {
               <Link to={localePath('/library')}>{t.landing.browseLibrary}</Link>
             </Button>
             <Button size="lg" variant="outline" className="rounded-2xl px-6" onClick={() => handleGatedClick('/journal')}>
-              {t.landing.startSelfCheck}
+              {t.landing.startJournal}
               {!user && <FLock className="h-4 w-4 ml-1.5" />}
             </Button>
           </div>

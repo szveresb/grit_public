@@ -75,7 +75,7 @@ const ScoreResults = ({ totalScore, maxPossibleScore, questionScores, scoreRange
       </div>
 
       <Button size="sm" variant="outline" className="rounded-2xl w-full" onClick={onClose}>
-        {t.selfChecks.closeResults}
+        {t.questionnaires_manage.closeResults}
       </Button>
     </div>
   );
