@@ -17,7 +17,7 @@ const Surveys = () => {
             {t.nav.surveys}
           </h1>
           <p className="mt-1 text-sm text-muted-foreground leading-relaxed">
-            {t.selfChecks.subtitle}
+            {t.questionnaires_manage.subtitle}
           </p>
         </div>
 
