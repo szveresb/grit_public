@@ -154,8 +154,8 @@ const CheckIn = () => {
 
         {/* Quick Pulse */}
         <div className="bg-card/60 backdrop-blur border border-border rounded-3xl p-6">
-          <QuickPulse onMoodSelected={(mood) => {
-            openEntryModal(new Date(), { emotional_state: mood.emotional_state, impact_level: mood.impact_level });
+          <QuickPulse onMoodSelected={() => {
+            openEntryModal(new Date());
           }} />
         </div>
 
