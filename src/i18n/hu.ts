@@ -257,7 +257,7 @@ export const hu: Dictionary = {
     noEntriesOnDay: 'Nincs bejegyzés ezen a napon.',
     dayNames: ['Va', 'Hé', 'Ke', 'Sz', 'Cs', 'Pé', 'Szo'],
     journalLabel: 'Napló',
-    selfCheckLabel: 'Önellenőrzés',
+    questionnaireLabel: 'Kérdőív',
     patternNudge: '„{name}" mintát {count} alkalommal észlelted ezen a héten.',
     patternChartTitle: 'Mintázat gyakoriság',
     patternChartSubtitle: 'Heti 3+ alkalommal megfigyelt fogalmak',

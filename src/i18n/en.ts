@@ -257,7 +257,7 @@ export const en: Dictionary = {
     noEntriesOnDay: 'No entries on this day.',
     dayNames: ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'],
     journalLabel: 'Journal',
-    selfCheckLabel: 'Self-Check',
+    questionnaireLabel: 'Questionnaire',
     patternNudge: 'You\'ve noticed "{name}" {count} times this week.',
     patternChartTitle: 'Pattern Frequency',
     patternChartSubtitle: 'Concepts appearing 3+ times in a week',
