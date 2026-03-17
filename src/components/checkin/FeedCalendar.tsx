@@ -21,6 +21,7 @@ interface Props {
   onMonthChange: (month: Date) => void;
   selectedDate: Date | null;
   onSelectDate: (date: Date | null) => void;
+  onEntryClick?: (type: CalendarFeedItem['type'], dbId: string) => void;
 }
 
 const iconFor = (type: CalendarFeedItem['type']) => {
