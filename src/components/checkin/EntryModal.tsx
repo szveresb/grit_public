@@ -261,7 +261,7 @@ const EntryModal = ({ open, onOpenChange, entryDate, prefill, onSaved }: EntryMo
         {/* Step 2: Intensity */}
         {step === 'intensity' && (
           <div className="space-y-5 animate-fade-in">
-            <Button variant="ghost" size="sm" className="rounded-2xl" onClick={() => setStep('concept')}>
+            <Button variant="ghost" size="sm" className="rounded-2xl" onClick={() => setStep(concepts.length === 0 ? 'category' : 'concept')}>
               <FArrowLeft className="h-4 w-4 mr-1" /> {t.observations.back}
             </Button>
 
