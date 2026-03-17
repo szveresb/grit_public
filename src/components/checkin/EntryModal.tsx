@@ -57,7 +57,7 @@ const EntryModal = ({ open, onOpenChange, entryDate, prefill, onSaved }: EntryMo
   const [categories, setCategories] = useState<Category[]>([]);
   const [concepts, setConcepts] = useState<Concept[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
-  const [selectedConcept, setSelectedConcept] = useState<Concept | null>(null);
+  const [selectedConcept, setSelectedConcept] = useState<SelectedConceptLike | null>(null);
   const [intensity, setIntensity] = useState(3);
   const [saving, setSaving] = useState(false);
 
