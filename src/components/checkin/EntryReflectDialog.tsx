@@ -38,8 +38,7 @@ const EntryReflectDialog = ({ entryId, onClose, onSaved }: Props) => {
       .then(({ data, error }) => {
         if (error) { console.error(error); onClose(); return; }
         setEntry(data as JournalEntry);
-        // Pre-fill with existing reflection if any
-        setComment(data?.reflection ?? '');
+        setComment('');
         setLoading(false);
       });
   }, [entryId, user]);
