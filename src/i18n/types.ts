@@ -246,6 +246,8 @@ export interface Dictionary {
     scoreRangeDescription: string;
     addScoreRange: string;
     answerScores: string;
+    scaleType: string;
+    scaleRange: string;
     yourScore: string;
     scoreBreakdown: string;
     totalScore: string;
