@@ -306,6 +306,34 @@ const SelfChecks = () => {
                         ))}
                       </div>
                     </div>
+                    {formScoringEnabled && formScoringMode !== 'weighted' && (
+                      <div className="flex items-center gap-3 pt-1">
+                        <Switch checked={nq.reverseScored} onCheckedChange={(checked) => {
+                          const c = [...formQuestions];
+                          c[i].reverseScored = checked;
+                          if (checked) {
+                            // Auto-generate reversed scores
+                            const scores: Record<string, number> = {};
+                            for (let n = nq.scaleMin; n <= nq.scaleMax; n++) {
+                              scores[String(n)] = (nq.scaleMin + nq.scaleMax) - n;
+                            }
+                            c[i].answerScores = scores;
+                          } else {
+                            c[i].answerScores = {};
+                          }
+                          setFormQuestions(c);
+                        }} />
+                        <Label className="text-xs text-muted-foreground">{t.questionnaires_manage.reverseScoring}</Label>
+                        {nq.reverseScored && (
+                          <span className="text-[10px] text-muted-foreground/70">
+                            ({Array.from({ length: nq.scaleMax - nq.scaleMin + 1 }, (_, k) => {
+                              const n = nq.scaleMin + k;
+                              return `${n}→${(nq.scaleMin + nq.scaleMax) - n}`;
+                            }).join(', ')})
+                          </span>
+                        )}
+                      </div>
+                    )}
                   </div>
                 )}
                 {/* Weighted answer scores */}
