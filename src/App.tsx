@@ -10,7 +10,7 @@ import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
 import CheckIn from "./pages/CheckIn";
-import Timeline from "./pages/Timeline";
+
 import Profile from "./pages/Profile";
 import Export from "./pages/Export";
 import ManageLibrary from "./pages/ManageLibrary";
