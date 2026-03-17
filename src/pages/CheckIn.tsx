@@ -43,7 +43,6 @@ const CheckIn = () => {
   const [highlightDate, setHighlightDate] = useState<string | null>(null);
   const [cameFromTimeline, setCameFromTimeline] = useState(false);
   const navigate = useNavigate();
-  const { localePath } = useLanguage();
 
   // Read ?date param on mount and scroll to feed
   useEffect(() => {
