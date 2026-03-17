@@ -214,18 +214,18 @@ const SelfChecks = () => {
                   </select>
                 </div>
                 <div className="space-y-2">
-                  <Label className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">{t.selfChecks.scoreRanges}</Label>
+                  <Label className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">{t.questionnaires_manage.scoreRanges}</Label>
                   {formScoreRanges.map((sr, i) => (
                     <div key={i} className="flex gap-2 items-center">
-                      <Input type="number" value={sr.min} onChange={e => { const c = [...formScoreRanges]; c[i] = { ...c[i], min: Number(e.target.value) }; setFormScoreRanges(c); }} placeholder={t.selfChecks.scoreRangeMin} className="w-16 rounded-2xl text-xs" />
+                      <Input type="number" value={sr.min} onChange={e => { const c = [...formScoreRanges]; c[i] = { ...c[i], min: Number(e.target.value) }; setFormScoreRanges(c); }} placeholder={t.questionnaires_manage.scoreRangeMin} className="w-16 rounded-2xl text-xs" />
                       <span className="text-xs text-muted-foreground">–</span>
-                      <Input type="number" value={sr.max} onChange={e => { const c = [...formScoreRanges]; c[i] = { ...c[i], max: Number(e.target.value) }; setFormScoreRanges(c); }} placeholder={t.selfChecks.scoreRangeMax} className="w-16 rounded-2xl text-xs" />
-                      <Input value={sr.label} onChange={e => { const c = [...formScoreRanges]; c[i] = { ...c[i], label: e.target.value }; setFormScoreRanges(c); }} placeholder={t.selfChecks.scoreRangeLabel} className="flex-1 rounded-2xl text-xs" />
-                      <Input value={sr.description ?? ''} onChange={e => { const c = [...formScoreRanges]; c[i] = { ...c[i], description: e.target.value }; setFormScoreRanges(c); }} placeholder={t.selfChecks.scoreRangeDescription} className="flex-1 rounded-2xl text-xs" />
+                      <Input type="number" value={sr.max} onChange={e => { const c = [...formScoreRanges]; c[i] = { ...c[i], max: Number(e.target.value) }; setFormScoreRanges(c); }} placeholder={t.questionnaires_manage.scoreRangeMax} className="w-16 rounded-2xl text-xs" />
+                      <Input value={sr.label} onChange={e => { const c = [...formScoreRanges]; c[i] = { ...c[i], label: e.target.value }; setFormScoreRanges(c); }} placeholder={t.questionnaires_manage.scoreRangeLabel} className="flex-1 rounded-2xl text-xs" />
+                      <Input value={sr.description ?? ''} onChange={e => { const c = [...formScoreRanges]; c[i] = { ...c[i], description: e.target.value }; setFormScoreRanges(c); }} placeholder={t.questionnaires_manage.scoreRangeDescription} className="flex-1 rounded-2xl text-xs" />
                       <Button type="button" variant="ghost" size="icon" className="h-7 w-7" onClick={() => setFormScoreRanges(r => r.filter((_, j) => j !== i))}><FTrash className="h-3 w-3" /></Button>
                     </div>
                   ))}
-                  <Button type="button" variant="outline" size="sm" className="rounded-2xl text-xs" onClick={() => setFormScoreRanges(r => [...r, { min: 0, max: 0, label: '', description: '' }])}><FPlus className="h-3 w-3 mr-1" /> {t.selfChecks.addScoreRange}</Button>
+                  <Button type="button" variant="outline" size="sm" className="rounded-2xl text-xs" onClick={() => setFormScoreRanges(r => [...r, { min: 0, max: 0, label: '', description: '' }])}><FPlus className="h-3 w-3 mr-1" /> {t.questionnaires_manage.addScoreRange}</Button>
                 </div>
               </>
             )}
