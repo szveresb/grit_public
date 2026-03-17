@@ -26,6 +26,8 @@ const Timeline = () => {
   const [nudges, setNudges] = useState<PatternNudge[]>([]);
   const [obsLogs, setObsLogs] = useState<ObsLog[]>([]);
   const [conceptMap, setConceptMap] = useState<Record<string, ConceptEntry>>({});
+  const [moodData, setMoodData] = useState<MoodPoint[]>([]);
+  const [conceptMap, setConceptMap] = useState<Record<string, ConceptEntry>>({});
 
   useEffect(() => {
     if (!user) return;
