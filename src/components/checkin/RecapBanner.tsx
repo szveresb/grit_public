@@ -1,6 +1,6 @@
 import { useLanguage } from '@/hooks/useLanguage';
 import { Button } from '@/components/ui/button';
-import { FPlus, FX } from '@/components/icons/FreudIcons';
+import { FPlus, FClose } from '@/components/icons/FreudIcons';
 
 interface RecapBannerProps {
   days: number;
