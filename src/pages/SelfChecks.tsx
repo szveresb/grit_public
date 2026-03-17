@@ -75,7 +75,16 @@ const SelfChecks = () => {
         scaleMin = Number(opts[0]) || 1;
         scaleMax = Number(opts[1]) || 5;
       }
-      return { id: qq.id, text: qq.question_text, type: qq.question_type, options: qq.question_type === 'multiple_choice' && opts ? opts.join(', ') : '', answerScores: (qq.answer_scores as Record<string, number>) ?? {}, scaleMin, scaleMax, scaleLabels: (qq.options_localized as Record<string, string>) ?? {} };
+      // Detect reverse scoring pattern: answer_scores exist and match reversed values
+      const scores = (qq.answer_scores as Record<string, number>) ?? {};
+      let isReverse = false;
+      if (qq.question_type === 'scale' && Object.keys(scores).length > 0) {
+        isReverse = true;
+        for (let n = scaleMin; n <= scaleMax; n++) {
+          if (scores[String(n)] !== (scaleMin + scaleMax) - n) { isReverse = false; break; }
+        }
+      }
+      return { id: qq.id, text: qq.question_text, type: qq.question_type, options: qq.question_type === 'multiple_choice' && opts ? opts.join(', ') : '', answerScores: scores, scaleMin, scaleMax, scaleLabels: (qq.options_localized as Record<string, string>) ?? {}, reverseScored: isReverse };
     }));
     setShowForm(true);
   };
