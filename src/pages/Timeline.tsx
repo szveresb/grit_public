@@ -39,6 +39,7 @@ const Timeline = () => {
       const journalData = journalRes.data ?? [];
       const journalItems: TimelineItem[] = journalData.map(j => ({ id: j.id, type: 'journal', title: j.title, date: j.entry_date, detail: j.impact_level ? `${t.journal.cardImpact}: ${j.impact_level}/5` : undefined }));
       setMoodData(journalData.filter(j => j.impact_level != null).map(j => ({ date: j.entry_date, level: j.impact_level! })));
+      const qItems: TimelineItem[] = (responseRes.data ?? []).map((r: any) => ({ id: r.id, type: 'questionnaire', title: r.questionnaires?.title ?? t.nav.selfChecks, date: r.completed_at.split('T')[0] }));
 
       let obsItems: TimelineItem[] = [];
       const obsData = obsRes.data ?? [];
