@@ -201,7 +201,7 @@ const SelfChecks = () => {
           <div className="space-y-3 border border-border rounded-2xl p-4">
             <div className="flex items-center gap-3">
               <Switch checked={formScoringEnabled} onCheckedChange={setFormScoringEnabled} />
-              <Label className="text-sm">{t.selfChecks.scoringEnabled}</Label>
+              <Label className="text-sm">{t.questionnaires_manage.scoringEnabled}</Label>
             </div>
             {formScoringEnabled && (
               <>
