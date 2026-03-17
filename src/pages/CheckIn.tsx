@@ -24,7 +24,7 @@ import { emptyForm } from '@/types/journal';
 import RecapBanner from '@/components/checkin/RecapBanner';
 
 const CheckIn = () => {
-  const { t, lang } = useLanguage();
+  const { t, lang, localePath } = useLanguage();
   const { user } = useAuth();
   const [searchParams, setSearchParams] = useSearchParams();
   const feedRef = useRef<HTMLDivElement>(null);
