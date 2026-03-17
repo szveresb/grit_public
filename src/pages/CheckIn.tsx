@@ -135,6 +135,19 @@ const CheckIn = () => {
   return (
     <DashboardLayout>
       <div className="max-w-2xl mx-auto w-full space-y-8">
+        {/* Back to timeline */}
+        {cameFromTimeline && (
+          <Button
+            variant="ghost"
+            size="sm"
+            className="rounded-full gap-1.5 text-muted-foreground hover:text-foreground -mb-4"
+            onClick={() => navigate(localePath('/timeline'))}
+          >
+            <FChevronLeft className="h-3.5 w-3.5" />
+            <span className="text-xs">{lang === 'hu' ? 'Vissza az idővonalhoz' : 'Back to timeline'}</span>
+          </Button>
+        )}
+
         {/* Header */}
         <div>
           <h1 className="text-lg md:text-xl font-bold tracking-tight text-foreground">{t.checkIn.title}</h1>
