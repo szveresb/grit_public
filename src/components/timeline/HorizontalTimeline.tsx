@@ -103,7 +103,22 @@ const HorizontalTimeline = ({ items, lang, t }: Props) => {
 
   return (
     <div className="space-y-3">
-      {/* Scrollable container */}
+      {/* Legend */}
+      <div className="flex items-center gap-4 flex-wrap">
+        <div className="flex items-center gap-1.5">
+          <span className="h-2.5 w-2.5 rounded-full bg-primary" />
+          <span className="text-[10px] text-muted-foreground">{t.timeline.journalLabel}</span>
+        </div>
+        <div className="flex items-center gap-1.5">
+          <span className="h-2.5 w-2.5 rounded-full bg-accent-foreground/60" />
+          <span className="text-[10px] text-muted-foreground">{t.observations.tabObservations}</span>
+        </div>
+        <div className="flex items-center gap-1.5">
+          <span className="h-2.5 w-2.5 rounded-full bg-muted-foreground" />
+          <span className="text-[10px] text-muted-foreground">{t.timeline.selfCheckLabel}</span>
+        </div>
+      </div>
+
       <div
         ref={containerRef}
         className="overflow-x-auto overflow-y-visible pb-2 pt-2"
