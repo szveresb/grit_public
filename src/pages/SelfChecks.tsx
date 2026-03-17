@@ -264,11 +264,29 @@ const SelfChecks = () => {
                   <Input value={nq.options} onChange={e => { const c = [...formQuestions]; c[i].options = e.target.value; setFormQuestions(c); }} placeholder="Options (comma-separated)" className="text-xs rounded-2xl" />
                 )}
                 {nq.type === 'scale' && (
-                  <div className="flex items-center gap-2">
-                    <Label className="text-[10px] uppercase tracking-widest text-muted-foreground shrink-0">{t.questionnaires_manage.scaleRange}</Label>
-                    <Input type="number" value={nq.scaleMin} onChange={e => { const c = [...formQuestions]; c[i].scaleMin = Number(e.target.value); setFormQuestions(c); }} className="w-16 h-8 rounded-xl text-xs" />
-                    <span className="text-xs text-muted-foreground">–</span>
-                    <Input type="number" value={nq.scaleMax} onChange={e => { const c = [...formQuestions]; c[i].scaleMax = Number(e.target.value); setFormQuestions(c); }} className="w-16 h-8 rounded-xl text-xs" />
+                  <div className="space-y-2">
+                    <div className="flex items-center gap-2">
+                      <Label className="text-[10px] uppercase tracking-widest text-muted-foreground shrink-0">{t.questionnaires_manage.scaleRange}</Label>
+                      <Input type="number" value={nq.scaleMin} onChange={e => { const c = [...formQuestions]; c[i].scaleMin = Number(e.target.value); setFormQuestions(c); }} className="w-16 h-8 rounded-xl text-xs" />
+                      <span className="text-xs text-muted-foreground">–</span>
+                      <Input type="number" value={nq.scaleMax} onChange={e => { const c = [...formQuestions]; c[i].scaleMax = Number(e.target.value); setFormQuestions(c); }} className="w-16 h-8 rounded-xl text-xs" />
+                    </div>
+                    <div className="space-y-1">
+                      <Label className="text-[10px] uppercase tracking-widest text-muted-foreground">{t.questionnaires_manage.scaleLabels}</Label>
+                      <div className="flex flex-wrap gap-2">
+                        {Array.from({ length: nq.scaleMax - nq.scaleMin + 1 }, (_, k) => nq.scaleMin + k).map(n => (
+                          <div key={n} className="flex items-center gap-1">
+                            <span className="text-[11px] text-muted-foreground font-semibold w-5 text-center">{n}</span>
+                            <Input
+                              value={nq.scaleLabels[String(n)] ?? ''}
+                              onChange={e => { const c = [...formQuestions]; c[i].scaleLabels = { ...c[i].scaleLabels, [String(n)]: e.target.value }; setFormQuestions(c); }}
+                              placeholder={t.questionnaires_manage.scaleLabelsPlaceholder}
+                              className="w-28 h-7 rounded-xl text-xs"
+                            />
+                          </div>
+                        ))}
+                      </div>
+                    </div>
                   </div>
                 )}
                 {/* Weighted answer scores */}
