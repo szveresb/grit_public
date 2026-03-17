@@ -95,7 +95,7 @@ const HorizontalTimeline = ({ items, lang, t }: Props) => {
   // Find the selected item for detail card
   const selectedItem = selectedId ? items.find(i => i.id === selectedId) : null;
 
-  const trackWidth = Math.max(grouped.length * DOT_GAP, 400);
+  const trackWidth = Math.max(groupedLTR.length * DOT_GAP, 400);
 
   return (
     <div className="space-y-3">
