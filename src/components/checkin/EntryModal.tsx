@@ -144,8 +144,8 @@ const EntryModal = ({ open, onOpenChange, entryDate, prefill, onSaved }: EntryMo
 
     if (error) { toast.error(friendlyDbError(error)); setSaving(false); return; }
 
-    // Link observation log
-    if (journalData) {
+    // Link observation log (only if a real concept was selected)
+    if (journalData && selectedConcept.id) {
       const { error: obsError } = await supabase.from('observation_logs').insert({
         user_id: user.id,
         concept_id: selectedConcept.id,
