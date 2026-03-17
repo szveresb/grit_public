@@ -25,7 +25,7 @@ export const hu: Dictionary = {
     home: 'Kezdőlap',
     library: 'Könyvtár',
     
-    selfChecks: 'Önellenőrzés',
+    questionnaires: 'Kérdőívek',
     about: 'Rólunk',
     journal: 'Napló',
     history: 'Előzmények',
