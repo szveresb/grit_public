@@ -155,14 +155,7 @@ const CheckIn = () => {
         {/* Quick Pulse */}
         <div className="bg-card/60 backdrop-blur border border-border rounded-3xl p-6">
           <QuickPulse onMoodSelected={(mood) => {
-            setForm({
-              ...emptyForm,
-              entry_date: format(new Date(), 'yyyy-MM-dd'),
-              title: mood.emotional_state,
-              impact_level: mood.impact_level,
-              emotional_state: mood.emotional_state,
-            });
-            setShowJournalForm(true);
+            openEntryModal(new Date(), { emotional_state: mood.emotional_state, impact_level: mood.impact_level });
           }} />
         </div>
 
@@ -170,21 +163,8 @@ const CheckIn = () => {
         {daysSinceLastEntry !== null && daysSinceLastEntry >= 14 && !recapDismissed && (
           <RecapBanner
             days={daysSinceLastEntry}
-            onCatchUp={() => openJournalForm()}
+            onCatchUp={() => openEntryModal()}
             onDismiss={() => setRecapDismissed(true)}
-          />
-        )}
-
-        {/* Full journal form with guided tree */}
-        {showJournalForm && (
-          <JournalForm
-            form={form}
-            onChange={setForm}
-            onSubmit={handleJournalSubmit}
-            onClose={() => setShowJournalForm(false)}
-            saving={saving}
-            isEditing={false}
-            showObservationTree={true}
           />
         )}
 
