@@ -115,7 +115,7 @@ const HorizontalTimeline = ({ items, lang, t }: Props) => {
         <style>{`.timeline-scroll::-webkit-scrollbar { display: none; }`}</style>
         <div
           className="timeline-scroll relative"
-          style={{ width: `${trackWidth * scale}px`, minHeight: 80, transform: `scaleX(1)`, transformOrigin: 'left center' }}
+          style={trackStyle}
         >
           {/* Horizontal line */}
           <div className="absolute left-0 right-0 top-[24px] h-px bg-border" />
