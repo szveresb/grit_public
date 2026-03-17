@@ -264,8 +264,8 @@ export const en: Dictionary = {
     weekLabel: 'W{n}',
     timesPerWeek: '{count} times',
     moodTrendTitle: 'Mood Trend',
-    moodTrendSubtitle: 'Your emotional impact level from journal entries over time',
-    moodTrendEmpty: 'At least two journal entries with impact levels are needed to show the mood trend.',
+    moodTrendSubtitle: 'How your mood has been changing over time',
+    moodTrendEmpty: 'At least two mood check-ins are needed to show the mood trend.',
   },
 
   profile: {

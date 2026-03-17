@@ -108,7 +108,7 @@ const MoodTrendChart = ({ data, lang, t }: MoodTrendChartProps) => {
   const visibleSpan = filtered.length >= 2
     ? differenceInDays(new Date(filtered[filtered.length - 1].ts), new Date(filtered[0].ts))
     : 0;
-  const tickFormat = visibleSpan > 90 ? 'MMM yyyy' : visibleSpan > 14 ? 'MMM d' : 'EEE d';
+  const tickFormat = visibleSpan > 90 ? 'MMM yyyy' : visibleSpan > 14 ? 'MMM d' : 'EEEEEE d';
   const entriesLabel = lang === 'hu' ? 'bejegyzés' : 'entries';
   const entryLabel = lang === 'hu' ? 'bejegyzés' : 'entry';
 
