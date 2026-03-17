@@ -237,6 +237,8 @@ export const en: Dictionary = {
     answerScores: 'Answer scores',
     scaleType: 'Scale',
     scaleRange: 'Range',
+    scaleLabels: 'Point labels',
+    scaleLabelsPlaceholder: 'Label',
     yourScore: 'Your result',
     scoreBreakdown: 'Detailed breakdown',
     totalScore: 'Total score',
