@@ -79,7 +79,7 @@ const ScoreHistory = () => {
   }, [user]);
 
   if (loading) return <p className="text-sm text-muted-foreground">{t.loading}</p>;
-  if (groups.length === 0) return <p className="text-sm text-muted-foreground">{t.selfChecks.scoreHistoryEmpty}</p>;
+  if (groups.length === 0) return <p className="text-sm text-muted-foreground">{t.questionnaires_manage.scoreHistoryEmpty}</p>;
 
   return (
     <div className="space-y-6">
