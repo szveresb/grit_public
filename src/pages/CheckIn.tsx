@@ -41,6 +41,10 @@ const CheckIn = () => {
     setCalendarItems(items);
   }, []);
 
+  const handleEntryClick = useCallback((type: string, dbId: string) => {
+    if (type === 'journal') setReflectEntryId(dbId);
+  }, []);
+
   const openJournalForm = () => {
     setForm({ ...emptyForm, entry_date: format(new Date(), 'yyyy-MM-dd') });
     setShowJournalForm(true);
