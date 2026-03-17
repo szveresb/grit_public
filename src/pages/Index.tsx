@@ -8,6 +8,7 @@ import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import PublicHeader from '@/components/PublicHeader';
 import ArticleCard from '@/components/ArticleCard';
+import LandingMoodPreview from '@/components/LandingMoodPreview';
 
 import bambooBg from '@/assets/bamboo-bg.jpg';
 
