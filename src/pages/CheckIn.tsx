@@ -99,7 +99,16 @@ const CheckIn = () => {
 
         {/* Quick Pulse */}
         <div className="bg-card/60 backdrop-blur border border-border rounded-3xl p-6">
-          <QuickPulse onPulseSaved={refresh} onGoDeeper={openJournalForm} />
+          <QuickPulse onMoodSelected={(mood) => {
+            setForm({
+              ...emptyForm,
+              entry_date: format(new Date(), 'yyyy-MM-dd'),
+              title: mood.emotional_state,
+              impact_level: mood.impact_level,
+              emotional_state: mood.emotional_state,
+            });
+            setShowJournalForm(true);
+          }} />
         </div>
 
         {/* Full journal form with guided tree */}

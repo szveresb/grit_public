@@ -53,7 +53,7 @@ const ActionGrid = () => {
         </h2>
         <QuickPulse
           compact
-          onGoDeeper={() => navigate(localePath('/journal'))}
+          onMoodSelected={() => navigate(localePath('/journal'))}
         />
       </div>
 
