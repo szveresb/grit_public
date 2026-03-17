@@ -8,6 +8,7 @@ import FeedCalendar from '@/components/checkin/FeedCalendar';
 import type { CalendarFeedItem } from '@/components/checkin/FeedCalendar';
 import ObservationStepper from '@/components/observations/ObservationStepper';
 import EntryReflectDialog from '@/components/checkin/EntryReflectDialog';
+import ObservationReflectDialog from '@/components/checkin/ObservationReflectDialog';
 import EntryModal from '@/components/checkin/EntryModal';
 import type { EntryModalPrefill } from '@/components/checkin/EntryModal';
 import { useAuth } from '@/hooks/useAuth';
