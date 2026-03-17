@@ -26,6 +26,8 @@ import RecapBanner from '@/components/checkin/RecapBanner';
 const CheckIn = () => {
   const { t } = useLanguage();
   const { user } = useAuth();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const feedRef = useRef<HTMLDivElement>(null);
   const [refreshKey, setRefreshKey] = useState(0);
   const [showJournalForm, setShowJournalForm] = useState(false);
   const [form, setForm] = useState<JournalFormData>(emptyForm);
@@ -38,6 +40,22 @@ const CheckIn = () => {
   const [reflectEntryId, setReflectEntryId] = useState<string | null>(null);
   const [daysSinceLastEntry, setDaysSinceLastEntry] = useState<number | null>(null);
   const [recapDismissed, setRecapDismissed] = useState(false);
+  const [highlightDate, setHighlightDate] = useState<string | null>(null);
+
+  // Read ?date param on mount and scroll to feed
+  useEffect(() => {
+    const dateParam = searchParams.get('date');
+    if (dateParam) {
+      setHighlightDate(dateParam);
+      // Clear the param from URL to avoid stale state on refresh
+      searchParams.delete('date');
+      setSearchParams(searchParams, { replace: true });
+      // Scroll to feed section after render
+      setTimeout(() => {
+        feedRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 300);
+    }
+  }, []);
 
   const refresh = useCallback(() => setRefreshKey(k => k + 1), []);
 
