@@ -8,6 +8,7 @@ import { getDateLocale } from '@/lib/date-locale';
 import { FChevronLeft, FChevronRight, FBookOpen, FClipboardCheck, FEye, FTrendingUp } from '@/components/icons/FreudIcons';
 import { Button } from '@/components/ui/button';
 import PatternChart from '@/components/timeline/PatternChart';
+import HorizontalTimeline from '@/components/timeline/HorizontalTimeline';
 
 interface TimelineItem { id: string; type: 'journal' | 'questionnaire' | 'observation'; title: string; date: string; detail?: string; }
 interface PatternNudge { name: string; count: number; }
