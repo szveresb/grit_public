@@ -252,6 +252,7 @@ export const hu: Dictionary = {
     noScoredSurveys: 'Nincs pontozással rendelkező kérdőív.',
     completedOn: 'Kitöltve',
     points: 'pont',
+    duplicateQuestion: 'Másolás',
   },
 
   timeline: {

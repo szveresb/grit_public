@@ -264,6 +264,7 @@ export interface Dictionary {
     noScoredSurveys: string;
     completedOn: string;
     points: string;
+    duplicateQuestion: string;
   };
 
   // Timeline
