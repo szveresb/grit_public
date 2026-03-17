@@ -235,7 +235,7 @@ const SelfChecks = () => {
             {formQuestions.map((nq, i) => (
               <div key={i} className="border border-border rounded-2xl p-3 space-y-2">
                 <div className="flex gap-2">
-                  <Input value={nq.text} onChange={e => { const c = [...formQuestions]; c[i].text = e.target.value; setFormQuestions(c); }} placeholder={`${t.selfChecks.questions} ${i + 1}`} className="flex-1 rounded-2xl" />
+                  <Input value={nq.text} onChange={e => { const c = [...formQuestions]; c[i].text = e.target.value; setFormQuestions(c); }} placeholder={`${t.questionnaires_manage.questions} ${i + 1}`} className="flex-1 rounded-2xl" />
                   <select value={nq.type} onChange={e => { const c = [...formQuestions]; c[i].type = e.target.value; setFormQuestions(c); }}
                     className="border border-input rounded-2xl px-3 text-sm bg-background">
                     <option value="text">Text</option>
