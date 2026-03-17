@@ -31,10 +31,14 @@ const Index = () => {
   const navigate = useNavigate();
   const [articles, setArticles] = useState<LibraryArticle[]>([]);
   const [articlesLoading, setArticlesLoading] = useState(true);
+  const [moodSection, setMoodSection] = useState<{ title: string; subtitle: string; cta_text: string; config: Record<string, any> } | null>(null);
 
   useEffect(() => {
     supabase.from('library_articles').select('id, title, title_localized, excerpt, excerpt_localized, source, category, url, featured, author').eq('published', true).order('featured', { ascending: false }).order('created_at', { ascending: false }).limit(6)
       .then(({ data }) => { setArticles((data as LibraryArticle[]) ?? []); setArticlesLoading(false); });
+
+    supabase.from('landing_sections').select('*').eq('section_key', 'mood_preview').eq('is_active', true).maybeSingle()
+      .then(({ data }) => { if (data) setMoodSection(data as any); });
   }, []);
 
   const handleGatedClick = (path: string) => {
