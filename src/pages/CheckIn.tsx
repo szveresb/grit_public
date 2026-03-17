@@ -1,5 +1,5 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
-import { useSearchParams } from 'react-router-dom';
+import { useSearchParams, useNavigate } from 'react-router-dom';
 import { differenceInDays, parseISO } from 'date-fns';
 import DashboardLayout from '@/components/DashboardLayout';
 import { useLanguage } from '@/hooks/useLanguage';
@@ -17,14 +17,14 @@ import { toast } from 'sonner';
 import { friendlyDbError } from '@/lib/db-error';
 import { format } from 'date-fns';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import { FChevronDown, FCalendar, FList } from '@/components/icons/FreudIcons';
+import { FChevronDown, FCalendar, FList, FChevronLeft } from '@/components/icons/FreudIcons';
 import { Button } from '@/components/ui/button';
 import type { JournalFormData } from '@/types/journal';
 import { emptyForm } from '@/types/journal';
 import RecapBanner from '@/components/checkin/RecapBanner';
 
 const CheckIn = () => {
-  const { t } = useLanguage();
+  const { t, lang, localePath } = useLanguage();
   const { user } = useAuth();
   const [searchParams, setSearchParams] = useSearchParams();
   const feedRef = useRef<HTMLDivElement>(null);
@@ -41,16 +41,17 @@ const CheckIn = () => {
   const [daysSinceLastEntry, setDaysSinceLastEntry] = useState<number | null>(null);
   const [recapDismissed, setRecapDismissed] = useState(false);
   const [highlightDate, setHighlightDate] = useState<string | null>(null);
+  const [cameFromTimeline, setCameFromTimeline] = useState(false);
+  const navigate = useNavigate();
 
   // Read ?date param on mount and scroll to feed
   useEffect(() => {
     const dateParam = searchParams.get('date');
     if (dateParam) {
       setHighlightDate(dateParam);
-      // Clear the param from URL to avoid stale state on refresh
+      setCameFromTimeline(true);
       searchParams.delete('date');
       setSearchParams(searchParams, { replace: true });
-      // Scroll to feed section after render
       setTimeout(() => {
         feedRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
       }, 300);
@@ -133,6 +134,19 @@ const CheckIn = () => {
   return (
     <DashboardLayout>
       <div className="max-w-2xl mx-auto w-full space-y-8">
+        {/* Back to timeline */}
+        {cameFromTimeline && (
+          <Button
+            variant="ghost"
+            size="sm"
+            className="rounded-full gap-1.5 text-muted-foreground hover:text-foreground -mb-4"
+            onClick={() => navigate(localePath('/timeline'))}
+          >
+            <FChevronLeft className="h-3.5 w-3.5" />
+            <span className="text-xs">{lang === 'hu' ? 'Vissza az idővonalhoz' : 'Back to timeline'}</span>
+          </Button>
+        )}
+
         {/* Header */}
         <div>
           <h1 className="text-lg md:text-xl font-bold tracking-tight text-foreground">{t.checkIn.title}</h1>
