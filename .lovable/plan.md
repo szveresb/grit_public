@@ -1,27 +1,51 @@
 
 
-## Horizontal Linear Timeline
+# Create Separate Library Page
 
-**Goal**: Replace the current vertical linear timeline with a horizontal scrollable timeline where entries appear as dots/icons on a horizontal line, with click-to-expand details and pinch-to-zoom on mobile.
+## What Changes
 
-### Changes
+1. **New `/library` page** -- A public page showing all published library articles with search/filter, reusing the same card design from the landing page.
 
-**1. Rewrite `LinearTimeline` sub-component** in `src/pages/Timeline.tsx`
+2. **Landing page updates:**
+   - Library section limited to **max 6 articles** (newest first)
+   - Each card links to the article URL (external) or is a static card if no URL
+   - Add a "View All" link to `/library` page below the 6 cards
+   - **Remove** the entire "Research Summaries" section
+   - Update nav links from `#library` anchor to `/library` route
 
-- **Horizontal layout**: A horizontal line (`h-px`) running left-to-right inside a scrollable container (`overflow-x-auto`), with date markers and entry dots/icons placed along it
-- **Entry rendering**: Each entry is a colored dot or type-specific icon (`FBookOpen`, `FEye`, `FClipboardCheck`) positioned on the horizontal axis, grouped by date with date labels below
-- **Click to expand**: Clicking a dot/icon shows a popover or an inline detail card below the timeline strip with title, type label, date, and detail text
-- **Pinch-to-zoom on mobile**: Set `touch-action: manipulation` on the scrollable container and wrap the inner content in a scalable div. Use CSS `transform: scale()` driven by touch gesture state (tracking two-finger pinch distance) to allow zooming into dense areas. Alternatively, use a simpler approach: make the inner track wider than viewport (e.g., `min-width: max(100%, items * spacing)`) so horizontal scroll + pinch-zoom works natively
-- **Selected state**: Highlighted ring/scale on the active dot, with the detail card appearing below
+3. **Navigation updates** -- Both desktop and mobile nav: "Konyvtar" links to `/library` page, remove "Kutatasi osszefoglalok" link entirely.
 
-**2. Styling details**
-- Horizontal scrollbar hidden with `scrollbar-hide` utility or `-webkit-scrollbar: none`
-- Date labels appear at intervals (one per date group) below the line
-- Dots: `h-3 w-3 rounded-full` colored by type; on hover/focus scale up
-- Month boundaries get a subtle vertical separator
+4. **Routing** -- Add `/library` and `/en/library` routes in `App.tsx` (public, no auth required).
 
-**3. No new i18n keys needed** — reuses existing labels
+---
 
-### Files
-- **Edit** `src/pages/Timeline.tsx` — rewrite `LinearTimeline` to horizontal layout with zoom support
+## Technical Details
 
+### New file: `src/pages/Library.tsx`
+- Public page (no ProtectedRoute)
+- Fetches all published `library_articles` ordered by `created_at desc`
+- Search input + category filter (reuse pattern from ManageLibrary)
+- Same card design as landing page
+- Uses landing page layout (bamboo bg, header, footer) or a simpler standalone layout
+
+### Modified files:
+
+**`src/App.tsx`** -- Add routes:
+- `/library` and `/en/library` pointing to new Library component
+
+**`src/pages/Index.tsx`**:
+- Limit articles query to `.limit(6)` 
+- Remove Research Summaries section (lines 180-207)
+- Change nav links from `#library` / `#research` to `localePath('/library')`
+- Remove `#research` nav item from both desktop and mobile menus
+- Add "View all" link below the 6-card grid pointing to `/library`
+- Update hero "Browse Library" button to link to `/library`
+
+**`src/i18n/hu.ts`** and **`src/i18n/en.ts`**:
+- Add `landing.viewAll` key ("Osszes megtekintese" / "View all")
+- Keep existing keys, no removals needed
+
+**`src/i18n/types.ts`**:
+- Add `viewAll` to the landing section type
+
+### No database changes required.
