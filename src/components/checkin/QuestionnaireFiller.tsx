@@ -321,7 +321,7 @@ const QuestionnaireFiller = ({ onCompleted }: { onCompleted?: () => void }) => {
   };
 
   if (loading) return <p className="text-sm text-muted-foreground">{t.loading}</p>;
-  if (questionnaires.length === 0) return <p className="text-sm text-muted-foreground">{t.selfChecks.noAvailable}</p>;
+  if (questionnaires.length === 0) return <p className="text-sm text-muted-foreground">{t.questionnaires_manage.noAvailable}</p>;
 
   // Show score results after submission
   if (selectedQ && scoreResult) {
