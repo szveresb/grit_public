@@ -27,7 +27,7 @@ export interface Dictionary {
     home: string;
     library: string;
     
-    selfChecks: string;
+    questionnaires: string;
     about: string;
     journal: string;
     history: string;
