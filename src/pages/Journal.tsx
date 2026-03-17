@@ -41,6 +41,12 @@ const Journal = () => {
   const [viewMode, setViewMode] = useState<'list' | 'calendar'>('list');
   const [calendarMonth, setCalendarMonth] = useState(new Date());
   const [calendarSelectedDate, setCalendarSelectedDate] = useState<Date | null>(null);
+  const [recapDismissed, setRecapDismissed] = useState(false);
+
+  const daysSinceLastEntry = useMemo(() => {
+    if (entries.length === 0) return null;
+    return differenceInDays(new Date(), parseISO(entries[0].entry_date));
+  }, [entries]);
 
   const fetchEntries = useCallback(async () => {
     if (!user) return;
