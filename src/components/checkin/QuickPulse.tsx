@@ -45,23 +45,16 @@ const QuickPulse = ({ onPulseSaved, onMoodSelected, compact = false }: QuickPuls
 
   const handleMoodTap = async (index: number) => {
     if (!user || saving) return;
-    const impact = index + 1;
+    const level = index + 1;
     const label = moodLabels[index];
 
-    // If parent handles mood selection (consolidated flow), delegate to parent
-    if (onMoodSelected) {
-      onMoodSelected({ impact_level: impact, emotional_state: label });
-      return;
-    }
-
-    // Fallback: save a quick pulse entry directly (standalone usage)
     setSaving(true);
-    const { error } = await supabase.from('journal_entries').insert({
+    // Always write to mood_pulses
+    const { error } = await supabase.from('mood_pulses').insert({
       user_id: user.id,
-      title: label,
+      level,
+      label,
       entry_date: format(new Date(), 'yyyy-MM-dd'),
-      impact_level: impact,
-      emotional_state: label,
     });
 
     if (error) {
@@ -70,6 +63,10 @@ const QuickPulse = ({ onPulseSaved, onMoodSelected, compact = false }: QuickPuls
       toast.success(t.checkIn.pulseSaved);
       setSaved(true);
       onPulseSaved?.();
+      // Also notify parent if it wants to open journal form
+      if (onMoodSelected) {
+        onMoodSelected({ impact_level: level, emotional_state: label });
+      }
       setTimeout(() => setSaved(false), 3000);
     }
     setSaving(false);
