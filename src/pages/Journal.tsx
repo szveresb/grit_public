@@ -208,6 +208,10 @@ const Journal = () => {
 
         <PatternSummary summary={patternSummary} isAnalyzing={analyzingPatterns} onDismiss={() => setPatternSummary('')} />
 
+        {daysSinceLastEntry !== null && daysSinceLastEntry >= 14 && !recapDismissed && (
+          <RecapBanner days={daysSinceLastEntry} onCatchUp={openCreate} onDismiss={() => setRecapDismissed(true)} />
+        )}
+
         {showForm && (
           <JournalForm form={form} onChange={setForm} onSubmit={handleSubmit} onClose={() => setShowForm(false)} saving={saving} isEditing={!!editingId} />
         )}
