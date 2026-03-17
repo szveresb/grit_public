@@ -108,7 +108,18 @@ const MoodTrendChart = ({ data, lang, t }: MoodTrendChartProps) => {
   const visibleSpan = filtered.length >= 2
     ? differenceInDays(new Date(filtered[filtered.length - 1].ts), new Date(filtered[0].ts))
     : 0;
-  const tickFormat = visibleSpan > 90 ? 'MMM yyyy' : visibleSpan > 14 ? 'MMM d' : 'EEEEEE d';
+  const dayAbbr = lang === 'hu'
+    ? ['Va', 'Hé', 'Ke', 'Sz', 'Cs', 'Pé', 'Szo']
+    : ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'];
+  const shortDayTick = (v: number) => {
+    const d = new Date(v);
+    return `${dayAbbr[d.getDay()]} ${d.getDate()}`;
+  };
+  const tickFormatter = visibleSpan > 90
+    ? (v: number) => format(new Date(v), 'MMM yyyy', { locale })
+    : visibleSpan > 14
+      ? (v: number) => format(new Date(v), 'MMM d', { locale })
+      : shortDayTick;
   const entriesLabel = lang === 'hu' ? 'bejegyzés' : 'entries';
   const entryLabel = lang === 'hu' ? 'bejegyzés' : 'entry';
 
@@ -155,7 +166,7 @@ const MoodTrendChart = ({ data, lang, t }: MoodTrendChartProps) => {
             type="number"
             scale="time"
             domain={['dataMin', 'dataMax']}
-            tickFormatter={(v: number) => format(new Date(v), tickFormat, { locale })}
+            tickFormatter={tickFormatter}
             tick={{ fontSize: 11 }}
             className="text-muted-foreground"
           />
