@@ -82,6 +82,11 @@ const MoodTrendChart = ({ data, lang, t }: MoodTrendChartProps) => {
                   if (!payload?.[0]) return '';
                   return format(parseISO(payload[0].payload.date), 'PPP', { locale });
                 }}
+                formatter={(value) => {
+                  const labels = lang === 'hu' ? moodLabelsHu : moodLabelsEn;
+                  const label = labels[(value as number) - 1] ?? value;
+                  return <span className="font-medium">{label}</span>;
+                }}
               />
             }
           />
