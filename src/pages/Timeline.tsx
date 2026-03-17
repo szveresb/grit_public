@@ -7,10 +7,12 @@ import { format, startOfMonth, endOfMonth, eachDayOfInterval, isSameDay, parseIS
 import { getDateLocale } from '@/lib/date-locale';
 import { FChevronLeft, FChevronRight, FBookOpen, FClipboardCheck, FEye, FTrendingUp } from '@/components/icons/FreudIcons';
 import { Button } from '@/components/ui/button';
+import PatternChart from '@/components/timeline/PatternChart';
 
 interface TimelineItem { id: string; type: 'journal' | 'questionnaire' | 'observation'; title: string; date: string; detail?: string; }
-
 interface PatternNudge { name: string; count: number; }
+interface ObsLog { concept_id: string; logged_at: string; intensity: number; }
+interface ConceptEntry { id: string; name_hu: string; name_en: string; }
 
 const Timeline = () => {
   const { user } = useAuth();
@@ -19,6 +21,8 @@ const Timeline = () => {
   const [currentMonth, setCurrentMonth] = useState(new Date());
   const [selectedDate, setSelectedDate] = useState<Date | null>(null);
   const [nudges, setNudges] = useState<PatternNudge[]>([]);
+  const [obsLogs, setObsLogs] = useState<ObsLog[]>([]);
+  const [conceptMap, setConceptMap] = useState<Record<string, ConceptEntry>>({});
 
   useEffect(() => {
     if (!user) return;
@@ -37,12 +41,16 @@ const Timeline = () => {
         const conceptIds = [...new Set(obsData.map(o => o.concept_id))];
         const { data: concepts } = await supabase.from('observation_concepts').select('id, name_hu, name_en').in('id', conceptIds);
         const conMap = Object.fromEntries((concepts ?? []).map(c => [c.id, c]));
+        setConceptMap(conMap);
+        setObsLogs(obsData.map(o => ({ concept_id: o.concept_id, logged_at: o.logged_at, intensity: o.intensity })));
+
         obsItems = obsData.map(o => {
           const concept = conMap[o.concept_id];
           const name = concept ? (lang === 'en' ? concept.name_en : concept.name_hu) : t.observations.tabObservations;
           return { id: o.id, type: 'observation' as const, title: name, date: o.logged_at, detail: `${t.observations.intensity}: ${o.intensity}/5` };
         });
 
+        // Current-week nudges
         const now = new Date();
         const weekStart = format(startOfWeek(now, { weekStartsOn: 1 }), 'yyyy-MM-dd');
         const weekEnd = format(endOfWeek(now, { weekStartsOn: 1 }), 'yyyy-MM-dd');
@@ -94,6 +102,10 @@ const Timeline = () => {
           </div>
         )}
 
+        {/* 8-week pattern frequency chart */}
+        <PatternChart logs={obsLogs} conceptMap={conceptMap} />
+
+        {/* Calendar */}
         <div className="bg-card/60 backdrop-blur border border-border rounded-3xl p-5">
           <div className="flex items-center justify-between mb-4">
             <Button variant="ghost" size="icon" className="rounded-full" onClick={() => setCurrentMonth(m => new Date(m.getFullYear(), m.getMonth() - 1))}>

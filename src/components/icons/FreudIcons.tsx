@@ -460,3 +460,15 @@ export const FList = icon(
   </>,
   'FList'
 );
+
+/** Timeline – vertical bars with connecting trend line */
+export const FTimeline = icon(
+  <>
+    <rect x="3" y="14" width="3" height="7" rx="1" />
+    <rect x="8.5" y="9" width="3" height="12" rx="1" />
+    <rect x="14" y="11" width="3" height="10" rx="1" />
+    <rect x="19" y="5" width="3" height="16" rx="1" />
+    <path d="M4.5 13 10 8 15.5 10 20.5 4" strokeWidth="1.5" />
+  </>,
+  'FTimeline'
+);

@@ -271,6 +271,10 @@ export interface Dictionary {
     journalLabel: string;
     selfCheckLabel: string;
     patternNudge: string;
+    patternChartTitle: string;
+    patternChartSubtitle: string;
+    weekLabel: string;
+    timesPerWeek: string;
   };
 
   // Profile
