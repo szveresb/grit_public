@@ -250,6 +250,7 @@ export interface Dictionary {
     scaleRange: string;
     scaleLabels: string;
     scaleLabelsPlaceholder: string;
+    reverseScoring: string;
     yourScore: string;
     scoreBreakdown: string;
     totalScore: string;

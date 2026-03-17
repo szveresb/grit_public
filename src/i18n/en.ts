@@ -239,6 +239,7 @@ export const en: Dictionary = {
     scaleRange: 'Range',
     scaleLabels: 'Point labels',
     scaleLabelsPlaceholder: 'Label',
+    reverseScoring: 'Reverse scoring',
     yourScore: 'Your result',
     scoreBreakdown: 'Detailed breakdown',
     totalScore: 'Total score',

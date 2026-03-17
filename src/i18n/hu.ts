@@ -239,6 +239,7 @@ export const hu: Dictionary = {
     scaleRange: 'Tartomány',
     scaleLabels: 'Pont címkék',
     scaleLabelsPlaceholder: 'Címke',
+    reverseScoring: 'Fordított pontozás',
     yourScore: 'Az eredményed',
     scoreBreakdown: 'Részletes bontás',
     totalScore: 'Összpontszám',
