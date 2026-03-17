@@ -35,8 +35,29 @@ const CheckIn = () => {
   const [calendarSelectedDate, setCalendarSelectedDate] = useState<Date | null>(null);
   const [calendarItems, setCalendarItems] = useState<CalendarFeedItem[]>([]);
   const [reflectEntryId, setReflectEntryId] = useState<string | null>(null);
+  const [daysSinceLastEntry, setDaysSinceLastEntry] = useState<number | null>(null);
+  const [recapDismissed, setRecapDismissed] = useState(false);
 
   const refresh = useCallback(() => setRefreshKey(k => k + 1), []);
+
+  // Check inactivity
+  useEffect(() => {
+    if (!user) return;
+    const checkInactivity = async () => {
+      const { data } = await supabase
+        .from('journal_entries')
+        .select('entry_date')
+        .eq('user_id', user.id)
+        .order('entry_date', { ascending: false })
+        .limit(1);
+      if (data && data.length > 0) {
+        setDaysSinceLastEntry(differenceInDays(new Date(), parseISO(data[0].entry_date)));
+      } else {
+        setDaysSinceLastEntry(null);
+      }
+    };
+    checkInactivity();
+  }, [user, refreshKey]);
 
   // Callback from UnifiedFeed to share items for calendar view
   const handleItemsLoaded = useCallback((items: CalendarFeedItem[]) => {
