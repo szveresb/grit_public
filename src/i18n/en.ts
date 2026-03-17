@@ -25,7 +25,7 @@ export const en: Dictionary = {
     home: 'Home',
     library: 'Library',
     
-    selfChecks: 'Self-Checks',
+    questionnaires: 'Questionnaires',
     about: 'About',
     journal: 'Journal',
     history: 'History',
