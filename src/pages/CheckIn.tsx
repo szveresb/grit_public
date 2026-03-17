@@ -20,6 +20,7 @@ import { FChevronDown, FCalendar, FList } from '@/components/icons/FreudIcons';
 import { Button } from '@/components/ui/button';
 import type { JournalFormData } from '@/types/journal';
 import { emptyForm } from '@/types/journal';
+import RecapBanner from '@/components/checkin/RecapBanner';
 
 const CheckIn = () => {
   const { t } = useLanguage();
