@@ -134,6 +134,15 @@ const CheckIn = () => {
           }} />
         </div>
 
+        {/* Recap banner */}
+        {daysSinceLastEntry !== null && daysSinceLastEntry >= 14 && !recapDismissed && (
+          <RecapBanner
+            days={daysSinceLastEntry}
+            onCatchUp={() => openJournalForm()}
+            onDismiss={() => setRecapDismissed(true)}
+          />
+        )}
+
         {/* Full journal form with guided tree */}
         {showJournalForm && (
           <JournalForm
