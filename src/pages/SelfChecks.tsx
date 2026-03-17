@@ -186,15 +186,15 @@ const SelfChecks = () => {
             <Label className="text-sm">{t.published}</Label>
           </div>
           <div className="space-y-2">
-            <Label className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">{t.selfChecks.repeatInterval}</Label>
+            <Label className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">{t.questionnaires_manage.repeatInterval}</Label>
             <select value={formRepeat} onChange={e => setFormRepeat(e.target.value)}
               className="w-full border border-input rounded-2xl px-3 py-2 text-sm bg-background">
-              <option value="">{t.selfChecks.repeatOnce}</option>
-              <option value="daily">{t.selfChecks.repeatDaily}</option>
-              <option value="weekly">{t.selfChecks.repeatWeekly}</option>
-              <option value="biweekly">{t.selfChecks.repeatBiweekly}</option>
-              <option value="monthly">{t.selfChecks.repeatMonthly}</option>
-              <option value="anytime">{t.selfChecks.repeatAnytime}</option>
+              <option value="">{t.questionnaires_manage.repeatOnce}</option>
+              <option value="daily">{t.questionnaires_manage.repeatDaily}</option>
+              <option value="weekly">{t.questionnaires_manage.repeatWeekly}</option>
+              <option value="biweekly">{t.questionnaires_manage.repeatBiweekly}</option>
+              <option value="monthly">{t.questionnaires_manage.repeatMonthly}</option>
+              <option value="anytime">{t.questionnaires_manage.repeatAnytime}</option>
             </select>
           </div>
           {/* Scoring config */}
