@@ -17,7 +17,7 @@ interface Props {
   t: any;
 }
 
-const DOT_GAP = 56; // px per entry group
+const DOT_GAP = 56; // px per entry group (used only when content overflows)
 const MIN_SCALE = 1;
 const MAX_SCALE = 3;
 
@@ -95,7 +95,11 @@ const HorizontalTimeline = ({ items, lang, t }: Props) => {
   // Find the selected item for detail card
   const selectedItem = selectedId ? items.find(i => i.id === selectedId) : null;
 
-  const trackWidth = Math.max(groupedLTR.length * DOT_GAP, 400);
+  // Only force a min-width if there are many groups; otherwise let flex fill the card
+  const needsScroll = groupedLTR.length > 12;
+  const trackStyle = needsScroll
+    ? { width: `${groupedLTR.length * DOT_GAP * scale}px`, minHeight: 80 }
+    : { width: '100%', minHeight: 80 };
 
   return (
     <div className="space-y-3">
@@ -111,13 +115,13 @@ const HorizontalTimeline = ({ items, lang, t }: Props) => {
         <style>{`.timeline-scroll::-webkit-scrollbar { display: none; }`}</style>
         <div
           className="timeline-scroll relative"
-          style={{ width: `${trackWidth * scale}px`, minHeight: 80, transform: `scaleX(1)`, transformOrigin: 'left center' }}
+          style={trackStyle}
         >
           {/* Horizontal line */}
           <div className="absolute left-0 right-0 top-[24px] h-px bg-border" />
 
           {/* Date groups */}
-          <div className="relative flex" style={{ gap: `${(DOT_GAP - 24) * scale}px`, paddingLeft: 12, paddingRight: 12 }}>
+          <div className="relative flex justify-between" style={{ paddingLeft: 12, paddingRight: 12 }}>
             {groupedLTR.map(([dateKey, dayItems], groupIdx) => {
               const isMonthBoundary = monthBoundaries.has(groupIdx);
               return (
