@@ -32,6 +32,7 @@ const CheckIn = () => {
   const [calendarMonth, setCalendarMonth] = useState(new Date());
   const [calendarSelectedDate, setCalendarSelectedDate] = useState<Date | null>(null);
   const [calendarItems, setCalendarItems] = useState<CalendarFeedItem[]>([]);
+  const [reflectEntryId, setReflectEntryId] = useState<string | null>(null);
 
   const refresh = useCallback(() => setRefreshKey(k => k + 1), []);
 
