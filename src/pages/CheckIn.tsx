@@ -33,9 +33,10 @@ const CheckIn = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const feedRef = useRef<HTMLDivElement>(null);
   const [refreshKey, setRefreshKey] = useState(0);
-  const [showJournalForm, setShowJournalForm] = useState(false);
-  const [form, setForm] = useState<JournalFormData>(emptyForm);
-  const [saving, setSaving] = useState(false);
+  const [entryModalOpen, setEntryModalOpen] = useState(false);
+  const [entryModalDate, setEntryModalDate] = useState(format(new Date(), 'yyyy-MM-dd'));
+  const [entryModalPrefill, setEntryModalPrefill] = useState<EntryModalPrefill | null>(null);
+  const [observationOpen, setObservationOpen] = useState(false);
   const [observationOpen, setObservationOpen] = useState(false);
   const [calendarMonth, setCalendarMonth] = useState(new Date());
   const [calendarSelectedDate, setCalendarSelectedDate] = useState<Date | null>(null);
