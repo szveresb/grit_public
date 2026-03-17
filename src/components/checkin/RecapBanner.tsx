@@ -18,7 +18,7 @@ const RecapBanner = ({ days, onCatchUp, onDismiss }: RecapBannerProps) => {
         className="absolute top-4 right-4 text-muted-foreground hover:text-foreground transition-colors"
         aria-label="Dismiss"
       >
-        <FX className="h-4 w-4" />
+        <FClose className="h-4 w-4" />
       </button>
       <h3 className="text-sm font-semibold text-foreground">
         {t.checkIn.recapTitle}
