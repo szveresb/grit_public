@@ -87,7 +87,7 @@ const SelfChecks = () => {
       if (error || !q) { toast.error(error ? friendlyDbError(error) : 'Failed'); setSaving(false); return; }
       const qRows = formQuestions.filter(nq => nq.text.trim()).map((nq, i) => ({ questionnaire_id: q.id, question_text: nq.text, question_type: nq.type, options: nq.type === 'multiple_choice' ? nq.options.split(',').map(s => s.trim()).filter(Boolean) : null, sort_order: i, answer_scores: formScoringEnabled && formScoringMode === 'weighted' ? nq.answerScores : null }));
       if (qRows.length) await supabase.from('questionnaire_questions').insert(qRows);
-      toast.success(t.selfChecks.selfCheckCreated);
+      toast.success(t.questionnaires_manage.questionnaireCreated);
     }
     setSaving(false); setShowForm(false); setEditingId(null); fetchQuestionnaires();
   };
