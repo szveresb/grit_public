@@ -263,6 +263,14 @@ const SelfChecks = () => {
                 {nq.type === 'multiple_choice' && (
                   <Input value={nq.options} onChange={e => { const c = [...formQuestions]; c[i].options = e.target.value; setFormQuestions(c); }} placeholder="Options (comma-separated)" className="text-xs rounded-2xl" />
                 )}
+                {nq.type === 'scale' && (
+                  <div className="flex items-center gap-2">
+                    <Label className="text-[10px] uppercase tracking-widest text-muted-foreground shrink-0">{t.questionnaires_manage.scaleRange}</Label>
+                    <Input type="number" value={nq.scaleMin} onChange={e => { const c = [...formQuestions]; c[i].scaleMin = Number(e.target.value); setFormQuestions(c); }} className="w-16 h-8 rounded-xl text-xs" />
+                    <span className="text-xs text-muted-foreground">–</span>
+                    <Input type="number" value={nq.scaleMax} onChange={e => { const c = [...formQuestions]; c[i].scaleMax = Number(e.target.value); setFormQuestions(c); }} className="w-16 h-8 rounded-xl text-xs" />
+                  </div>
+                )}
                 {/* Weighted answer scores */}
                 {formScoringEnabled && formScoringMode === 'weighted' && nq.type !== 'text' && (
                   <div className="space-y-1 pt-1 border-t border-border/50">
