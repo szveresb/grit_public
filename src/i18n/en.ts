@@ -252,6 +252,7 @@ export const en: Dictionary = {
     noScoredSurveys: 'No questionnaires with scoring enabled.',
     completedOn: 'Completed on',
     points: 'points',
+    duplicateQuestion: 'Duplicate',
   },
 
   timeline: {
