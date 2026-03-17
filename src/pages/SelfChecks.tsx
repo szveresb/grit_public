@@ -206,11 +206,11 @@ const SelfChecks = () => {
             {formScoringEnabled && (
               <>
                 <div className="space-y-2">
-                  <Label className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">{t.selfChecks.scoringMode}</Label>
+                  <Label className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">{t.questionnaires_manage.scoringMode}</Label>
                   <select value={formScoringMode} onChange={e => setFormScoringMode(e.target.value)}
                     className="w-full border border-input rounded-2xl px-3 py-2 text-sm bg-background">
-                    <option value="sum">{t.selfChecks.scoringModeSum}</option>
-                    <option value="weighted">{t.selfChecks.scoringModeWeighted}</option>
+                    <option value="sum">{t.questionnaires_manage.scoringModeSum}</option>
+                    <option value="weighted">{t.questionnaires_manage.scoringModeWeighted}</option>
                   </select>
                 </div>
                 <div className="space-y-2">
