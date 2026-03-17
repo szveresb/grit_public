@@ -11,7 +11,7 @@ import PatternChart from '@/components/timeline/PatternChart';
 
 interface TimelineItem { id: string; type: 'journal' | 'questionnaire' | 'observation'; title: string; date: string; detail?: string; }
 interface PatternNudge { name: string; count: number; }
-interface ObsLog { concept_id: string; logged_at: string; intensity: number; }
+interface ObsLog { concept_id: string; logged_at: string; intensity: number; user_narrative?: string | null; }
 interface ConceptEntry { id: string; name_hu: string; name_en: string; }
 
 const Timeline = () => {
