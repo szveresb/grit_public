@@ -132,7 +132,14 @@ const FeedCalendar = ({ items, currentMonth, onMonthChange, selectedDate, onSele
             <span className="ml-2 normal-case">{getMoonPhase(selectedDate).emoji}</span>
           </h3>
           {getItemsForDate(selectedDate).length === 0 ? (
-            <p className="text-sm text-muted-foreground">{t.timeline.noEntriesOnDay}</p>
+            <div className="flex items-center justify-between">
+              <p className="text-sm text-muted-foreground">{t.timeline.noEntriesOnDay}</p>
+              {onCreateEntry && (
+                <Button variant="ghost" size="sm" className="rounded-2xl text-xs gap-1.5" onClick={() => onCreateEntry(selectedDate)}>
+                  <FPlus className="h-3.5 w-3.5" /> {t.journal.newEntry}
+                </Button>
+              )}
+            </div>
           ) : (
             getItemsForDate(selectedDate).map(item => (
               <div
