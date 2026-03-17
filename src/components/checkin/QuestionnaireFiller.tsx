@@ -408,7 +408,7 @@ const QuestionnaireFiller = ({ onCompleted }: { onCompleted?: () => void }) => {
               )}
               {!available && (
                 <span className="text-[11px] text-muted-foreground/70">
-                  {t.selfChecks.alreadyCompleted}
+                  {t.questionnaires_manage.alreadyCompleted}
                 </span>
               )}
             </div>
