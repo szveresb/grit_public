@@ -88,7 +88,14 @@ const UnifiedFeed = ({ refreshKey, onItemsLoaded, onEntryClick }: { refreshKey?:
         const hasMeta = item.meta && Object.keys(item.meta).length > 0;
         return (
           <Collapsible key={item.id} open={isExpanded} onOpenChange={() => setExpandedId(isExpanded ? null : item.id)}>
-            <CollapsibleTrigger className="w-full flex items-center gap-3 py-2.5 px-3 rounded-2xl text-left hover:bg-accent/50 transition-colors">
+            <CollapsibleTrigger className="w-full flex items-center gap-3 py-2.5 px-3 rounded-2xl text-left hover:bg-accent/50 transition-colors"
+              onClick={(e) => {
+                if (item.type === 'journal' && onEntryClick) {
+                  e.preventDefault();
+                  onEntryClick(item.type, item.id.slice(2)); // strip 'j-' prefix
+                }
+              }}
+            >
               {iconFor(item.type)}
               <span className="text-sm flex-1 truncate">{item.title}</span>
               <span className="text-xs text-muted-foreground shrink-0">{format(parseISO(item.date), 'MMM d', { locale: getDateLocale(lang) })}</span>
