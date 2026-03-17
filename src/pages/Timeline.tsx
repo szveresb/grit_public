@@ -114,6 +114,16 @@ const Timeline = () => {
         {/* 8-week pattern frequency chart */}
         <PatternChart logs={obsLogs} conceptMap={conceptMap} />
 
+        {/* Linear timeline grouped by date */}
+        <div className="bg-card/60 backdrop-blur border border-border rounded-3xl p-5">
+          <h2 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-4">{t.timeline.allActivity}</h2>
+          {items.length === 0 ? (
+            <p className="text-sm text-muted-foreground">{t.timeline.noActivity}</p>
+          ) : (
+            <HorizontalTimeline items={items} lang={lang} t={t} />
+          )}
+        </div>
+
         {/* Calendar */}
         <div className="bg-card/60 backdrop-blur border border-border rounded-3xl p-5">
           <div className="flex items-center justify-between mb-4">
@@ -171,16 +181,6 @@ const Timeline = () => {
             ))}
           </div>
         )}
-
-        {/* Linear timeline grouped by date */}
-        <div className="bg-card/60 backdrop-blur border border-border rounded-3xl p-5">
-          <h2 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-4">{t.timeline.allActivity}</h2>
-          {items.length === 0 ? (
-            <p className="text-sm text-muted-foreground">{t.timeline.noActivity}</p>
-          ) : (
-            <HorizontalTimeline items={items} lang={lang} t={t} />
-          )}
-        </div>
       </div>
     </DashboardLayout>
   );
