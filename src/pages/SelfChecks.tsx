@@ -340,8 +340,8 @@ const SelfChecks = () => {
     <DashboardLayout>
       <div className="max-w-2xl space-y-6">
         <div>
-          <h1 className="text-xl font-bold tracking-tight text-foreground">{t.selfChecks.title}</h1>
-          <p className="mt-1 text-sm text-muted-foreground leading-relaxed">{t.selfChecks.subtitle}</p>
+          <h1 className="text-xl font-bold tracking-tight text-foreground">{t.questionnaires_manage.title}</h1>
+          <p className="mt-1 text-sm text-muted-foreground leading-relaxed">{t.questionnaires_manage.subtitle}</p>
         </div>
 
         <Tabs defaultValue="questionnaires" className="w-full">
