@@ -52,17 +52,20 @@ const HorizontalTimeline = ({ items, lang, t }: Props) => {
     return Array.from(map.entries()); // sorted desc from items
   }, [items]);
 
+  // Reverse so oldest is on the left (items come sorted newest-first)
+  const groupedLTR = useMemo(() => [...grouped].reverse(), [grouped]);
+
   // Detect month boundaries for separators
   const monthBoundaries = useMemo(() => {
     const set = new Set<number>();
     let prevMonth = '';
-    grouped.forEach(([dateKey], idx) => {
+    groupedLTR.forEach(([dateKey], idx) => {
       const m = dateKey.slice(0, 7);
       if (prevMonth && m !== prevMonth) set.add(idx);
       prevMonth = m;
     });
     return set;
-  }, [grouped]);
+  }, [groupedLTR]);
 
   // Pinch-to-zoom handlers
   const getTouchDist = (e: React.TouchEvent) => {
@@ -92,7 +95,7 @@ const HorizontalTimeline = ({ items, lang, t }: Props) => {
   // Find the selected item for detail card
   const selectedItem = selectedId ? items.find(i => i.id === selectedId) : null;
 
-  const trackWidth = Math.max(grouped.length * DOT_GAP, 400);
+  const trackWidth = Math.max(groupedLTR.length * DOT_GAP, 400);
 
   return (
     <div className="space-y-3">
@@ -115,7 +118,7 @@ const HorizontalTimeline = ({ items, lang, t }: Props) => {
 
           {/* Date groups */}
           <div className="relative flex" style={{ gap: `${(DOT_GAP - 24) * scale}px`, paddingLeft: 12, paddingRight: 12 }}>
-            {grouped.map(([dateKey, dayItems], groupIdx) => {
+            {groupedLTR.map(([dateKey, dayItems], groupIdx) => {
               const isMonthBoundary = monthBoundaries.has(groupIdx);
               return (
                 <div key={dateKey} className="relative flex flex-col items-center" style={{ minWidth: 24 }}>
