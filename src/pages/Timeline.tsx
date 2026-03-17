@@ -9,6 +9,7 @@ import { FChevronLeft, FChevronRight, FBookOpen, FClipboardCheck, FEye, FTrendin
 import { Button } from '@/components/ui/button';
 import PatternChart from '@/components/timeline/PatternChart';
 import HorizontalTimeline from '@/components/timeline/HorizontalTimeline';
+import MoodTrendChart from '@/components/timeline/MoodTrendChart';
 
 interface TimelineItem { id: string; type: 'journal' | 'questionnaire' | 'observation'; title: string; date: string; detail?: string; }
 interface PatternNudge { name: string; count: number; }
