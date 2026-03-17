@@ -74,7 +74,17 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Library Section */}
+      {/* Mood Preview */}
+      {moodSection && !user && (
+        <LandingMoodPreview
+          title={(lang === 'en' && (moodSection as any).title_localized?.en) || moodSection.title}
+          subtitle={(lang === 'en' && (moodSection as any).subtitle_localized?.en) || moodSection.subtitle}
+          ctaText={(lang === 'en' && (moodSection as any).cta_text_localized?.en) || moodSection.cta_text}
+          moodLabels={lang === 'en' ? (moodSection.config?.mood_labels_en ?? []) : (moodSection.config?.mood_labels ?? [])}
+        />
+      )}
+
+
       <section id="library" className="relative z-10 px-4 md:px-8 py-16 max-w-7xl mx-auto">
         <div className="flex items-center justify-between mb-8">
           <div>
