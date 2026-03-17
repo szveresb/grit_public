@@ -204,23 +204,23 @@ export interface Dictionary {
   // Impact labels (warm)
   impactLabels: string[];
 
-  // Self-Checks
-  selfChecks: {
+  // Questionnaires
+  questionnaires_manage: {
     title: string;
     subtitle: string;
     noAvailable: string;
     completed: string;
     deleteConfirmTitle: string;
     deleteConfirmDesc: string;
-    editSelfCheck: string;
-    newSelfCheck: string;
-    selfCheckTitle: string;
+    editQuestionnaire: string;
+    newQuestionnaire: string;
+    questionnaireTitle: string;
     description: string;
     questions: string;
     addQuestion: string;
-    selfCheckUpdated: string;
-    selfCheckCreated: string;
-    selfCheckDeleted: string;
+    questionnaireUpdated: string;
+    questionnaireCreated: string;
+    questionnaireDeleted: string;
     submitting: string;
     repeatInterval: string;
     repeatOnce: string;
@@ -233,7 +233,7 @@ export interface Dictionary {
     availableNow: string;
     nextAvailable: string;
     alreadyCompleted: string;
-    selfCheckJournalTitle: string;
+    questionnaireJournalTitle: string;
     // Scoring
     scoringEnabled: string;
     scoringMode: string;
