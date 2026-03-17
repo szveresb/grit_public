@@ -1,7 +1,9 @@
-import { useMemo, useState, useRef, useCallback, useEffect } from 'react';
+import { useMemo, useState, useRef, useCallback } from 'react';
 import { format, parseISO } from 'date-fns';
+import { useNavigate } from 'react-router-dom';
 import { getDateLocale } from '@/lib/date-locale';
-import { FBookOpen, FClipboardCheck, FEye } from '@/components/icons/FreudIcons';
+import { useLanguage } from '@/hooks/useLanguage';
+import { FBookOpen, FClipboardCheck, FEye, FChevronRight } from '@/components/icons/FreudIcons';
 
 interface TimelineItem {
   id: string;
@@ -36,6 +38,8 @@ const dotBg = (type: string) => {
 
 const HorizontalTimeline = ({ items, lang, t }: Props) => {
   const locale = getDateLocale(lang as any);
+  const navigate = useNavigate();
+  const { localePath } = useLanguage();
   const [selectedId, setSelectedId] = useState<string | null>(null);
   const [scale, setScale] = useState(1);
   const containerRef = useRef<HTMLDivElement>(null);
@@ -189,7 +193,13 @@ const HorizontalTimeline = ({ items, lang, t }: Props) => {
 
       {/* Detail card */}
       {selectedItem && (
-        <div className="bg-card/80 backdrop-blur border border-border rounded-2xl p-4 animate-fade-in">
+        <button
+          onClick={() => {
+            const path = selectedItem.type === 'journal' ? '/journal' : selectedItem.type === 'questionnaire' ? '/surveys' : '/journal';
+            navigate(localePath(path));
+          }}
+          className="w-full text-left bg-card/80 backdrop-blur border border-border rounded-2xl p-4 animate-fade-in hover:bg-accent/50 transition-colors group"
+        >
           <div className="flex items-start gap-3">
             <div className="mt-0.5">{iconFor(selectedItem.type, false)}</div>
             <div className="flex-1 min-w-0">
@@ -206,8 +216,9 @@ const HorizontalTimeline = ({ items, lang, t }: Props) => {
                 <p className="text-xs text-muted-foreground mt-1">{selectedItem.detail}</p>
               )}
             </div>
+            <FChevronRight className="h-4 w-4 text-muted-foreground group-hover:text-foreground transition-colors mt-1 shrink-0" />
           </div>
-        </div>
+        </button>
       )}
     </div>
   );
