@@ -27,7 +27,7 @@ const Surveys = () => {
               {t.nav.surveys}
             </TabsTrigger>
             <TabsTrigger value="history" className="rounded-xl flex-1 text-xs">
-              {t.selfChecks.scoreHistory}
+              {t.questionnaires_manage.scoreHistory}
             </TabsTrigger>
           </TabsList>
 
