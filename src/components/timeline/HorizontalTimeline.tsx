@@ -59,13 +59,13 @@ const HorizontalTimeline = ({ items, lang, t }: Props) => {
   const monthBoundaries = useMemo(() => {
     const set = new Set<number>();
     let prevMonth = '';
-    grouped.forEach(([dateKey], idx) => {
+    groupedLTR.forEach(([dateKey], idx) => {
       const m = dateKey.slice(0, 7);
       if (prevMonth && m !== prevMonth) set.add(idx);
       prevMonth = m;
     });
     return set;
-  }, [grouped]);
+  }, [groupedLTR]);
 
   // Pinch-to-zoom handlers
   const getTouchDist = (e: React.TouchEvent) => {
