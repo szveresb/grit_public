@@ -155,6 +155,33 @@ export type Database = {
         }
         Relationships: []
       }
+      mood_pulses: {
+        Row: {
+          created_at: string | null
+          entry_date: string
+          id: string
+          label: string
+          level: number
+          user_id: string
+        }
+        Insert: {
+          created_at?: string | null
+          entry_date?: string
+          id?: string
+          label: string
+          level: number
+          user_id: string
+        }
+        Update: {
+          created_at?: string | null
+          entry_date?: string
+          id?: string
+          label?: string
+          level?: number
+          user_id?: string
+        }
+        Relationships: []
+      }
       observation_categories: {
         Row: {
           created_at: string
