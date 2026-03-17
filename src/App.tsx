@@ -10,7 +10,7 @@ import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import Dashboard from "./pages/Dashboard";
 import CheckIn from "./pages/CheckIn";
-import Timeline from "./pages/Timeline";
+
 import Profile from "./pages/Profile";
 import Export from "./pages/Export";
 import ManageLibrary from "./pages/ManageLibrary";
@@ -40,7 +40,7 @@ const AppRoutes = () => (
     <Route path="/check-in" element={<Navigate to="/journal" replace />} />
     <Route path="/self-checks" element={<Navigate to="/surveys" replace />} />
     <Route path="/surveys" element={<ProtectedRoute><Surveys /></ProtectedRoute>} />
-    <Route path="/timeline" element={<ProtectedRoute><Timeline /></ProtectedRoute>} />
+    <Route path="/timeline" element={<Navigate to="/journal" replace />} />
     <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
     <Route path="/export" element={<ProtectedRoute><Export /></ProtectedRoute>} />
     <Route path="/manage-library" element={<ProtectedRoute><ManageLibrary /></ProtectedRoute>} />
@@ -62,7 +62,7 @@ const AppRoutes = () => (
     <Route path="/en/check-in" element={<Navigate to="/en/journal" replace />} />
     <Route path="/en/self-checks" element={<Navigate to="/en/surveys" replace />} />
     <Route path="/en/surveys" element={<ProtectedRoute><Surveys /></ProtectedRoute>} />
-    <Route path="/en/timeline" element={<ProtectedRoute><Timeline /></ProtectedRoute>} />
+    <Route path="/en/timeline" element={<Navigate to="/en/journal" replace />} />
     <Route path="/en/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
     <Route path="/en/export" element={<ProtectedRoute><Export /></ProtectedRoute>} />
     <Route path="/en/manage-library" element={<ProtectedRoute><ManageLibrary /></ProtectedRoute>} />

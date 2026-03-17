@@ -1,10 +1,9 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
-import { useSearchParams, useNavigate } from 'react-router-dom';
-import { differenceInDays, parseISO } from 'date-fns';
+import { useSearchParams } from 'react-router-dom';
+import { differenceInDays, parseISO, format, startOfWeek, endOfWeek } from 'date-fns';
 import DashboardLayout from '@/components/DashboardLayout';
 import { useLanguage } from '@/hooks/useLanguage';
 import QuickPulse from '@/components/checkin/QuickPulse';
-import UnifiedFeed from '@/components/checkin/UnifiedFeed';
 import FeedCalendar from '@/components/checkin/FeedCalendar';
 import type { CalendarFeedItem } from '@/components/checkin/FeedCalendar';
 import ObservationStepper from '@/components/observations/ObservationStepper';
@@ -15,16 +14,23 @@ import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { friendlyDbError } from '@/lib/db-error';
-import { format } from 'date-fns';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
-import { FChevronDown, FCalendar, FList, FChevronLeft } from '@/components/icons/FreudIcons';
-import { Button } from '@/components/ui/button';
+import { FChevronDown, FTrendingUp } from '@/components/icons/FreudIcons';
 import type { JournalFormData } from '@/types/journal';
 import { emptyForm } from '@/types/journal';
 import RecapBanner from '@/components/checkin/RecapBanner';
+import MoodTrendChart from '@/components/timeline/MoodTrendChart';
+import PatternChart from '@/components/timeline/PatternChart';
+import HorizontalTimeline from '@/components/timeline/HorizontalTimeline';
+
+interface MoodPoint { date: string; level: number; }
+interface TimelineItem { id: string; type: 'journal' | 'questionnaire' | 'observation'; title: string; date: string; detail?: string; }
+interface PatternNudge { name: string; count: number; }
+interface ObsLog { concept_id: string; logged_at: string; intensity: number; user_narrative?: string | null; }
+interface ConceptEntry { id: string; name_hu: string; name_en: string; }
 
 const CheckIn = () => {
-  const { t, lang, localePath } = useLanguage();
+  const { t, lang } = useLanguage();
   const { user } = useAuth();
   const [searchParams, setSearchParams] = useSearchParams();
   const feedRef = useRef<HTMLDivElement>(null);
@@ -33,7 +39,6 @@ const CheckIn = () => {
   const [form, setForm] = useState<JournalFormData>(emptyForm);
   const [saving, setSaving] = useState(false);
   const [observationOpen, setObservationOpen] = useState(false);
-  const [viewMode, setViewMode] = useState<'list' | 'calendar'>('list');
   const [calendarMonth, setCalendarMonth] = useState(new Date());
   const [calendarSelectedDate, setCalendarSelectedDate] = useState<Date | null>(null);
   const [calendarItems, setCalendarItems] = useState<CalendarFeedItem[]>([]);
@@ -41,15 +46,19 @@ const CheckIn = () => {
   const [daysSinceLastEntry, setDaysSinceLastEntry] = useState<number | null>(null);
   const [recapDismissed, setRecapDismissed] = useState(false);
   const [highlightDate, setHighlightDate] = useState<string | null>(null);
-  const [cameFromTimeline, setCameFromTimeline] = useState(false);
-  const navigate = useNavigate();
+
+  // Timeline data
+  const [timelineItems, setTimelineItems] = useState<TimelineItem[]>([]);
+  const [moodData, setMoodData] = useState<MoodPoint[]>([]);
+  const [obsLogs, setObsLogs] = useState<ObsLog[]>([]);
+  const [conceptMap, setConceptMap] = useState<Record<string, ConceptEntry>>({});
+  const [nudges, setNudges] = useState<PatternNudge[]>([]);
 
   // Read ?date param on mount and scroll to feed
   useEffect(() => {
     const dateParam = searchParams.get('date');
     if (dateParam) {
       setHighlightDate(dateParam);
-      setCameFromTimeline(true);
       searchParams.delete('date');
       setSearchParams(searchParams, { replace: true });
       setTimeout(() => {
@@ -60,29 +69,71 @@ const CheckIn = () => {
 
   const refresh = useCallback(() => setRefreshKey(k => k + 1), []);
 
-  // Check inactivity
+  // Fetch all timeline data
   useEffect(() => {
     if (!user) return;
-    const checkInactivity = async () => {
-      const { data } = await supabase
-        .from('journal_entries')
-        .select('entry_date')
-        .eq('user_id', user.id)
-        .order('entry_date', { ascending: false })
-        .limit(1);
-      if (data && data.length > 0) {
-        setDaysSinceLastEntry(differenceInDays(new Date(), parseISO(data[0].entry_date)));
+    const fetchAll = async () => {
+      const [journalRes, responseRes, obsRes] = await Promise.all([
+        supabase.from('journal_entries').select('id, title, entry_date, impact_level').eq('user_id', user.id),
+        supabase.from('questionnaire_responses').select('id, questionnaire_id, completed_at, questionnaires(title)').eq('user_id', user.id),
+        supabase.from('observation_logs').select('id, intensity, frequency, logged_at, concept_id, user_narrative').eq('user_id', user.id),
+      ]);
+
+      const journalData = journalRes.data ?? [];
+      const journalItems: TimelineItem[] = journalData.map(j => ({ id: j.id, type: 'journal', title: j.title, date: j.entry_date, detail: j.impact_level ? `${t.journal.cardImpact}: ${j.impact_level}/5` : undefined }));
+      setMoodData(journalData.filter(j => j.impact_level != null).map(j => ({ date: j.entry_date, level: j.impact_level! })));
+
+      // Check inactivity
+      if (journalData.length > 0) {
+        const sorted = [...journalData].sort((a, b) => b.entry_date.localeCompare(a.entry_date));
+        setDaysSinceLastEntry(differenceInDays(new Date(), parseISO(sorted[0].entry_date)));
       } else {
         setDaysSinceLastEntry(null);
       }
-    };
-    checkInactivity();
-  }, [user, refreshKey]);
 
-  // Callback from UnifiedFeed to share items for calendar view
-  const handleItemsLoaded = useCallback((items: CalendarFeedItem[]) => {
-    setCalendarItems(items);
-  }, []);
+      const qItems: TimelineItem[] = (responseRes.data ?? []).map((r: any) => ({ id: r.id, type: 'questionnaire', title: r.questionnaires?.title ?? t.nav.selfChecks, date: r.completed_at.split('T')[0] }));
+
+      let obsItems: TimelineItem[] = [];
+      const obsData = obsRes.data ?? [];
+      if (obsData.length > 0) {
+        const conceptIds = [...new Set(obsData.map(o => o.concept_id))];
+        const { data: concepts } = await supabase.from('observation_concepts').select('id, name_hu, name_en').in('id', conceptIds);
+        const conMap = Object.fromEntries((concepts ?? []).map(c => [c.id, c]));
+        setConceptMap(conMap);
+        setObsLogs(obsData.map(o => ({ concept_id: o.concept_id, logged_at: o.logged_at, intensity: o.intensity, user_narrative: o.user_narrative })));
+
+        obsItems = obsData.map(o => {
+          const concept = conMap[o.concept_id];
+          const name = concept ? (lang === 'en' ? concept.name_en : concept.name_hu) : t.observations.tabObservations;
+          return { id: o.id, type: 'observation' as const, title: name, date: o.logged_at, detail: `${t.observations.intensity}: ${o.intensity}/5` };
+        });
+
+        // Current-week nudges
+        const now = new Date();
+        const weekStart = format(startOfWeek(now, { weekStartsOn: 1 }), 'yyyy-MM-dd');
+        const weekEnd = format(endOfWeek(now, { weekStartsOn: 1 }), 'yyyy-MM-dd');
+        const weekObs = obsData.filter(o => o.logged_at >= weekStart && o.logged_at <= weekEnd);
+        const countByConceptId: Record<string, number> = {};
+        weekObs.forEach(o => { countByConceptId[o.concept_id] = (countByConceptId[o.concept_id] || 0) + 1; });
+        const detectedNudges: PatternNudge[] = [];
+        for (const [cid, count] of Object.entries(countByConceptId)) {
+          if (count >= 3) {
+            const concept = conMap[cid];
+            const name = concept ? (lang === 'en' ? concept.name_en : concept.name_hu) : '';
+            if (name) detectedNudges.push({ name, count });
+          }
+        }
+        setNudges(detectedNudges);
+      }
+
+      const allItems = [...journalItems, ...qItems, ...obsItems].sort((a, b) => b.date.localeCompare(a.date));
+      setTimelineItems(allItems);
+
+      // Feed calendar items
+      setCalendarItems(allItems.map(i => ({ id: i.id, type: i.type, title: i.title, date: i.date })));
+    };
+    fetchAll();
+  }, [user, refreshKey]);
 
   const handleEntryClick = useCallback((type: string, dbId: string) => {
     if (type === 'journal') setReflectEntryId(dbId);
@@ -134,19 +185,6 @@ const CheckIn = () => {
   return (
     <DashboardLayout>
       <div className="max-w-2xl mx-auto w-full space-y-8">
-        {/* Back to timeline */}
-        {cameFromTimeline && (
-          <Button
-            variant="ghost"
-            size="sm"
-            className="rounded-full gap-1.5 text-muted-foreground hover:text-foreground -mb-4"
-            onClick={() => navigate(localePath('/timeline'))}
-          >
-            <FChevronLeft className="h-3.5 w-3.5" />
-            <span className="text-xs">{lang === 'hu' ? 'Vissza az idővonalhoz' : 'Back to timeline'}</span>
-          </Button>
-        )}
-
         {/* Header */}
         <div>
           <h1 className="text-lg md:text-xl font-bold tracking-tight text-foreground">{t.checkIn.title}</h1>
@@ -189,6 +227,36 @@ const CheckIn = () => {
           />
         )}
 
+        {/* Pattern nudges */}
+        {nudges.length > 0 && (
+          <div className="bg-primary/10 border border-primary/20 rounded-3xl p-4 flex items-start gap-3">
+            <FTrendingUp className="h-4 w-4 text-primary mt-0.5 shrink-0" />
+            <div className="space-y-1">
+              {nudges.map(n => (
+                <p key={n.name} className="text-sm text-foreground">
+                  {t.timeline.patternNudge.replace('{name}', n.name).replace('{count}', String(n.count))}
+                </p>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Mood trend chart */}
+        <MoodTrendChart data={moodData} lang={lang} t={t} />
+
+        {/* 8-week pattern frequency chart */}
+        <PatternChart logs={obsLogs} conceptMap={conceptMap} />
+
+        {/* Horizontal timeline dot viewer */}
+        <div ref={feedRef} className="bg-card/60 backdrop-blur border border-border rounded-3xl p-5">
+          <h2 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-4">{t.timeline.allActivity}</h2>
+          {timelineItems.length === 0 ? (
+            <p className="text-sm text-muted-foreground">{t.timeline.noActivity}</p>
+          ) : (
+            <HorizontalTimeline items={timelineItems} lang={lang} t={t} />
+          )}
+        </div>
+
         {/* Observation Stepper (collapsible) */}
         <Collapsible open={observationOpen} onOpenChange={setObservationOpen}>
           <CollapsibleTrigger className="w-full bg-card/60 backdrop-blur border border-border rounded-3xl p-5 flex items-center justify-between hover:border-primary/30 transition-colors">
@@ -202,37 +270,17 @@ const CheckIn = () => {
           </CollapsibleContent>
         </Collapsible>
 
-        {/* Feed with calendar toggle */}
-        <div ref={feedRef} className="bg-card/60 backdrop-blur border border-border rounded-3xl p-6">
-          <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
-              {t.checkIn.yourStoryTitle}
-            </h2>
-            <div className="flex bg-muted rounded-2xl p-0.5">
-              <Button size="sm" variant={viewMode === 'list' ? 'default' : 'ghost'} className="rounded-xl px-2.5 h-7" onClick={() => setViewMode('list')}>
-                <FList className="h-3.5 w-3.5" />
-              </Button>
-              <Button size="sm" variant={viewMode === 'calendar' ? 'default' : 'ghost'} className="rounded-xl px-2.5 h-7" onClick={() => setViewMode('calendar')}>
-                <FCalendar className="h-3.5 w-3.5" />
-              </Button>
-            </div>
-          </div>
-
-          {viewMode === 'calendar' ? (
-            <FeedCalendar
-              items={calendarItems}
-              currentMonth={calendarMonth}
-              onMonthChange={setCalendarMonth}
-              selectedDate={calendarSelectedDate}
-              onSelectDate={setCalendarSelectedDate}
-              onEntryClick={handleEntryClick}
-              onCreateEntry={(date) => openJournalForm(date)}
-            />
-          ) : null}
-
-          <div className={viewMode === 'calendar' ? 'hidden' : ''}>
-            <UnifiedFeed refreshKey={refreshKey} onItemsLoaded={handleItemsLoaded} onEntryClick={handleEntryClick} highlightDate={highlightDate} />
-          </div>
+        {/* Calendar */}
+        <div className="bg-card/60 backdrop-blur border border-border rounded-3xl p-6">
+          <FeedCalendar
+            items={calendarItems}
+            currentMonth={calendarMonth}
+            onMonthChange={setCalendarMonth}
+            selectedDate={calendarSelectedDate}
+            onSelectDate={setCalendarSelectedDate}
+            onEntryClick={handleEntryClick}
+            onCreateEntry={(date) => openJournalForm(date)}
+          />
         </div>
       </div>
 
