@@ -102,7 +102,7 @@ const HorizontalTimeline = ({ items, lang, t }: Props) => {
       {/* Scrollable container */}
       <div
         ref={containerRef}
-        className="overflow-x-auto overflow-y-hidden pb-2"
+        className="overflow-x-auto overflow-y-visible pb-2 pt-2"
         style={{ touchAction: scale > 1 ? 'pan-x pan-y' : 'manipulation', scrollbarWidth: 'none', msOverflowStyle: 'none' } as any}
         onTouchStart={onTouchStart}
         onTouchMove={onTouchMove}
