@@ -194,6 +194,9 @@ export interface Dictionary {
     reflectPlaceholder: string;
     commentSaved: string;
     addComment: string;
+    recapTitle: string;
+    recapMessage: string;
+    recapCta: string;
   };
 
   // Impact labels (warm)

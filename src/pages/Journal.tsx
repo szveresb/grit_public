@@ -1,4 +1,5 @@
 import { useEffect, useState, useMemo, useCallback } from 'react';
+import { differenceInDays, parseISO } from 'date-fns';
 import { friendlyDbError } from '@/lib/db-error';
 import DashboardLayout from '@/components/DashboardLayout';
 import { useAuth } from '@/hooks/useAuth';
@@ -16,6 +17,7 @@ import JournalForm from '@/components/journal/JournalForm';
 import JournalEntryCard from '@/components/journal/JournalEntryCard';
 import PatternSummary from '@/components/journal/PatternSummary';
 import JournalCalendar from '@/components/journal/JournalCalendar';
+import RecapBanner from '@/components/checkin/RecapBanner';
 
 const REFLECT_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/journal-reflect`;
 const PATTERNS_URL = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/journal-patterns`;
@@ -39,6 +41,12 @@ const Journal = () => {
   const [viewMode, setViewMode] = useState<'list' | 'calendar'>('list');
   const [calendarMonth, setCalendarMonth] = useState(new Date());
   const [calendarSelectedDate, setCalendarSelectedDate] = useState<Date | null>(null);
+  const [recapDismissed, setRecapDismissed] = useState(false);
+
+  const daysSinceLastEntry = useMemo(() => {
+    if (entries.length === 0) return null;
+    return differenceInDays(new Date(), parseISO(entries[0].entry_date));
+  }, [entries]);
 
   const fetchEntries = useCallback(async () => {
     if (!user) return;
@@ -199,6 +207,10 @@ const Journal = () => {
         )}
 
         <PatternSummary summary={patternSummary} isAnalyzing={analyzingPatterns} onDismiss={() => setPatternSummary('')} />
+
+        {daysSinceLastEntry !== null && daysSinceLastEntry >= 14 && !recapDismissed && (
+          <RecapBanner days={daysSinceLastEntry} onCatchUp={openCreate} onDismiss={() => setRecapDismissed(true)} />
+        )}
 
         {showForm && (
           <JournalForm form={form} onChange={setForm} onSubmit={handleSubmit} onClose={() => setShowForm(false)} saving={saving} isEditing={!!editingId} />

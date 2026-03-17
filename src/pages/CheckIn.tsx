@@ -1,4 +1,5 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
+import { differenceInDays, parseISO } from 'date-fns';
 import DashboardLayout from '@/components/DashboardLayout';
 import { useLanguage } from '@/hooks/useLanguage';
 import QuickPulse from '@/components/checkin/QuickPulse';
@@ -19,6 +20,7 @@ import { FChevronDown, FCalendar, FList } from '@/components/icons/FreudIcons';
 import { Button } from '@/components/ui/button';
 import type { JournalFormData } from '@/types/journal';
 import { emptyForm } from '@/types/journal';
+import RecapBanner from '@/components/checkin/RecapBanner';
 
 const CheckIn = () => {
   const { t } = useLanguage();
@@ -33,8 +35,29 @@ const CheckIn = () => {
   const [calendarSelectedDate, setCalendarSelectedDate] = useState<Date | null>(null);
   const [calendarItems, setCalendarItems] = useState<CalendarFeedItem[]>([]);
   const [reflectEntryId, setReflectEntryId] = useState<string | null>(null);
+  const [daysSinceLastEntry, setDaysSinceLastEntry] = useState<number | null>(null);
+  const [recapDismissed, setRecapDismissed] = useState(false);
 
   const refresh = useCallback(() => setRefreshKey(k => k + 1), []);
+
+  // Check inactivity
+  useEffect(() => {
+    if (!user) return;
+    const checkInactivity = async () => {
+      const { data } = await supabase
+        .from('journal_entries')
+        .select('entry_date')
+        .eq('user_id', user.id)
+        .order('entry_date', { ascending: false })
+        .limit(1);
+      if (data && data.length > 0) {
+        setDaysSinceLastEntry(differenceInDays(new Date(), parseISO(data[0].entry_date)));
+      } else {
+        setDaysSinceLastEntry(null);
+      }
+    };
+    checkInactivity();
+  }, [user, refreshKey]);
 
   // Callback from UnifiedFeed to share items for calendar view
   const handleItemsLoaded = useCallback((items: CalendarFeedItem[]) => {
@@ -110,6 +133,15 @@ const CheckIn = () => {
             setShowJournalForm(true);
           }} />
         </div>
+
+        {/* Recap banner */}
+        {daysSinceLastEntry !== null && daysSinceLastEntry >= 14 && !recapDismissed && (
+          <RecapBanner
+            days={daysSinceLastEntry}
+            onCatchUp={() => openJournalForm()}
+            onDismiss={() => setRecapDismissed(true)}
+          />
+        )}
 
         {/* Full journal form with guided tree */}
         {showJournalForm && (

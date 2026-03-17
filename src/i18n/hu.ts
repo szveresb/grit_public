@@ -186,6 +186,9 @@ export const hu: Dictionary = {
     reflectPlaceholder: 'Írd le, mit látsz most másként...',
     commentSaved: 'Visszatekintés mentve ✨',
     addComment: 'Hozzáfűzés',
+    recapTitle: 'Rég jártál itt 🌱',
+    recapMessage: 'Nem írtál {days} napja. Hogy vagy? Írj pár sort magadról.',
+    recapCta: 'Írj pár sort',
   },
 
   impactLabels: ['Minimális', 'Enyhe', 'Közepes', 'Nehéz', 'Elsöprő'],
