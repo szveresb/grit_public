@@ -18,6 +18,8 @@ interface MoodTrendChartProps {
 }
 
 const moodIcons = [FMoodStruggling, FMoodUneasy, FMoodOkay, FMoodGood, FMoodStrong];
+const moodLabelsHu = ['Küzdelmes', 'Bizonytalan', 'Rendben', 'Jó', 'Erős'];
+const moodLabelsEn = ['Struggling', 'Uneasy', 'Okay', 'Good', 'Strong'];
 
 const CustomYTick = ({ x, y, payload }: any) => {
   const idx = (payload.value as number) - 1;
