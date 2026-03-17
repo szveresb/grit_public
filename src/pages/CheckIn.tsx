@@ -189,7 +189,7 @@ const CheckIn = () => {
         </Collapsible>
 
         {/* Feed with calendar toggle */}
-        <div className="bg-card/60 backdrop-blur border border-border rounded-3xl p-6">
+        <div ref={feedRef} className="bg-card/60 backdrop-blur border border-border rounded-3xl p-6">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
               {t.checkIn.yourStoryTitle}
@@ -217,7 +217,7 @@ const CheckIn = () => {
           ) : null}
 
           <div className={viewMode === 'calendar' ? 'hidden' : ''}>
-            <UnifiedFeed refreshKey={refreshKey} onItemsLoaded={handleItemsLoaded} onEntryClick={handleEntryClick} />
+            <UnifiedFeed refreshKey={refreshKey} onItemsLoaded={handleItemsLoaded} onEntryClick={handleEntryClick} highlightDate={highlightDate} />
           </div>
         </div>
       </div>
