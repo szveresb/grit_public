@@ -264,8 +264,8 @@ export const hu: Dictionary = {
     weekLabel: '{n}. hét',
     timesPerWeek: '{count} alkalom',
     moodTrendTitle: 'Hangulati trend',
-    moodTrendSubtitle: 'Naplóbejegyzéseid érzelmi hatásszintje az idő folyamán',
-    moodTrendEmpty: 'Legalább két naplóbejegyzés szükséges a hangulati trend megjelenítéséhez.',
+    moodTrendSubtitle: 'Hogyan alakult a hangulatod az idő folyamán',
+    moodTrendEmpty: 'Legalább két hangulat-jelölés szükséges a trend megjelenítéséhez.',
   },
 
   profile: {
