@@ -23,9 +23,13 @@ interface PreviewQuestionnaire {
   questions: PreviewQuestion[];
 }
 
-const questionTypeLabel = (type: string, t: ReturnType<typeof useLanguage>['t']): string => {
+const questionTypeLabel = (type: string, t: ReturnType<typeof useLanguage>['t'], options?: string[] | null): string => {
   switch (type) {
-    case 'scale': return t.landing.previewTypeScale;
+    case 'scale': {
+      const sMin = options && options.length >= 2 ? Number(options[0]) || 1 : 1;
+      const sMax = options && options.length >= 2 ? Number(options[1]) || 5 : 5;
+      return `${t.questionnaires_manage.scaleType} ${sMin}–${sMax}`;
+    }
     case 'yes_no': return `${t.yes} / ${t.no}`;
     case 'multiple_choice': return t.landing.previewTypeMultiple;
     default: return t.landing.previewTypeText;
