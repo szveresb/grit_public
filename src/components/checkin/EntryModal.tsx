@@ -20,6 +20,9 @@ import {
 interface Category {
   id: string; name_hu: string; name_en: string; icon: string | null; sort_order: number;
 }
+interface SelectedConceptLike {
+  id: string | null; name_hu: string; name_en: string;
+}
 interface Concept {
   id: string; name_hu: string; name_en: string; description_hu: string | null; description_en: string | null; sort_order: number;
 }
