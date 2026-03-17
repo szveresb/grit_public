@@ -68,7 +68,15 @@ const SelfChecks = () => {
     setEditingId(q.id); setFormTitle(q.title); setFormDesc(q.description ?? ''); setFormPublished(q.is_published); setFormRepeat(q.repeat_interval ?? '');
     setFormScoringEnabled(q.scoring_enabled ?? false); setFormScoringMode(q.scoring_mode ?? 'sum'); setFormScoreRanges((q.score_ranges as ScoreRange[]) ?? []);
     const { data } = await supabase.from('questionnaire_questions').select('*').eq('questionnaire_id', q.id).order('sort_order');
-    setFormQuestions((data ?? []).map(qq => ({ id: qq.id, text: qq.question_text, type: qq.question_type, options: qq.question_type === 'multiple_choice' && qq.options ? (qq.options as string[]).join(', ') : '', answerScores: (qq.answer_scores as Record<string, number>) ?? {} })));
+    setFormQuestions((data ?? []).map(qq => {
+      const opts = qq.options as string[] | null;
+      let scaleMin = 1, scaleMax = 5;
+      if (qq.question_type === 'scale' && opts && opts.length >= 2) {
+        scaleMin = Number(opts[0]) || 1;
+        scaleMax = Number(opts[1]) || 5;
+      }
+      return { id: qq.id, text: qq.question_text, type: qq.question_type, options: qq.question_type === 'multiple_choice' && opts ? opts.join(', ') : '', answerScores: (qq.answer_scores as Record<string, number>) ?? {}, scaleMin, scaleMax };
+    }));
     setShowForm(true);
   };
 
