@@ -166,7 +166,7 @@ const MoodTrendChart = ({ data, lang, t }: MoodTrendChartProps) => {
             type="number"
             scale="time"
             domain={['dataMin', 'dataMax']}
-            tickFormatter={(v: number) => format(new Date(v), tickFormat, { locale })}
+            tickFormatter={tickFormatter}
             tick={{ fontSize: 11 }}
             className="text-muted-foreground"
           />
