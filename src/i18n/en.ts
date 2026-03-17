@@ -258,6 +258,10 @@ export const en: Dictionary = {
     journalLabel: 'Journal',
     selfCheckLabel: 'Self-Check',
     patternNudge: 'You\'ve noticed "{name}" {count} times this week.',
+    patternChartTitle: 'Pattern Frequency',
+    patternChartSubtitle: 'Concepts appearing 3+ times in a week',
+    weekLabel: 'W{n}',
+    timesPerWeek: '{count} times',
   },
 
   profile: {

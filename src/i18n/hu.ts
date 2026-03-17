@@ -258,6 +258,10 @@ export const hu: Dictionary = {
     journalLabel: 'Napló',
     selfCheckLabel: 'Önellenőrzés',
     patternNudge: '„{name}" mintát {count} alkalommal észlelted ezen a héten.',
+    patternChartTitle: 'Mintázat gyakoriság',
+    patternChartSubtitle: 'Heti 3+ alkalommal megfigyelt fogalmak',
+    weekLabel: '{n}. hét',
+    timesPerWeek: '{count} alkalom',
   },
 
   profile: {
