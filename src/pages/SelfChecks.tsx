@@ -178,8 +178,8 @@ const SelfChecks = () => {
             <Input value={formTitle} onChange={e => setFormTitle(e.target.value)} placeholder={t.questionnaires_manage.questionnaireTitle} className="rounded-2xl" />
           </div>
           <div className="space-y-2">
-            <Label className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">{t.selfChecks.description}</Label>
-            <Textarea value={formDesc} onChange={e => setFormDesc(e.target.value)} placeholder={t.selfChecks.description} rows={2} className="rounded-2xl" />
+            <Label className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">{t.questionnaires_manage.description}</Label>
+            <Textarea value={formDesc} onChange={e => setFormDesc(e.target.value)} placeholder={t.questionnaires_manage.description} rows={2} className="rounded-2xl" />
           </div>
           <div className="flex items-center gap-3">
             <Switch checked={formPublished} onCheckedChange={setFormPublished} />
