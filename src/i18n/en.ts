@@ -262,6 +262,9 @@ export const en: Dictionary = {
     patternChartSubtitle: 'Concepts appearing 3+ times in a week',
     weekLabel: 'W{n}',
     timesPerWeek: '{count} times',
+    moodTrendTitle: 'Mood Trend',
+    moodTrendSubtitle: 'Your emotional impact level from journal entries over time',
+    moodTrendEmpty: 'At least two journal entries with impact levels are needed to show the mood trend.',
   },
 
   profile: {

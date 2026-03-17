@@ -262,6 +262,9 @@ export const hu: Dictionary = {
     patternChartSubtitle: 'Heti 3+ alkalommal megfigyelt fogalmak',
     weekLabel: '{n}. hét',
     timesPerWeek: '{count} alkalom',
+    moodTrendTitle: 'Hangulati trend',
+    moodTrendSubtitle: 'Naplóbejegyzéseid érzelmi hatásszintje az idő folyamán',
+    moodTrendEmpty: 'Legalább két naplóbejegyzés szükséges a hangulati trend megjelenítéséhez.',
   },
 
   profile: {
