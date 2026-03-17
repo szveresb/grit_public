@@ -1,51 +1,78 @@
 
 
-# Create Separate Library Page
+## Refactor Entry Creation into a Modal Overlay
 
-## What Changes
+### Overview
 
-1. **New `/library` page** -- A public page showing all published library articles with search/filter, reusing the same card design from the landing page.
+Replace the current inline `JournalForm` and page-level `showJournalForm` state with a single **Dialog-based modal** that houses the full observation-to-journal flow. All entry points (calendar "new entry", QuickPulse mood click) open this same modal. The calendar and page remain mounted and visible beneath the overlay.
 
-2. **Landing page updates:**
-   - Library section limited to **max 6 articles** (newest first)
-   - Each card links to the article URL (external) or is a static card if no URL
-   - Add a "View All" link to `/library` page below the 6 cards
-   - **Remove** the entire "Research Summaries" section
-   - Update nav links from `#library` anchor to `/library` route
+### Modal Flow (Sequential Steps)
 
-3. **Navigation updates** -- Both desktop and mobile nav: "Konyvtar" links to `/library` page, remove "Kutatasi osszefoglalok" link entirely.
+```text
+┌────────────────────────────────────────┐
+│  New Entry — March 17                  │
+│────────────────────────────────────────│
+│  Step 1: Select Category (domain)      │
+│    → cards for each obs category       │
+│────────────────────────────────────────│
+│  Step 2: Select Concept                │
+│    → Title auto-fills (locked)         │
+│────────────────────────────────────────│
+│  Step 3: Severity (1–5 scale)          │
+│────────────────────────────────────────│
+│  [Save]  [▸ Add more details]          │
+│                                        │
+│  (collapsible: event_description,      │
+│   emotional_state, self_anchor,        │
+│   free_text)                           │
+│────────────────────────────────────────│
+│  [Save]  [Cancel]                      │
+└────────────────────────────────────────┘
+```
 
-4. **Routing** -- Add `/library` and `/en/library` routes in `App.tsx` (public, no auth required).
+### New Component: `EntryModal`
 
----
+Create `src/components/checkin/EntryModal.tsx`:
 
-## Technical Details
+- Uses `<Dialog>` from `@/components/ui/dialog` with `modal={true}` so background doesn't scroll
+- Props: `open`, `onOpenChange`, `entryDate: string`, `prefill?: { emotional_state, impact_level }`, `onSaved: () => void`
+- Internal state machine with 4 steps: `category → concept → intensity → done`
+- Fetches categories/concepts from Supabase (same logic as `ObservationTree`)
+- On concept selection: locks the Title field to the concept's localized name
+- Step 3 (intensity): 1–5 scale identical to current design
+- After step 3: shows primary "Save" button + a "Add more details" collapsible toggle
+  - Collapsible section contains: event_description, emotional_state, self_anchor, free_text textareas
+- Save handler: inserts `journal_entries` row (title = concept name, entry_date = selected date, impact_level = intensity), then inserts linked `observation_logs` row
+- On save success: closes modal, calls `onSaved()` to trigger refresh
+- Focus management: `DialogContent` auto-manages focus; internal scroll container with `overflow-y-auto max-h-[80vh]`
 
-### New file: `src/pages/Library.tsx`
-- Public page (no ProtectedRoute)
-- Fetches all published `library_articles` ordered by `created_at desc`
-- Search input + category filter (reuse pattern from ManageLibrary)
-- Same card design as landing page
-- Uses landing page layout (bamboo bg, header, footer) or a simpler standalone layout
+### Changes to `CheckIn.tsx`
 
-### Modified files:
+- Remove `showJournalForm`, `form`, `saving`, `handleJournalSubmit` state/handlers
+- Remove inline `<JournalForm>` render
+- Add `entryModalOpen` + `entryModalDate` + `entryModalPrefill` state
+- QuickPulse `onMoodSelected`: sets `entryModalDate = today`, `entryModalPrefill = { emotional_state, impact_level }`, opens modal
+- Calendar `onCreateEntry`: sets `entryModalDate = selected date`, no prefill, opens modal
+- Render `<EntryModal>` once at bottom of component
 
-**`src/App.tsx`** -- Add routes:
-- `/library` and `/en/library` pointing to new Library component
+### Changes to `FeedCalendar.tsx`
 
-**`src/pages/Index.tsx`**:
-- Limit articles query to `.limit(6)` 
-- Remove Research Summaries section (lines 180-207)
-- Change nav links from `#library` / `#research` to `localePath('/library')`
-- Remove `#research` nav item from both desktop and mobile menus
-- Add "View all" link below the 6-card grid pointing to `/library`
-- Update hero "Browse Library" button to link to `/library`
+No changes needed — it already calls `onCreateEntry(date)` which CheckIn handles.
 
-**`src/i18n/hu.ts`** and **`src/i18n/en.ts`**:
-- Add `landing.viewAll` key ("Osszes megtekintese" / "View all")
-- Keep existing keys, no removals needed
+### QuickPulse Integration
 
-**`src/i18n/types.ts`**:
-- Add `viewAll` to the landing section type
+When QuickPulse provides a mood, the modal opens with:
+- `entryDate` = today
+- The collapsible "more details" section pre-expanded with `emotional_state` pre-filled
+- Step flow starts at step 1 (category selection) as usual — the mood prefill populates the journal fields, not the observation steps
 
-### No database changes required.
+### Files to Create
+- `src/components/checkin/EntryModal.tsx` — the new modal component
+
+### Files to Modify
+- `src/pages/CheckIn.tsx` — swap inline JournalForm for EntryModal, update QuickPulse handler
+
+### Files Potentially Removable
+- `src/components/journal/JournalForm.tsx` — if no other page uses it (check first; if Journal page still exists separately, keep it)
+- `src/components/journal/ObservationTree.tsx` — logic absorbed into EntryModal
+
