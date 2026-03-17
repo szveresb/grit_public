@@ -295,7 +295,7 @@ const SelfChecks = () => {
         <div className="space-y-3">
           {questionnaires.length === 0 ? (
             <div className="bg-card/60 backdrop-blur border border-border rounded-3xl p-6">
-              <p className="text-sm text-muted-foreground">{t.selfChecks.noAvailable}</p>
+              <p className="text-sm text-muted-foreground">{t.questionnaires_manage.noAvailable}</p>
             </div>
           ) : questionnaires.map(q => (
             <div key={q.id} className="bg-card/60 backdrop-blur border border-border rounded-3xl p-5 flex items-start gap-4">
