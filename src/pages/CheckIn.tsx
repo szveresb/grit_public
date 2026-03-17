@@ -237,6 +237,12 @@ const CheckIn = () => {
         onSaved={refresh}
       />
 
+      <ObservationReflectDialog
+        observationId={reflectObsId}
+        onClose={() => setReflectObsId(null)}
+        onSaved={refresh}
+      />
+
       <EntryModal
         open={entryModalOpen}
         onOpenChange={setEntryModalOpen}
