@@ -270,7 +270,7 @@ export interface Dictionary {
     noEntriesOnDay: string;
     dayNames: string[];
     journalLabel: string;
-    selfCheckLabel: string;
+    questionnaireLabel: string;
     patternNudge: string;
     patternChartTitle: string;
     patternChartSubtitle: string;
