@@ -38,7 +38,7 @@ export interface Dictionary {
     management: string;
     manageLibrary: string;
     manageUsers: string;
-    manageSelfChecks: string;
+    manageQuestionnaires: string;
     analystExport: string;
     checkIn: string;
     surveys: string;
