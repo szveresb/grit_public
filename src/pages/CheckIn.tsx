@@ -190,6 +190,19 @@ const CheckIn = () => {
           </div>
         )}
 
+        {/* Observation Stepper (collapsible) */}
+        <Collapsible open={observationOpen} onOpenChange={setObservationOpen}>
+          <CollapsibleTrigger className="w-full bg-card/60 backdrop-blur border border-border rounded-3xl p-5 flex items-center justify-between hover:border-primary/30 transition-colors">
+            <h2 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+              {t.checkIn.whatHappenedTitle}
+            </h2>
+            <FChevronDown className={`h-4 w-4 text-muted-foreground transition-transform ${observationOpen ? 'rotate-180' : ''}`} />
+          </CollapsibleTrigger>
+          <CollapsibleContent className="bg-card/60 backdrop-blur border border-border border-t-0 rounded-b-3xl p-6 -mt-3">
+            <ObservationStepper onLogged={refresh} />
+          </CollapsibleContent>
+        </Collapsible>
+
         {/* Mood trend chart */}
         <MoodTrendChart data={moodData} lang={lang} t={t} />
 
@@ -205,19 +218,6 @@ const CheckIn = () => {
             <HorizontalTimeline items={timelineItems} lang={lang} t={t} />
           )}
         </div>
-
-        {/* Observation Stepper (collapsible) */}
-        <Collapsible open={observationOpen} onOpenChange={setObservationOpen}>
-          <CollapsibleTrigger className="w-full bg-card/60 backdrop-blur border border-border rounded-3xl p-5 flex items-center justify-between hover:border-primary/30 transition-colors">
-            <h2 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
-              {t.checkIn.whatHappenedTitle}
-            </h2>
-            <FChevronDown className={`h-4 w-4 text-muted-foreground transition-transform ${observationOpen ? 'rotate-180' : ''}`} />
-          </CollapsibleTrigger>
-          <CollapsibleContent className="bg-card/60 backdrop-blur border border-border border-t-0 rounded-b-3xl p-6 -mt-3">
-            <ObservationStepper onLogged={refresh} />
-          </CollapsibleContent>
-        </Collapsible>
 
         {/* Calendar */}
         <div className="bg-card/60 backdrop-blur border border-border rounded-3xl p-6">
