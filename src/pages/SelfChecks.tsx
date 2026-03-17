@@ -174,8 +174,8 @@ const SelfChecks = () => {
             <Button variant="ghost" size="icon" onClick={() => setShowForm(false)}><FClose className="h-4 w-4" /></Button>
           </div>
           <div className="space-y-2">
-            <Label className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">{t.selfChecks.selfCheckTitle}</Label>
-            <Input value={formTitle} onChange={e => setFormTitle(e.target.value)} placeholder={t.selfChecks.selfCheckTitle} className="rounded-2xl" />
+            <Label className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">{t.questionnaires_manage.questionnaireTitle}</Label>
+            <Input value={formTitle} onChange={e => setFormTitle(e.target.value)} placeholder={t.questionnaires_manage.questionnaireTitle} className="rounded-2xl" />
           </div>
           <div className="space-y-2">
             <Label className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">{t.selfChecks.description}</Label>
