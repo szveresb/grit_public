@@ -40,7 +40,7 @@ const SelfChecks = () => {
   const [formTitle, setFormTitle] = useState('');
   const [formDesc, setFormDesc] = useState('');
   const [formPublished, setFormPublished] = useState(true);
-  const [formQuestions, setFormQuestions] = useState<{ id?: string; text: string; type: string; options: string; answerScores: Record<string, number> }[]>([{ text: '', type: 'text', options: '', answerScores: {} }]);
+  const [formQuestions, setFormQuestions] = useState<{ id?: string; text: string; type: string; options: string; answerScores: Record<string, number>; scaleMin: number; scaleMax: number }[]>([{ text: '', type: 'text', options: '', answerScores: {}, scaleMin: 1, scaleMax: 5 }]);
   const [formRepeat, setFormRepeat] = useState<string>('');
   const [formScoringEnabled, setFormScoringEnabled] = useState(false);
   const [formScoringMode, setFormScoringMode] = useState<string>('sum');
@@ -62,13 +62,21 @@ const SelfChecks = () => {
     setQuestions((data ?? []).map(q => ({ ...q, options: q.options as string[] | null, answer_scores: q.answer_scores as Record<string, number> | null })));
   };
 
-  const openCreate = () => { setEditingId(null); setFormTitle(''); setFormDesc(''); setFormPublished(false); setFormRepeat(''); setFormScoringEnabled(false); setFormScoringMode('sum'); setFormScoreRanges([]); setFormQuestions([{ text: '', type: 'text', options: '', answerScores: {} }]); setShowForm(true); };
+  const openCreate = () => { setEditingId(null); setFormTitle(''); setFormDesc(''); setFormPublished(false); setFormRepeat(''); setFormScoringEnabled(false); setFormScoringMode('sum'); setFormScoreRanges([]); setFormQuestions([{ text: '', type: 'text', options: '', answerScores: {}, scaleMin: 1, scaleMax: 5 }]); setShowForm(true); };
 
   const openEdit = async (q: Questionnaire) => {
     setEditingId(q.id); setFormTitle(q.title); setFormDesc(q.description ?? ''); setFormPublished(q.is_published); setFormRepeat(q.repeat_interval ?? '');
     setFormScoringEnabled(q.scoring_enabled ?? false); setFormScoringMode(q.scoring_mode ?? 'sum'); setFormScoreRanges((q.score_ranges as ScoreRange[]) ?? []);
     const { data } = await supabase.from('questionnaire_questions').select('*').eq('questionnaire_id', q.id).order('sort_order');
-    setFormQuestions((data ?? []).map(qq => ({ id: qq.id, text: qq.question_text, type: qq.question_type, options: qq.question_type === 'multiple_choice' && qq.options ? (qq.options as string[]).join(', ') : '', answerScores: (qq.answer_scores as Record<string, number>) ?? {} })));
+    setFormQuestions((data ?? []).map(qq => {
+      const opts = qq.options as string[] | null;
+      let scaleMin = 1, scaleMax = 5;
+      if (qq.question_type === 'scale' && opts && opts.length >= 2) {
+        scaleMin = Number(opts[0]) || 1;
+        scaleMax = Number(opts[1]) || 5;
+      }
+      return { id: qq.id, text: qq.question_text, type: qq.question_type, options: qq.question_type === 'multiple_choice' && opts ? opts.join(', ') : '', answerScores: (qq.answer_scores as Record<string, number>) ?? {}, scaleMin, scaleMax };
+    }));
     setShowForm(true);
   };
 
@@ -79,13 +87,13 @@ const SelfChecks = () => {
       const { error } = await supabase.from('questionnaires').update({ title: formTitle, description: formDesc || null, is_published: formPublished, repeat_interval: formRepeat || null, scoring_enabled: formScoringEnabled, scoring_mode: formScoringMode, score_ranges: formScoreRanges.length ? formScoreRanges : null } as any).eq('id', editingId);
       if (error) { toast.error(friendlyDbError(error)); setSaving(false); return; }
       await supabase.from('questionnaire_questions').delete().eq('questionnaire_id', editingId);
-      const qRows = formQuestions.filter(nq => nq.text.trim()).map((nq, i) => ({ questionnaire_id: editingId, question_text: nq.text, question_type: nq.type, options: nq.type === 'multiple_choice' ? nq.options.split(',').map(s => s.trim()).filter(Boolean) : null, sort_order: i, answer_scores: formScoringEnabled && formScoringMode === 'weighted' ? nq.answerScores : null }));
+      const qRows = formQuestions.filter(nq => nq.text.trim()).map((nq, i) => ({ questionnaire_id: editingId, question_text: nq.text, question_type: nq.type, options: nq.type === 'multiple_choice' ? nq.options.split(',').map(s => s.trim()).filter(Boolean) : nq.type === 'scale' ? [String(nq.scaleMin), String(nq.scaleMax)] : null, sort_order: i, answer_scores: formScoringEnabled && formScoringMode === 'weighted' ? nq.answerScores : null }));
       if (qRows.length) await supabase.from('questionnaire_questions').insert(qRows);
       toast.success(t.questionnaires_manage.questionnaireUpdated);
     } else {
       const { data: q, error } = await supabase.from('questionnaires').insert({ title: formTitle, description: formDesc || null, created_by: user.id, is_published: formPublished, repeat_interval: formRepeat || null, scoring_enabled: formScoringEnabled, scoring_mode: formScoringMode, score_ranges: formScoreRanges.length ? formScoreRanges : null } as any).select('id').single();
       if (error || !q) { toast.error(error ? friendlyDbError(error) : 'Failed'); setSaving(false); return; }
-      const qRows = formQuestions.filter(nq => nq.text.trim()).map((nq, i) => ({ questionnaire_id: q.id, question_text: nq.text, question_type: nq.type, options: nq.type === 'multiple_choice' ? nq.options.split(',').map(s => s.trim()).filter(Boolean) : null, sort_order: i, answer_scores: formScoringEnabled && formScoringMode === 'weighted' ? nq.answerScores : null }));
+      const qRows = formQuestions.filter(nq => nq.text.trim()).map((nq, i) => ({ questionnaire_id: q.id, question_text: nq.text, question_type: nq.type, options: nq.type === 'multiple_choice' ? nq.options.split(',').map(s => s.trim()).filter(Boolean) : nq.type === 'scale' ? [String(nq.scaleMin), String(nq.scaleMax)] : null, sort_order: i, answer_scores: formScoringEnabled && formScoringMode === 'weighted' ? nq.answerScores : null }));
       if (qRows.length) await supabase.from('questionnaire_questions').insert(qRows);
       toast.success(t.questionnaires_manage.questionnaireCreated);
     }
@@ -118,16 +126,21 @@ const SelfChecks = () => {
   const renderQuestionInput = (q: Question) => {
     const val = answers[q.id] ?? '';
     switch (q.question_type) {
-      case 'scale':
+      case 'scale': {
+        const opts = q.options as string[] | null;
+        const sMin = opts && opts.length >= 2 ? Number(opts[0]) || 1 : 1;
+        const sMax = opts && opts.length >= 2 ? Number(opts[1]) || 5 : 5;
+        const points = Array.from({ length: sMax - sMin + 1 }, (_, i) => sMin + i);
         return (
-          <div className="flex gap-2">
-            {[1, 2, 3, 4, 5].map(n => (
+          <div className="flex gap-2 flex-wrap">
+            {points.map(n => (
               <button key={n} type="button" onClick={() => setAnswers(a => ({ ...a, [q.id]: String(n) }))}
                 className={`h-10 w-10 rounded-full border text-sm font-semibold transition-all ${val === String(n) ? 'bg-primary text-primary-foreground border-primary shadow-md' : 'border-border text-muted-foreground hover:border-primary/50'}`}
               >{n}</button>
             ))}
           </div>
         );
+      }
       case 'yes_no':
         return (
           <RadioGroup value={val} onValueChange={v => setAnswers(a => ({ ...a, [q.id]: v }))}>
@@ -239,7 +252,7 @@ const SelfChecks = () => {
                   <select value={nq.type} onChange={e => { const c = [...formQuestions]; c[i].type = e.target.value; setFormQuestions(c); }}
                     className="border border-input rounded-2xl px-3 text-sm bg-background">
                     <option value="text">Text</option>
-                    <option value="scale">Scale (1–5)</option>
+                    <option value="scale">{t.questionnaires_manage.scaleType}</option>
                     <option value="yes_no">{t.yes}/{t.no}</option>
                     <option value="multiple_choice">Multiple Choice</option>
                   </select>
@@ -250,12 +263,20 @@ const SelfChecks = () => {
                 {nq.type === 'multiple_choice' && (
                   <Input value={nq.options} onChange={e => { const c = [...formQuestions]; c[i].options = e.target.value; setFormQuestions(c); }} placeholder="Options (comma-separated)" className="text-xs rounded-2xl" />
                 )}
+                {nq.type === 'scale' && (
+                  <div className="flex items-center gap-2">
+                    <Label className="text-[10px] uppercase tracking-widest text-muted-foreground shrink-0">{t.questionnaires_manage.scaleRange}</Label>
+                    <Input type="number" value={nq.scaleMin} onChange={e => { const c = [...formQuestions]; c[i].scaleMin = Number(e.target.value); setFormQuestions(c); }} className="w-16 h-8 rounded-xl text-xs" />
+                    <span className="text-xs text-muted-foreground">–</span>
+                    <Input type="number" value={nq.scaleMax} onChange={e => { const c = [...formQuestions]; c[i].scaleMax = Number(e.target.value); setFormQuestions(c); }} className="w-16 h-8 rounded-xl text-xs" />
+                  </div>
+                )}
                 {/* Weighted answer scores */}
                 {formScoringEnabled && formScoringMode === 'weighted' && nq.type !== 'text' && (
                   <div className="space-y-1 pt-1 border-t border-border/50">
                     <Label className="text-[10px] uppercase tracking-widest text-muted-foreground">{t.questionnaires_manage.answerScores}</Label>
                     <div className="flex flex-wrap gap-2">
-                      {(nq.type === 'scale' ? ['1','2','3','4','5'] : nq.type === 'yes_no' ? ['yes','no'] : nq.options.split(',').map(s => s.trim()).filter(Boolean)).map(opt => (
+                      {(nq.type === 'scale' ? Array.from({ length: nq.scaleMax - nq.scaleMin + 1 }, (_, k) => String(nq.scaleMin + k)) : nq.type === 'yes_no' ? ['yes','no'] : nq.options.split(',').map(s => s.trim()).filter(Boolean)).map(opt => (
                         <div key={opt} className="flex items-center gap-1">
                           <span className="text-[11px] text-muted-foreground">{opt}:</span>
                           <Input type="number" value={nq.answerScores[opt] ?? ''} onChange={e => { const c = [...formQuestions]; c[i].answerScores = { ...c[i].answerScores, [opt]: Number(e.target.value) }; setFormQuestions(c); }} className="w-14 h-7 rounded-xl text-xs" />
@@ -266,7 +287,7 @@ const SelfChecks = () => {
                 )}
               </div>
             ))}
-            <Button type="button" variant="outline" size="sm" className="rounded-2xl" onClick={() => setFormQuestions(q => [...q, { text: '', type: 'text', options: '', answerScores: {} }])}>{t.questionnaires_manage.addQuestion}</Button>
+            <Button type="button" variant="outline" size="sm" className="rounded-2xl" onClick={() => setFormQuestions(q => [...q, { text: '', type: 'text', options: '', answerScores: {}, scaleMin: 1, scaleMax: 5 }])}>{t.questionnaires_manage.addQuestion}</Button>
           </div>
           <div className="flex gap-2">
             <Button size="sm" className="rounded-2xl" onClick={handleSave} disabled={saving}>

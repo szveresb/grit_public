@@ -23,9 +23,13 @@ interface PreviewQuestionnaire {
   questions: PreviewQuestion[];
 }
 
-const questionTypeLabel = (type: string, t: ReturnType<typeof useLanguage>['t']): string => {
+const questionTypeLabel = (type: string, t: ReturnType<typeof useLanguage>['t'], options?: string[] | null): string => {
   switch (type) {
-    case 'scale': return t.landing.previewTypeScale;
+    case 'scale': {
+      const sMin = options && options.length >= 2 ? Number(options[0]) || 1 : 1;
+      const sMax = options && options.length >= 2 ? Number(options[1]) || 5 : 5;
+      return `${t.questionnaires_manage.scaleType} ${sMin}–${sMax}`;
+    }
     case 'yes_no': return `${t.yes} / ${t.no}`;
     case 'multiple_choice': return t.landing.previewTypeMultiple;
     default: return t.landing.previewTypeText;
@@ -98,15 +102,20 @@ const LandingPreview = () => {
         <div key={q.id} className="border border-border rounded-2xl p-4 space-y-2">
           <p className="text-sm font-medium text-foreground">{i + 1}. {q.question_text}</p>
           <Badge variant="outline" className="rounded-full text-[10px]">
-            {questionTypeLabel(q.question_type, t)}
+            {questionTypeLabel(q.question_type, t, q.options)}
           </Badge>
-          {q.question_type === 'scale' && (
-            <div className="flex gap-2 pt-1">
-              {[1, 2, 3, 4, 5].map(n => (
-                <div key={n} className="h-9 w-9 rounded-full border border-border flex items-center justify-center text-xs text-muted-foreground">{n}</div>
-              ))}
-            </div>
-          )}
+          {q.question_type === 'scale' && (() => {
+            const sMin = q.options && q.options.length >= 2 ? Number(q.options[0]) || 1 : 1;
+            const sMax = q.options && q.options.length >= 2 ? Number(q.options[1]) || 5 : 5;
+            const points = Array.from({ length: sMax - sMin + 1 }, (_, i) => sMin + i);
+            return (
+              <div className="flex gap-2 pt-1 flex-wrap">
+                {points.map(n => (
+                  <div key={n} className="h-9 w-9 rounded-full border border-border flex items-center justify-center text-xs text-muted-foreground">{n}</div>
+                ))}
+              </div>
+            );
+          })()}
           {q.question_type === 'multiple_choice' && q.options && (
             <div className="flex flex-wrap gap-1.5 pt-1">
               {q.options.map(opt => (
