@@ -6,6 +6,7 @@ import UnifiedFeed from '@/components/checkin/UnifiedFeed';
 import FeedCalendar from '@/components/checkin/FeedCalendar';
 import type { CalendarFeedItem } from '@/components/checkin/FeedCalendar';
 import ObservationStepper from '@/components/observations/ObservationStepper';
+import EntryReflectDialog from '@/components/checkin/EntryReflectDialog';
 import JournalForm from '@/components/journal/JournalForm';
 import type { ObservationTreeResult } from '@/components/journal/ObservationTree';
 import { useAuth } from '@/hooks/useAuth';
