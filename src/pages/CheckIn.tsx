@@ -240,7 +240,7 @@ const CheckIn = () => {
             selectedDate={calendarSelectedDate}
             onSelectDate={setCalendarSelectedDate}
             onEntryClick={handleEntryClick}
-            onCreateEntry={(date) => openJournalForm(date)}
+            onCreateEntry={(date) => openEntryModal(date)}
           />
         </div>
       </div>
