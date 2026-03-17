@@ -230,6 +230,14 @@ const CheckIn = () => {
         onClose={() => setReflectEntryId(null)}
         onSaved={refresh}
       />
+
+      <EntryModal
+        open={entryModalOpen}
+        onOpenChange={setEntryModalOpen}
+        entryDate={entryModalDate}
+        prefill={entryModalPrefill}
+        onSaved={refresh}
+      />
     </DashboardLayout>
   );
 };
