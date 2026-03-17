@@ -159,8 +159,10 @@ const QuestionnaireFiller = ({ onCompleted }: { onCompleted?: () => void }) => {
       } else {
         // Sum mode: scale value directly, yes=1/no=0
         if (q.question_type === 'scale') {
+          const opts = q.options as string[] | null;
+          const sMax = opts && opts.length >= 2 ? Number(opts[1]) || 5 : 5;
           score = Number(answer) || 0;
-          maxScore = 5;
+          maxScore = sMax;
         } else if (q.question_type === 'yes_no') {
           score = answer === 'yes' ? 1 : 0;
           maxScore = 1;

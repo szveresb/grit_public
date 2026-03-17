@@ -100,13 +100,18 @@ const LandingPreview = () => {
           <Badge variant="outline" className="rounded-full text-[10px]">
             {questionTypeLabel(q.question_type, t)}
           </Badge>
-          {q.question_type === 'scale' && (
-            <div className="flex gap-2 pt-1">
-              {[1, 2, 3, 4, 5].map(n => (
-                <div key={n} className="h-9 w-9 rounded-full border border-border flex items-center justify-center text-xs text-muted-foreground">{n}</div>
-              ))}
-            </div>
-          )}
+          {q.question_type === 'scale' && (() => {
+            const sMin = q.options && q.options.length >= 2 ? Number(q.options[0]) || 1 : 1;
+            const sMax = q.options && q.options.length >= 2 ? Number(q.options[1]) || 5 : 5;
+            const points = Array.from({ length: sMax - sMin + 1 }, (_, i) => sMin + i);
+            return (
+              <div className="flex gap-2 pt-1 flex-wrap">
+                {points.map(n => (
+                  <div key={n} className="h-9 w-9 rounded-full border border-border flex items-center justify-center text-xs text-muted-foreground">{n}</div>
+                ))}
+              </div>
+            );
+          })()}
           {q.question_type === 'multiple_choice' && q.options && (
             <div className="flex flex-wrap gap-1.5 pt-1">
               {q.options.map(opt => (
