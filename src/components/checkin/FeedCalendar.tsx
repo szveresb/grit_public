@@ -4,7 +4,7 @@ import { getDateLocale } from '@/lib/date-locale';
 import { getMoonPhase } from '@/lib/moon-phase';
 import { useLanguage } from '@/hooks/useLanguage';
 import { Button } from '@/components/ui/button';
-import { FChevronLeft, FChevronRight, FBookOpen, FEye, FClipboardCheck } from '@/components/icons/FreudIcons';
+import { FChevronLeft, FChevronRight, FBookOpen, FEye, FClipboardCheck, FPlus } from '@/components/icons/FreudIcons';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 export interface CalendarFeedItem {
@@ -22,6 +22,7 @@ interface Props {
   selectedDate: Date | null;
   onSelectDate: (date: Date | null) => void;
   onEntryClick?: (type: CalendarFeedItem['type'], dbId: string) => void;
+  onCreateEntry?: (date: Date) => void;
 }
 
 const iconFor = (type: CalendarFeedItem['type']) => {
@@ -32,7 +33,7 @@ const iconFor = (type: CalendarFeedItem['type']) => {
   }
 };
 
-const FeedCalendar = ({ items, currentMonth, onMonthChange, selectedDate, onSelectDate, onEntryClick }: Props) => {
+const FeedCalendar = ({ items, currentMonth, onMonthChange, selectedDate, onSelectDate, onEntryClick, onCreateEntry }: Props) => {
   const { t, lang } = useLanguage();
 
   const monthStart = startOfMonth(currentMonth);
@@ -131,7 +132,14 @@ const FeedCalendar = ({ items, currentMonth, onMonthChange, selectedDate, onSele
             <span className="ml-2 normal-case">{getMoonPhase(selectedDate).emoji}</span>
           </h3>
           {getItemsForDate(selectedDate).length === 0 ? (
-            <p className="text-sm text-muted-foreground">{t.timeline.noEntriesOnDay}</p>
+            <div className="flex items-center justify-between">
+              <p className="text-sm text-muted-foreground">{t.timeline.noEntriesOnDay}</p>
+              {onCreateEntry && (
+                <Button variant="ghost" size="sm" className="rounded-2xl text-xs gap-1.5" onClick={() => onCreateEntry(selectedDate)}>
+                  <FPlus className="h-3.5 w-3.5" /> {t.journal.newEntry}
+                </Button>
+              )}
+            </div>
           ) : (
             getItemsForDate(selectedDate).map(item => (
               <div

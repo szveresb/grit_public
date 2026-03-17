@@ -45,8 +45,8 @@ const CheckIn = () => {
     if (type === 'journal') setReflectEntryId(dbId);
   }, []);
 
-  const openJournalForm = () => {
-    setForm({ ...emptyForm, entry_date: format(new Date(), 'yyyy-MM-dd') });
+  const openJournalForm = (date?: Date) => {
+    setForm({ ...emptyForm, entry_date: format(date ?? new Date(), 'yyyy-MM-dd') });
     setShowJournalForm(true);
   };
 
@@ -152,6 +152,7 @@ const CheckIn = () => {
               selectedDate={calendarSelectedDate}
               onSelectDate={setCalendarSelectedDate}
               onEntryClick={handleEntryClick}
+              onCreateEntry={(date) => openJournalForm(date)}
             />
           ) : null}
 
