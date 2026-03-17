@@ -1,6 +1,6 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { differenceInDays, parseISO, format, startOfWeek, endOfWeek } from 'date-fns';
+import { differenceInDays, parseISO, format, startOfWeek, endOfWeek, isFuture, startOfDay } from 'date-fns';
 import DashboardLayout from '@/components/DashboardLayout';
 import { useLanguage } from '@/hooks/useLanguage';
 import QuickPulse from '@/components/checkin/QuickPulse';
