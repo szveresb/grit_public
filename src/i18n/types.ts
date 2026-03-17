@@ -248,6 +248,8 @@ export interface Dictionary {
     answerScores: string;
     scaleType: string;
     scaleRange: string;
+    scaleLabels: string;
+    scaleLabelsPlaceholder: string;
     yourScore: string;
     scoreBreakdown: string;
     totalScore: string;
