@@ -402,7 +402,7 @@ const QuestionnaireFiller = ({ onCompleted }: { onCompleted?: () => void }) => {
                 <div className="flex items-center gap-1.5 mt-1">
                   <FClock className="h-3 w-3 text-muted-foreground" />
                   <span className="text-[11px] text-muted-foreground">
-                    {t.selfChecks.lastCompleted}: {formatDistanceToNow(new Date(last.completed_at), { addSuffix: true, locale: dateLocale })}
+                    {t.questionnaires_manage.lastCompleted}: {formatDistanceToNow(new Date(last.completed_at), { addSuffix: true, locale: dateLocale })}
                   </span>
                 </div>
               )}
