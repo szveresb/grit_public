@@ -30,7 +30,7 @@ const Timeline = () => {
       const [journalRes, responseRes, obsRes] = await Promise.all([
         supabase.from('journal_entries').select('id, title, entry_date, impact_level').eq('user_id', user.id),
         supabase.from('questionnaire_responses').select('id, questionnaire_id, completed_at, questionnaires(title)').eq('user_id', user.id),
-        supabase.from('observation_logs').select('id, intensity, frequency, logged_at, concept_id').eq('user_id', user.id),
+        supabase.from('observation_logs').select('id, intensity, frequency, logged_at, concept_id, user_narrative').eq('user_id', user.id),
       ]);
       const journalItems: TimelineItem[] = (journalRes.data ?? []).map(j => ({ id: j.id, type: 'journal', title: j.title, date: j.entry_date, detail: j.impact_level ? `${t.journal.cardImpact}: ${j.impact_level}/5` : undefined }));
       const qItems: TimelineItem[] = (responseRes.data ?? []).map((r: any) => ({ id: r.id, type: 'questionnaire', title: r.questionnaires?.title ?? t.nav.selfChecks, date: r.completed_at.split('T')[0] }));
