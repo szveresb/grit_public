@@ -33,7 +33,7 @@ const ScoreResults = ({ totalScore, maxPossibleScore, questionScores, scoreRange
   return (
     <div className="space-y-5 animate-fade-in">
       <div className="flex items-center justify-between">
-        <h3 className="text-sm font-semibold text-foreground">{t.selfChecks.yourScore}</h3>
+        <h3 className="text-sm font-semibold text-foreground">{t.questionnaires_manage.yourScore}</h3>
         <Button variant="ghost" size="icon" className="h-7 w-7" onClick={onClose}>
           <FClose className="h-4 w-4" />
         </Button>
