@@ -11,7 +11,7 @@ import PatternChart from '@/components/timeline/PatternChart';
 
 interface TimelineItem { id: string; type: 'journal' | 'questionnaire' | 'observation'; title: string; date: string; detail?: string; }
 interface PatternNudge { name: string; count: number; }
-interface ObsLog { concept_id: string; logged_at: string; intensity: number; }
+interface ObsLog { concept_id: string; logged_at: string; intensity: number; user_narrative?: string | null; }
 interface ConceptEntry { id: string; name_hu: string; name_en: string; }
 
 const Timeline = () => {
@@ -30,7 +30,7 @@ const Timeline = () => {
       const [journalRes, responseRes, obsRes] = await Promise.all([
         supabase.from('journal_entries').select('id, title, entry_date, impact_level').eq('user_id', user.id),
         supabase.from('questionnaire_responses').select('id, questionnaire_id, completed_at, questionnaires(title)').eq('user_id', user.id),
-        supabase.from('observation_logs').select('id, intensity, frequency, logged_at, concept_id').eq('user_id', user.id),
+        supabase.from('observation_logs').select('id, intensity, frequency, logged_at, concept_id, user_narrative').eq('user_id', user.id),
       ]);
       const journalItems: TimelineItem[] = (journalRes.data ?? []).map(j => ({ id: j.id, type: 'journal', title: j.title, date: j.entry_date, detail: j.impact_level ? `${t.journal.cardImpact}: ${j.impact_level}/5` : undefined }));
       const qItems: TimelineItem[] = (responseRes.data ?? []).map((r: any) => ({ id: r.id, type: 'questionnaire', title: r.questionnaires?.title ?? t.nav.selfChecks, date: r.completed_at.split('T')[0] }));
@@ -42,7 +42,7 @@ const Timeline = () => {
         const { data: concepts } = await supabase.from('observation_concepts').select('id, name_hu, name_en').in('id', conceptIds);
         const conMap = Object.fromEntries((concepts ?? []).map(c => [c.id, c]));
         setConceptMap(conMap);
-        setObsLogs(obsData.map(o => ({ concept_id: o.concept_id, logged_at: o.logged_at, intensity: o.intensity })));
+        setObsLogs(obsData.map(o => ({ concept_id: o.concept_id, logged_at: o.logged_at, intensity: o.intensity, user_narrative: o.user_narrative })));
 
         obsItems = obsData.map(o => {
           const concept = conMap[o.concept_id];
