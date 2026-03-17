@@ -230,12 +230,7 @@ const EntryModal = ({ open, onOpenChange, entryDate, prefill, onSaved }: EntryMo
             </Button>
             <p className="text-sm font-medium text-muted-foreground text-center">{t.journal.guidedTreePickObservation}</p>
             {concepts.length === 0 ? (
-              <div className="text-center space-y-3 py-4">
-                <p className="text-sm text-muted-foreground">{t.observations.noConcepts}</p>
-                <Button variant="outline" size="sm" className="rounded-2xl" onClick={() => setStep('category')}>
-                  <FArrowLeft className="h-4 w-4 mr-1" /> {t.observations.back}
-                </Button>
-              </div>
+              <p className="text-sm text-muted-foreground text-center">{t.observations.noConcepts}</p>
             ) : (
               <div className="grid gap-3">
                 {concepts.map(con => (
