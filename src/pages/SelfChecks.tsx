@@ -318,8 +318,8 @@ const SelfChecks = () => {
                     </AlertDialogTrigger>
                     <AlertDialogContent>
                       <AlertDialogHeader>
-                        <AlertDialogTitle>{t.selfChecks.deleteConfirmTitle}</AlertDialogTitle>
-                        <AlertDialogDescription>{t.selfChecks.deleteConfirmDesc.replace('{title}', q.title)}</AlertDialogDescription>
+                        <AlertDialogTitle>{t.questionnaires_manage.deleteConfirmTitle}</AlertDialogTitle>
+                        <AlertDialogDescription>{t.questionnaires_manage.deleteConfirmDesc.replace('{title}', q.title)}</AlertDialogDescription>
                       </AlertDialogHeader>
                       <AlertDialogFooter>
                         <AlertDialogCancel>{t.cancel}</AlertDialogCancel>
