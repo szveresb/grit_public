@@ -11,6 +11,7 @@ import PatternChart from '@/components/timeline/PatternChart';
 import HorizontalTimeline from '@/components/timeline/HorizontalTimeline';
 import MoodTrendChart from '@/components/timeline/MoodTrendChart';
 
+interface MoodPoint { date: string; level: number; }
 interface TimelineItem { id: string; type: 'journal' | 'questionnaire' | 'observation'; title: string; date: string; detail?: string; }
 interface PatternNudge { name: string; count: number; }
 interface ObsLog { concept_id: string; logged_at: string; intensity: number; user_narrative?: string | null; }
