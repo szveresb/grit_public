@@ -151,14 +151,21 @@ const CheckIn = () => {
               onMonthChange={setCalendarMonth}
               selectedDate={calendarSelectedDate}
               onSelectDate={setCalendarSelectedDate}
+              onEntryClick={handleEntryClick}
             />
           ) : null}
 
           <div className={viewMode === 'calendar' ? 'hidden' : ''}>
-            <UnifiedFeed refreshKey={refreshKey} onItemsLoaded={handleItemsLoaded} />
+            <UnifiedFeed refreshKey={refreshKey} onItemsLoaded={handleItemsLoaded} onEntryClick={handleEntryClick} />
           </div>
         </div>
       </div>
+
+      <EntryReflectDialog
+        entryId={reflectEntryId}
+        onClose={() => setReflectEntryId(null)}
+        onSaved={refresh}
+      />
     </DashboardLayout>
   );
 };
