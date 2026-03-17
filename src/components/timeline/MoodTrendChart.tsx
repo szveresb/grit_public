@@ -18,6 +18,8 @@ interface MoodTrendChartProps {
 }
 
 const moodIcons = [FMoodStruggling, FMoodUneasy, FMoodOkay, FMoodGood, FMoodStrong];
+const moodLabelsHu = ['Küzdelmes', 'Bizonytalan', 'Rendben', 'Jó', 'Erős'];
+const moodLabelsEn = ['Struggling', 'Uneasy', 'Okay', 'Good', 'Strong'];
 
 const CustomYTick = ({ x, y, payload }: any) => {
   const idx = (payload.value as number) - 1;
@@ -79,6 +81,11 @@ const MoodTrendChart = ({ data, lang, t }: MoodTrendChartProps) => {
                 labelFormatter={(_, payload) => {
                   if (!payload?.[0]) return '';
                   return format(parseISO(payload[0].payload.date), 'PPP', { locale });
+                }}
+                formatter={(value) => {
+                  const labels = lang === 'hu' ? moodLabelsHu : moodLabelsEn;
+                  const label = labels[(value as number) - 1] ?? value;
+                  return <span className="font-medium">{label}</span>;
                 }}
               />
             }
