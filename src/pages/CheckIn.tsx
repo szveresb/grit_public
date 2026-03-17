@@ -137,47 +137,10 @@ const CheckIn = () => {
     if (type === 'journal') setReflectEntryId(dbId);
   }, []);
 
-  const openJournalForm = (date?: Date) => {
-    setForm({ ...emptyForm, entry_date: format(date ?? new Date(), 'yyyy-MM-dd') });
-    setShowJournalForm(true);
-  };
-
-  const handleJournalSubmit = async (_e: React.FormEvent, observation?: ObservationTreeResult) => {
-    if (!user) return;
-    setSaving(true);
-    const payload = {
-      user_id: user.id,
-      title: form.title,
-      entry_date: form.entry_date,
-      event_description: form.event_description || null,
-      impact_level: form.impact_level || null,
-      emotional_state: form.emotional_state || null,
-      free_text: form.free_text || null,
-      self_anchor: form.self_anchor || null,
-    };
-    const { data: journalData, error } = await supabase
-      .from('journal_entries')
-      .insert(payload)
-      .select('id')
-      .single();
-
-    if (error) { toast.error(friendlyDbError(error)); setSaving(false); return; }
-
-    if (observation && journalData) {
-      const { error: obsError } = await supabase.from('observation_logs').insert({
-        user_id: user.id,
-        concept_id: observation.conceptId,
-        intensity: observation.intensity,
-        journal_entry_id: journalData.id,
-      } as any);
-      if (obsError) { console.error('Observation link error:', obsError.message); }
-    }
-
-    toast.success(t.journal.entryLogged);
-    setForm(emptyForm);
-    setShowJournalForm(false);
-    setSaving(false);
-    refresh();
+  const openEntryModal = (date?: Date, prefill?: EntryModalPrefill) => {
+    setEntryModalDate(format(date ?? new Date(), 'yyyy-MM-dd'));
+    setEntryModalPrefill(prefill ?? null);
+    setEntryModalOpen(true);
   };
 
   return (
