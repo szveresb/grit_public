@@ -61,7 +61,7 @@ const ScoreResults = ({ totalScore, maxPossibleScore, questionScores, scoreRange
       {/* Per-question breakdown */}
       <div className="space-y-2">
         <h4 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
-          {t.selfChecks.scoreBreakdown}
+          {t.questionnaires_manage.scoreBreakdown}
         </h4>
         {questionScores.map((qs, i) => (
           <div key={i} className="flex items-center justify-between border border-border rounded-xl px-3 py-2">
