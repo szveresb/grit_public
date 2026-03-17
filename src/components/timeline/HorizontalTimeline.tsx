@@ -1,7 +1,9 @@
-import { useMemo, useState, useRef, useCallback, useEffect } from 'react';
+import { useMemo, useState, useRef, useCallback } from 'react';
 import { format, parseISO } from 'date-fns';
+import { useNavigate } from 'react-router-dom';
 import { getDateLocale } from '@/lib/date-locale';
-import { FBookOpen, FClipboardCheck, FEye } from '@/components/icons/FreudIcons';
+import { useLanguage } from '@/hooks/useLanguage';
+import { FBookOpen, FClipboardCheck, FEye, FChevronRight } from '@/components/icons/FreudIcons';
 
 interface TimelineItem {
   id: string;
