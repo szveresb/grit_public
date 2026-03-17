@@ -118,7 +118,7 @@ const HorizontalTimeline = ({ items, lang, t }: Props) => {
 
           {/* Date groups */}
           <div className="relative flex" style={{ gap: `${(DOT_GAP - 24) * scale}px`, paddingLeft: 12, paddingRight: 12 }}>
-            {grouped.map(([dateKey, dayItems], groupIdx) => {
+            {groupedLTR.map(([dateKey, dayItems], groupIdx) => {
               const isMonthBoundary = monthBoundaries.has(groupIdx);
               return (
                 <div key={dateKey} className="relative flex flex-col items-center" style={{ minWidth: 24 }}>
