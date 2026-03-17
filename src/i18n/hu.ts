@@ -181,6 +181,11 @@ export const hu: Dictionary = {
     pulseSaved: 'Bejegyzés feljegyezve 🌿',
     goDeeper: 'Szeretnél mélyebbre menni?',
     noStory: 'Még nincs itt semmi. A naplóbejegyzéseid és megfigyeléseid itt fognak megjelenni.',
+    reflectDialogTitle: 'Visszatekintés',
+    reflectDialogHint: 'Most, hogy tisztábban látsz — mit tennél hozzá?',
+    reflectPlaceholder: 'Írd le, mit látsz most másként...',
+    commentSaved: 'Visszatekintés mentve ✨',
+    addComment: 'Hozzáfűzés',
   },
 
   impactLabels: ['Minimális', 'Enyhe', 'Közepes', 'Nehéz', 'Elsöprő'],

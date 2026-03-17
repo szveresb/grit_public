@@ -181,6 +181,11 @@ export const en: Dictionary = {
     pulseSaved: 'Entry noted 🌿',
     goDeeper: 'Want to go deeper?',
     noStory: 'Nothing here yet. Your journal entries and observations will appear here.',
+    reflectDialogTitle: 'Looking back',
+    reflectDialogHint: 'Now that the dust has settled — what would you add?',
+    reflectPlaceholder: 'Write what you see differently now...',
+    commentSaved: 'Reflection saved ✨',
+    addComment: 'Add comment',
   },
 
   impactLabels: ['Minimal', 'Light', 'Moderate', 'Heavy', 'Overwhelming'],
