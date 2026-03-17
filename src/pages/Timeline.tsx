@@ -42,7 +42,7 @@ const Timeline = () => {
         const { data: concepts } = await supabase.from('observation_concepts').select('id, name_hu, name_en').in('id', conceptIds);
         const conMap = Object.fromEntries((concepts ?? []).map(c => [c.id, c]));
         setConceptMap(conMap);
-        setObsLogs(obsData.map(o => ({ concept_id: o.concept_id, logged_at: o.logged_at, intensity: o.intensity })));
+        setObsLogs(obsData.map(o => ({ concept_id: o.concept_id, logged_at: o.logged_at, intensity: o.intensity, user_narrative: o.user_narrative })));
 
         obsItems = obsData.map(o => {
           const concept = conMap[o.concept_id];
