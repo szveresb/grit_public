@@ -8,16 +8,14 @@ import FeedCalendar from '@/components/checkin/FeedCalendar';
 import type { CalendarFeedItem } from '@/components/checkin/FeedCalendar';
 import ObservationStepper from '@/components/observations/ObservationStepper';
 import EntryReflectDialog from '@/components/checkin/EntryReflectDialog';
-import JournalForm from '@/components/journal/JournalForm';
-import type { ObservationTreeResult } from '@/components/journal/ObservationTree';
+import EntryModal from '@/components/checkin/EntryModal';
+import type { EntryModalPrefill } from '@/components/checkin/EntryModal';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { friendlyDbError } from '@/lib/db-error';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { FChevronDown, FTrendingUp } from '@/components/icons/FreudIcons';
-import type { JournalFormData } from '@/types/journal';
-import { emptyForm } from '@/types/journal';
 import RecapBanner from '@/components/checkin/RecapBanner';
 import MoodTrendChart from '@/components/timeline/MoodTrendChart';
 import PatternChart from '@/components/timeline/PatternChart';
@@ -35,9 +33,9 @@ const CheckIn = () => {
   const [searchParams, setSearchParams] = useSearchParams();
   const feedRef = useRef<HTMLDivElement>(null);
   const [refreshKey, setRefreshKey] = useState(0);
-  const [showJournalForm, setShowJournalForm] = useState(false);
-  const [form, setForm] = useState<JournalFormData>(emptyForm);
-  const [saving, setSaving] = useState(false);
+  const [entryModalOpen, setEntryModalOpen] = useState(false);
+  const [entryModalDate, setEntryModalDate] = useState(format(new Date(), 'yyyy-MM-dd'));
+  const [entryModalPrefill, setEntryModalPrefill] = useState<EntryModalPrefill | null>(null);
   const [observationOpen, setObservationOpen] = useState(false);
   const [calendarMonth, setCalendarMonth] = useState(new Date());
   const [calendarSelectedDate, setCalendarSelectedDate] = useState<Date | null>(null);
@@ -139,47 +137,10 @@ const CheckIn = () => {
     if (type === 'journal') setReflectEntryId(dbId);
   }, []);
 
-  const openJournalForm = (date?: Date) => {
-    setForm({ ...emptyForm, entry_date: format(date ?? new Date(), 'yyyy-MM-dd') });
-    setShowJournalForm(true);
-  };
-
-  const handleJournalSubmit = async (_e: React.FormEvent, observation?: ObservationTreeResult) => {
-    if (!user) return;
-    setSaving(true);
-    const payload = {
-      user_id: user.id,
-      title: form.title,
-      entry_date: form.entry_date,
-      event_description: form.event_description || null,
-      impact_level: form.impact_level || null,
-      emotional_state: form.emotional_state || null,
-      free_text: form.free_text || null,
-      self_anchor: form.self_anchor || null,
-    };
-    const { data: journalData, error } = await supabase
-      .from('journal_entries')
-      .insert(payload)
-      .select('id')
-      .single();
-
-    if (error) { toast.error(friendlyDbError(error)); setSaving(false); return; }
-
-    if (observation && journalData) {
-      const { error: obsError } = await supabase.from('observation_logs').insert({
-        user_id: user.id,
-        concept_id: observation.conceptId,
-        intensity: observation.intensity,
-        journal_entry_id: journalData.id,
-      } as any);
-      if (obsError) { console.error('Observation link error:', obsError.message); }
-    }
-
-    toast.success(t.journal.entryLogged);
-    setForm(emptyForm);
-    setShowJournalForm(false);
-    setSaving(false);
-    refresh();
+  const openEntryModal = (date?: Date, prefill?: EntryModalPrefill) => {
+    setEntryModalDate(format(date ?? new Date(), 'yyyy-MM-dd'));
+    setEntryModalPrefill(prefill ?? null);
+    setEntryModalOpen(true);
   };
 
   return (
@@ -194,14 +155,7 @@ const CheckIn = () => {
         {/* Quick Pulse */}
         <div className="bg-card/60 backdrop-blur border border-border rounded-3xl p-6">
           <QuickPulse onMoodSelected={(mood) => {
-            setForm({
-              ...emptyForm,
-              entry_date: format(new Date(), 'yyyy-MM-dd'),
-              title: mood.emotional_state,
-              impact_level: mood.impact_level,
-              emotional_state: mood.emotional_state,
-            });
-            setShowJournalForm(true);
+            openEntryModal(new Date(), { emotional_state: mood.emotional_state, impact_level: mood.impact_level });
           }} />
         </div>
 
@@ -209,21 +163,8 @@ const CheckIn = () => {
         {daysSinceLastEntry !== null && daysSinceLastEntry >= 14 && !recapDismissed && (
           <RecapBanner
             days={daysSinceLastEntry}
-            onCatchUp={() => openJournalForm()}
+            onCatchUp={() => openEntryModal()}
             onDismiss={() => setRecapDismissed(true)}
-          />
-        )}
-
-        {/* Full journal form with guided tree */}
-        {showJournalForm && (
-          <JournalForm
-            form={form}
-            onChange={setForm}
-            onSubmit={handleJournalSubmit}
-            onClose={() => setShowJournalForm(false)}
-            saving={saving}
-            isEditing={false}
-            showObservationTree={true}
           />
         )}
 
@@ -279,7 +220,7 @@ const CheckIn = () => {
             selectedDate={calendarSelectedDate}
             onSelectDate={setCalendarSelectedDate}
             onEntryClick={handleEntryClick}
-            onCreateEntry={(date) => openJournalForm(date)}
+            onCreateEntry={(date) => openEntryModal(date)}
           />
         </div>
       </div>
@@ -287,6 +228,14 @@ const CheckIn = () => {
       <EntryReflectDialog
         entryId={reflectEntryId}
         onClose={() => setReflectEntryId(null)}
+        onSaved={refresh}
+      />
+
+      <EntryModal
+        open={entryModalOpen}
+        onOpenChange={setEntryModalOpen}
+        entryDate={entryModalDate}
+        prefill={entryModalPrefill}
         onSaved={refresh}
       />
     </DashboardLayout>
