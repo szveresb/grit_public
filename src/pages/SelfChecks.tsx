@@ -96,7 +96,7 @@ const SelfChecks = () => {
     await supabase.from('questionnaire_questions').delete().eq('questionnaire_id', id);
     const { error } = await supabase.from('questionnaires').delete().eq('id', id);
     if (error) { toast.error(friendlyDbError(error)); return; }
-    toast.success(t.selfChecks.selfCheckDeleted); fetchQuestionnaires();
+    toast.success(t.questionnaires_manage.questionnaireDeleted); fetchQuestionnaires();
   };
 
   const togglePublished = async (q: Questionnaire) => {
