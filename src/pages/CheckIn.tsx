@@ -1,4 +1,5 @@
-import { useState, useCallback, useEffect } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
+import { useSearchParams } from 'react-router-dom';
 import { differenceInDays, parseISO } from 'date-fns';
 import DashboardLayout from '@/components/DashboardLayout';
 import { useLanguage } from '@/hooks/useLanguage';
@@ -25,6 +26,8 @@ import RecapBanner from '@/components/checkin/RecapBanner';
 const CheckIn = () => {
   const { t } = useLanguage();
   const { user } = useAuth();
+  const [searchParams, setSearchParams] = useSearchParams();
+  const feedRef = useRef<HTMLDivElement>(null);
   const [refreshKey, setRefreshKey] = useState(0);
   const [showJournalForm, setShowJournalForm] = useState(false);
   const [form, setForm] = useState<JournalFormData>(emptyForm);
@@ -37,6 +40,22 @@ const CheckIn = () => {
   const [reflectEntryId, setReflectEntryId] = useState<string | null>(null);
   const [daysSinceLastEntry, setDaysSinceLastEntry] = useState<number | null>(null);
   const [recapDismissed, setRecapDismissed] = useState(false);
+  const [highlightDate, setHighlightDate] = useState<string | null>(null);
+
+  // Read ?date param on mount and scroll to feed
+  useEffect(() => {
+    const dateParam = searchParams.get('date');
+    if (dateParam) {
+      setHighlightDate(dateParam);
+      // Clear the param from URL to avoid stale state on refresh
+      searchParams.delete('date');
+      setSearchParams(searchParams, { replace: true });
+      // Scroll to feed section after render
+      setTimeout(() => {
+        feedRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 300);
+    }
+  }, []);
 
   const refresh = useCallback(() => setRefreshKey(k => k + 1), []);
 
@@ -170,7 +189,7 @@ const CheckIn = () => {
         </Collapsible>
 
         {/* Feed with calendar toggle */}
-        <div className="bg-card/60 backdrop-blur border border-border rounded-3xl p-6">
+        <div ref={feedRef} className="bg-card/60 backdrop-blur border border-border rounded-3xl p-6">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
               {t.checkIn.yourStoryTitle}
@@ -198,7 +217,7 @@ const CheckIn = () => {
           ) : null}
 
           <div className={viewMode === 'calendar' ? 'hidden' : ''}>
-            <UnifiedFeed refreshKey={refreshKey} onItemsLoaded={handleItemsLoaded} onEntryClick={handleEntryClick} />
+            <UnifiedFeed refreshKey={refreshKey} onItemsLoaded={handleItemsLoaded} onEntryClick={handleEntryClick} highlightDate={highlightDate} />
           </div>
         </div>
       </div>
