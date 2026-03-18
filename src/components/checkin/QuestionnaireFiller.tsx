@@ -223,30 +223,6 @@ const QuestionnaireFiller = ({ onCompleted }: { onCompleted?: () => void }) => {
     }));
     if (answerRows.length) await supabase.from('questionnaire_answers').insert(answerRows);
 
-    // Auto-create journal entry from self-check
-    const qTitle = questionnaire?.title ?? '';
-    const summaryLines = questions
-      .map((q, i) => `${i + 1}. ${q.question_text}: ${answers[q.id] ?? '-'}`)
-      .join('\n');
-    const scaleAnswers = questions
-      .filter((q) => q.question_type === 'scale' && answers[q.id])
-      .map((q) => Number(answers[q.id]));
-    const avgImpact = scaleAnswers.length
-      ? Math.round(scaleAnswers.reduce((a, b) => a + b, 0) / scaleAnswers.length)
-      : null;
-
-    const journalDesc = totalScore != null
-      ? `${summaryLines}\n\n${t.questionnaires_manage.totalScore}: ${totalScore}`
-      : summaryLines;
-
-    await supabase.from('journal_entries').insert({
-      user_id: user.id,
-      title: `${t.questionnaires_manage.questionnaireJournalTitle}: ${qTitle}`,
-      entry_date: new Date().toISOString().split('T')[0],
-      event_description: journalDesc,
-      impact_level: avgImpact,
-    });
-
     toast.success(t.questionnaires_manage.completed);
     setLastResponses((prev) => [
       { questionnaire_id: selectedQ, completed_at: new Date().toISOString() },
