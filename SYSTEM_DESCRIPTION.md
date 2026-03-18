@@ -17,9 +17,9 @@ Roles are stored in `user_roles` (never on the profile) using the `app_role` enu
 | `affected_person` | Primary user — journals, observations, self-checks |
 | `observer` | Read-only access to unpublished questionnaires |
 | `admin` | Full system management, user role assignment |
-| `editor` | Manages library articles, questionnaires, observation catalog |
+| `editor` | Manages library articles, questionnaires, observation catalog, landing page |
 | `guest_editor` | Limited editor — library articles only |
-| `analyst` | Access to anonymized aggregate data (10+ user threshold) |
+| `analyst` | Access to anonymized aggregate data (20+ user threshold) |
 
 Role checks use `has_role()` and `has_any_role()` — SECURITY DEFINER functions that prevent RLS recursion.
 
@@ -78,10 +78,12 @@ Curated research articles with bilingual support.
 | `excerpt` | text | Fallback excerpt |
 | `excerpt_localized` | jsonb | `{"hu": "...", "en": "..."}` |
 | `category` | text | Default `'Article'` |
+| `author` | text | Article author |
 | `source` | text | Nullable |
 | `url` | text | Nullable |
 | `image_url` | text | Nullable; cover image URL |
 | `published` | boolean | Default `true` |
+| `featured` | boolean | Default `false`; highlighted on landing |
 | `created_at` | timestamptz | Default `now()` |
 | `updated_at` | timestamptz | Default `now()` |
 
@@ -115,12 +117,14 @@ Curated research articles with bilingual support.
 | `id` | uuid (PK) | |
 | `questionnaire_id` | uuid (FK) | → `questionnaires.id` |
 | `question_text` / `question_text_localized` | text / jsonb | |
-| `question_type` | text | Default `'text'` |
+| `question_type` | text | Default `'text'`; supports `scale`, `multiple_choice` |
 | `options` / `options_localized` | jsonb | For multiple-choice |
-| `answer_scores` | jsonb | Nullable; maps option values to numeric scores (weighted mode) |
+| `answer_scores` | jsonb | Nullable; maps option/scale values to numeric scores. Used for weighted mode and **reverse scoring** in sum mode |
 | `sort_order` | integer | Default `0` |
 
 **RLS:** Authenticated users see questions of published questionnaires (or observers). Editors have full CRUD.
+
+**Editor features:** Questions can be duplicated (deep copy of all settings). Scale questions support a "Reverse scoring" toggle that auto-populates `answer_scores` with inverted values using `score(n) = (min + max) - n`.
 
 #### `questionnaire_responses`
 
@@ -169,7 +173,26 @@ Curated research articles with bilingual support.
 
 ---
 
-### 4.6 Structured Observation Engine
+### 4.6 Mood Pulse System
+
+#### `mood_pulses`
+
+Lightweight one-tap mood recordings from the QuickPulse widget.
+
+| Column | Type | Notes |
+|---|---|---|
+| `id` | uuid (PK) | Auto-generated |
+| `user_id` | uuid | Auth user |
+| `level` | integer | 1–5 (struggling → strong) |
+| `label` | text | Localized mood label at time of recording |
+| `entry_date` | date | Default `CURRENT_DATE` |
+| `created_at` | timestamptz | Default `now()` |
+
+**RLS:** Users manage own pulses only.
+
+---
+
+### 4.7 Structured Observation Engine
 
 A SNOMED CT-inspired three-level hierarchy for logging interpersonal patterns.
 
@@ -214,6 +237,7 @@ A SNOMED CT-inspired three-level hierarchy for logging interpersonal patterns.
 | `id` | uuid (PK) | |
 | `user_id` | uuid | Auth user |
 | `concept_id` | uuid (FK) | → `observation_concepts.id` |
+| `journal_entry_id` | uuid (FK) | Nullable; → `journal_entries.id`; links observation to a journal entry |
 | `intensity` | integer | 1–5, default `3`, validated by trigger |
 | `frequency` | text | `once` / `sometimes` / `often` / `constant` |
 | `context_modifier` | text | E.g. "at home", "at work" |
@@ -225,6 +249,27 @@ A SNOMED CT-inspired three-level hierarchy for logging interpersonal patterns.
 **RLS:** Users manage own logs only.
 
 **Validation:** `validate_observation_intensity()` trigger enforces intensity ∈ [1, 5].
+
+---
+
+### 4.8 Landing Page CMS
+
+#### `landing_sections`
+
+Admin/editor-managed content sections for the public landing page.
+
+| Column | Type | Notes |
+|---|---|---|
+| `id` | uuid (PK) | Auto-generated |
+| `section_key` | text | Unique section identifier |
+| `title` / `title_localized` | text / jsonb | Bilingual |
+| `subtitle` / `subtitle_localized` | text / jsonb | Nullable; bilingual |
+| `cta_text` / `cta_text_localized` | text / jsonb | Nullable; bilingual call-to-action |
+| `config` | jsonb | Nullable; section-specific configuration |
+| `is_active` | boolean | Default `true` |
+| `created_at` / `updated_at` | timestamptz | |
+
+**RLS:** Anyone can SELECT active sections. Editors (admin/editor) have full CRUD.
 
 ---
 
@@ -248,7 +293,7 @@ A SNOMED CT-inspired three-level hierarchy for logging interpersonal patterns.
 
 | Function | Purpose |
 |---|---|
-| `analyst-export` | Serves anonymized aggregate data; enforces 10+ user privacy threshold |
+| `analyst-export` | Serves anonymized aggregate data; enforces 20+ user privacy threshold |
 | `journal-patterns` | AI-powered pattern detection across journal entries |
 | `journal-reflect` | AI-powered reflective prompts for journal entries |
 
@@ -264,52 +309,64 @@ The UI uses warm, low-cognitive-load language ("How heavy was it?", "My truth", 
 
 The app uses a custom icon library (`src/components/icons/FreudIcons.tsx`) inspired by the [freud Mental Health & Mindfulness UI Icon Set](https://dribbble.com/shots/23883954). Icons feature thick rounded strokes, organic bubbly shapes, and mental-health-themed metaphors — replacing generic Lucide icons throughout. Key icons include:
 
-- **Navigation:** `FHome`, `FHeartPulse` (check-in), `FTimeline`, `FUser`, `FDownload`, `FBook`, `FUsers`, `FBarChart`
+- **Navigation:** `FHome`, `FDashboard`, `FHeartPulse` (check-in/journal), `FClock`, `FDownload`, `FUser`, `FLibrary`, `FUsers`, `FBarChart`, `FFileText`, `FInfo`, `FLock`
 - **Actions:** `FSave`, `FClose`, `FPlus`, `FEdit`, `FTrash`, `FChevronDown/Right`, `FExternalLink`
-- **Domain:** `FShield` (boundaries), `FSparkles` (patterns), `FBrain` (mind), `FEye` (observation)
+- **Domain:** `FShield` (boundaries), `FSparkles` (patterns), `FBrain` (mind), `FEye` (observation), `FTrendingUp` (trends)
 - **Mood (QuickPulse):** `FMoodStruggling` (wilting sprout) → `FMoodUneasy` (drooping leaf) → `FMoodOkay` (balanced branch) → `FMoodGood` (blooming leaf) → `FMoodStrong` (full bamboo) — botanical metaphors with opacity-graded sage-green, matching the bamboo soft-UI aesthetic
 - **Roles:** `FUserCheck`, `FUserSearch`, `FShieldCheck`, `FPenTool`, `FUserPen`
 
-### Pages
+### URL Structure & Routing
+
+All routes are served under both `/` (Hungarian default) and `/en/` (English prefix). Language is auto-detected from URL prefix and persisted in `localStorage`.
 
 | Route | Component | Auth Required | Notes |
 |---|---|---|---|
-| `/` | `Index` (landing) | No | Public — max 6 newest library articles |
+| `/` | `Index` (landing) | No | Public — featured articles, CMS sections |
 | `/library` | `Library` | No | Full library with search & category filter |
 | `/library/:id` | `Article` | No | Individual article detail page with bilingual content |
 | `/auth` | `Auth` (login/signup) | No | |
 | `/dashboard` | `Dashboard` | Yes | Quick Pulse widget + recent activity |
-| `/check-in` | `CheckIn` | Yes | **Unified** — Quick Pulse + ObservationStepper + chronological feed |
-| `/timeline` | `Timeline` | Yes | Pattern nudge banners when concepts repeat 3+ times/week |
-| `/profile` | `Profile` | Yes | |
-| `/export` | `Export` | Yes | |
-| `/manage-library` | `ManageLibrary` | Yes (editor+) | |
-| `/manage-users` | `ManageUsers` | Yes (admin) | |
-| `/analyst-export` | `AnalystExport` | Yes (analyst) | |
-| `/journal` | redirect → `/check-in` | — | Legacy route |
+| `/journal` | `CheckIn` | Yes | **Unified** — Quick Pulse + ObservationStepper + calendar feed + mood trends + pattern charts |
 | `/surveys` | `Surveys` | Yes | Tabbed view: questionnaire filler + score history with trend charts |
-| `/manage-self-checks` | `SelfChecks` | Yes (editor+) | Questionnaire management with scoring configuration |
-| `/self-checks` | redirect → `/check-in` | — | Legacy route |
+| `/export` | `Export` | Yes | Personal data export (JSON, FHIR, therapist BNO summary) |
+| `/profile` | `Profile` | Yes | Display name, role management, data export |
+| `/manage-library` | `ManageLibrary` | Yes (editor+) | Article CRUD with bilingual fields |
+| `/manage-questionnaires` | `SelfChecks` | Yes (editor+) | Questionnaire management with scoring, reverse scoring, question duplication |
+| `/manage-landing` | `ManageLanding` | Yes (editor+) | Landing page CMS |
+| `/manage-users` | `ManageUsers` | Yes (admin) | User role assignment |
+| `/analyst-export` | `AnalystExport` | Yes (analyst) | Anonymized aggregate data download |
+| `/about-legal` | `AboutLegal` | No | About & legal information |
+| `/terms` | `Terms` | No | Terms of service |
+| `/cookies` | `Cookies` | No | Cookie policy |
+| `/gdpr` | `Gdpr` | No | GDPR / privacy policy |
+
+**Legacy redirects:** `/check-in` → `/journal`, `/self-checks` → `/surveys`, `/timeline` → `/journal`
 
 ### Key Components
 
 - **`PublicHeader`** — Shared top navigation for all public/legal pages: brand link, nav links (Library, Check-in, About), `LanguageToggle`, auth/dashboard button, mobile hamburger menu (Sheet). Gated nav for protected routes redirects unauthenticated users to `/auth`.
 - **`DashboardLayout`** — Sidebar navigation + top header with auth controls (authenticated pages)
-- **`AppSidebar`** — Role-aware navigation; single "Check-in" entry replaces former Journal + Self-Checks
+- **`AppSidebar`** — Role-aware navigation with Navigate / Explore / Management sections
 - **`ProtectedRoute`** — Auth guard wrapper
-- **`EmergencyExit`** — Quick-exit safety button (always visible)
+- **`EmergencyExit`** — Quick-exit safety button (always visible); redirects to neutral site
 - **`LanguageToggle`** — HU/EN language switcher; visible on every page (public header + dashboard)
 - **`ArticleCard`** — Library card linking to individual article detail page
-- **`QuickPulse`** — 5 botanical Freud-style mood icons (wilting sprout → full bamboo, opacity-graded sage-green); one-tap creates a lightweight `journal_entry`
-- **`UnifiedFeed`** — Interleaved chronological list of journal entries, observation logs, and questionnaire completions
+- **`QuickPulse`** — 5 botanical Freud-style mood icons (wilting sprout → full bamboo, opacity-graded sage-green); one-tap writes to `mood_pulses` table and optionally opens journal form pre-filled
+- **`FeedCalendar`** — Calendar-based chronological feed of journal entries, observation logs, mood pulses, and questionnaire completions
 - **`ObservationStepper`** — 3-step progressive disclosure with warm labels ("What's going on?" → "How heavy?" → "Anything to add?")
+- **`EntryModal`** — Journal entry creation/editing dialog with optional observation linking
+- **`RecapBanner`** — Weekly recap prompt when user has sufficient activity
+- **`MoodTrendChart`** — Recharts line chart of mood pulse history
+- **`PatternChart`** — Bar chart of observation concept frequency (pattern nudges for 3+/week)
+- **`HorizontalTimeline`** — Horizontal scrollable timeline of recent activity
 - **`JournalForm` / `JournalEntryCard`** — Fully localized journal creation and display with progressive disclosure for clinical codes
 - **`ScoreResults`** — Post-completion scoring breakdown: total score with progress bar, matched range label/description, and per-question point breakdown
 - **`ScoreHistory`** — Historical score tracking with `recharts` LineChart for repeated questionnaires, trend indicators (↑/↓), and last-5-completions list
+- **`EntryReflectDialog` / `ObservationReflectDialog`** — AI-powered reflection prompts for journal entries and observations
 
 ### Internationalization
 
-Full bilingual support (Hungarian primary, English secondary) via `src/i18n/` with typed dictionary keys (~80+ keys including journal form, check-in, and pulse labels). Language preference stored in `localStorage`.
+Full bilingual support (Hungarian primary, English secondary) via `src/i18n/` with typed dictionary keys (~150+ keys covering navigation, journal, check-in, pulse, observations, questionnaires, export, admin, legal, and disclaimer labels). Language preference stored in `localStorage` and reflected in URL prefix (`/en/`).
 
 ---
 
@@ -334,7 +391,11 @@ Full bilingual support (Hungarian primary, English secondary) via `src/i18n/` wi
 - **k-anonymity rounding** — `active_user_count` in export payload is rounded down to nearest 10
 - **Aggregate-only functions** — `analyst_*_aggregates()` SECURITY DEFINER functions return only anonymized statistics; never expose `user_id`
 
-### 8.5 Clinical Data Interoperability
+### 8.5 Safety Features
+- **Emergency Exit** — Persistent floating button for immediate redirection to a neutral site
+- **No social features** — Strictly no community, messaging, or social interaction to protect user safety and privacy
+
+### 8.6 Clinical Data Interoperability
 - **SNOMED CT coding** — `observation_concepts.concept_code` uses standard SNOMED CT identifiers for clinical interoperability
 - **BNO-10 dual-coding** — `observation_concepts.bno_code` stores ICD-10-HU codes for Hungarian healthcare compatibility; FHIR exports include both SNOMED and ICD-10 coding entries
 - **FHIR export** — Personal export includes observation logs as FHIR Observation resources with dual SNOMED/BNO coding; analyst export supports `?format=fhir` for a FHIR Bundle of aggregated data
