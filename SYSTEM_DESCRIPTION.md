@@ -315,12 +315,28 @@ Full bilingual support (Hungarian primary, English secondary) via `src/i18n/` wi
 
 ## 8. Data Privacy & Security
 
+### 8.1 Access Control
 - **RLS everywhere** — All tables have Row-Level Security enabled
 - **No direct auth.users access** — Profile data in separate `profiles` table
-- **Role isolation** — Roles in `user_roles`, checked via SECURITY DEFINER functions
-- **Analyst anonymization** — Aggregate functions never expose `user_id`; 10+ user threshold enforced before any data release
+- **Role isolation** — Roles in `user_roles`, checked via SECURITY DEFINER functions (`has_role`, `has_any_role`) with `SET search_path = public`
 - **No admin access to personal data** — Individual user content is strictly private
+
+### 8.2 Edge Function Security
+- **JWT validation** — All edge functions validate the `Authorization` header and verify user identity via `supabase.auth.getUser()` before processing
+- **Role-based authorization** — `analyst-export` enforces analyst/admin role via service-role client lookup
+- **No error leakage** — 500 responses return generic messages; raw errors logged server-side only
+
+### 8.3 Error Handling
+- **`friendlyDbError()` utility** (`src/lib/db-error.ts`) — Maps Postgres error codes (23505, 23503, 42501, 23502) to safe user-facing messages; used across all database operations to prevent schema/constraint leakage
+
+### 8.4 Anonymization & Privacy
+- **20-user threshold** — Analyst export requires ≥20 active users before releasing any aggregate data
+- **k-anonymity rounding** — `active_user_count` in export payload is rounded down to nearest 10
+- **Aggregate-only functions** — `analyst_*_aggregates()` SECURITY DEFINER functions return only anonymized statistics; never expose `user_id`
+
+### 8.5 Clinical Data Interoperability
 - **SNOMED CT coding** — `observation_concepts.concept_code` uses standard SNOMED CT identifiers for clinical interoperability
 - **BNO-10 dual-coding** — `observation_concepts.bno_code` stores ICD-10-HU codes for Hungarian healthcare compatibility; FHIR exports include both SNOMED and ICD-10 coding entries
 - **FHIR export** — Personal export includes observation logs as FHIR Observation resources with dual SNOMED/BNO coding; analyst export supports `?format=fhir` for a FHIR Bundle of aggregated data
 - **Therapist export** — BNO-grouped summary export designed for sharing with Hungarian therapists, including observation counts, average intensity, and date ranges per BNO code
+- **Non-diagnostic disclaimer** — All exports carry a mandatory bilingual watermark clarifying data is not a clinical assessment
