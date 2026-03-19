@@ -34,7 +34,7 @@ const AppRoutes = () => (
   <Routes>
     <Route path="/" element={<Index />} />
     <Route path="/auth" element={<Auth />} />
-    <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+    <Route path="/dashboard" element={<Navigate to="/journal" replace />} />
     <Route path="/journal" element={<ProtectedRoute><CheckIn /></ProtectedRoute>} />
     {/* Old routes redirect to journal */}
     <Route path="/check-in" element={<Navigate to="/journal" replace />} />
