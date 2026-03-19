@@ -8,7 +8,7 @@ import { LanguageProvider } from "@/hooks/useLanguage";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
-import Dashboard from "./pages/Dashboard";
+
 import CheckIn from "./pages/CheckIn";
 
 import Profile from "./pages/Profile";
