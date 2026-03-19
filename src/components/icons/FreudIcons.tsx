@@ -291,59 +291,81 @@ export const FLoader = icon(
 
 // ─── QuickPulse mood icons ───────────────────────────
 
-/** Mood 1: Struggling – wilting/drooping form */
+/** Mood 1: Struggling – wilting sprout, drooping to the side */
 export const FMoodStruggling = icon(
   <>
-    <circle cx="12" cy="12" r="9" />
-    <path d="M8 15.5c1-1.5 2.5-2 4-2s3 .5 4 2" />
-    <circle cx="9" cy="9.5" r="1" fill="currentColor" stroke="none" />
-    <circle cx="15" cy="9.5" r="1" fill="currentColor" stroke="none" />
-    <path d="M9 8c.5-.8 1-1 1.5-.8" />
-    <path d="M15 8c-.5-.8-1-1-1.5-.8" />
+    {/* pot / soil */}
+    <ellipse cx="12" cy="20" rx="5" ry="1.5" />
+    <path d="M8.5 20c.3 1.2 1.8 2 3.5 2s3.2-.8 3.5-2" />
+    {/* thin wilting stem */}
+    <path d="M12 20c-.2-2-.8-4-2-6" strokeWidth="1.8" />
+    {/* single drooping leaf */}
+    <path d="M10 14c-2-1-4-.5-4.5 1 1.5 1 3.5.8 4.5-.2" strokeWidth="1.5" />
   </>,
   'FMoodStruggling'
 );
 
-/** Mood 2: Uneasy – uncertain face */
+/** Mood 2: Uneasy – small seedling, slightly bent */
 export const FMoodUneasy = icon(
   <>
-    <circle cx="12" cy="12" r="9" />
-    <path d="M8 14.5c1.5 1 3 1 4 .5s2.5-1 3.5-.5" />
-    <circle cx="9" cy="10" r="1" fill="currentColor" stroke="none" />
-    <circle cx="15" cy="10" r="1" fill="currentColor" stroke="none" />
+    <ellipse cx="12" cy="20" rx="5" ry="1.5" />
+    <path d="M8.5 20c.3 1.2 1.8 2 3.5 2s3.2-.8 3.5-2" />
+    {/* slightly curved stem */}
+    <path d="M12 20c-.1-2 0-4-.5-7" strokeWidth="1.8" />
+    {/* two small leaves */}
+    <path d="M11.5 16c-1.5-1-3.5-.5-3.8.8 1.2.8 3 .5 3.8-.2" strokeWidth="1.5" />
+    <path d="M11.5 13c1.2-1 2.8-.8 3.2.3-1 .7-2.5.5-3.2-.1" strokeWidth="1.5" />
   </>,
   'FMoodUneasy'
 );
 
-/** Mood 3: Okay – calm neutral face */
+/** Mood 3: Okay – upright young shoot with a few leaves */
 export const FMoodOkay = icon(
   <>
-    <circle cx="12" cy="12" r="9" />
-    <path d="M8 14h8" />
-    <circle cx="9" cy="10" r="1" fill="currentColor" stroke="none" />
-    <circle cx="15" cy="10" r="1" fill="currentColor" stroke="none" />
+    <ellipse cx="12" cy="20" rx="5" ry="1.5" />
+    <path d="M8.5 20c.3 1.2 1.8 2 3.5 2s3.2-.8 3.5-2" />
+    {/* straight stem */}
+    <path d="M12 20V10" strokeWidth="1.8" />
+    {/* three modest leaves */}
+    <path d="M12 17c-2-.8-3.8-.2-3.8 1 1.2.6 3 .3 3.8-.3" strokeWidth="1.5" />
+    <path d="M12 14c2-.8 3.8-.2 3.8 1-1.2.6-3 .3-3.8-.3" strokeWidth="1.5" />
+    <path d="M12 11c-1.5-.8-3-.2-3.2.8 1 .5 2.5.3 3.2-.3" strokeWidth="1.5" />
   </>,
   'FMoodOkay'
 );
 
-/** Mood 4: Good – gentle smile */
+/** Mood 4: Good – healthy bamboo stalk with leaves */
 export const FMoodGood = icon(
   <>
-    <circle cx="12" cy="12" r="9" />
-    <path d="M8 14c1 1.5 2.5 2 4 2s3-.5 4-2" />
-    <circle cx="9" cy="10" r="1" fill="currentColor" stroke="none" />
-    <circle cx="15" cy="10" r="1" fill="currentColor" stroke="none" />
+    <ellipse cx="12" cy="20" rx="5" ry="1.5" />
+    <path d="M8.5 20c.3 1.2 1.8 2 3.5 2s3.2-.8 3.5-2" />
+    {/* strong stem with node */}
+    <path d="M12 20V7" strokeWidth="2" />
+    <path d="M10.5 14h3" strokeWidth="1.5" />
+    {/* four lush leaves */}
+    <path d="M12 17c-2.5-1-4.5-.3-4.5 1.2 1.5.7 3.5.2 4.5-.5" strokeWidth="1.5" />
+    <path d="M12 14c2.5-1 4.5-.3 4.5 1.2-1.5.7-3.5.2-4.5-.5" strokeWidth="1.5" />
+    <path d="M12 11c-2-1-3.5-.3-3.5 1 1.2.5 2.8.2 3.5-.4" strokeWidth="1.5" />
+    <path d="M12 8c1.5-.8 3-.3 3 .8-1 .5-2.3.2-3-.3" strokeWidth="1.5" />
   </>,
   'FMoodGood'
 );
 
-/** Mood 5: Strong – beaming face */
+/** Mood 5: Strong – full bamboo with crown of leaves */
 export const FMoodStrong = icon(
   <>
-    <circle cx="12" cy="12" r="9" />
-    <path d="M7 13c1.2 2.5 3 3.5 5 3.5s3.8-1 5-3.5" />
-    <circle cx="9" cy="10" r="1" fill="currentColor" stroke="none" />
-    <circle cx="15" cy="10" r="1" fill="currentColor" stroke="none" />
+    <ellipse cx="12" cy="20" rx="5" ry="1.5" />
+    <path d="M8.5 20c.3 1.2 1.8 2 3.5 2s3.2-.8 3.5-2" />
+    {/* thick bamboo stem with two nodes */}
+    <path d="M12 20V5" strokeWidth="2.2" />
+    <path d="M10.3 14h3.4" strokeWidth="1.5" />
+    <path d="M10.5 9h3" strokeWidth="1.5" />
+    {/* five full leaves */}
+    <path d="M12 17c-3-1.2-5.5-.3-5.5 1.5 2 .8 4.2.2 5.5-.6" strokeWidth="1.5" />
+    <path d="M12 14c3-1.2 5.5-.3 5.5 1.5-2 .8-4.2.2-5.5-.6" strokeWidth="1.5" />
+    <path d="M12 11c-2.5-1-4-.3-4 1 1.5.6 3.2.2 4-.4" strokeWidth="1.5" />
+    <path d="M12 8c2-1 3.5-.3 3.5 1-1.2.5-2.8.2-3.5-.4" strokeWidth="1.5" />
+    <path d="M12 5.5c-1.5-.8-2.8-.2-2.8.7.8.4 2.2.2 2.8-.3" strokeWidth="1.5" />
   </>,
   'FMoodStrong'
 );
