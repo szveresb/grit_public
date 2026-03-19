@@ -38,7 +38,7 @@ const ManageUsers = () => {
   useEffect(() => { if (user && isAdmin) fetchUsers(); }, [user, isAdmin]);
 
   if (roleLoading) return <DashboardLayout><p className="text-sm text-muted-foreground">{t.loading}</p></DashboardLayout>;
-  if (!isAdmin) return <Navigate to="/dashboard" replace />;
+  if (!isAdmin) return <Navigate to="/journal" replace />;
 
   const addRole = async (userId: string, role: AppRole) => {
     const { error } = await supabase.from('user_roles').insert({ user_id: userId, role });

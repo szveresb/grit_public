@@ -31,7 +31,7 @@ const TimelineCard = () => {
 
         {/* CTA */}
         <div className="mt-8">
-          <Link to="/dashboard" className="block w-full py-3 px-6 bg-primary text-primary-foreground text-sm font-medium tracking-wide rounded-sm border border-primary hover:opacity-90 transition-opacity text-center">
+          <Link to="/journal" className="block w-full py-3 px-6 bg-primary text-primary-foreground text-sm font-medium tracking-wide rounded-sm border border-primary hover:opacity-90 transition-opacity text-center">
             Start Your Objective Journal
           </Link>
         </div>
