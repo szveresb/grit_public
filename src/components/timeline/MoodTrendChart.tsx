@@ -36,19 +36,21 @@ const presetLabels: Record<RangePreset, { hu: string; en: string }> = {
   all: { hu: 'Mind', en: 'All' },
 };
 
+const moodOpacity = [0.3, 0.5, 0.7, 0.85, 1.0];
+
 const CustomYTick = ({ x, y, payload }: any) => {
   const idx = (payload.value as number) - 1;
   const Icon = moodIcons[idx];
   if (!Icon) return null;
   return (
-    <g transform={`translate(${x - 16},${y - 10})`}>
-      <Icon width={20} height={20} className="text-primary" />
+    <g transform={`translate(${x - 16},${y - 10})`} opacity={moodOpacity[idx]}>
+      <Icon width={20} height={20} style={{ color: 'hsl(var(--bamboo-leaf))' }} />
     </g>
   );
 };
 
 const chartConfig = {
-  level: { label: 'Mood', color: 'hsl(var(--primary))' },
+  level: { label: 'Mood', color: 'hsl(var(--bamboo-sage))' },
 };
 
 function aggregateByDay(data: MoodDataPoint[]): AggregatedPoint[] {
@@ -156,8 +158,9 @@ const MoodTrendChart = ({ data, lang, t }: MoodTrendChartProps) => {
         >
           <defs>
             <linearGradient id="moodGradient" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity={0.35} />
-              <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity={0.05} />
+              <stop offset="0%" stopColor="hsl(var(--bamboo-leaf))" stopOpacity={0.4} />
+              <stop offset="50%" stopColor="hsl(var(--bamboo-sage))" stopOpacity={0.2} />
+              <stop offset="100%" stopColor="hsl(var(--bamboo-sage-light))" stopOpacity={0.05} />
             </linearGradient>
           </defs>
           <CartesianGrid strokeDasharray="3 3" className="stroke-border/40" />
@@ -193,17 +196,17 @@ const MoodTrendChart = ({ data, lang, t }: MoodTrendChartProps) => {
           <Area
             type="monotone"
             dataKey="level"
-            stroke="hsl(var(--primary))"
+            stroke="hsl(var(--bamboo-leaf))"
             strokeWidth={2.5}
             fill="url(#moodGradient)"
-            dot={{ r: 4, fill: 'hsl(var(--primary))', strokeWidth: 0 }}
-            activeDot={{ r: 6, fill: 'hsl(var(--primary))' }}
+            dot={{ r: 4, fill: 'hsl(var(--bamboo-sage))', strokeWidth: 0 }}
+            activeDot={{ r: 6, fill: 'hsl(var(--bamboo-leaf))' }}
           />
           {filtered.length > 3 && (
             <Brush
               dataKey="ts"
               height={20}
-              stroke="hsl(var(--primary))"
+              stroke="hsl(var(--bamboo-sage))"
               fill="hsl(var(--muted))"
               tickFormatter={(v: number) => format(new Date(v), 'MM/dd', { locale })}
               travellerWidth={8}
