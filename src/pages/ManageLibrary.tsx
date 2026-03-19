@@ -60,7 +60,7 @@ const ManageLibrary = () => {
   }, [articles, searchQuery, filterCategory]);
 
   if (roleLoading) return <DashboardLayout><p className="text-sm text-muted-foreground">{t.loading}</p></DashboardLayout>;
-  if (!isEditor) return <Navigate to="/dashboard" replace />;
+  if (!isEditor) return <Navigate to="/journal" replace />;
 
   const openCreate = () => { setEditingId(null); setForm(emptyForm); setShowForm(true); setTimeout(() => formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' }), 100); };
   const openEdit = (a: Article) => {

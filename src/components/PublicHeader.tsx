@@ -41,8 +41,8 @@ const PublicHeader = () => {
         <div className="flex items-center gap-3">
           <LanguageToggle />
           {user ? (
-            <Button variant="outline" size="sm" className="rounded-full px-4" onClick={() => navigate(localePath('/dashboard'))}>
-              {t.dashboard}
+            <Button variant="outline" size="sm" className="rounded-full px-4" onClick={() => navigate(localePath('/journal'))}>
+              {t.nav.checkIn}
             </Button>
           ) : (
             <Button size="sm" className="rounded-full px-4" onClick={() => navigate(localePath('/auth'))}>

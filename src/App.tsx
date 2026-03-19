@@ -8,7 +8,7 @@ import { LanguageProvider } from "@/hooks/useLanguage";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
-import Dashboard from "./pages/Dashboard";
+
 import CheckIn from "./pages/CheckIn";
 
 import Profile from "./pages/Profile";
@@ -34,7 +34,7 @@ const AppRoutes = () => (
   <Routes>
     <Route path="/" element={<Index />} />
     <Route path="/auth" element={<Auth />} />
-    <Route path="/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+    <Route path="/dashboard" element={<Navigate to="/journal" replace />} />
     <Route path="/journal" element={<ProtectedRoute><CheckIn /></ProtectedRoute>} />
     {/* Old routes redirect to journal */}
     <Route path="/check-in" element={<Navigate to="/journal" replace />} />
@@ -57,7 +57,7 @@ const AppRoutes = () => (
     {/* English prefix */}
     <Route path="/en" element={<Index />} />
     <Route path="/en/auth" element={<Auth />} />
-    <Route path="/en/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+    <Route path="/en/dashboard" element={<Navigate to="/en/journal" replace />} />
     <Route path="/en/journal" element={<ProtectedRoute><CheckIn /></ProtectedRoute>} />
     <Route path="/en/check-in" element={<Navigate to="/en/journal" replace />} />
     <Route path="/en/self-checks" element={<Navigate to="/en/surveys" replace />} />
