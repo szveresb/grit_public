@@ -156,8 +156,8 @@ const MoodTrendChart = ({ data, lang, t }: MoodTrendChartProps) => {
         >
           <defs>
             <linearGradient id="moodGradient" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity={0.35} />
-              <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity={0.05} />
+              <stop offset="0%" stopColor="hsl(var(--bamboo-leaf))" stopOpacity={0.35} />
+              <stop offset="100%" stopColor="hsl(var(--bamboo-sage))" stopOpacity={0.05} />
             </linearGradient>
           </defs>
           <CartesianGrid strokeDasharray="3 3" className="stroke-border/40" />
