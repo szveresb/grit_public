@@ -91,7 +91,7 @@ const QuickPulse = ({ onPulseSaved, onMoodSelected, compact = false }: QuickPuls
                   saved ? 'opacity-50 pointer-events-none' : 'hover:border-primary/50'
                 } border-border bg-card/60 backdrop-blur`}
               >
-                <span className={`text-primary ${opacityLevels[i]}`}>{icon}</span>
+                <span className={`${opacityLevels[i]}`} style={{ color: 'hsl(var(--bamboo-leaf))' }}>{icon}</span>
               </button>
               <span className="text-[10px] font-medium text-muted-foreground">{moodLabels[i]}</span>
             </div>
