@@ -205,7 +205,7 @@ const MoodTrendChart = ({ data, lang, t }: MoodTrendChartProps) => {
             <Brush
               dataKey="ts"
               height={20}
-              stroke="hsl(var(--primary))"
+              stroke="hsl(var(--bamboo-sage))"
               fill="hsl(var(--muted))"
               tickFormatter={(v: number) => format(new Date(v), 'MM/dd', { locale })}
               travellerWidth={8}
