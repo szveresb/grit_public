@@ -48,7 +48,7 @@ const CustomYTick = ({ x, y, payload }: any) => {
 };
 
 const chartConfig = {
-  level: { label: 'Mood', color: 'hsl(var(--primary))' },
+  level: { label: 'Mood', color: 'hsl(var(--bamboo-sage))' },
 };
 
 function aggregateByDay(data: MoodDataPoint[]): AggregatedPoint[] {
