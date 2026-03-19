@@ -57,7 +57,7 @@ const AppRoutes = () => (
     {/* English prefix */}
     <Route path="/en" element={<Index />} />
     <Route path="/en/auth" element={<Auth />} />
-    <Route path="/en/dashboard" element={<ProtectedRoute><Dashboard /></ProtectedRoute>} />
+    <Route path="/en/dashboard" element={<Navigate to="/en/journal" replace />} />
     <Route path="/en/journal" element={<ProtectedRoute><CheckIn /></ProtectedRoute>} />
     <Route path="/en/check-in" element={<Navigate to="/en/journal" replace />} />
     <Route path="/en/self-checks" element={<Navigate to="/en/surveys" replace />} />
