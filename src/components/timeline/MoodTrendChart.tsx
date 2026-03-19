@@ -194,11 +194,11 @@ const MoodTrendChart = ({ data, lang, t }: MoodTrendChartProps) => {
           <Area
             type="monotone"
             dataKey="level"
-            stroke="hsl(var(--primary))"
+            stroke="hsl(var(--bamboo-leaf))"
             strokeWidth={2.5}
             fill="url(#moodGradient)"
-            dot={{ r: 4, fill: 'hsl(var(--primary))', strokeWidth: 0 }}
-            activeDot={{ r: 6, fill: 'hsl(var(--primary))' }}
+            dot={{ r: 4, fill: 'hsl(var(--bamboo-sage))', strokeWidth: 0 }}
+            activeDot={{ r: 6, fill: 'hsl(var(--bamboo-leaf))' }}
           />
           {filtered.length > 3 && (
             <Brush
