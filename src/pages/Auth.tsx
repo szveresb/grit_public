@@ -37,7 +37,7 @@ const Auth = () => {
         await supabase.from('user_roles').insert({ user_id: user.id, role });
       }
       toast.success(t.auth.welcomeToast);
-      navigate(localePath('/dashboard'));
+      navigate(localePath('/journal'));
     } else {
       const { error } = await signIn(email, password);
       if (error) { toast.error(error.message); setLoading(false); return; }
