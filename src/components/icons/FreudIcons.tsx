@@ -290,74 +290,105 @@ export const FLoader = icon(
 );
 
 // ─── QuickPulse mood icons — Botanical bamboo growth stages ──
+// Inspired by segmented bamboo stalks with node bands and elongated blade leaves.
 
-/** Mood 1: Struggling – tiny wilting sprout, drooping leaf */
+/** Mood 1: Struggling – short wilting stalk, one drooping leaf */
 export const FMoodStruggling = ({ className, ...props }: IconProps) => (
   <svg className={className} viewBox="0 0 24 24" fill="none" {...props}>
-    <path d="M12 22V14" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-    <path d="M12 14c-1-3-3-4-5-3.5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" fill="none" />
-    <path d="M10.5 11.5c-1.5.5-2.5-.2-3-1.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" fill="none" />
-    <circle cx="12" cy="22" r="1" fill="currentColor" stroke="none" opacity="0.4" />
+    {/* Short stalk */}
+    <path d="M12 22v-8" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" />
+    {/* Node band */}
+    <path d="M10.5 17.5h3" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" opacity="0.5" />
+    {/* Single drooping leaf */}
+    <path d="M12 14Q9 15 7.5 18" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" fill="none" />
+    <path d="M12 14Q10 14.5 8.5 16" stroke="currentColor" strokeWidth="1" strokeLinecap="round" fill="none" opacity="0.5" />
   </svg>
 );
 FMoodStruggling.displayName = 'FMoodStruggling';
 
-/** Mood 2: Uneasy – small sprout, one timid leaf */
+/** Mood 2: Uneasy – slightly taller, one node, two small leaves */
 export const FMoodUneasy = ({ className, ...props }: IconProps) => (
   <svg className={className} viewBox="0 0 24 24" fill="none" {...props}>
-    <path d="M12 22V12" stroke="currentColor" strokeWidth="2" strokeLinecap="round" />
-    <path d="M12 16h.5" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" opacity="0.5" />
-    <path d="M12 13c1.5-2 3.5-2.5 5-1.5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" fill="none" />
-    <path d="M14.5 11c1-.5 2.2-.2 3 .5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" fill="none" />
-    <circle cx="12" cy="22" r="1" fill="currentColor" stroke="none" opacity="0.4" />
+    {/* Stalk */}
+    <path d="M12 22v-11" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" />
+    {/* Node bands */}
+    <path d="M10.5 17h3" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" opacity="0.5" />
+    <path d="M10.5 14h3" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" opacity="0.5" />
+    {/* Right leaf at upper node */}
+    <path d="M12 12Q15 10.5 17 9" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" fill="none" />
+    <path d="M12 12Q14.5 11 16 10.5" stroke="currentColor" strokeWidth="0.9" strokeLinecap="round" fill="none" opacity="0.45" />
+    {/* Left small leaf lower */}
+    <path d="M12 15.5Q10 15 9 16.5" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" fill="none" opacity="0.7" />
   </svg>
 );
 FMoodUneasy.displayName = 'FMoodUneasy';
 
-/** Mood 3: Okay – medium bamboo stalk, two small leaves */
+/** Mood 3: Okay – medium stalk, two nodes, paired leaves */
 export const FMoodOkay = ({ className, ...props }: IconProps) => (
   <svg className={className} viewBox="0 0 24 24" fill="none" {...props}>
-    <path d="M12 22V8" stroke="currentColor" strokeWidth="2.2" strokeLinecap="round" />
-    <path d="M12 16h.5" stroke="currentColor" strokeWidth="3" strokeLinecap="round" opacity="0.4" />
-    <path d="M12 12h.5" stroke="currentColor" strokeWidth="3" strokeLinecap="round" opacity="0.4" />
-    <path d="M12 14c-2-1.5-4-1-5.5.5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" fill="none" />
-    <path d="M12 10c2-2 4.5-2 6-.5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" fill="none" />
-    <circle cx="12" cy="22" r="1" fill="currentColor" stroke="none" opacity="0.4" />
+    {/* Stalk */}
+    <path d="M12 22V8" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" />
+    {/* Node bands */}
+    <path d="M10.2 18h3.6" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" opacity="0.45" />
+    <path d="M10.2 14h3.6" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" opacity="0.45" />
+    <path d="M10.5 10h3" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" opacity="0.45" />
+    {/* Right leaf pair at top node */}
+    <path d="M12 10Q15.5 8 18 6.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" fill="none" />
+    <path d="M12 10Q15 9 17 8" stroke="currentColor" strokeWidth="0.9" strokeLinecap="round" fill="none" opacity="0.4" />
+    {/* Left leaf at mid node */}
+    <path d="M12 14Q8.5 13 6.5 14.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" fill="none" />
+    <path d="M12 14Q9 13.5 7.5 14" stroke="currentColor" strokeWidth="0.9" strokeLinecap="round" fill="none" opacity="0.4" />
   </svg>
 );
 FMoodOkay.displayName = 'FMoodOkay';
 
-/** Mood 4: Good – taller bamboo, three leaves spreading */
+/** Mood 4: Good – tall stalk, three nodes, spreading leaves */
 export const FMoodGood = ({ className, ...props }: IconProps) => (
   <svg className={className} viewBox="0 0 24 24" fill="none" {...props}>
-    <path d="M12 22V5" stroke="currentColor" strokeWidth="2.4" strokeLinecap="round" />
-    <path d="M12 18h.5" stroke="currentColor" strokeWidth="3" strokeLinecap="round" opacity="0.35" />
-    <path d="M12 13h.5" stroke="currentColor" strokeWidth="3" strokeLinecap="round" opacity="0.35" />
-    <path d="M12 8h.5" stroke="currentColor" strokeWidth="3" strokeLinecap="round" opacity="0.35" />
-    <path d="M12 16c-2-1-4.5-.5-6 1" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" fill="none" />
-    <path d="M12 11c2-2 5-2 6.5-.5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" fill="none" />
-    <path d="M12 7c-1.5-1.5-3.5-1.5-5-.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" fill="none" />
-    <circle cx="12" cy="22" r="1" fill="currentColor" stroke="none" opacity="0.4" />
+    {/* Stalk */}
+    <path d="M12 22V5" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" />
+    {/* Node bands */}
+    <path d="M10 19h4" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" opacity="0.4" />
+    <path d="M10 15h4" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" opacity="0.4" />
+    <path d="M10.2 11h3.6" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" opacity="0.4" />
+    <path d="M10.5 7.5h3" stroke="currentColor" strokeWidth="1.2" strokeLinecap="round" opacity="0.4" />
+    {/* Top right leaf */}
+    <path d="M12 7Q15 5 17.5 3.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" fill="none" />
+    <path d="M12 7Q14.5 5.5 16.5 4.5" stroke="currentColor" strokeWidth="0.9" strokeLinecap="round" fill="none" opacity="0.4" />
+    {/* Mid left leaf */}
+    <path d="M12 11Q8 9.5 5.5 10" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" fill="none" />
+    <path d="M12 11Q8.5 10 6.5 10.5" stroke="currentColor" strokeWidth="0.9" strokeLinecap="round" fill="none" opacity="0.4" />
+    {/* Lower right leaf */}
+    <path d="M12 15Q15 14 17 13" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" fill="none" />
+    <path d="M12 15Q14.5 14.2 16 13.8" stroke="currentColor" strokeWidth="0.8" strokeLinecap="round" fill="none" opacity="0.4" />
   </svg>
 );
 FMoodGood.displayName = 'FMoodGood';
 
-/** Mood 5: Strong – full bamboo with lush leaves at multiple nodes */
+/** Mood 5: Strong – full bamboo, four nodes, lush symmetrical leaves */
 export const FMoodStrong = ({ className, ...props }: IconProps) => (
   <svg className={className} viewBox="0 0 24 24" fill="none" {...props}>
-    <path d="M12 22V3" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" />
-    <path d="M12 19h.5" stroke="currentColor" strokeWidth="3.5" strokeLinecap="round" opacity="0.3" />
-    <path d="M12 14h.5" stroke="currentColor" strokeWidth="3.5" strokeLinecap="round" opacity="0.3" />
-    <path d="M12 9h.5" stroke="currentColor" strokeWidth="3.5" strokeLinecap="round" opacity="0.3" />
-    <path d="M12 17c-2.5-1-5 0-6.5 1.5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" fill="none" />
-    <path d="M12 17c2-1 4.5-.5 6 1" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" fill="none" />
-    <path d="M12 12c2.5-2 5.5-1.5 7 .5" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" fill="none" />
-    <path d="M12 12c-2-1.5-4-1-5.5.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" fill="none" />
-    <path d="M12 7c-2-2-4.5-1.5-6 0" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" fill="none" />
-    <path d="M12 7c1.5-1.5 4-1.5 5.5 0" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" fill="none" />
-    <path d="M12 4c-1-1-2.5-1-3.5 0" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" fill="none" />
-    <path d="M12 4c1-1 2.5-1 3.5 0" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" fill="none" />
-    <circle cx="12" cy="22" r="1" fill="currentColor" stroke="none" opacity="0.4" />
+    {/* Stalk */}
+    <path d="M12 22V3" stroke="currentColor" strokeWidth="2.6" strokeLinecap="round" />
+    {/* Node bands */}
+    <path d="M9.8 19.5h4.4" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" opacity="0.35" />
+    <path d="M9.8 15.5h4.4" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" opacity="0.35" />
+    <path d="M10 11.5h4" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" opacity="0.35" />
+    <path d="M10.2 7.5h3.6" stroke="currentColor" strokeWidth="1.3" strokeLinecap="round" opacity="0.35" />
+    {/* Top crown leaves */}
+    <path d="M12 5Q9 3 6.5 2.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" fill="none" />
+    <path d="M12 5Q9.5 3.5 7.5 3.2" stroke="currentColor" strokeWidth="0.8" strokeLinecap="round" fill="none" opacity="0.4" />
+    <path d="M12 5Q15 3 17.5 2.5" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" fill="none" />
+    <path d="M12 5Q14.5 3.5 16.5 3.2" stroke="currentColor" strokeWidth="0.8" strokeLinecap="round" fill="none" opacity="0.4" />
+    {/* Upper node leaves */}
+    <path d="M12 8Q8 6.5 5 7" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" fill="none" />
+    <path d="M12 8Q15.5 6.5 18.5 6" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" fill="none" />
+    {/* Mid node leaves */}
+    <path d="M12 12Q8.5 10.5 5.5 11.5" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" fill="none" />
+    <path d="M12 12Q16 10.5 19 10" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" fill="none" />
+    {/* Lower node leaves */}
+    <path d="M12 16Q9 15 7 16" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" fill="none" />
+    <path d="M12 16Q15.5 15 17.5 14.5" stroke="currentColor" strokeWidth="1.4" strokeLinecap="round" fill="none" />
   </svg>
 );
 FMoodStrong.displayName = 'FMoodStrong';
