@@ -36,13 +36,15 @@ const presetLabels: Record<RangePreset, { hu: string; en: string }> = {
   all: { hu: 'Mind', en: 'All' },
 };
 
+const moodOpacities = ['opacity-30', 'opacity-50', 'opacity-70', 'opacity-85', 'opacity-100'];
+
 const CustomYTick = ({ x, y, payload }: any) => {
   const idx = (payload.value as number) - 1;
   const Icon = moodIcons[idx];
   if (!Icon) return null;
   return (
     <g transform={`translate(${x - 16},${y - 10})`}>
-      <Icon width={20} height={20} className="text-primary" />
+      <Icon width={20} height={20} className={`text-bamboo-sage ${moodOpacities[idx]}`} />
     </g>
   );
 };
