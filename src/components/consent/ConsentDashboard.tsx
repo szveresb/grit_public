@@ -4,7 +4,7 @@ import { useLanguage } from '@/hooks/useLanguage';
 import { useConsent } from '@/hooks/useConsent';
 import { supabase } from '@/integrations/supabase/client';
 import { buildCategories } from './consentCategories';
-import ConsentSummary from './ConsentSummary';
+import ConsentCard from './ConsentCard';
 import ConsentHistoryDialog from './ConsentHistoryDialog';
 import { toast } from 'sonner';
 import { FShield, FClock } from '@/components/icons/FreudIcons';
@@ -34,7 +34,7 @@ const ConsentDashboard = () => {
 
   return (
     <>
-      <div className="bg-card/60 backdrop-blur border border-border rounded-3xl p-6 space-y-4">
+      <div className="space-y-4">
         <div className="flex items-center gap-2">
           <FShield className="h-4 w-4 text-primary" />
           <h2 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
@@ -43,7 +43,16 @@ const ConsentDashboard = () => {
         </div>
         <p className="text-sm text-muted-foreground leading-relaxed">{t.consent.dashboardDesc}</p>
 
-        <ConsentSummary categories={categories} consents={consents} onToggle={handleToggle} />
+        <div className="space-y-3">
+          {categories.map((cat) => (
+            <ConsentCard
+              key={cat.key}
+              category={cat}
+              granted={consents[cat.key] ?? false}
+              onToggle={handleToggle}
+            />
+          ))}
+        </div>
 
         <div className="flex items-center justify-between pt-1">
           {lastUpdated && (
