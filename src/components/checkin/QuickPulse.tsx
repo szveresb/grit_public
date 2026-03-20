@@ -98,7 +98,7 @@ const QuickPulse = ({ onPulseSaved, onMoodSelected, compact = false }: QuickPuls
     <div className={compact ? 'space-y-3' : 'space-y-4'}>
       {!compact && (
         <h2 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
-          {t.checkIn.quickPulseTitle}
+          {pulseTitle}
         </h2>
       )}
 
