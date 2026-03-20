@@ -156,6 +156,7 @@ const ObservationStepper = ({ onLogged }: { onLogged?: () => void }) => {
       {/* Step 1: Categories */}
       {step === 1 && (
         <div className="space-y-3 animate-fade-in">
+          <StanceBanner subjectType={subjectType} subjectName={subjectName ?? undefined} onSwitch={() => setStep(0)} compact />
           <Button variant="ghost" size="sm" className="rounded-2xl" onClick={() => setStep(0)}>
             <FArrowLeft className="h-4 w-4 mr-1" /> {t.observations.back}
           </Button>
