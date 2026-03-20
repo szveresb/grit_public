@@ -25,6 +25,7 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
   };
 
   return (
+    <StanceProvider>
     <SidebarProvider>
       <EmergencyExit />
       <RoleIndicator />
