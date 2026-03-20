@@ -77,7 +77,7 @@ const CheckIn = () => {
       const [journalRes, responseRes, obsRes, pulseRes] = await Promise.all([
         supabase.from('journal_entries').select('id, title, entry_date, impact_level').eq('user_id', user.id),
         supabase.from('questionnaire_responses').select('id, questionnaire_id, completed_at, questionnaires(title)').eq('user_id', user.id),
-        supabase.from('observation_logs').select('id, intensity, frequency, logged_at, concept_id, user_narrative, journal_entry_id').eq('user_id', user.id),
+        supabase.from('observation_logs').select('id, intensity, frequency, logged_at, concept_id, user_narrative, journal_entry_id, subject_type, subject_id').eq('user_id', user.id),
         (supabase.from as any)('mood_pulses').select('level, entry_date').eq('user_id', user.id),
       ]);
 
