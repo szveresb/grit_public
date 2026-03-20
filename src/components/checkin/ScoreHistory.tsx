@@ -53,7 +53,6 @@ const ScoreHistory = () => {
         .from('questionnaire_responses')
         .select('id, questionnaire_id, total_score, completed_at')
         .eq('user_id', user.id)
-        .not('total_score', 'is', null)
         .order('completed_at', { ascending: true });
 
       if (!responses || responses.length === 0) {
