@@ -75,6 +75,7 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
         </main>
       </div>
     </SidebarProvider>
+    </StanceProvider>
   );
 };
 
