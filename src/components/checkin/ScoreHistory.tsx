@@ -117,7 +117,7 @@ const ScoreHistory = () => {
           id: r.id,
           questionnaire_id: r.questionnaire_id,
           questionnaire_title: titleMap.get(r.questionnaire_id)?.title ?? '',
-          total_score: r.total_score!,
+          total_score: r.total_score ?? 0,
           completed_at: r.completed_at,
         });
       }
