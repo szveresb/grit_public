@@ -1,5 +1,6 @@
 import { useNavigate, Link } from 'react-router-dom';
 import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
+import { StanceProvider } from '@/hooks/useStance';
 import AppSidebar from '@/components/AppSidebar';
 import EmergencyExit from '@/components/EmergencyExit';
 import RoleIndicator from '@/components/RoleIndicator';
@@ -24,6 +25,7 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
   };
 
   return (
+    <StanceProvider>
     <SidebarProvider>
       <EmergencyExit />
       <RoleIndicator />
@@ -73,6 +75,7 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
         </main>
       </div>
     </SidebarProvider>
+    </StanceProvider>
   );
 };
 

@@ -5,6 +5,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { FClose, FSave } from '@/components/icons/FreudIcons';
 import { useLanguage } from '@/hooks/useLanguage';
+import { useStance } from '@/hooks/useStance';
 import type { JournalFormData } from '@/types/journal';
 import ObservationTree, { type ObservationTreeResult } from './ObservationTree';
 import StanceBanner from '@/components/premium/StanceBanner';
@@ -22,11 +23,9 @@ interface JournalFormProps {
 
 const JournalForm = ({ form, onChange, onSubmit, onClose, saving, isEditing, showObservationTree = false }: JournalFormProps) => {
   const { t } = useLanguage();
+  const { subjectType, selectedSubjectId, selectedSubjectName, setSubjectType, setSelectedSubjectId, setSelectedSubjectName, resetToSelf } = useStance();
   const [observationResult, setObservationResult] = useState<ObservationTreeResult | null>(null);
   const [treeCompleted, setTreeCompleted] = useState(!showObservationTree);
-  const [subjectType, setSubjectType] = useState<'self' | 'relative'>('self');
-  const [selectedSubjectId, setSelectedSubjectId] = useState<string | null>(null);
-  const [selectedSubjectName, setSelectedSubjectName] = useState<string | undefined>();
   const [showStancePicker, setShowStancePicker] = useState(false);
 
   const handleTreeComplete = (result: ObservationTreeResult) => {
@@ -67,10 +66,7 @@ const JournalForm = ({ form, onChange, onSubmit, onClose, saving, isEditing, sho
             subjectType={subjectType}
             onSubjectTypeChange={(type) => {
               setSubjectType(type);
-              if (type === 'self') {
-                setSelectedSubjectId(null);
-                setSelectedSubjectName(undefined);
-              }
+              if (type === 'self') resetToSelf();
               setShowStancePicker(false);
             }}
             selectedSubjectId={selectedSubjectId}

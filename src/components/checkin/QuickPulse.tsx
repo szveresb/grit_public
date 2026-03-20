@@ -1,6 +1,7 @@
 import { useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useLanguage } from '@/hooks/useLanguage';
+import { useStance } from '@/hooks/useStance';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
 import { format } from 'date-fns';
@@ -26,7 +27,6 @@ export interface MoodSelection {
 
 interface QuickPulseProps {
   onPulseSaved?: () => void;
-  /** Called when user taps a mood — parent should open journal form pre-filled */
   onMoodSelected?: (mood: MoodSelection) => void;
   compact?: boolean;
 }
@@ -34,11 +34,9 @@ interface QuickPulseProps {
 const QuickPulse = ({ onPulseSaved, onMoodSelected, compact = false }: QuickPulseProps) => {
   const { user } = useAuth();
   const { t } = useLanguage();
+  const { subjectType, selectedSubjectId, selectedSubjectName, setSubjectType, setSelectedSubjectId, setSelectedSubjectName, resetToSelf } = useStance();
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
-  const [subjectType, setSubjectType] = useState<'self' | 'relative'>('self');
-  const [selectedSubjectId, setSelectedSubjectId] = useState<string | null>(null);
-  const [selectedSubjectName, setSelectedSubjectName] = useState<string | undefined>();
   const [showStancePicker, setShowStancePicker] = useState(false);
 
   const moodLabels = [
@@ -103,10 +101,7 @@ const QuickPulse = ({ onPulseSaved, onMoodSelected, compact = false }: QuickPuls
             subjectType={subjectType}
             onSubjectTypeChange={(type) => {
               setSubjectType(type);
-              if (type === 'self') {
-                setSelectedSubjectId(null);
-                setSelectedSubjectName(undefined);
-              }
+              if (type === 'self') resetToSelf();
               setShowStancePicker(false);
             }}
             selectedSubjectId={selectedSubjectId}
