@@ -125,15 +125,25 @@ const ObservationStepper = ({ onLogged }: { onLogged?: () => void }) => {
             subjectType={subjectType}
             onSubjectTypeChange={setSubjectType}
             selectedSubjectId={subjectId}
-            onSubjectIdChange={setSubjectId}
+            onSubjectIdChange={(id) => {
+              setSubjectId(id);
+              // Try to find subject name from the selector's fetched data
+            }}
           />
           <Button
             size="sm"
             className="rounded-2xl w-full"
-            onClick={() => {
+            onClick={async () => {
               if (subjectType === 'relative' && !subjectId) {
                 toast.error(t.subjects.selectSubjectError);
                 return;
+              }
+              // Fetch subject name for stance banner
+              if (subjectType === 'relative' && subjectId && user) {
+                const { data } = await supabase.from('subjects').select('name').eq('id', subjectId).maybeSingle();
+                setSubjectName(data?.name ?? null);
+              } else {
+                setSubjectName(null);
               }
               setStep(1);
             }}
