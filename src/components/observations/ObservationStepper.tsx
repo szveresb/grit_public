@@ -6,10 +6,10 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { ToggleGroup, ToggleGroupItem } from '@/components/ui/toggle-group';
 import { toast } from 'sonner';
 import { friendlyDbError } from '@/lib/db-error';
 import { FArrowLeft, FHeart, FMessageCircle, FShield, FCheck } from '@/components/icons/FreudIcons';
+import SubjectSelector from './SubjectSelector';
 
 interface Category {
   id: string;
@@ -43,7 +43,11 @@ const ObservationStepper = ({ onLogged }: { onLogged?: () => void }) => {
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [selectedConcept, setSelectedConcept] = useState<string | null>(null);
   const [intensity, setIntensity] = useState(3);
-  
+
+  // Subject / perspective state
+  const [subjectType, setSubjectType] = useState<'self' | 'relative'>('self');
+  const [subjectId, setSubjectId] = useState<string | null>(null);
+
   const [context, setContext] = useState('');
   const [narrative, setNarrative] = useState('');
   const [submitting, setSubmitting] = useState(false);
@@ -58,16 +62,20 @@ const ObservationStepper = ({ onLogged }: { onLogged?: () => void }) => {
     const { data } = await supabase.from('observation_concepts').select('*')
       .eq('category_id', catId).eq('is_active', true).order('sort_order');
     setConcepts((data as Concept[]) ?? []);
-    setStep(1);
+    setStep(2);
   };
 
   const selectConcept = (conceptId: string) => {
     setSelectedConcept(conceptId);
-    setStep(2);
+    setStep(3);
   };
 
   const handleSubmit = async () => {
     if (!user || !selectedConcept) return;
+    if (subjectType === 'relative' && !subjectId) {
+      toast.error(t.subjects.selectSubjectError);
+      return;
+    }
     setSubmitting(true);
     const { error } = await supabase.from('observation_logs').insert({
       user_id: user.id,
@@ -75,11 +83,14 @@ const ObservationStepper = ({ onLogged }: { onLogged?: () => void }) => {
       intensity,
       context_modifier: context || null,
       user_narrative: narrative || null,
+      subject_type: subjectType,
+      subject_id: subjectType === 'relative' ? subjectId : null,
     });
     if (error) { toast.error(friendlyDbError(error)); setSubmitting(false); return; }
     toast.success(t.observations.logged);
     setStep(0); setSelectedCategory(null); setSelectedConcept(null);
     setIntensity(3); setContext(''); setNarrative('');
+    setSubjectType('self'); setSubjectId(null);
     setSubmitting(false);
     onLogged?.();
   };
@@ -87,7 +98,7 @@ const ObservationStepper = ({ onLogged }: { onLogged?: () => void }) => {
   const name = (item: { name_hu: string; name_en: string }) => lang === 'en' ? item.name_en : item.name_hu;
   const desc = (item: { description_hu: string | null; description_en: string | null }) => lang === 'en' ? item.description_en : item.description_hu;
 
-  const stepLabels = [t.observations.stepWhatsGoing, t.observations.stepHowHeavy, t.observations.stepAnythingElse];
+  const stepLabels = [t.subjects.perspectiveLabel, t.observations.stepWhatsGoing, t.observations.stepHowHeavy, t.observations.stepAnythingElse];
 
   return (
     <div className="space-y-5">
@@ -100,14 +111,42 @@ const ObservationStepper = ({ onLogged }: { onLogged?: () => void }) => {
             }`}>
               {i < step ? <FCheck className="h-3.5 w-3.5" /> : i + 1}
             </div>
-            {i < stepLabels.length - 1 && <div className={`w-8 h-0.5 ${i < step ? 'bg-primary' : 'bg-border'}`} />}
+            {i < stepLabels.length - 1 && <div className={`w-6 h-0.5 ${i < step ? 'bg-primary' : 'bg-border'}`} />}
           </div>
         ))}
       </div>
 
-      {/* Step 0: Categories */}
+      {/* Step 0: Perspective toggle */}
       {step === 0 && (
+        <div className="space-y-4 animate-fade-in">
+          <SubjectSelector
+            subjectType={subjectType}
+            onSubjectTypeChange={setSubjectType}
+            selectedSubjectId={subjectId}
+            onSubjectIdChange={setSubjectId}
+          />
+          <Button
+            size="sm"
+            className="rounded-2xl w-full"
+            onClick={() => {
+              if (subjectType === 'relative' && !subjectId) {
+                toast.error(t.subjects.selectSubjectError);
+                return;
+              }
+              setStep(1);
+            }}
+          >
+            {t.consent.next}
+          </Button>
+        </div>
+      )}
+
+      {/* Step 1: Categories */}
+      {step === 1 && (
         <div className="space-y-3 animate-fade-in">
+          <Button variant="ghost" size="sm" className="rounded-2xl" onClick={() => setStep(0)}>
+            <FArrowLeft className="h-4 w-4 mr-1" /> {t.observations.back}
+          </Button>
           <p className="text-sm font-medium text-muted-foreground text-center">{t.observations.chooseDomain}</p>
           {categories.length === 0 ? (
             <p className="text-sm text-muted-foreground text-center">{t.observations.noCategories}</p>
@@ -130,10 +169,10 @@ const ObservationStepper = ({ onLogged }: { onLogged?: () => void }) => {
         </div>
       )}
 
-      {/* Step 1: Concepts */}
-      {step === 1 && (
+      {/* Step 2: Concepts */}
+      {step === 2 && (
         <div className="space-y-3 animate-fade-in">
-          <Button variant="ghost" size="sm" className="rounded-2xl" onClick={() => setStep(0)}>
+          <Button variant="ghost" size="sm" className="rounded-2xl" onClick={() => setStep(1)}>
             <FArrowLeft className="h-4 w-4 mr-1" /> {t.observations.back}
           </Button>
           <p className="text-sm font-medium text-muted-foreground text-center">{t.observations.pickObservation}</p>
@@ -158,12 +197,20 @@ const ObservationStepper = ({ onLogged }: { onLogged?: () => void }) => {
         </div>
       )}
 
-      {/* Step 2: Qualifiers */}
-      {step === 2 && (
+      {/* Step 3: Qualifiers */}
+      {step === 3 && (
         <div className="space-y-5 animate-fade-in">
-          <Button variant="ghost" size="sm" className="rounded-2xl" onClick={() => setStep(1)}>
+          <Button variant="ghost" size="sm" className="rounded-2xl" onClick={() => setStep(2)}>
             <FArrowLeft className="h-4 w-4 mr-1" /> {t.observations.back}
           </Button>
+
+          {/* Subject badge */}
+          {subjectType === 'relative' && (
+            <div className="flex items-center gap-2 bg-accent/50 rounded-2xl px-3 py-2">
+              <FUsers className="h-3.5 w-3.5 text-accent-foreground/70" />
+              <span className="text-xs font-semibold text-accent-foreground/70">{t.subjects.observingAbout}</span>
+            </div>
+          )}
 
           {/* Intensity */}
           <div className="space-y-2">
