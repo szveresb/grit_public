@@ -103,7 +103,8 @@ const FeedCalendar = ({ items, currentMonth, onMonthChange, selectedDate, onSele
                     {dayItems.length > 0 && (
                       <div className="flex gap-0.5 mt-0.5">
                         {dayItems.some(i => i.type === 'journal') && <span className={`h-1.5 w-1.5 rounded-full ${isSelected ? 'bg-primary-foreground' : 'bg-primary'}`} />}
-                        {dayItems.some(i => i.type === 'observation') && <span className={`h-1.5 w-1.5 rounded-full ${isSelected ? 'bg-primary-foreground/60' : 'bg-accent-foreground/60'}`} />}
+                        {dayItems.some(i => i.type === 'observation' && i.subjectType !== 'relative') && <span className={`h-1.5 w-1.5 rounded-full ${isSelected ? 'bg-primary-foreground/60' : 'bg-accent-foreground/60'}`} />}
+                        {dayItems.some(i => i.type === 'observation' && i.subjectType === 'relative') && <span className={`h-1.5 w-1.5 rounded-full ${isSelected ? 'bg-amber-300' : 'bg-amber-500/70'}`} />}
                         {dayItems.some(i => i.type === 'questionnaire') && <span className={`h-1.5 w-1.5 rounded-full ${isSelected ? 'bg-primary-foreground/40' : 'bg-muted-foreground'}`} />}
                       </div>
                     )}
