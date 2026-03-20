@@ -5,7 +5,6 @@ import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { FDownload } from '@/components/icons/FreudIcons';
-import { useLanguage } from '@/hooks/useLanguage';
 
 const BNO_LABELS_HU: Record<string, string> = {
   'Z63.0': 'Házastárssal vagy partnerrel kapcsolatos problémák',
