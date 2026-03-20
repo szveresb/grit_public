@@ -511,6 +511,7 @@ export const en: Dictionary = {
     benefit1: 'Parallel self-reflection and observation in a single session.',
     benefit2: 'Pattern detection between your impact level and observed behavior intensity.',
     benefit3: 'Therapist export grouped by subject with BNO-10 dual-coding.',
+    benefit4: 'Interactive mood trend timeline slider for deep insight into emotional patterns.',
     understood: 'Got it',
     comingSoon: 'Currently available for all users. Premium gating coming soon.',
     loggingFor: 'Logging for',
