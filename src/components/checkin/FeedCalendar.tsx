@@ -4,7 +4,7 @@ import { getDateLocale } from '@/lib/date-locale';
 import { getMoonPhase } from '@/lib/moon-phase';
 import { useLanguage } from '@/hooks/useLanguage';
 import { Button } from '@/components/ui/button';
-import { FChevronLeft, FChevronRight, FBookOpen, FEye, FClipboardCheck, FPlus } from '@/components/icons/FreudIcons';
+import { FChevronLeft, FChevronRight, FBookOpen, FEye, FClipboardCheck, FPlus, FUsers } from '@/components/icons/FreudIcons';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 export interface CalendarFeedItem {
