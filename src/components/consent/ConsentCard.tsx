@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Switch } from '@/components/ui/switch';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { FChevronDown } from '@/components/icons/FreudIcons';
+import { useLanguage } from '@/hooks/useLanguage';
 
 export interface ConsentCategory {
   key: string;
@@ -19,6 +20,7 @@ interface ConsentCardProps {
 
 const ConsentCard = ({ category, granted, onToggle }: ConsentCardProps) => {
   const [open, setOpen] = useState(false);
+  const { t } = useLanguage();
 
   return (
     <div className="bg-card/60 backdrop-blur border border-border rounded-3xl p-6 space-y-4 w-full max-w-md mx-auto">
@@ -42,7 +44,7 @@ const ConsentCard = ({ category, granted, onToggle }: ConsentCardProps) => {
       <Collapsible open={open} onOpenChange={setOpen}>
         <CollapsibleTrigger className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors font-semibold uppercase tracking-widest">
           <FChevronDown className={`h-3.5 w-3.5 transition-transform ${open ? 'rotate-180' : ''}`} />
-          {open ? '' : ''}Részletek
+          {t.consent.details}
         </CollapsibleTrigger>
         <CollapsibleContent className="mt-2">
           <p className="text-xs text-muted-foreground leading-relaxed">{category.learnMore}</p>

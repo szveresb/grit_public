@@ -460,6 +460,14 @@ export interface Dictionary {
     next: string;
     dashboardTitle: string;
     dashboardDesc: string;
+    details: string;
+    lastUpdated: string;
+    viewHistory: string;
+    historyTitle: string;
+    historyEmpty: string;
+    gateTitle: string;
+    gateMessage: string;
+    gateAction: string;
     categories: Record<string, { title: string; description: string; learnMore: string }>;
   };
 }

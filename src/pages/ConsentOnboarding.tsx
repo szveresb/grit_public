@@ -5,6 +5,7 @@ import { useLanguage } from '@/hooks/useLanguage';
 import { supabase } from '@/integrations/supabase/client';
 import ConsentCarousel from '@/components/consent/ConsentCarousel';
 import LanguageToggle from '@/components/LanguageToggle';
+import EmergencyExit from '@/components/EmergencyExit';
 import bambooBg from '@/assets/bamboo-bg.jpg';
 import { toast } from 'sonner';
 
@@ -18,7 +19,6 @@ const ConsentOnboarding = () => {
     if (!user) return;
     setSaving(true);
 
-    // Upsert all consent rows
     const rows = Object.entries(consents).map(([consent_key, granted]) => ({
       user_id: user.id,
       consent_key,
@@ -31,7 +31,6 @@ const ConsentOnboarding = () => {
     });
     if (cErr) { toast.error(cErr.message); setSaving(false); return; }
 
-    // Mark consent as completed
     const { error: pErr } = await supabase
       .from('profiles')
       .update({ consent_completed: true })
@@ -48,6 +47,7 @@ const ConsentOnboarding = () => {
       <div className="fixed top-4 right-4 z-20">
         <LanguageToggle />
       </div>
+      <EmergencyExit />
       <div className="relative z-10 w-full max-w-lg py-12">
         <ConsentCarousel onComplete={handleComplete} loading={saving} />
       </div>

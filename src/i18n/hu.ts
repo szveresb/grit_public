@@ -435,6 +435,14 @@ export const hu: Dictionary = {
     next: 'Következő',
     dashboardTitle: 'Adatvédelem és AI vezérlés',
     dashboardDesc: 'Állítsd be, mely adatkategóriákat használjuk. A változtatások azonnal érvénybe lépnek.',
+    details: 'Részletek',
+    lastUpdated: 'Utolsó módosítás: {date}',
+    viewHistory: 'Előzmények',
+    historyTitle: 'Hozzájárulási előzmények',
+    historyEmpty: 'Még nincsenek rögzített változtatások.',
+    gateTitle: 'Hozzájárulás szükséges',
+    gateMessage: 'Ennek a funkciónak a használatához engedélyezned kell a(z) „{feature}" hozzájárulást.',
+    gateAction: 'Adatvédelmi beállítások',
     categories: {
       journal_storage: {
         title: 'Napló és megfigyelések',
