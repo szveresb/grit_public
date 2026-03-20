@@ -110,7 +110,7 @@ const ScoreHistory = () => {
             questionnaire_id: r.questionnaire_id,
             title: qInfo?.title ?? '',
             entries: [],
-            scoreRanges: (qInfo?.score_ranges as ScoreRange[]) ?? [],
+            scoreRanges: (qInfo?.score_ranges as unknown as ScoreRange[]) ?? [],
             maxPossibleScore: maxScoreMap.get(r.questionnaire_id) ?? 0,
           });
         }
