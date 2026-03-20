@@ -23,6 +23,7 @@ interface SubjectSelectorProps {
   onSubjectTypeChange: (type: 'self' | 'relative') => void;
   selectedSubjectId: string | null;
   onSubjectIdChange: (id: string | null) => void;
+  onSubjectNameChange?: (name: string | undefined) => void;
 }
 
 const RELATIONSHIP_TYPES = ['child', 'spouse', 'parent', 'sibling', 'other'] as const;
