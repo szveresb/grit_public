@@ -253,6 +253,10 @@ export const hu: Dictionary = {
     completedOn: 'Kitöltve',
     points: 'pont',
     duplicateQuestion: 'Másolás',
+    viewAnswers: 'Válaszok megtekintése',
+    hideAnswers: 'Válaszok elrejtése',
+    question: 'Kérdés',
+    answer: 'Válasz',
   },
 
   timeline: {

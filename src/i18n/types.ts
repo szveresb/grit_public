@@ -265,6 +265,10 @@ export interface Dictionary {
     completedOn: string;
     points: string;
     duplicateQuestion: string;
+    viewAnswers: string;
+    hideAnswers: string;
+    question: string;
+    answer: string;
   };
 
   // Timeline
