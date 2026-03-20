@@ -356,7 +356,7 @@ All routes are served under both `/` (Hungarian default) and `/en/` (English pre
 - **`ObservationStepper`** — 3-step progressive disclosure with warm labels ("What's going on?" → "How heavy?" → "Anything to add?")
 - **`EntryModal`** — Journal entry creation/editing dialog with optional observation linking
 - **`RecapBanner`** — Weekly recap prompt when user has sufficient activity
-- **`MoodTrendChart`** — Recharts line chart of mood pulse history
+- **`MoodTrendChart`** — Recharts area chart of mood pulse history; timeline `<Brush>` slider is gated behind premium (non-premium users see an upsell badge)
 - **`PatternChart`** — Bar chart of observation concept frequency (pattern nudges for 3+/week)
 - **`HorizontalTimeline`** — Horizontal scrollable timeline of recent activity
 - **`JournalForm` / `JournalEntryCard`** — Fully localized journal creation and display with progressive disclosure for clinical codes
