@@ -183,16 +183,18 @@ const ScoreHistory = () => {
           <div key={group.questionnaire_id} className="border border-border rounded-2xl p-4 space-y-4">
             <div className="flex items-center justify-between">
               <h4 className="text-sm font-semibold text-foreground">{group.title}</h4>
-              <div className="flex items-center gap-2">
-                <span className="text-lg font-bold text-foreground">{latest.total_score}</span>
-                {trend !== 0 && (
-                  <span className={`text-xs font-medium px-1.5 py-0.5 rounded-full ${
-                    trend > 0 ? 'bg-primary/10 text-primary' : 'bg-muted text-muted-foreground'
-                  }`}>
-                    {trend > 0 ? '+' : ''}{trend}
-                  </span>
-                )}
-              </div>
+              {hasScoring && (
+                <div className="flex items-center gap-2">
+                  <span className="text-lg font-bold text-foreground">{latest.total_score}</span>
+                  {trend !== 0 && (
+                    <span className={`text-xs font-medium px-1.5 py-0.5 rounded-full ${
+                      trend > 0 ? 'bg-primary/10 text-primary' : 'bg-muted text-muted-foreground'
+                    }`}>
+                      {trend > 0 ? '+' : ''}{trend}
+                    </span>
+                  )}
+                </div>
+              )}
             </div>
 
             {/* Progress bar + matched range */}
