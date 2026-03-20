@@ -183,7 +183,7 @@ const SubjectSelector = ({
                 <button
                   key={s.id}
                   type="button"
-                  onClick={() => onSubjectIdChange(s.id)}
+                  onClick={() => { onSubjectIdChange(s.id); onSubjectNameChange?.(s.name); }}
                   className={`flex items-center gap-3 border rounded-2xl p-3 text-left transition-colors ${
                     selectedSubjectId === s.id
                       ? 'border-amber-400 dark:border-amber-600 bg-amber-50 dark:bg-amber-950/30'
