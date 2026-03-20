@@ -10,6 +10,7 @@ import { toast } from 'sonner';
 import { friendlyDbError } from '@/lib/db-error';
 import { FArrowLeft, FHeart, FMessageCircle, FShield, FCheck, FUsers } from '@/components/icons/FreudIcons';
 import SubjectSelector from './SubjectSelector';
+import StanceBanner from '@/components/premium/StanceBanner';
 
 interface Category {
   id: string;
@@ -47,6 +48,7 @@ const ObservationStepper = ({ onLogged }: { onLogged?: () => void }) => {
   // Subject / perspective state
   const [subjectType, setSubjectType] = useState<'self' | 'relative'>('self');
   const [subjectId, setSubjectId] = useState<string | null>(null);
+  const [subjectName, setSubjectName] = useState<string | null>(null);
 
   const [context, setContext] = useState('');
   const [narrative, setNarrative] = useState('');
@@ -123,15 +125,25 @@ const ObservationStepper = ({ onLogged }: { onLogged?: () => void }) => {
             subjectType={subjectType}
             onSubjectTypeChange={setSubjectType}
             selectedSubjectId={subjectId}
-            onSubjectIdChange={setSubjectId}
+            onSubjectIdChange={(id) => {
+              setSubjectId(id);
+              // Try to find subject name from the selector's fetched data
+            }}
           />
           <Button
             size="sm"
             className="rounded-2xl w-full"
-            onClick={() => {
+            onClick={async () => {
               if (subjectType === 'relative' && !subjectId) {
                 toast.error(t.subjects.selectSubjectError);
                 return;
+              }
+              // Fetch subject name for stance banner
+              if (subjectType === 'relative' && subjectId && user) {
+                const { data } = await supabase.from('subjects').select('name').eq('id', subjectId).maybeSingle();
+                setSubjectName(data?.name ?? null);
+              } else {
+                setSubjectName(null);
               }
               setStep(1);
             }}
@@ -144,6 +156,7 @@ const ObservationStepper = ({ onLogged }: { onLogged?: () => void }) => {
       {/* Step 1: Categories */}
       {step === 1 && (
         <div className="space-y-3 animate-fade-in">
+          <StanceBanner subjectType={subjectType} subjectName={subjectName ?? undefined} onSwitch={() => setStep(0)} compact />
           <Button variant="ghost" size="sm" className="rounded-2xl" onClick={() => setStep(0)}>
             <FArrowLeft className="h-4 w-4 mr-1" /> {t.observations.back}
           </Button>
@@ -172,6 +185,7 @@ const ObservationStepper = ({ onLogged }: { onLogged?: () => void }) => {
       {/* Step 2: Concepts */}
       {step === 2 && (
         <div className="space-y-3 animate-fade-in">
+          <StanceBanner subjectType={subjectType} subjectName={subjectName ?? undefined} onSwitch={() => setStep(0)} compact />
           <Button variant="ghost" size="sm" className="rounded-2xl" onClick={() => setStep(1)}>
             <FArrowLeft className="h-4 w-4 mr-1" /> {t.observations.back}
           </Button>
@@ -200,17 +214,10 @@ const ObservationStepper = ({ onLogged }: { onLogged?: () => void }) => {
       {/* Step 3: Qualifiers */}
       {step === 3 && (
         <div className="space-y-5 animate-fade-in">
+          <StanceBanner subjectType={subjectType} subjectName={subjectName ?? undefined} onSwitch={() => setStep(0)} />
           <Button variant="ghost" size="sm" className="rounded-2xl" onClick={() => setStep(2)}>
             <FArrowLeft className="h-4 w-4 mr-1" /> {t.observations.back}
           </Button>
-
-          {/* Subject badge */}
-          {subjectType === 'relative' && (
-            <div className="flex items-center gap-2 bg-accent/50 rounded-2xl px-3 py-2">
-              <FUsers className="h-3.5 w-3.5 text-accent-foreground/70" />
-              <span className="text-xs font-semibold text-accent-foreground/70">{t.subjects.observingAbout}</span>
-            </div>
-          )}
 
           {/* Intensity */}
           <div className="space-y-2">
