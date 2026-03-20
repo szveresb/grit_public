@@ -219,7 +219,7 @@ const CheckIn = () => {
 
         {/* Mood trend chart — gated by mood_tracking */}
         <ConsentGate consentKey="mood_tracking">
-          <MoodTrendChart data={moodData} lang={lang} t={t} />
+          <MoodTrendChart data={moodData} lang={lang} isPremium={isPremium} onPremiumClick={() => setPremiumOpen(true)} t={t} />
         </ConsentGate>
 
         {/* 8-week pattern frequency chart — gated by pattern_detection */}
