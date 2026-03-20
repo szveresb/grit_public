@@ -494,4 +494,26 @@ export interface Dictionary {
     selfDot: string;
     proxyDot: string;
   };
+
+  // Premium / dual-perspective
+  premium: {
+    modalTitle: string;
+    modalDesc: string;
+    benefit1: string;
+    benefit2: string;
+    benefit3: string;
+    understood: string;
+    comingSoon: string;
+    loggingFor: string;
+    switchStance: string;
+    observerConsentTitle: string;
+    observerConsentDesc: string;
+    observerConsentCheckbox: string;
+    observerConsentAccept: string;
+    managedRelativesTitle: string;
+    managedRelativesDesc: string;
+    relationshipLabel: string;
+    subjectAdded: string;
+    subjectRemoved: string;
+  };
 }
