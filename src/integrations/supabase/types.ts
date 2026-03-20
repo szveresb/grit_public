@@ -321,6 +321,7 @@ export type Database = {
       }
       profiles: {
         Row: {
+          consent_completed: boolean
           created_at: string
           display_name: string | null
           id: string
@@ -328,6 +329,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          consent_completed?: boolean
           created_at?: string
           display_name?: string | null
           id?: string
@@ -335,6 +337,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          consent_completed?: boolean
           created_at?: string
           display_name?: string | null
           id?: string
@@ -506,6 +509,30 @@ export type Database = {
           title?: string
           title_localized?: Json | null
           updated_at?: string
+        }
+        Relationships: []
+      }
+      user_consents: {
+        Row: {
+          consent_key: string
+          granted: boolean
+          id: string
+          updated_at: string
+          user_id: string
+        }
+        Insert: {
+          consent_key: string
+          granted?: boolean
+          id?: string
+          updated_at?: string
+          user_id: string
+        }
+        Update: {
+          consent_key?: string
+          granted?: boolean
+          id?: string
+          updated_at?: string
+          user_id?: string
         }
         Relationships: []
       }
