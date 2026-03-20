@@ -21,6 +21,8 @@ interface AggregatedPoint {
 interface MoodTrendChartProps {
   data: MoodDataPoint[];
   lang: Lang;
+  isPremium?: boolean;
+  onPremiumClick?: () => void;
   t: { timeline: { moodTrendTitle: string; moodTrendSubtitle: string; moodTrendEmpty: string } };
 }
 
