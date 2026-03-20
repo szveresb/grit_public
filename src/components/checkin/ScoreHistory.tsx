@@ -288,7 +288,7 @@ const ScoreHistory = () => {
                           </div>
                         ))}
                         {answers?.length === 0 && (
-                          <p className="text-[11px] text-muted-foreground">{t.questionnaires_manage.scoreHistoryEmpty}</p>
+                          <p className="text-[11px] text-muted-foreground italic">{t.questionnaires_manage.noAnswersRecorded}</p>
                         )}
                       </div>
                     </CollapsibleContent>
