@@ -198,7 +198,7 @@ const ScoreHistory = () => {
             </div>
 
             {/* Progress bar + matched range */}
-            {group.maxPossibleScore > 0 && (
+            {hasScoring && group.maxPossibleScore > 0 && (
               <div className="space-y-1.5">
                 <Progress value={pct} className="h-2 rounded-full" />
                 <div className="flex items-center justify-between">
@@ -215,7 +215,7 @@ const ScoreHistory = () => {
             )}
 
             {/* Chart */}
-            {group.entries.length > 1 && (
+            {hasScoring && group.entries.length > 1 && (
               <div className="h-32">
                 <ResponsiveContainer width="100%" height="100%">
                   <LineChart data={chartData}>
