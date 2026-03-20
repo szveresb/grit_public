@@ -48,6 +48,7 @@ const ObservationStepper = ({ onLogged }: { onLogged?: () => void }) => {
   // Subject / perspective state
   const [subjectType, setSubjectType] = useState<'self' | 'relative'>('self');
   const [subjectId, setSubjectId] = useState<string | null>(null);
+  const [subjectName, setSubjectName] = useState<string | null>(null);
 
   const [context, setContext] = useState('');
   const [narrative, setNarrative] = useState('');
