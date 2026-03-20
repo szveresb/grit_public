@@ -214,6 +214,16 @@ const ScoreHistory = () => {
               </div>
             )}
 
+            {/* Non-scored summary */}
+            {!hasScoring && (
+              <div className="flex items-center gap-2 px-3 py-2.5 rounded-xl bg-accent/20">
+                <FClock className="h-4 w-4 text-muted-foreground" />
+                <span className="text-sm text-muted-foreground">
+                  {t.questionnaires_manage.completionSummary.replace('{count}', String(group.entries.length))}
+                </span>
+              </div>
+            )}
+
             {/* Chart */}
             {hasScoring && group.entries.length > 1 && (
               <div className="h-32">
