@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { useLanguage } from '@/hooks/useLanguage';
+import { useConsent } from '@/hooks/useConsent';
 import { supabase } from '@/integrations/supabase/client';
 import ConsentCarousel from '@/components/consent/ConsentCarousel';
 import LanguageToggle from '@/components/LanguageToggle';
@@ -12,6 +13,7 @@ import { toast } from 'sonner';
 const ConsentOnboarding = () => {
   const { user } = useAuth();
   const { localePath } = useLanguage();
+  const { refresh: refreshConsent } = useConsent();
   const navigate = useNavigate();
   const [saving, setSaving] = useState(false);
 
@@ -37,6 +39,7 @@ const ConsentOnboarding = () => {
       .eq('user_id', user.id);
     if (pErr) { toast.error(pErr.message); setSaving(false); return; }
 
+    await refreshConsent();
     navigate(localePath('/journal'));
   };
 

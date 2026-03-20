@@ -1,4 +1,4 @@
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect } from 'react';
 import useEmblaCarousel from 'embla-carousel-react';
 import { useLanguage } from '@/hooks/useLanguage';
 import { Button } from '@/components/ui/button';
@@ -30,9 +30,12 @@ const ConsentCarousel = ({ onComplete, loading }: ConsentCarouselProps) => {
   }, [emblaApi]);
 
   // Attach select listener
-  useState(() => {
-    if (emblaApi) emblaApi.on('select', onSelect);
-  });
+  useEffect(() => {
+    if (!emblaApi) return;
+    emblaApi.on('select', onSelect);
+    onSelect(); // sync initial state
+    return () => { emblaApi.off('select', onSelect); };
+  }, [emblaApi, onSelect]);
 
   const handleToggle = (key: string, granted: boolean) => {
     setConsents((prev) => ({ ...prev, [key]: granted }));
