@@ -136,7 +136,7 @@ const CheckIn = () => {
       setTimelineItems(allItems);
 
       // Feed calendar items
-      setCalendarItems(allItems.map(i => ({ id: i.id, type: i.type, title: i.title, date: i.date })));
+      setCalendarItems(allItems.map(i => ({ id: i.id, type: i.type, title: i.title, date: i.date, subjectType: (i as any).subjectType })));
     };
     fetchAll();
   }, [user, refreshKey]);
