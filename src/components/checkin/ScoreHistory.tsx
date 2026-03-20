@@ -166,6 +166,7 @@ const ScoreHistory = () => {
   return (
     <div className="space-y-6">
       {groups.map((group) => {
+        const hasScoring = group.entries.some(e => e.total_score > 0);
         const chartData = group.entries.map(e => ({
           date: format(new Date(e.completed_at), 'MM/dd', { locale: dateLocale }),
           score: e.total_score,
