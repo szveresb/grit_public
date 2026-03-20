@@ -271,7 +271,7 @@ const ScoreHistory = () => {
                       </div>
                       <div className="flex items-center gap-1.5">
                         <span className="font-semibold text-foreground">
-                          {e.total_score} {t.questionnaires_manage.points}
+                          {e.total_score > 0 ? `${e.total_score} ${t.questionnaires_manage.points}` : format(new Date(e.completed_at), 'PP', { locale: dateLocale })}
                         </span>
                         <FChevronDown className={`h-3 w-3 text-muted-foreground transition-transform ${isOpen ? 'rotate-180' : ''}`} />
                       </div>
