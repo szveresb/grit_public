@@ -435,6 +435,14 @@ export const en: Dictionary = {
     next: 'Next',
     dashboardTitle: 'Privacy & AI Control',
     dashboardDesc: 'Manage which data categories we use. Changes take effect immediately.',
+    details: 'Details',
+    lastUpdated: 'Last updated: {date}',
+    viewHistory: 'View History',
+    historyTitle: 'Consent History',
+    historyEmpty: 'No consent changes recorded yet.',
+    gateTitle: 'Consent Required',
+    gateMessage: 'This feature requires your "{feature}" consent to be enabled.',
+    gateAction: 'Manage Privacy Settings',
     categories: {
       journal_storage: {
         title: 'Journal & Observations',

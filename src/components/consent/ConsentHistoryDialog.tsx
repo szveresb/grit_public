@@ -83,7 +83,7 @@ const ConsentHistoryDialog = ({ open, onClose }: Props) => {
                       className="flex items-center gap-2 px-3 py-2 rounded-xl bg-muted/40 text-sm"
                     >
                       {item.granted ? (
-                        <FCheck className="h-3.5 w-3.5 text-green-600 shrink-0" />
+                        <FCheck className="h-3.5 w-3.5 text-primary shrink-0" />
                       ) : (
                         <FClose className="h-3.5 w-3.5 text-destructive shrink-0" />
                       )}
