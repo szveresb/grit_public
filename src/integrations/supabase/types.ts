@@ -14,6 +14,33 @@ export type Database = {
   }
   public: {
     Tables: {
+      consent_history_logs: {
+        Row: {
+          changed_at: string
+          consent_key: string
+          granted: boolean
+          id: string
+          scope_snapshot: Json | null
+          user_id: string
+        }
+        Insert: {
+          changed_at?: string
+          consent_key: string
+          granted: boolean
+          id?: string
+          scope_snapshot?: Json | null
+          user_id: string
+        }
+        Update: {
+          changed_at?: string
+          consent_key?: string
+          granted?: boolean
+          id?: string
+          scope_snapshot?: Json | null
+          user_id?: string
+        }
+        Relationships: []
+      }
       journal_entries: {
         Row: {
           created_at: string
@@ -562,6 +589,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      analyst_consented_user_ids: {
+        Args: { _consent_key: string }
+        Returns: string[]
+      }
       analyst_journal_aggregates: {
         Args: never
         Returns: {
