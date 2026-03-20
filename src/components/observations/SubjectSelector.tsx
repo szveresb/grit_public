@@ -55,9 +55,8 @@ const SubjectSelector = ({
   const handleAdd = async () => {
     if (!user || !newName.trim()) return;
     setAdding(true);
-    const { data, error } = await supabase
-      .from('subjects')
-      .insert({ user_id: user.id, name: newName.trim(), relationship_type: newRelType })
+    const { data, error } = await (supabase.from('subjects') as any)
+      .insert([{ user_id: user.id, name: newName.trim(), relationship_type: newRelType }])
       .select('id, name, relationship_type')
       .single();
     if (error) {
