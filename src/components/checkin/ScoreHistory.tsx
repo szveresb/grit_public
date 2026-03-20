@@ -166,6 +166,7 @@ const ScoreHistory = () => {
   return (
     <div className="space-y-6">
       {groups.map((group) => {
+        const hasScoring = group.entries.some(e => e.total_score > 0);
         const chartData = group.entries.map(e => ({
           date: format(new Date(e.completed_at), 'MM/dd', { locale: dateLocale }),
           score: e.total_score,
@@ -182,20 +183,22 @@ const ScoreHistory = () => {
           <div key={group.questionnaire_id} className="border border-border rounded-2xl p-4 space-y-4">
             <div className="flex items-center justify-between">
               <h4 className="text-sm font-semibold text-foreground">{group.title}</h4>
-              <div className="flex items-center gap-2">
-                <span className="text-lg font-bold text-foreground">{latest.total_score}</span>
-                {trend !== 0 && (
-                  <span className={`text-xs font-medium px-1.5 py-0.5 rounded-full ${
-                    trend > 0 ? 'bg-primary/10 text-primary' : 'bg-muted text-muted-foreground'
-                  }`}>
-                    {trend > 0 ? '+' : ''}{trend}
-                  </span>
-                )}
-              </div>
+              {hasScoring && (
+                <div className="flex items-center gap-2">
+                  <span className="text-lg font-bold text-foreground">{latest.total_score}</span>
+                  {trend !== 0 && (
+                    <span className={`text-xs font-medium px-1.5 py-0.5 rounded-full ${
+                      trend > 0 ? 'bg-primary/10 text-primary' : 'bg-muted text-muted-foreground'
+                    }`}>
+                      {trend > 0 ? '+' : ''}{trend}
+                    </span>
+                  )}
+                </div>
+              )}
             </div>
 
             {/* Progress bar + matched range */}
-            {group.maxPossibleScore > 0 && (
+            {hasScoring && group.maxPossibleScore > 0 && (
               <div className="space-y-1.5">
                 <Progress value={pct} className="h-2 rounded-full" />
                 <div className="flex items-center justify-between">
@@ -212,7 +215,7 @@ const ScoreHistory = () => {
             )}
 
             {/* Chart */}
-            {group.entries.length > 1 && (
+            {hasScoring && group.entries.length > 1 && (
               <div className="h-32">
                 <ResponsiveContainer width="100%" height="100%">
                   <LineChart data={chartData}>
