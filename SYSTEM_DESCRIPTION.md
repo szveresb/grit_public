@@ -351,7 +351,7 @@ All routes are served under both `/` (Hungarian default) and `/en/` (English pre
 - **`EmergencyExit`** — Quick-exit safety button (always visible); redirects to neutral site
 - **`LanguageToggle`** — HU/EN language switcher; visible on every page (public header + dashboard)
 - **`ArticleCard`** — Library card linking to individual article detail page
-- **`QuickPulse`** — 5 botanical Freud-style mood icons (wilting sprout → full bamboo, opacity-graded sage-green); one-tap writes to `mood_pulses` table and optionally opens journal form pre-filled
+- **`QuickPulse`** — 5 botanical Freud-style mood icons (wilting sprout → full bamboo, opacity-graded sage-green); one-tap writes to `mood_pulses` table and optionally opens journal form pre-filled. Fetches managed labels/title from `landing_sections` (`mood_preview` config) so admin CMS changes are reflected everywhere.
 - **`FeedCalendar`** — Calendar-based chronological feed of journal entries, observation logs, mood pulses, and questionnaire completions
 - **`ObservationStepper`** — 3-step progressive disclosure with warm labels ("What's going on?" → "How heavy?" → "Anything to add?")
 - **`EntryModal`** — Journal entry creation/editing dialog with optional observation linking
