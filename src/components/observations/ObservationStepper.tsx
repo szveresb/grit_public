@@ -214,17 +214,10 @@ const ObservationStepper = ({ onLogged }: { onLogged?: () => void }) => {
       {/* Step 3: Qualifiers */}
       {step === 3 && (
         <div className="space-y-5 animate-fade-in">
+          <StanceBanner subjectType={subjectType} subjectName={subjectName ?? undefined} onSwitch={() => setStep(0)} />
           <Button variant="ghost" size="sm" className="rounded-2xl" onClick={() => setStep(2)}>
             <FArrowLeft className="h-4 w-4 mr-1" /> {t.observations.back}
           </Button>
-
-          {/* Subject badge */}
-          {subjectType === 'relative' && (
-            <div className="flex items-center gap-2 bg-accent/50 rounded-2xl px-3 py-2">
-              <FUsers className="h-3.5 w-3.5 text-accent-foreground/70" />
-              <span className="text-xs font-semibold text-accent-foreground/70">{t.subjects.observingAbout}</span>
-            </div>
-          )}
 
           {/* Intensity */}
           <div className="space-y-2">
