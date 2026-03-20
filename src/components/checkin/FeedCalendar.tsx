@@ -13,6 +13,7 @@ export interface CalendarFeedItem {
   title: string;
   date: string;
   detail?: string;
+  subjectType?: 'self' | 'relative';
 }
 
 interface Props {
