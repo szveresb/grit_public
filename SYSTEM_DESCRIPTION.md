@@ -321,7 +321,7 @@ All routes are served under both `/` (Hungarian default) and `/en/` (English pre
 
 | Route | Component | Auth Required | Notes |
 |---|---|---|---|
-| `/` | `Index` (landing) | No | Public — featured articles, CMS sections |
+| `/` | `Index` (landing) | No | Public — featured articles, CMS sections; authenticated users see live `QuickPulse` instead of static mood preview |
 | `/library` | `Library` | No | Full library with search & category filter |
 | `/library/:id` | `Article` | No | Individual article detail page with bilingual content |
 | `/auth` | `Auth` (login/signup) | No | |
@@ -331,7 +331,7 @@ All routes are served under both `/` (Hungarian default) and `/en/` (English pre
 | `/export` | `Export` | Yes | Personal data export (JSON, FHIR, therapist BNO summary) |
 | `/profile` | `Profile` | Yes | Display name, role management, data export |
 | `/manage-library` | `ManageLibrary` | Yes (editor+) | Article CRUD with bilingual fields |
-| `/manage-questionnaires` | `SelfChecks` | Yes (editor+) | Questionnaire management with scoring, reverse scoring, question duplication |
+| `/manage-questionnaires` | `SelfChecks` | Yes (editor+) | Questionnaire management with scoring, reverse scoring, question duplication, drag-and-drop reordering, question numbering |
 | `/manage-landing` | `ManageLanding` | Yes (editor+) | Landing page CMS |
 | `/manage-users` | `ManageUsers` | Yes (admin) | User role assignment |
 | `/analyst-export` | `AnalystExport` | Yes (analyst) | Anonymized aggregate data download |
@@ -351,12 +351,12 @@ All routes are served under both `/` (Hungarian default) and `/en/` (English pre
 - **`EmergencyExit`** — Quick-exit safety button (always visible); redirects to neutral site
 - **`LanguageToggle`** — HU/EN language switcher; visible on every page (public header + dashboard)
 - **`ArticleCard`** — Library card linking to individual article detail page
-- **`QuickPulse`** — 5 botanical Freud-style mood icons (wilting sprout → full bamboo, opacity-graded sage-green); one-tap writes to `mood_pulses` table and optionally opens journal form pre-filled
+- **`QuickPulse`** — 5 botanical Freud-style mood icons (wilting sprout → full bamboo, opacity-graded sage-green); one-tap writes to `mood_pulses` table and optionally opens journal form pre-filled. Fetches managed labels/title from `landing_sections` (`mood_preview` config) so admin CMS changes are reflected everywhere.
 - **`FeedCalendar`** — Calendar-based chronological feed of journal entries, observation logs, mood pulses, and questionnaire completions
 - **`ObservationStepper`** — 3-step progressive disclosure with warm labels ("What's going on?" → "How heavy?" → "Anything to add?")
 - **`EntryModal`** — Journal entry creation/editing dialog with optional observation linking
 - **`RecapBanner`** — Weekly recap prompt when user has sufficient activity
-- **`MoodTrendChart`** — Recharts line chart of mood pulse history
+- **`MoodTrendChart`** — Recharts area chart of mood pulse history; timeline `<Brush>` slider is gated behind premium (non-premium users see an upsell badge)
 - **`PatternChart`** — Bar chart of observation concept frequency (pattern nudges for 3+/week)
 - **`HorizontalTimeline`** — Horizontal scrollable timeline of recent activity
 - **`JournalForm` / `JournalEntryCard`** — Fully localized journal creation and display with progressive disclosure for clinical codes
