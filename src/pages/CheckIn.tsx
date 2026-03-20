@@ -110,7 +110,8 @@ const CheckIn = () => {
         obsItems = standaloneObs.map(o => {
           const concept = conMap[o.concept_id];
           const name = concept ? (lang === 'en' ? concept.name_en : concept.name_hu) : t.observations.tabObservations;
-          return { id: o.id, type: 'observation' as const, title: name, date: o.logged_at, detail: `${t.observations.intensity}: ${o.intensity}/5` };
+          const subjectType = (o as any).subject_type as 'self' | 'relative' | undefined;
+          return { id: o.id, type: 'observation' as const, title: name, date: o.logged_at, detail: `${t.observations.intensity}: ${o.intensity}/5`, subjectType: subjectType ?? 'self' };
         });
 
         // Current-week nudges
