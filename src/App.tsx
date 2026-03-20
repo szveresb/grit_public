@@ -26,6 +26,7 @@ import Article from "./pages/Article";
 import SelfChecks from "./pages/SelfChecks";
 import Surveys from "./pages/Surveys";
 import ManageLanding from "./pages/ManageLanding";
+import ConsentOnboarding from "./pages/ConsentOnboarding";
 
 const queryClient = new QueryClient();
 
