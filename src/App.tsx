@@ -49,6 +49,7 @@ const AppRoutes = () => (
     <Route path="/manage-questionnaires" element={<ProtectedRoute><SelfChecks /></ProtectedRoute>} />
     <Route path="/analyst-export" element={<ProtectedRoute><AnalystExport /></ProtectedRoute>} />
     <Route path="/manage-landing" element={<ProtectedRoute><ManageLanding /></ProtectedRoute>} />
+    <Route path="/consent" element={<ProtectedRoute skipConsentCheck><ConsentOnboarding /></ProtectedRoute>} />
     <Route path="/library" element={<Library />} />
     <Route path="/library/:id" element={<Article />} />
     <Route path="/terms" element={<Terms />} />
