@@ -26,10 +26,13 @@ interface Props {
   onCreateEntry?: (date: Date) => void;
 }
 
-const iconFor = (type: CalendarFeedItem['type']) => {
-  switch (type) {
+const iconFor = (item: CalendarFeedItem) => {
+  switch (item.type) {
     case 'journal': return <FBookOpen className="h-3.5 w-3.5 text-primary shrink-0" />;
-    case 'observation': return <FEye className="h-3.5 w-3.5 text-accent-foreground/60 shrink-0" />;
+    case 'observation':
+      return item.subjectType === 'relative'
+        ? <FUsers className="h-3.5 w-3.5 text-amber-600/70 dark:text-amber-400/70 shrink-0" />
+        : <FEye className="h-3.5 w-3.5 text-accent-foreground/60 shrink-0" />;
     case 'questionnaire': return <FClipboardCheck className="h-3.5 w-3.5 text-muted-foreground shrink-0" />;
   }
 };
