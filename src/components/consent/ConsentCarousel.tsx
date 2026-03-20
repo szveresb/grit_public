@@ -30,9 +30,12 @@ const ConsentCarousel = ({ onComplete, loading }: ConsentCarouselProps) => {
   }, [emblaApi]);
 
   // Attach select listener
-  useState(() => {
-    if (emblaApi) emblaApi.on('select', onSelect);
-  });
+  useEffect(() => {
+    if (!emblaApi) return;
+    emblaApi.on('select', onSelect);
+    onSelect(); // sync initial state
+    return () => { emblaApi.off('select', onSelect); };
+  }, [emblaApi, onSelect]);
 
   const handleToggle = (key: string, granted: boolean) => {
     setConsents((prev) => ({ ...prev, [key]: granted }));
