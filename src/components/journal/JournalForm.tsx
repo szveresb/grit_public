@@ -78,6 +78,7 @@ const JournalForm = ({ form, onChange, onSubmit, onClose, saving, isEditing, sho
               setSelectedSubjectId(id);
               setShowStancePicker(false);
             }}
+            onSubjectNameChange={(name) => setSelectedSubjectName(name)}
           />
         </div>
       )}

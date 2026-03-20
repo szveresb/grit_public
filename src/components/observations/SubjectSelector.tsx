@@ -105,6 +105,7 @@ const SubjectSelector = ({
     } else if (data) {
       setSubjects((prev) => [...prev, data as Subject]);
       onSubjectIdChange(data.id);
+      onSubjectNameChange?.(data.name);
       setNewName('');
       setShowAdd(false);
     }
