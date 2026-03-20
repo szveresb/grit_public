@@ -9,6 +9,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import PublicHeader from '@/components/PublicHeader';
 import ArticleCard from '@/components/ArticleCard';
 import LandingMoodPreview from '@/components/LandingMoodPreview';
+import QuickPulse from '@/components/checkin/QuickPulse';
 
 import bambooBg from '@/assets/bamboo-bg.jpg';
 
