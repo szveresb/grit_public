@@ -9,6 +9,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import PublicHeader from '@/components/PublicHeader';
 import ArticleCard from '@/components/ArticleCard';
 import LandingMoodPreview from '@/components/LandingMoodPreview';
+import QuickPulse from '@/components/checkin/QuickPulse';
 
 import bambooBg from '@/assets/bamboo-bg.jpg';
 
@@ -74,7 +75,7 @@ const Index = () => {
         </div>
       </section>
 
-      {/* Mood Preview */}
+      {/* Mood Preview / QuickPulse */}
       {moodSection && !user && (
         <LandingMoodPreview
           title={(lang === 'en' && (moodSection as any).title_localized?.en) || moodSection.title}
@@ -82,6 +83,15 @@ const Index = () => {
           ctaText={(lang === 'en' && (moodSection as any).cta_text_localized?.en) || moodSection.cta_text}
           moodLabels={lang === 'en' ? (moodSection.config?.mood_labels_en ?? []) : (moodSection.config?.mood_labels ?? [])}
         />
+      )}
+      {user && (
+        <section className="relative z-10 px-4 md:px-8 py-16 max-w-7xl mx-auto">
+          <div className="max-w-lg mx-auto">
+            <div className="bg-card/60 backdrop-blur border border-border rounded-3xl p-6">
+              <QuickPulse onMoodSelected={() => navigate(localePath('/journal'))} />
+            </div>
+          </div>
+        </section>
       )}
 
 
