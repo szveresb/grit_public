@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { useLanguage } from '@/hooks/useLanguage';
+import { useConsent } from '@/hooks/useConsent';
 import { supabase } from '@/integrations/supabase/client';
 import ConsentCarousel from '@/components/consent/ConsentCarousel';
 import LanguageToggle from '@/components/LanguageToggle';
