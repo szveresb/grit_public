@@ -73,6 +73,13 @@ const CheckIn = () => {
 
   const refresh = useCallback(() => setRefreshKey(k => k + 1), []);
 
+  // Fetch premium status
+  useEffect(() => {
+    if (!user) return;
+    supabase.from('profiles').select('premium').eq('user_id', user.id).maybeSingle()
+      .then(({ data }) => { if (data) setIsPremium(data.premium); });
+  }, [user]);
+
   // Fetch all timeline data
   useEffect(() => {
     if (!user) return;
