@@ -123,6 +123,7 @@ const Profile = () => {
             <FDownload className="h-4 w-4 mr-1.5" /> {t.profile.exportAllData}
           </Button>
         </div>
+        <ConsentDashboard />
 
         <Button variant="outline" onClick={signOut} size="sm" className="rounded-2xl">{t.signOut}</Button>
       </div>
