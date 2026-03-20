@@ -331,7 +331,7 @@ All routes are served under both `/` (Hungarian default) and `/en/` (English pre
 | `/export` | `Export` | Yes | Personal data export (JSON, FHIR, therapist BNO summary) |
 | `/profile` | `Profile` | Yes | Display name, role management, data export |
 | `/manage-library` | `ManageLibrary` | Yes (editor+) | Article CRUD with bilingual fields |
-| `/manage-questionnaires` | `SelfChecks` | Yes (editor+) | Questionnaire management with scoring, reverse scoring, question duplication |
+| `/manage-questionnaires` | `SelfChecks` | Yes (editor+) | Questionnaire management with scoring, reverse scoring, question duplication, drag-and-drop reordering, question numbering |
 | `/manage-landing` | `ManageLanding` | Yes (editor+) | Landing page CMS |
 | `/manage-users` | `ManageUsers` | Yes (admin) | User role assignment |
 | `/analyst-export` | `AnalystExport` | Yes (analyst) | Anonymized aggregate data download |
