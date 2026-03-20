@@ -253,6 +253,10 @@ export const en: Dictionary = {
     completedOn: 'Completed on',
     points: 'points',
     duplicateQuestion: 'Duplicate',
+    viewAnswers: 'View answers',
+    hideAnswers: 'Hide answers',
+    question: 'Question',
+    answer: 'Answer',
   },
 
   timeline: {
