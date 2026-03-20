@@ -8,6 +8,8 @@ import { friendlyDbError } from '@/lib/db-error';
 import {
   FMoodStruggling, FMoodUneasy, FMoodOkay, FMoodGood, FMoodStrong,
 } from '@/components/icons/FreudIcons';
+import StanceBanner from '@/components/premium/StanceBanner';
+import SubjectSelector from '@/components/observations/SubjectSelector';
 
 const moodIcons = [
   <FMoodStruggling key="0" className="w-6 h-6" />,
@@ -34,6 +36,10 @@ const QuickPulse = ({ onPulseSaved, onMoodSelected, compact = false }: QuickPuls
   const { t } = useLanguage();
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [subjectType, setSubjectType] = useState<'self' | 'relative'>('self');
+  const [selectedSubjectId, setSelectedSubjectId] = useState<string | null>(null);
+  const [selectedSubjectName, setSelectedSubjectName] = useState<string | undefined>();
+  const [showStancePicker, setShowStancePicker] = useState(false);
 
   const moodLabels = [
     t.checkIn.moodStruggling,
@@ -49,13 +55,18 @@ const QuickPulse = ({ onPulseSaved, onMoodSelected, compact = false }: QuickPuls
     const label = moodLabels[index];
 
     setSaving(true);
-    // Always write to mood_pulses
-    const { error } = await (supabase.from as any)('mood_pulses').insert({
+    const insertPayload: Record<string, unknown> = {
       user_id: user.id,
       level,
       label,
       entry_date: format(new Date(), 'yyyy-MM-dd'),
-    });
+      subject_type: subjectType,
+    };
+    if (subjectType === 'relative' && selectedSubjectId) {
+      insertPayload.subject_id = selectedSubjectId;
+    }
+
+    const { error } = await (supabase.from as any)('mood_pulses').insert(insertPayload);
 
     if (error) {
       toast.error(friendlyDbError(error));
@@ -63,7 +74,6 @@ const QuickPulse = ({ onPulseSaved, onMoodSelected, compact = false }: QuickPuls
       toast.success(t.checkIn.pulseSaved);
       setSaved(true);
       onPulseSaved?.();
-      // Also notify parent if it wants to open journal form
       if (onMoodSelected) {
         onMoodSelected({ impact_level: level, emotional_state: label });
       }
@@ -79,6 +89,36 @@ const QuickPulse = ({ onPulseSaved, onMoodSelected, compact = false }: QuickPuls
           {t.checkIn.quickPulseTitle}
         </h2>
       )}
+
+      <StanceBanner
+        subjectType={subjectType}
+        subjectName={selectedSubjectName}
+        onSwitch={() => setShowStancePicker((v) => !v)}
+        compact
+      />
+
+      {showStancePicker && (
+        <div className="animate-fade-in">
+          <SubjectSelector
+            subjectType={subjectType}
+            onSubjectTypeChange={(type) => {
+              setSubjectType(type);
+              if (type === 'self') {
+                setSelectedSubjectId(null);
+                setSelectedSubjectName(undefined);
+              }
+              setShowStancePicker(false);
+            }}
+            selectedSubjectId={selectedSubjectId}
+            onSubjectIdChange={(id) => {
+              setSelectedSubjectId(id);
+              setShowStancePicker(false);
+            }}
+            onSubjectNameChange={(name) => setSelectedSubjectName(name)}
+          />
+        </div>
+      )}
+
       <div className="flex justify-center gap-3">
         {moodIcons.map((icon, i) => {
           const opacityLevels = ['opacity-30', 'opacity-50', 'opacity-70', 'opacity-85', 'opacity-100'];
