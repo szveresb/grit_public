@@ -53,7 +53,35 @@ const JournalForm = ({ form, onChange, onSubmit, onClose, saving, isEditing, sho
         <Button type="button" variant="ghost" size="icon" onClick={onClose}><FClose className="h-4 w-4" /></Button>
       </div>
 
-      {/* Observation Tree (optional guided step) */}
+      {/* Stance Banner */}
+      <StanceBanner
+        subjectType={subjectType}
+        subjectName={selectedSubjectName}
+        onSwitch={() => setShowStancePicker((v) => !v)}
+        compact
+      />
+
+      {showStancePicker && (
+        <div className="animate-fade-in">
+          <SubjectSelector
+            subjectType={subjectType}
+            onSubjectTypeChange={(type) => {
+              setSubjectType(type);
+              if (type === 'self') {
+                setSelectedSubjectId(null);
+                setSelectedSubjectName(undefined);
+              }
+              setShowStancePicker(false);
+            }}
+            selectedSubjectId={selectedSubjectId}
+            onSubjectIdChange={(id) => {
+              setSelectedSubjectId(id);
+              setShowStancePicker(false);
+            }}
+          />
+        </div>
+      )}
+
       {showObservationTree && !treeCompleted && (
         <ObservationTree onComplete={handleTreeComplete} onSkip={handleSkip} />
       )}
