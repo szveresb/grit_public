@@ -449,4 +449,17 @@ export interface Dictionary {
     hu: string;
     en: string;
   };
+
+  // Consent
+  consent: {
+    carouselTitle: string;
+    carouselSubtitle: string;
+    summaryTitle: string;
+    confirm: string;
+    prev: string;
+    next: string;
+    dashboardTitle: string;
+    dashboardDesc: string;
+    categories: Record<string, { title: string; description: string; learnMore: string }>;
+  };
 }

@@ -425,4 +425,52 @@ export const hu: Dictionary = {
     hu: 'HU',
     en: 'EN',
   },
+
+  consent: {
+    carouselTitle: 'Adatkezelési beállítások',
+    carouselSubtitle: 'Határozd meg, hogyan kezeljük az adataidat. Bármikor módosíthatod a profilodban.',
+    summaryTitle: 'Összefoglaló',
+    confirm: 'Megerősítés és tovább',
+    prev: 'Előző',
+    next: 'Következő',
+    dashboardTitle: 'Adatvédelem és AI vezérlés',
+    dashboardDesc: 'Állítsd be, mely adatkategóriákat használjuk. A változtatások azonnal érvénybe lépnek.',
+    categories: {
+      journal_storage: {
+        title: 'Napló és megfigyelések',
+        description: 'Személyes bejegyzéseid és megfigyeléseid tárolása a fiókodon belül.',
+        learnMore: 'A naplóbejegyzések és megfigyelések kizárólag a te fiókodhoz kötöttek. Senki más – még az adminisztrátorok sem – láthatja az egyéni válaszaidat.',
+      },
+      mood_tracking: {
+        title: 'Hangulat követés',
+        description: 'A napi hangulat-pulzus adatok gyűjtése és megjelenítése idővonalon.',
+        learnMore: 'A QuickPulse 1-5 skálás értékeket rögzít. Ezek az adatok csak neked láthatók, és a hangulattrend-diagramon jelennek meg.',
+      },
+      free_text_ai: {
+        title: 'Szabad szöveg feldolgozás',
+        description: 'AI-alapú elemzés a szöveges mezőkben írt tartalmakról.',
+        learnMore: 'Amennyiben engedélyezed, a szabadszöveges bejegyzéseidet AI reflexió céljára használjuk. Az AI nem állít diagnózist és nem ad orvosi tanácsot.',
+      },
+      pattern_detection: {
+        title: 'Mintázat felismerés',
+        description: 'AI-vezérelt trendfelismerés az időszakos adataidban.',
+        learnMore: 'A rendszer időszakos mintákat keres a bejegyzéseidben, hogy megmutassa az érzelmi változások trendjeit. Ez nem klinikai értékelés.',
+      },
+      questionnaire_data: {
+        title: 'Kérdőív adatok',
+        description: 'A kitöltött kérdőívek válaszainak és pontszámainak tárolása.',
+        learnMore: 'A kérdőív válaszaid és pontszámaid a fiókodon belül biztonságosan tárolódnak. Az eredmények exportálhatók FHIR formátumban.',
+      },
+      fhir_export: {
+        title: 'FHIR export',
+        description: 'Adatok leképezése klinikai kódokra (SNOMED CT / BNO) az átjárhatóságért.',
+        learnMore: 'A FHIR export szabványos orvosi terminológiára képezi le az adataidat, így azok megoszthatók egészségügyi szolgáltatókkal. Ez nem minősül klinikai értékelésnek.',
+      },
+      anonymized_analytics: {
+        title: 'Anonimizált statisztikák',
+        description: 'Hozzájárulás az összesített, k-anonim statisztikákhoz.',
+        learnMore: 'Az anonimizált adatok csak akkor válnak elérhetővé elemzők számára, ha legalább 20 aktív felhasználó van. Az egyéni azonosítás nem lehetséges.',
+      },
+    },
+  },
 };
