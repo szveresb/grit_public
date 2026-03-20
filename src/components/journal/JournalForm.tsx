@@ -5,11 +5,8 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { FClose, FSave } from '@/components/icons/FreudIcons';
 import { useLanguage } from '@/hooks/useLanguage';
-import { useStance } from '@/hooks/useStance';
 import type { JournalFormData } from '@/types/journal';
 import ObservationTree, { type ObservationTreeResult } from './ObservationTree';
-import StanceBanner from '@/components/premium/StanceBanner';
-import SubjectSelector from '@/components/observations/SubjectSelector';
 
 interface JournalFormProps {
   form: JournalFormData;
@@ -23,10 +20,8 @@ interface JournalFormProps {
 
 const JournalForm = ({ form, onChange, onSubmit, onClose, saving, isEditing, showObservationTree = false }: JournalFormProps) => {
   const { t } = useLanguage();
-  const { subjectType, selectedSubjectId, selectedSubjectName, setSubjectType, setSelectedSubjectId, setSelectedSubjectName, resetToSelf } = useStance();
   const [observationResult, setObservationResult] = useState<ObservationTreeResult | null>(null);
   const [treeCompleted, setTreeCompleted] = useState(!showObservationTree);
-  const [showStancePicker, setShowStancePicker] = useState(false);
 
   const handleTreeComplete = (result: ObservationTreeResult) => {
     setObservationResult(result);
@@ -44,7 +39,7 @@ const JournalForm = ({ form, onChange, onSubmit, onClose, saving, isEditing, sho
   };
 
   return (
-    <div className="bg-card/60 backdrop-blur border border-border rounded-3xl p-6 space-y-4 animate-fade-in">
+    <div className="bg-card/60 backdrop-blur border border-border rounded-3xl p-4 sm:p-6 space-y-4 animate-fade-in">
       <div className="flex items-center justify-between">
         <h2 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
           {isEditing ? t.journal.formEditEntry : t.journal.formNewEntry}
@@ -52,33 +47,7 @@ const JournalForm = ({ form, onChange, onSubmit, onClose, saving, isEditing, sho
         <Button type="button" variant="ghost" size="icon" onClick={onClose}><FClose className="h-4 w-4" /></Button>
       </div>
 
-      {/* Stance Banner */}
-      <StanceBanner
-        subjectType={subjectType}
-        subjectName={selectedSubjectName}
-        onSwitch={() => setShowStancePicker((v) => !v)}
-        compact
-      />
-
-      {showStancePicker && (
-        <div className="animate-fade-in">
-          <SubjectSelector
-            subjectType={subjectType}
-            onSubjectTypeChange={(type) => {
-              setSubjectType(type);
-              if (type === 'self') resetToSelf();
-              setShowStancePicker(false);
-            }}
-            selectedSubjectId={selectedSubjectId}
-            onSubjectIdChange={(id) => {
-              setSelectedSubjectId(id);
-              setShowStancePicker(false);
-            }}
-            onSubjectNameChange={(name) => setSelectedSubjectName(name)}
-          />
-        </div>
-      )}
-
+      {/* Observation Tree (optional guided step) */}
       {showObservationTree && !treeCompleted && (
         <ObservationTree onComplete={handleTreeComplete} onSkip={handleSkip} />
       )}
@@ -100,7 +69,7 @@ const JournalForm = ({ form, onChange, onSubmit, onClose, saving, isEditing, sho
       {/* Form fields – shown after tree is completed or skipped */}
       {treeCompleted && (
         <form onSubmit={handleFormSubmit} className="space-y-4">
-          <div className="grid grid-cols-2 gap-4">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">{t.journal.formTitle}</Label>
               <Input required value={form.title} onChange={e => onChange(f => ({ ...f, title: e.target.value }))} placeholder={t.journal.formTitle} className="rounded-2xl" />
@@ -119,7 +88,7 @@ const JournalForm = ({ form, onChange, onSubmit, onClose, saving, isEditing, sho
             <div className="flex gap-2">
               {[1, 2, 3, 4, 5].map(n => (
                 <button key={n} type="button" onClick={() => onChange(f => ({ ...f, impact_level: n }))}
-                  className={`h-10 w-10 rounded-full border text-sm font-semibold transition-all ${form.impact_level === n ? 'bg-primary text-primary-foreground border-primary shadow-md' : 'border-border text-muted-foreground hover:border-primary/50'}`}
+                  className={`h-10 w-10 rounded-full border text-sm font-semibold transition-all active:scale-95 ${form.impact_level === n ? 'bg-primary text-primary-foreground border-primary shadow-md' : 'border-border text-muted-foreground hover:border-primary/50'}`}
                 >{n}</button>
               ))}
             </div>
