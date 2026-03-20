@@ -8,7 +8,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
 import { friendlyDbError } from '@/lib/db-error';
-import { FArrowLeft, FHeart, FMessageCircle, FShield, FCheck } from '@/components/icons/FreudIcons';
+import { FArrowLeft, FHeart, FMessageCircle, FShield, FCheck, FUsers } from '@/components/icons/FreudIcons';
 import SubjectSelector from './SubjectSelector';
 
 interface Category {
