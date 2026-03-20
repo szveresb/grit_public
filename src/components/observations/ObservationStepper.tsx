@@ -10,6 +10,7 @@ import { toast } from 'sonner';
 import { friendlyDbError } from '@/lib/db-error';
 import { FArrowLeft, FHeart, FMessageCircle, FShield, FCheck, FUsers } from '@/components/icons/FreudIcons';
 import SubjectSelector from './SubjectSelector';
+import StanceBanner from '@/components/premium/StanceBanner';
 
 interface Category {
   id: string;
