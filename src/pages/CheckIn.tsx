@@ -270,6 +270,8 @@ const CheckIn = () => {
         prefill={entryModalPrefill}
         onSaved={refresh}
       />
+
+      <PremiumModal open={premiumOpen} onOpenChange={setPremiumOpen} />
     </DashboardLayout>
   );
 };
