@@ -34,6 +34,7 @@ const SubjectSelector = ({
   onSubjectTypeChange,
   selectedSubjectId,
   onSubjectIdChange,
+  onSubjectNameChange,
 }: SubjectSelectorProps) => {
   const { user } = useAuth();
   const { t } = useLanguage();
