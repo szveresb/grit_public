@@ -34,8 +34,17 @@ export const StanceProvider = ({ children }: { children: React.ReactNode }) => {
   );
 };
 
+const defaultStance: StanceContextValue = {
+  subjectType: 'self',
+  selectedSubjectId: null,
+  selectedSubjectName: undefined,
+  setSubjectType: () => {},
+  setSelectedSubjectId: () => {},
+  setSelectedSubjectName: () => {},
+  resetToSelf: () => {},
+};
+
 export const useStance = () => {
   const ctx = useContext(StanceContext);
-  if (!ctx) throw new Error('useStance must be used within StanceProvider');
-  return ctx;
+  return ctx ?? defaultStance;
 };
