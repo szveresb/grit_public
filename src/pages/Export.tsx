@@ -81,13 +81,14 @@ const Export = () => {
   const handleExport = async () => {
     if (!user) return;
 
-    const [entriesRes, responsesRes, logsRes, conceptsRes] = await Promise.all([
+    const [entriesRes, responsesRes, logsRes, conceptsRes, questionnairesRes] = await Promise.all([
       supabase.from('journal_entries').select('*').eq('user_id', user.id).order('entry_date'),
       supabase.from('questionnaire_responses')
-        .select('*, questionnaires(title), questionnaire_answers(question_id, answer, questionnaire_questions(question_text))')
+        .select('*, questionnaires(title, snomed_code), questionnaire_answers(question_id, answer, questionnaire_questions(question_text))')
         .eq('user_id', user.id),
       supabase.from('observation_logs').select('*').eq('user_id', user.id).order('logged_at'),
       supabase.from('observation_concepts').select('id, concept_code, name_en, bno_code'),
+      supabase.from('questionnaires').select('id, title, snomed_code'),
     ]);
 
     const conceptMap: Record<string, { concept_code: string; name_en: string; bno_code?: string }> = {};
@@ -96,6 +97,23 @@ const Export = () => {
     });
 
     const fhirObservations = buildPersonalFhirObservations(logsRes.data ?? [], conceptMap);
+
+    // Build FHIR QuestionnaireResponse resources from questionnaire responses
+    const fhirQuestionnaireResponses = (responsesRes.data ?? []).map((resp: any) => ({
+      resourceType: 'QuestionnaireResponse',
+      status: 'completed',
+      authored: resp.completed_at,
+      subject: { reference: 'Patient/anonymous' },
+      questionnaire: resp.questionnaires?.snomed_code
+        ? `http://snomed.info/sct|${resp.questionnaires.snomed_code}`
+        : resp.questionnaires?.title ?? 'Unknown',
+      item: (resp.questionnaire_answers ?? []).map((a: any) => ({
+        linkId: a.question_id,
+        text: a.questionnaire_questions?.question_text ?? '',
+        answer: [{ valueString: typeof a.answer === 'string' ? a.answer : JSON.stringify(a.answer) }],
+      })),
+      ...(resp.total_score != null ? { extension: [{ url: 'http://grit.hu/fhir/total-score', valueInteger: resp.total_score }] } : {}),
+    }));
 
     const exportData = {
       disclaimer: {
@@ -106,6 +124,7 @@ const Export = () => {
       journal_entries: entriesRes.data ?? [],
       questionnaire_responses: responsesRes.data ?? [],
       observation_logs_fhir: fhirObservations,
+      questionnaire_responses_fhir: fhirQuestionnaireResponses,
     };
 
     const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });

@@ -470,6 +470,7 @@ export type Database = {
           score_ranges: Json | null
           scoring_enabled: boolean
           scoring_mode: string
+          snomed_code: string | null
           title: string
           title_localized: Json | null
           updated_at: string
@@ -485,6 +486,7 @@ export type Database = {
           score_ranges?: Json | null
           scoring_enabled?: boolean
           scoring_mode?: string
+          snomed_code?: string | null
           title: string
           title_localized?: Json | null
           updated_at?: string
@@ -500,6 +502,7 @@ export type Database = {
           score_ranges?: Json | null
           scoring_enabled?: boolean
           scoring_mode?: string
+          snomed_code?: string | null
           title?: string
           title_localized?: Json | null
           updated_at?: string
