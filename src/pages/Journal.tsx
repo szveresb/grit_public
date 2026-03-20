@@ -169,12 +169,12 @@ const Journal = () => {
   return (
     <DashboardLayout>
       <div className="max-w-2xl space-y-6">
-        <div className="flex items-center justify-between">
+        <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div>
-            <h1 className="text-xl font-bold tracking-tight text-foreground">{t.journal.title}</h1>
+            <h1 className="text-lg md:text-xl font-bold tracking-tight text-foreground">{t.journal.title}</h1>
             <p className="mt-1 text-sm text-muted-foreground leading-relaxed">{t.journal.subtitle}</p>
           </div>
-          <div className="flex gap-2">
+          <div className="flex gap-2 shrink-0">
             <div className="flex bg-muted rounded-2xl p-0.5">
               <Button size="sm" variant={viewMode === 'list' ? 'default' : 'ghost'} className="rounded-xl px-2.5" onClick={() => setViewMode('list')}>
                 <FList className="h-4 w-4" />
@@ -186,23 +186,25 @@ const Journal = () => {
             {entries.length >= 2 && (
               <Button size="sm" variant="outline" className="rounded-2xl gap-1.5" onClick={handlePatternAnalysis} disabled={analyzingPatterns}>
                 {analyzingPatterns ? <FLoader className="h-4 w-4 animate-spin" /> : <FTrendingUp className="h-4 w-4" />}
-                {t.journal.patterns}
+                <span className="hidden sm:inline">{t.journal.patterns}</span>
               </Button>
             )}
             <Button size="sm" className="rounded-2xl" onClick={openCreate}>
-              <FPlus className="h-4 w-4 mr-1" /> {t.journal.newEntry}
+              <FPlus className="h-4 w-4 sm:mr-1" /> <span className="hidden sm:inline">{t.journal.newEntry}</span>
             </Button>
           </div>
         </div>
 
         {viewMode === 'list' && (
-          <div className="flex flex-wrap gap-3">
-            <div className="relative flex-1 min-w-[200px]">
+          <div className="flex flex-col sm:flex-row gap-3">
+            <div className="relative flex-1">
               <FSearch className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input value={searchQuery} onChange={e => setSearchQuery(e.target.value)} placeholder={t.journal.searchEntries} className="pl-9 rounded-2xl" />
             </div>
-            <Input type="date" value={dateFrom} onChange={e => setDateFrom(e.target.value)} className="w-36 rounded-2xl" />
-            <Input type="date" value={dateTo} onChange={e => setDateTo(e.target.value)} className="w-36 rounded-2xl" />
+            <div className="flex gap-2">
+              <Input type="date" value={dateFrom} onChange={e => setDateFrom(e.target.value)} className="flex-1 sm:w-36 rounded-2xl" />
+              <Input type="date" value={dateTo} onChange={e => setDateTo(e.target.value)} className="flex-1 sm:w-36 rounded-2xl" />
+            </div>
           </div>
         )}
 
