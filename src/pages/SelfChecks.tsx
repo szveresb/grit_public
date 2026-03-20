@@ -266,7 +266,8 @@ const SelfChecks = () => {
             <Label className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">{t.questionnaires_manage.questions}</Label>
             {formQuestions.map((nq, i) => (
               <div key={i} className="border border-border rounded-2xl p-3 space-y-2">
-                <div className="flex gap-2">
+                <div className="flex gap-2 items-center">
+                  <span className="text-xs font-semibold text-muted-foreground w-6 shrink-0 text-center">{i + 1}.</span>
                   <Input value={nq.text} onChange={e => { const c = [...formQuestions]; c[i].text = e.target.value; setFormQuestions(c); }} placeholder={`${t.questionnaires_manage.questions} ${i + 1}`} className="flex-1 rounded-2xl" />
                   <select value={nq.type} onChange={e => { const c = [...formQuestions]; c[i].type = e.target.value; setFormQuestions(c); }}
                     className="border border-input rounded-2xl px-3 text-sm bg-background">
