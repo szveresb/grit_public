@@ -201,7 +201,7 @@ const MoodTrendChart = ({ data, lang, isPremium = false, onPremiumClick, t }: Mo
             dot={{ r: 4, fill: 'hsl(var(--primary))', strokeWidth: 0 }}
             activeDot={{ r: 6, fill: 'hsl(var(--primary))' }}
           />
-          {filtered.length > 3 && (
+          {filtered.length > 3 && isPremium && (
             <Brush
               dataKey="ts"
               height={20}
@@ -213,6 +213,18 @@ const MoodTrendChart = ({ data, lang, isPremium = false, onPremiumClick, t }: Mo
           )}
         </AreaChart>
       </ChartContainer>
+
+      {/* Premium upsell for timeline slider */}
+      {filtered.length > 3 && !isPremium && (
+        <button
+          onClick={onPremiumClick}
+          className="w-full flex items-center justify-center gap-2 py-2 rounded-2xl border border-dashed border-amber-300 dark:border-amber-700 bg-amber-50/50 dark:bg-amber-900/10 text-xs text-amber-700 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-900/20 transition-colors active:scale-[0.98]"
+        >
+          <FSparkles className="h-3.5 w-3.5" />
+          <span className="font-medium">{lang === 'hu' ? 'Idővonal csúszka' : 'Timeline slider'}</span>
+          <span className="px-1.5 py-0.5 rounded-full bg-amber-200/60 dark:bg-amber-800/40 text-[10px] font-semibold uppercase tracking-wider">Premium</span>
+        </button>
+      )}
     </div>
   );
 };
