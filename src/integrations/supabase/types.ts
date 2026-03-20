@@ -189,6 +189,8 @@ export type Database = {
           id: string
           label: string
           level: number
+          subject_id: string | null
+          subject_type: Database["public"]["Enums"]["subject_type"]
           user_id: string
         }
         Insert: {
@@ -197,6 +199,8 @@ export type Database = {
           id?: string
           label: string
           level: number
+          subject_id?: string | null
+          subject_type?: Database["public"]["Enums"]["subject_type"]
           user_id: string
         }
         Update: {
@@ -205,9 +209,19 @@ export type Database = {
           id?: string
           label?: string
           level?: number
+          subject_id?: string | null
+          subject_type?: Database["public"]["Enums"]["subject_type"]
           user_id?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "mood_pulses_subject_id_fkey"
+            columns: ["subject_id"]
+            isOneToOne: false
+            referencedRelation: "subjects"
+            referencedColumns: ["id"]
+          },
+        ]
       }
       observation_categories: {
         Row: {
