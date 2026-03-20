@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useLanguage } from '@/hooks/useLanguage';
 import { useStance } from '@/hooks/useStance';
@@ -31,18 +31,35 @@ interface QuickPulseProps {
 
 const QuickPulse = ({ onPulseSaved, onMoodSelected, compact = false }: QuickPulseProps) => {
   const { user } = useAuth();
-  const { t } = useLanguage();
+  const { t, lang } = useLanguage();
   const { subjectType, selectedSubjectId } = useStance();
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [managedTitle, setManagedTitle] = useState<string | null>(null);
+  const [managedLabels, setManagedLabels] = useState<string[] | null>(null);
 
-  const moodLabels = [
+  useEffect(() => {
+    supabase.from('landing_sections').select('title, title_localized, config')
+      .eq('section_key', 'mood_preview').eq('is_active', true).maybeSingle()
+      .then(({ data }) => {
+        if (!data) return;
+        const d = data as any;
+        const title = (lang === 'en' && d.title_localized?.en) || d.title;
+        const labels = lang === 'en' ? (d.config?.mood_labels_en ?? []) : (d.config?.mood_labels ?? []);
+        if (title) setManagedTitle(title);
+        if (labels.length === 5) setManagedLabels(labels);
+      });
+  }, [lang]);
+
+  const fallbackLabels = [
     t.checkIn.moodStruggling,
     t.checkIn.moodUneasy,
     t.checkIn.moodOkay,
     t.checkIn.moodGood,
     t.checkIn.moodStrong,
   ];
+  const moodLabels = managedLabels ?? fallbackLabels;
+  const pulseTitle = managedTitle ?? t.checkIn.quickPulseTitle;
 
   const handleMoodTap = async (index: number) => {
     if (!user || saving) return;
