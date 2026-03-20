@@ -66,10 +66,7 @@ const JournalForm = ({ form, onChange, onSubmit, onClose, saving, isEditing, sho
             subjectType={subjectType}
             onSubjectTypeChange={(type) => {
               setSubjectType(type);
-              if (type === 'self') {
-                setSelectedSubjectId(null);
-                setSelectedSubjectName(undefined);
-              }
+              if (type === 'self') resetToSelf();
               setShowStancePicker(false);
             }}
             selectedSubjectId={selectedSubjectId}
