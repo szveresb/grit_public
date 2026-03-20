@@ -124,6 +124,7 @@ const Export = () => {
       journal_entries: entriesRes.data ?? [],
       questionnaire_responses: responsesRes.data ?? [],
       observation_logs_fhir: fhirObservations,
+      questionnaire_responses_fhir: fhirQuestionnaireResponses,
     };
 
     const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
