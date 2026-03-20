@@ -12,6 +12,7 @@ import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 import { FDownload } from '@/components/icons/FreudIcons';
 import ConsentDashboard from '@/components/consent/ConsentDashboard';
+import ManagedRelatives from '@/components/premium/ManagedRelatives';
 
 const Profile = () => {
   const { user, signOut } = useAuth();
