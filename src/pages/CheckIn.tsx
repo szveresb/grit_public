@@ -206,11 +206,15 @@ const CheckIn = () => {
           </CollapsibleContent>
         </Collapsible>
 
-        {/* Mood trend chart */}
-        <MoodTrendChart data={moodData} lang={lang} t={t} />
+        {/* Mood trend chart — gated by mood_tracking */}
+        <ConsentGate consentKey="mood_tracking">
+          <MoodTrendChart data={moodData} lang={lang} t={t} />
+        </ConsentGate>
 
-        {/* 8-week pattern frequency chart */}
-        <PatternChart logs={obsLogs} conceptMap={conceptMap} />
+        {/* 8-week pattern frequency chart — gated by pattern_detection */}
+        <ConsentGate consentKey="pattern_detection">
+          <PatternChart logs={obsLogs} conceptMap={conceptMap} />
+        </ConsentGate>
 
         {/* Horizontal timeline dot viewer */}
         <div ref={feedRef} className="bg-card/60 backdrop-blur border border-border rounded-3xl p-5">
