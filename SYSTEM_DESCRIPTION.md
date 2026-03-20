@@ -321,7 +321,7 @@ All routes are served under both `/` (Hungarian default) and `/en/` (English pre
 
 | Route | Component | Auth Required | Notes |
 |---|---|---|---|
-| `/` | `Index` (landing) | No | Public — featured articles, CMS sections |
+| `/` | `Index` (landing) | No | Public — featured articles, CMS sections; authenticated users see live `QuickPulse` instead of static mood preview |
 | `/library` | `Library` | No | Full library with search & category filter |
 | `/library/:id` | `Article` | No | Individual article detail page with bilingual content |
 | `/auth` | `Auth` (login/signup) | No | |
