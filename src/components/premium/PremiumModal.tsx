@@ -1,6 +1,6 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { FSparkles, FUsers, FTrendingUp, FFileText } from '@/components/icons/FreudIcons';
+import { FSparkles, FUsers, FTrendingUp, FFileText, FHeartPulse } from '@/components/icons/FreudIcons';
 import { useLanguage } from '@/hooks/useLanguage';
 
 interface PremiumModalProps {
