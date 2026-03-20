@@ -1,7 +1,7 @@
 import { useMemo, useState, useCallback } from 'react';
 import { Area, AreaChart, XAxis, YAxis, CartesianGrid, Brush } from 'recharts';
 import { ChartContainer, ChartTooltip } from '@/components/ui/chart';
-import { FMoodStruggling, FMoodUneasy, FMoodOkay, FMoodGood, FMoodStrong } from '@/components/icons/FreudIcons';
+import { FMoodStruggling, FMoodUneasy, FMoodOkay, FMoodGood, FMoodStrong, FSparkles } from '@/components/icons/FreudIcons';
 import { format, parseISO, differenceInDays, subDays } from 'date-fns';
 import { getDateLocale } from '@/lib/date-locale';
 import type { Lang } from '@/i18n/types';
