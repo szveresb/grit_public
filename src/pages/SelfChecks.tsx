@@ -267,7 +267,17 @@ const SelfChecks = () => {
             {formQuestions.map((nq, i) => (
               <div key={i} className="border border-border rounded-2xl p-3 space-y-2">
                 <div className="flex gap-2 items-center">
-                  <span className="text-xs font-semibold text-muted-foreground w-6 shrink-0 text-center">{i + 1}.</span>
+                  <div className="flex flex-col items-center shrink-0 w-6">
+                    <button type="button" disabled={i === 0} onClick={() => { const c = [...formQuestions]; [c[i - 1], c[i]] = [c[i], c[i - 1]]; setFormQuestions(c); }}
+                      className="h-4 w-6 flex items-center justify-center text-muted-foreground hover:text-foreground disabled:opacity-25 disabled:pointer-events-none transition-colors active:scale-90">
+                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="h-3 w-3"><path d="m18 15-6-6-6 6"/></svg>
+                    </button>
+                    <span className="text-[10px] font-semibold text-muted-foreground leading-tight">{i + 1}.</span>
+                    <button type="button" disabled={i === formQuestions.length - 1} onClick={() => { const c = [...formQuestions]; [c[i], c[i + 1]] = [c[i + 1], c[i]]; setFormQuestions(c); }}
+                      className="h-4 w-6 flex items-center justify-center text-muted-foreground hover:text-foreground disabled:opacity-25 disabled:pointer-events-none transition-colors active:scale-90">
+                      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="h-3 w-3"><path d="m6 9 6 6 6-6"/></svg>
+                    </button>
+                  </div>
                   <Input value={nq.text} onChange={e => { const c = [...formQuestions]; c[i].text = e.target.value; setFormQuestions(c); }} placeholder={`${t.questionnaires_manage.questions} ${i + 1}`} className="flex-1 rounded-2xl" />
                   <select value={nq.type} onChange={e => { const c = [...formQuestions]; c[i].type = e.target.value; setFormQuestions(c); }}
                     className="border border-input rounded-2xl px-3 text-sm bg-background">
