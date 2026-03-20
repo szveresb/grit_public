@@ -9,8 +9,6 @@ import { friendlyDbError } from '@/lib/db-error';
 import {
   FMoodStruggling, FMoodUneasy, FMoodOkay, FMoodGood, FMoodStrong,
 } from '@/components/icons/FreudIcons';
-import StanceBanner from '@/components/premium/StanceBanner';
-import SubjectSelector from '@/components/observations/SubjectSelector';
 
 const moodIcons = [
   <FMoodStruggling key="0" className="w-6 h-6" />,
@@ -34,10 +32,9 @@ interface QuickPulseProps {
 const QuickPulse = ({ onPulseSaved, onMoodSelected, compact = false }: QuickPulseProps) => {
   const { user } = useAuth();
   const { t } = useLanguage();
-  const { subjectType, selectedSubjectId, selectedSubjectName, setSubjectType, setSelectedSubjectId, setSelectedSubjectName, resetToSelf } = useStance();
+  const { subjectType, selectedSubjectId } = useStance();
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
-  const [showStancePicker, setShowStancePicker] = useState(false);
 
   const moodLabels = [
     t.checkIn.moodStruggling,
@@ -88,33 +85,7 @@ const QuickPulse = ({ onPulseSaved, onMoodSelected, compact = false }: QuickPuls
         </h2>
       )}
 
-      <StanceBanner
-        subjectType={subjectType}
-        subjectName={selectedSubjectName}
-        onSwitch={() => setShowStancePicker((v) => !v)}
-        compact
-      />
-
-      {showStancePicker && (
-        <div className="animate-fade-in">
-          <SubjectSelector
-            subjectType={subjectType}
-            onSubjectTypeChange={(type) => {
-              setSubjectType(type);
-              if (type === 'self') resetToSelf();
-              setShowStancePicker(false);
-            }}
-            selectedSubjectId={selectedSubjectId}
-            onSubjectIdChange={(id) => {
-              setSelectedSubjectId(id);
-              setShowStancePicker(false);
-            }}
-            onSubjectNameChange={(name) => setSelectedSubjectName(name)}
-          />
-        </div>
-      )}
-
-      <div className="flex justify-center gap-3">
+      <div className="flex justify-center gap-2 sm:gap-3">
         {moodIcons.map((icon, i) => {
           const opacityLevels = ['opacity-30', 'opacity-50', 'opacity-70', 'opacity-85', 'opacity-100'];
           return (
@@ -122,13 +93,13 @@ const QuickPulse = ({ onPulseSaved, onMoodSelected, compact = false }: QuickPuls
               <button
                 onClick={() => handleMoodTap(i)}
                 disabled={saving}
-                className={`flex items-center justify-center w-14 h-14 rounded-2xl border transition-all hover:scale-105 hover:shadow-md ${
+                className={`flex items-center justify-center w-12 h-12 sm:w-14 sm:h-14 rounded-2xl border transition-all hover:scale-105 hover:shadow-md active:scale-95 ${
                   saved ? 'opacity-50 pointer-events-none' : 'hover:border-primary/50'
                 } border-border bg-card/60 backdrop-blur`}
               >
                 <span className={`text-primary ${opacityLevels[i]}`}>{icon}</span>
               </button>
-              <span className="text-[10px] font-medium text-muted-foreground">{moodLabels[i]}</span>
+              <span className="text-[9px] sm:text-[10px] font-medium text-muted-foreground">{moodLabels[i]}</span>
             </div>
           );
         })}
