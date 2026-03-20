@@ -470,4 +470,28 @@ export interface Dictionary {
     gateAction: string;
     categories: Record<string, { title: string; description: string; learnMore: string }>;
   };
+
+  // Subjects / dual perspective
+  subjects: {
+    perspectiveLabel: string;
+    selfLabel: string;
+    selfDesc: string;
+    otherLabel: string;
+    otherDesc: string;
+    selectSubject: string;
+    selectSubjectError: string;
+    addNew: string;
+    addSubject: string;
+    namePlaceholder: string;
+    observingAbout: string;
+    relationshipTypes: {
+      child: string;
+      spouse: string;
+      parent: string;
+      sibling: string;
+      other: string;
+    };
+    selfDot: string;
+    proxyDot: string;
+  };
 }

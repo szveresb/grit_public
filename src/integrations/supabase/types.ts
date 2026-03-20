@@ -300,6 +300,8 @@ export type Database = {
           journal_entry_id: string | null
           logged_at: string
           status: string
+          subject_id: string | null
+          subject_type: Database["public"]["Enums"]["subject_type"]
           user_id: string
           user_narrative: string | null
         }
@@ -313,6 +315,8 @@ export type Database = {
           journal_entry_id?: string | null
           logged_at?: string
           status?: string
+          subject_id?: string | null
+          subject_type?: Database["public"]["Enums"]["subject_type"]
           user_id: string
           user_narrative?: string | null
         }
@@ -326,6 +330,8 @@ export type Database = {
           journal_entry_id?: string | null
           logged_at?: string
           status?: string
+          subject_id?: string | null
+          subject_type?: Database["public"]["Enums"]["subject_type"]
           user_id?: string
           user_narrative?: string | null
         }
@@ -344,6 +350,13 @@ export type Database = {
             referencedRelation: "journal_entries"
             referencedColumns: ["id"]
           },
+          {
+            foreignKeyName: "observation_logs_subject_id_fkey"
+            columns: ["subject_id"]
+            isOneToOne: false
+            referencedRelation: "subjects"
+            referencedColumns: ["id"]
+          },
         ]
       }
       profiles: {
@@ -352,6 +365,7 @@ export type Database = {
           created_at: string
           display_name: string | null
           id: string
+          premium: boolean
           updated_at: string
           user_id: string
         }
@@ -360,6 +374,7 @@ export type Database = {
           created_at?: string
           display_name?: string | null
           id?: string
+          premium?: boolean
           updated_at?: string
           user_id: string
         }
@@ -368,6 +383,7 @@ export type Database = {
           created_at?: string
           display_name?: string | null
           id?: string
+          premium?: boolean
           updated_at?: string
           user_id?: string
         }
@@ -539,6 +555,30 @@ export type Database = {
         }
         Relationships: []
       }
+      subjects: {
+        Row: {
+          created_at: string
+          id: string
+          name: string
+          relationship_type: Database["public"]["Enums"]["relationship_type"]
+          user_id: string
+        }
+        Insert: {
+          created_at?: string
+          id?: string
+          name: string
+          relationship_type?: Database["public"]["Enums"]["relationship_type"]
+          user_id: string
+        }
+        Update: {
+          created_at?: string
+          id?: string
+          name?: string
+          relationship_type?: Database["public"]["Enums"]["relationship_type"]
+          user_id?: string
+        }
+        Relationships: []
+      }
       user_consents: {
         Row: {
           consent_key: string
@@ -650,6 +690,8 @@ export type Database = {
         | "editor"
         | "analyst"
         | "guest_editor"
+      relationship_type: "child" | "spouse" | "parent" | "sibling" | "other"
+      subject_type: "self" | "relative"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -785,6 +827,8 @@ export const Constants = {
         "analyst",
         "guest_editor",
       ],
+      relationship_type: ["child", "spouse", "parent", "sibling", "other"],
+      subject_type: ["self", "relative"],
     },
   },
 } as const

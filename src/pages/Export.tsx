@@ -140,13 +140,15 @@ const Export = () => {
   const handleTherapistExport = async () => {
     if (!user) return;
 
-    const [logsRes, conceptsRes] = await Promise.all([
+    const [logsRes, conceptsRes, subjectsRes] = await Promise.all([
       supabase.from('observation_logs').select('*').eq('user_id', user.id).order('logged_at'),
       supabase.from('observation_concepts').select('id, concept_code, name_hu, name_en, bno_code'),
+      (supabase.from('subjects') as any).select('id, name, relationship_type').eq('user_id', user.id),
     ]);
 
     const logs = logsRes.data ?? [];
     const concepts = conceptsRes.data ?? [];
+    const subjects = subjectsRes.data ?? [];
 
     if (logs.length === 0) {
       toast.error(t.export.noObservations);
@@ -156,18 +158,42 @@ const Export = () => {
     const conceptMap: Record<string, any> = {};
     concepts.forEach((c: any) => { conceptMap[c.id] = c; });
 
-    const bnoGroups: Record<string, {
-      bno_code: string;
-      observations: { concept_hu: string; intensity: number; logged_at: string; context: string | null }[];
+    const subjectMap: Record<string, any> = {};
+    subjects.forEach((s: any) => { subjectMap[s.id] = s; });
+
+    // Group by subject_type + subject_id, then by BNO
+    const subjectGroups: Record<string, {
+      subject_label: string;
+      subject_type: string;
+      bno_groups: Record<string, {
+        bno_code: string;
+        observations: { concept_hu: string; intensity: number; logged_at: string; context: string | null }[];
+      }>;
     }> = {};
 
     for (const log of logs) {
+      const subjectType = (log as any).subject_type ?? 'self';
+      const subjectId = (log as any).subject_id;
+      const subjectKey = subjectType === 'self' ? 'self' : (subjectId ?? 'unknown');
+      
+      if (!subjectGroups[subjectKey]) {
+        let label = t.subjects.selfLabel;
+        if (subjectType === 'relative' && subjectId && subjectMap[subjectId]) {
+          const s = subjectMap[subjectId];
+          const relLabel = t.subjects.relationshipTypes[s.relationship_type as keyof typeof t.subjects.relationshipTypes] ?? s.relationship_type;
+          label = `${s.name} (${relLabel})`;
+        } else if (subjectType === 'relative') {
+          label = t.subjects.otherLabel;
+        }
+        subjectGroups[subjectKey] = { subject_label: label, subject_type: subjectType, bno_groups: {} };
+      }
+
       const concept = conceptMap[log.concept_id];
       const bno = concept?.bno_code ?? 'unknown';
-      if (!bnoGroups[bno]) {
-        bnoGroups[bno] = { bno_code: bno, observations: [] };
+      if (!subjectGroups[subjectKey].bno_groups[bno]) {
+        subjectGroups[subjectKey].bno_groups[bno] = { bno_code: bno, observations: [] };
       }
-      bnoGroups[bno].observations.push({
+      subjectGroups[subjectKey].bno_groups[bno].observations.push({
         concept_hu: concept?.name_hu ?? concept?.name_en ?? 'Unknown',
         intensity: log.intensity,
         logged_at: log.logged_at,
@@ -175,18 +201,22 @@ const Export = () => {
       });
     }
 
-    const bnoSummary = Object.values(bnoGroups).map((group) => {
-      const intensities = group.observations.map((o) => o.intensity);
-      const dates = group.observations.map((o) => o.logged_at).sort();
-      return {
-        bno_code: group.bno_code,
-        bno_label_hu: BNO_LABELS_HU[group.bno_code] ?? group.bno_code,
-        observation_count: group.observations.length,
-        avg_intensity: Math.round((intensities.reduce((a, b) => a + b, 0) / intensities.length) * 100) / 100,
-        date_range: { from: dates[0], to: dates[dates.length - 1] },
-        observations: group.observations,
-      };
-    });
+    const subjectSummaries = Object.values(subjectGroups).map((sg) => ({
+      subject_label: sg.subject_label,
+      subject_type: sg.subject_type,
+      bno_summary: Object.values(sg.bno_groups).map((group) => {
+        const intensities = group.observations.map((o) => o.intensity);
+        const dates = group.observations.map((o) => o.logged_at).sort();
+        return {
+          bno_code: group.bno_code,
+          bno_label_hu: BNO_LABELS_HU[group.bno_code] ?? group.bno_code,
+          observation_count: group.observations.length,
+          avg_intensity: Math.round((intensities.reduce((a, b) => a + b, 0) / intensities.length) * 100) / 100,
+          date_range: { from: dates[0], to: dates[dates.length - 1] },
+          observations: group.observations,
+        };
+      }),
+    }));
 
     const exportData = {
       disclaimer: {
@@ -195,7 +225,7 @@ const Export = () => {
       },
       export_type: 'therapist_summary',
       exported_at: new Date().toISOString(),
-      bno_summary: bnoSummary,
+      subjects: subjectSummaries,
     };
 
     const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });

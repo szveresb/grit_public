@@ -481,4 +481,27 @@ export const hu: Dictionary = {
       },
     },
   },
+
+  subjects: {
+    perspectiveLabel: 'Nézőpont',
+    selfLabel: 'Önreflexió',
+    selfDesc: 'Saját élményeimről',
+    otherLabel: 'Külső megfigyelés',
+    otherDesc: 'Valakiről, akit megfigyelek',
+    selectSubject: 'Kiről van szó?',
+    selectSubjectError: 'Kérlek válassz egy alanyt.',
+    addNew: 'Új személy hozzáadása',
+    addSubject: 'Hozzáadás',
+    namePlaceholder: 'Becenév vagy álnév…',
+    observingAbout: 'Megfigyelés egy másik személyről',
+    relationshipTypes: {
+      child: 'Gyerek',
+      spouse: 'Házastárs / Partner',
+      parent: 'Szülő',
+      sibling: 'Testvér',
+      other: 'Egyéb',
+    },
+    selfDot: 'Saját',
+    proxyDot: 'Megfigyelt',
+  },
 };

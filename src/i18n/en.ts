@@ -481,4 +481,27 @@ export const en: Dictionary = {
       },
     },
   },
+
+  subjects: {
+    perspectiveLabel: 'Perspective',
+    selfLabel: 'Self-Reflection',
+    selfDesc: 'About my own experience',
+    otherLabel: 'External Observation',
+    otherDesc: 'About someone I observe',
+    selectSubject: 'Who are you observing?',
+    selectSubjectError: 'Please select a subject first.',
+    addNew: 'Add new person',
+    addSubject: 'Add',
+    namePlaceholder: 'Alias or nickname…',
+    observingAbout: 'Observing about another person',
+    relationshipTypes: {
+      child: 'Child',
+      spouse: 'Spouse / Partner',
+      parent: 'Parent',
+      sibling: 'Sibling',
+      other: 'Other',
+    },
+    selfDot: 'Self',
+    proxyDot: 'Observed',
+  },
 };

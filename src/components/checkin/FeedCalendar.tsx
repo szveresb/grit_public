@@ -4,7 +4,7 @@ import { getDateLocale } from '@/lib/date-locale';
 import { getMoonPhase } from '@/lib/moon-phase';
 import { useLanguage } from '@/hooks/useLanguage';
 import { Button } from '@/components/ui/button';
-import { FChevronLeft, FChevronRight, FBookOpen, FEye, FClipboardCheck, FPlus } from '@/components/icons/FreudIcons';
+import { FChevronLeft, FChevronRight, FBookOpen, FEye, FClipboardCheck, FPlus, FUsers } from '@/components/icons/FreudIcons';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 export interface CalendarFeedItem {
@@ -13,6 +13,7 @@ export interface CalendarFeedItem {
   title: string;
   date: string;
   detail?: string;
+  subjectType?: 'self' | 'relative';
 }
 
 interface Props {
@@ -25,10 +26,13 @@ interface Props {
   onCreateEntry?: (date: Date) => void;
 }
 
-const iconFor = (type: CalendarFeedItem['type']) => {
-  switch (type) {
+const iconFor = (item: CalendarFeedItem) => {
+  switch (item.type) {
     case 'journal': return <FBookOpen className="h-3.5 w-3.5 text-primary shrink-0" />;
-    case 'observation': return <FEye className="h-3.5 w-3.5 text-accent-foreground/60 shrink-0" />;
+    case 'observation':
+      return item.subjectType === 'relative'
+        ? <FUsers className="h-3.5 w-3.5 text-amber-600/70 dark:text-amber-400/70 shrink-0" />
+        : <FEye className="h-3.5 w-3.5 text-accent-foreground/60 shrink-0" />;
     case 'questionnaire': return <FClipboardCheck className="h-3.5 w-3.5 text-muted-foreground shrink-0" />;
   }
 };
@@ -99,7 +103,8 @@ const FeedCalendar = ({ items, currentMonth, onMonthChange, selectedDate, onSele
                     {dayItems.length > 0 && (
                       <div className="flex gap-0.5 mt-0.5">
                         {dayItems.some(i => i.type === 'journal') && <span className={`h-1.5 w-1.5 rounded-full ${isSelected ? 'bg-primary-foreground' : 'bg-primary'}`} />}
-                        {dayItems.some(i => i.type === 'observation') && <span className={`h-1.5 w-1.5 rounded-full ${isSelected ? 'bg-primary-foreground/60' : 'bg-accent-foreground/60'}`} />}
+                        {dayItems.some(i => i.type === 'observation' && i.subjectType !== 'relative') && <span className={`h-1.5 w-1.5 rounded-full ${isSelected ? 'bg-primary-foreground/60' : 'bg-accent-foreground/60'}`} />}
+                        {dayItems.some(i => i.type === 'observation' && i.subjectType === 'relative') && <span className={`h-1.5 w-1.5 rounded-full ${isSelected ? 'bg-amber-300' : 'bg-amber-500/70'}`} />}
                         {dayItems.some(i => i.type === 'questionnaire') && <span className={`h-1.5 w-1.5 rounded-full ${isSelected ? 'bg-primary-foreground/40' : 'bg-muted-foreground'}`} />}
                       </div>
                     )}
@@ -149,7 +154,7 @@ const FeedCalendar = ({ items, currentMonth, onMonthChange, selectedDate, onSele
                 className={`flex items-start gap-3 p-3 border border-border rounded-2xl ${(item.type === 'journal' || item.type === 'observation') ? 'cursor-pointer hover:bg-accent/50 transition-colors' : ''}`}
                 onClick={() => (item.type === 'journal' || item.type === 'observation') && onEntryClick?.(item.type, item.id)}
               >
-                {iconFor(item.type)}
+                {iconFor(item)}
                 <div className="flex-1 min-w-0">
                   <span className="text-sm font-semibold">{item.title}</span>
                   {item.detail && <p className="text-xs text-muted-foreground mt-0.5 truncate">{item.detail}</p>}

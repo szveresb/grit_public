@@ -77,7 +77,7 @@ const CheckIn = () => {
       const [journalRes, responseRes, obsRes, pulseRes] = await Promise.all([
         supabase.from('journal_entries').select('id, title, entry_date, impact_level').eq('user_id', user.id),
         supabase.from('questionnaire_responses').select('id, questionnaire_id, completed_at, questionnaires(title)').eq('user_id', user.id),
-        supabase.from('observation_logs').select('id, intensity, frequency, logged_at, concept_id, user_narrative, journal_entry_id').eq('user_id', user.id),
+        supabase.from('observation_logs').select('id, intensity, frequency, logged_at, concept_id, user_narrative, journal_entry_id, subject_type, subject_id').eq('user_id', user.id),
         (supabase.from as any)('mood_pulses').select('level, entry_date').eq('user_id', user.id),
       ]);
 
@@ -110,7 +110,8 @@ const CheckIn = () => {
         obsItems = standaloneObs.map(o => {
           const concept = conMap[o.concept_id];
           const name = concept ? (lang === 'en' ? concept.name_en : concept.name_hu) : t.observations.tabObservations;
-          return { id: o.id, type: 'observation' as const, title: name, date: o.logged_at, detail: `${t.observations.intensity}: ${o.intensity}/5` };
+          const subjectType = (o as any).subject_type as 'self' | 'relative' | undefined;
+          return { id: o.id, type: 'observation' as const, title: name, date: o.logged_at, detail: `${t.observations.intensity}: ${o.intensity}/5`, subjectType: subjectType ?? 'self' };
         });
 
         // Current-week nudges
@@ -135,7 +136,7 @@ const CheckIn = () => {
       setTimelineItems(allItems);
 
       // Feed calendar items
-      setCalendarItems(allItems.map(i => ({ id: i.id, type: i.type, title: i.title, date: i.date })));
+      setCalendarItems(allItems.map(i => ({ id: i.id, type: i.type, title: i.title, date: i.date, subjectType: (i as any).subjectType })));
     };
     fetchAll();
   }, [user, refreshKey]);
