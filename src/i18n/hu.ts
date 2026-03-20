@@ -258,6 +258,7 @@ export const hu: Dictionary = {
     question: 'Kérdés',
     answer: 'Válasz',
     noAnswersRecorded: 'Ehhez a kitöltéshez nem lettek válaszok rögzítve.',
+    completionSummary: '{count} kitöltés rögzítve',
   },
 
   timeline: {

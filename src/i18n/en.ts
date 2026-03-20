@@ -258,6 +258,7 @@ export const en: Dictionary = {
     question: 'Question',
     answer: 'Answer',
     noAnswersRecorded: 'No answers were recorded for this submission.',
+    completionSummary: '{count} submissions recorded',
   },
 
   timeline: {
