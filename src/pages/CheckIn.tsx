@@ -22,6 +22,7 @@ import RecapBanner from '@/components/checkin/RecapBanner';
 import MoodTrendChart from '@/components/timeline/MoodTrendChart';
 import PatternChart from '@/components/timeline/PatternChart';
 import HorizontalTimeline from '@/components/timeline/HorizontalTimeline';
+import PremiumModal from '@/components/premium/PremiumModal';
 
 interface MoodPoint { date: string; level: number; }
 interface TimelineItem { id: string; type: 'journal' | 'questionnaire' | 'observation'; title: string; date: string; detail?: string; }
