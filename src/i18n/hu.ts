@@ -257,6 +257,7 @@ export const hu: Dictionary = {
     hideAnswers: 'Válaszok elrejtése',
     question: 'Kérdés',
     answer: 'Válasz',
+    noAnswersRecorded: 'Ehhez a kitöltéshez nem lettek válaszok rögzítve.',
   },
 
   timeline: {

@@ -257,6 +257,7 @@ export const en: Dictionary = {
     hideAnswers: 'Hide answers',
     question: 'Question',
     answer: 'Answer',
+    noAnswersRecorded: 'No answers were recorded for this submission.',
   },
 
   timeline: {

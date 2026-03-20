@@ -53,7 +53,6 @@ const ScoreHistory = () => {
         .from('questionnaire_responses')
         .select('id, questionnaire_id, total_score, completed_at')
         .eq('user_id', user.id)
-        .not('total_score', 'is', null)
         .order('completed_at', { ascending: true });
 
       if (!responses || responses.length === 0) {
@@ -118,7 +117,7 @@ const ScoreHistory = () => {
           id: r.id,
           questionnaire_id: r.questionnaire_id,
           questionnaire_title: titleMap.get(r.questionnaire_id)?.title ?? '',
-          total_score: r.total_score!,
+          total_score: r.total_score ?? 0,
           completed_at: r.completed_at,
         });
       }
@@ -272,7 +271,7 @@ const ScoreHistory = () => {
                       </div>
                       <div className="flex items-center gap-1.5">
                         <span className="font-semibold text-foreground">
-                          {e.total_score} {t.questionnaires_manage.points}
+                          {e.total_score > 0 ? `${e.total_score} ${t.questionnaires_manage.points}` : format(new Date(e.completed_at), 'PP', { locale: dateLocale })}
                         </span>
                         <FChevronDown className={`h-3 w-3 text-muted-foreground transition-transform ${isOpen ? 'rotate-180' : ''}`} />
                       </div>
@@ -289,7 +288,7 @@ const ScoreHistory = () => {
                           </div>
                         ))}
                         {answers?.length === 0 && (
-                          <p className="text-[11px] text-muted-foreground">{t.questionnaires_manage.scoreHistoryEmpty}</p>
+                          <p className="text-[11px] text-muted-foreground italic">{t.questionnaires_manage.noAnswersRecorded}</p>
                         )}
                       </div>
                     </CollapsibleContent>

@@ -269,6 +269,7 @@ export interface Dictionary {
     hideAnswers: string;
     question: string;
     answer: string;
+    noAnswersRecorded: string;
   };
 
   // Timeline
