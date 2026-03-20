@@ -270,6 +270,7 @@ export interface Dictionary {
     question: string;
     answer: string;
     noAnswersRecorded: string;
+    completionSummary: string;
   };
 
   // Timeline
