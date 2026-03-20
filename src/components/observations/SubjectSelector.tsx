@@ -23,6 +23,7 @@ interface SubjectSelectorProps {
   onSubjectTypeChange: (type: 'self' | 'relative') => void;
   selectedSubjectId: string | null;
   onSubjectIdChange: (id: string | null) => void;
+  onSubjectNameChange?: (name: string | undefined) => void;
 }
 
 const RELATIONSHIP_TYPES = ['child', 'spouse', 'parent', 'sibling', 'other'] as const;
@@ -33,6 +34,7 @@ const SubjectSelector = ({
   onSubjectTypeChange,
   selectedSubjectId,
   onSubjectIdChange,
+  onSubjectNameChange,
 }: SubjectSelectorProps) => {
   const { user } = useAuth();
   const { t } = useLanguage();
@@ -103,6 +105,7 @@ const SubjectSelector = ({
     } else if (data) {
       setSubjects((prev) => [...prev, data as Subject]);
       onSubjectIdChange(data.id);
+      onSubjectNameChange?.(data.name);
       setNewName('');
       setShowAdd(false);
     }
@@ -181,7 +184,7 @@ const SubjectSelector = ({
                 <button
                   key={s.id}
                   type="button"
-                  onClick={() => onSubjectIdChange(s.id)}
+                  onClick={() => { onSubjectIdChange(s.id); onSubjectNameChange?.(s.name); }}
                   className={`flex items-center gap-3 border rounded-2xl p-3 text-left transition-colors ${
                     selectedSubjectId === s.id
                       ? 'border-amber-400 dark:border-amber-600 bg-amber-50 dark:bg-amber-950/30'
