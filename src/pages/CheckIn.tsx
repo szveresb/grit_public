@@ -48,6 +48,8 @@ const CheckIn = () => {
   const [daysSinceLastEntry, setDaysSinceLastEntry] = useState<number | null>(null);
   const [recapDismissed, setRecapDismissed] = useState(false);
   const [highlightDate, setHighlightDate] = useState<string | null>(null);
+  const [isPremium, setIsPremium] = useState(false);
+  const [premiumOpen, setPremiumOpen] = useState(false);
 
   // Timeline data
   const [timelineItems, setTimelineItems] = useState<TimelineItem[]>([]);
