@@ -4,6 +4,7 @@ import { differenceInDays, parseISO, format, startOfWeek, endOfWeek, isFuture, s
 import DashboardLayout from '@/components/DashboardLayout';
 import { useLanguage } from '@/hooks/useLanguage';
 import QuickPulse from '@/components/checkin/QuickPulse';
+import ConsentGate from '@/components/consent/ConsentGate';
 import FeedCalendar from '@/components/checkin/FeedCalendar';
 import type { CalendarFeedItem } from '@/components/checkin/FeedCalendar';
 import ObservationStepper from '@/components/observations/ObservationStepper';
