@@ -1,7 +1,7 @@
 import { useMemo, useState, useCallback } from 'react';
 import { Area, AreaChart, XAxis, YAxis, CartesianGrid, Brush } from 'recharts';
 import { ChartContainer, ChartTooltip } from '@/components/ui/chart';
-import { FMoodStruggling, FMoodUneasy, FMoodOkay, FMoodGood, FMoodStrong } from '@/components/icons/FreudIcons';
+import { FMoodStruggling, FMoodUneasy, FMoodOkay, FMoodGood, FMoodStrong, FSparkles } from '@/components/icons/FreudIcons';
 import { format, parseISO, differenceInDays, subDays } from 'date-fns';
 import { getDateLocale } from '@/lib/date-locale';
 import type { Lang } from '@/i18n/types';
@@ -21,6 +21,8 @@ interface AggregatedPoint {
 interface MoodTrendChartProps {
   data: MoodDataPoint[];
   lang: Lang;
+  isPremium?: boolean;
+  onPremiumClick?: () => void;
   t: { timeline: { moodTrendTitle: string; moodTrendSubtitle: string; moodTrendEmpty: string } };
 }
 
@@ -67,7 +69,7 @@ function aggregateByDay(data: MoodDataPoint[]): AggregatedPoint[] {
     .sort((a, b) => a.ts - b.ts);
 }
 
-const MoodTrendChart = ({ data, lang, t }: MoodTrendChartProps) => {
+const MoodTrendChart = ({ data, lang, isPremium = false, onPremiumClick, t }: MoodTrendChartProps) => {
   const aggregated = useMemo(() => aggregateByDay(data), [data]);
   const [preset, setPreset] = useState<RangePreset>('all');
 
@@ -199,7 +201,7 @@ const MoodTrendChart = ({ data, lang, t }: MoodTrendChartProps) => {
             dot={{ r: 4, fill: 'hsl(var(--primary))', strokeWidth: 0 }}
             activeDot={{ r: 6, fill: 'hsl(var(--primary))' }}
           />
-          {filtered.length > 3 && (
+          {filtered.length > 3 && isPremium && (
             <Brush
               dataKey="ts"
               height={20}
@@ -211,6 +213,18 @@ const MoodTrendChart = ({ data, lang, t }: MoodTrendChartProps) => {
           )}
         </AreaChart>
       </ChartContainer>
+
+      {/* Premium upsell for timeline slider */}
+      {filtered.length > 3 && !isPremium && (
+        <button
+          onClick={onPremiumClick}
+          className="w-full flex items-center justify-center gap-2 py-2 rounded-2xl border border-dashed border-amber-300 dark:border-amber-700 bg-amber-50/50 dark:bg-amber-900/10 text-xs text-amber-700 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-900/20 transition-colors active:scale-[0.98]"
+        >
+          <FSparkles className="h-3.5 w-3.5" />
+          <span className="font-medium">{lang === 'hu' ? 'Idővonal csúszka' : 'Timeline slider'}</span>
+          <span className="px-1.5 py-0.5 rounded-full bg-amber-200/60 dark:bg-amber-800/40 text-[10px] font-semibold uppercase tracking-wider">Premium</span>
+        </button>
+      )}
     </div>
   );
 };

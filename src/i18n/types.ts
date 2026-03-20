@@ -502,6 +502,7 @@ export interface Dictionary {
     benefit1: string;
     benefit2: string;
     benefit3: string;
+    benefit4: string;
     understood: string;
     comingSoon: string;
     loggingFor: string;

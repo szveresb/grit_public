@@ -22,6 +22,7 @@ import RecapBanner from '@/components/checkin/RecapBanner';
 import MoodTrendChart from '@/components/timeline/MoodTrendChart';
 import PatternChart from '@/components/timeline/PatternChart';
 import HorizontalTimeline from '@/components/timeline/HorizontalTimeline';
+import PremiumModal from '@/components/premium/PremiumModal';
 
 interface MoodPoint { date: string; level: number; }
 interface TimelineItem { id: string; type: 'journal' | 'questionnaire' | 'observation'; title: string; date: string; detail?: string; }
@@ -47,6 +48,8 @@ const CheckIn = () => {
   const [daysSinceLastEntry, setDaysSinceLastEntry] = useState<number | null>(null);
   const [recapDismissed, setRecapDismissed] = useState(false);
   const [highlightDate, setHighlightDate] = useState<string | null>(null);
+  const [isPremium, setIsPremium] = useState(false);
+  const [premiumOpen, setPremiumOpen] = useState(false);
 
   // Timeline data
   const [timelineItems, setTimelineItems] = useState<TimelineItem[]>([]);
@@ -69,6 +72,13 @@ const CheckIn = () => {
   }, []);
 
   const refresh = useCallback(() => setRefreshKey(k => k + 1), []);
+
+  // Fetch premium status
+  useEffect(() => {
+    if (!user) return;
+    supabase.from('profiles').select('premium').eq('user_id', user.id).maybeSingle()
+      .then(({ data }) => { if (data) setIsPremium(data.premium); });
+  }, [user]);
 
   // Fetch all timeline data
   useEffect(() => {
@@ -209,7 +219,7 @@ const CheckIn = () => {
 
         {/* Mood trend chart — gated by mood_tracking */}
         <ConsentGate consentKey="mood_tracking">
-          <MoodTrendChart data={moodData} lang={lang} t={t} />
+          <MoodTrendChart data={moodData} lang={lang} isPremium={isPremium} onPremiumClick={() => setPremiumOpen(true)} t={t} />
         </ConsentGate>
 
         {/* 8-week pattern frequency chart — gated by pattern_detection */}
@@ -260,6 +270,8 @@ const CheckIn = () => {
         prefill={entryModalPrefill}
         onSaved={refresh}
       />
+
+      <PremiumModal open={premiumOpen} onOpenChange={setPremiumOpen} />
     </DashboardLayout>
   );
 };

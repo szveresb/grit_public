@@ -511,6 +511,7 @@ export const hu: Dictionary = {
     benefit1: 'Párhuzamos önreflexió és megfigyelés egyetlen munkamenetben.',
     benefit2: 'Mintázatfelismerés a saját hatásszinted és a megfigyelt viselkedés intenzitása között.',
     benefit3: 'Alanyonként csoportosított terapeuta-export BNO-10 kódolással.',
+    benefit4: 'Interaktív hangulati trend idővonal csúszka a érzelmi minták mélyebb megértéséhez.',
     understood: 'Megértettem',
     comingSoon: 'Jelenleg minden felhasználó számára elérhető. Hamarosan prémium funkció lesz.',
     loggingFor: 'Naplózás',

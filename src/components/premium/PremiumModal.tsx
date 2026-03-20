@@ -1,6 +1,6 @@
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { FSparkles, FUsers, FTrendingUp, FFileText } from '@/components/icons/FreudIcons';
+import { FSparkles, FUsers, FTrendingUp, FFileText, FHeartPulse } from '@/components/icons/FreudIcons';
 import { useLanguage } from '@/hooks/useLanguage';
 
 interface PremiumModalProps {
@@ -31,6 +31,7 @@ const PremiumModal = ({ open, onOpenChange }: PremiumModalProps) => {
             { icon: <FUsers className="h-4 w-4" />, text: t.premium.benefit1 },
             { icon: <FTrendingUp className="h-4 w-4" />, text: t.premium.benefit2 },
             { icon: <FFileText className="h-4 w-4" />, text: t.premium.benefit3 },
+            { icon: <FHeartPulse className="h-4 w-4" />, text: t.premium.benefit4 },
           ].map((b, i) => (
             <div key={i} className="flex items-start gap-3 text-sm">
               <div className="h-7 w-7 rounded-xl bg-primary/10 flex items-center justify-center text-primary shrink-0 mt-0.5">
