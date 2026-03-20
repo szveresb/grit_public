@@ -425,4 +425,52 @@ export const en: Dictionary = {
     hu: 'HU',
     en: 'EN',
   },
+
+  consent: {
+    carouselTitle: 'Data Privacy Settings',
+    carouselSubtitle: 'Choose how we handle your data. You can change these anytime in your profile.',
+    summaryTitle: 'Summary',
+    confirm: 'Confirm & Continue',
+    prev: 'Previous',
+    next: 'Next',
+    dashboardTitle: 'Privacy & AI Control',
+    dashboardDesc: 'Manage which data categories we use. Changes take effect immediately.',
+    categories: {
+      journal_storage: {
+        title: 'Journal & Observations',
+        description: 'Store your personal entries and observation logs within your account.',
+        learnMore: 'Journal entries and observations are tied exclusively to your account. No one else — including administrators — can view your individual responses.',
+      },
+      mood_tracking: {
+        title: 'Mood Tracking',
+        description: 'Collect and display daily mood pulse data on your timeline.',
+        learnMore: 'QuickPulse records values on a 1–5 scale. This data is only visible to you and appears on the mood trend chart.',
+      },
+      free_text_ai: {
+        title: 'Free Text Processing',
+        description: 'AI-powered analysis of content written in text fields.',
+        learnMore: 'If enabled, your free-text entries are used for AI reflection. The AI does not diagnose or give medical advice.',
+      },
+      pattern_detection: {
+        title: 'Pattern Detection',
+        description: 'AI-driven trend identification across your data over time.',
+        learnMore: 'The system searches for periodic patterns in your entries to show emotional change trends. This is not a clinical assessment.',
+      },
+      questionnaire_data: {
+        title: 'Questionnaire Data',
+        description: 'Store responses and scores from completed questionnaires.',
+        learnMore: 'Your questionnaire responses and scores are stored securely within your account. Results can be exported in FHIR format.',
+      },
+      fhir_export: {
+        title: 'FHIR Export',
+        description: 'Map data to clinical codes (SNOMED CT / ICD-10) for interoperability.',
+        learnMore: 'FHIR export maps your data to standard medical terminology, making it shareable with healthcare providers. This does not constitute a clinical assessment.',
+      },
+      anonymized_analytics: {
+        title: 'Anonymized Analytics',
+        description: 'Contribute to aggregate, k-anonymous statistics.',
+        learnMore: 'Anonymized data only becomes available to analysts when at least 20 active users exist. Individual identification is not possible.',
+      },
+    },
+  },
 };

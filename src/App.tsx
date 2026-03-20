@@ -26,6 +26,7 @@ import Article from "./pages/Article";
 import SelfChecks from "./pages/SelfChecks";
 import Surveys from "./pages/Surveys";
 import ManageLanding from "./pages/ManageLanding";
+import ConsentOnboarding from "./pages/ConsentOnboarding";
 
 const queryClient = new QueryClient();
 
@@ -48,6 +49,7 @@ const AppRoutes = () => (
     <Route path="/manage-questionnaires" element={<ProtectedRoute><SelfChecks /></ProtectedRoute>} />
     <Route path="/analyst-export" element={<ProtectedRoute><AnalystExport /></ProtectedRoute>} />
     <Route path="/manage-landing" element={<ProtectedRoute><ManageLanding /></ProtectedRoute>} />
+    <Route path="/consent" element={<ProtectedRoute skipConsentCheck><ConsentOnboarding /></ProtectedRoute>} />
     <Route path="/library" element={<Library />} />
     <Route path="/library/:id" element={<Article />} />
     <Route path="/terms" element={<Terms />} />
@@ -70,6 +72,7 @@ const AppRoutes = () => (
     <Route path="/en/manage-questionnaires" element={<ProtectedRoute><SelfChecks /></ProtectedRoute>} />
     <Route path="/en/analyst-export" element={<ProtectedRoute><AnalystExport /></ProtectedRoute>} />
     <Route path="/en/manage-landing" element={<ProtectedRoute><ManageLanding /></ProtectedRoute>} />
+    <Route path="/en/consent" element={<ProtectedRoute skipConsentCheck><ConsentOnboarding /></ProtectedRoute>} />
     <Route path="/en/library" element={<Library />} />
     <Route path="/en/library/:id" element={<Article />} />
     <Route path="/en/terms" element={<Terms />} />

@@ -11,6 +11,7 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 import { FDownload } from '@/components/icons/FreudIcons';
+import ConsentDashboard from '@/components/consent/ConsentDashboard';
 
 const Profile = () => {
   const { user, signOut } = useAuth();
@@ -122,6 +123,7 @@ const Profile = () => {
             <FDownload className="h-4 w-4 mr-1.5" /> {t.profile.exportAllData}
           </Button>
         </div>
+        <ConsentDashboard />
 
         <Button variant="outline" onClick={signOut} size="sm" className="rounded-2xl">{t.signOut}</Button>
       </div>
