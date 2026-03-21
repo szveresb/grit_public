@@ -13,7 +13,7 @@ import { toast } from 'sonner';
 const ConsentOnboarding = () => {
   const { user } = useAuth();
   const { localePath } = useLanguage();
-  const { refresh: refreshConsent } = useConsent();
+  const { refresh: refreshConsent, setConsentCompleted } = useConsent();
   const navigate = useNavigate();
   const [saving, setSaving] = useState(false);
 
