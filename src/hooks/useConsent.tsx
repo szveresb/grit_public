@@ -100,7 +100,7 @@ export const ConsentProvider = ({ children }: { children: ReactNode }) => {
   const hasConsent = useCallback((key: ConsentKey) => consents[key] === true, [consents]);
 
   return (
-    <ConsentContext.Provider value={{ consents, loaded, hasConsent, refresh: fetchConsents, lastUpdated }}>
+    <ConsentContext.Provider value={{ consents, loaded, hasConsent, refresh: fetchConsents, lastUpdated, consentCompleted, setConsentCompleted }}>
       {children}
     </ConsentContext.Provider>
   );
