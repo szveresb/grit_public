@@ -13,7 +13,7 @@ import { toast } from 'sonner';
 const ConsentOnboarding = () => {
   const { user } = useAuth();
   const { localePath } = useLanguage();
-  const { refresh: refreshConsent } = useConsent();
+  const { refresh: refreshConsent, setConsentCompleted } = useConsent();
   const navigate = useNavigate();
   const [saving, setSaving] = useState(false);
 
@@ -39,6 +39,7 @@ const ConsentOnboarding = () => {
       .eq('user_id', user.id);
     if (pErr) { toast.error(pErr.message); setSaving(false); return; }
 
+    setConsentCompleted(true); // optimistic update to prevent re-redirect
     await refreshConsent();
     navigate(localePath('/journal'));
   };

@@ -11,6 +11,8 @@ interface ConsentState {
   hasConsent: (key: ConsentKey) => boolean;
   refresh: () => Promise<void>;
   lastUpdated: string | null;
+  consentCompleted: boolean;
+  setConsentCompleted: (v: boolean) => void;
 }
 
 const ConsentContext = createContext<ConsentState | undefined>(undefined);
@@ -34,9 +36,10 @@ export const ConsentProvider = ({ children }: { children: ReactNode }) => {
   const [consents, setConsents] = useState<Record<string, boolean>>({});
   const [loaded, setLoaded] = useState(false);
   const [lastUpdated, setLastUpdated] = useState<string | null>(null);
+  const [consentCompleted, setConsentCompleted] = useState(false);
 
   const fetchConsents = useCallback(async () => {
-    if (!user) { setConsents({}); setLoaded(true); return; }
+    if (!user) { setConsents({}); setLoaded(true); setConsentCompleted(false); return; }
 
     // Try cache first
     const cached = readCache(user.id);
@@ -45,15 +48,27 @@ export const ConsentProvider = ({ children }: { children: ReactNode }) => {
       setLoaded(true);
     }
 
-    const { data } = await supabase
-      .from('user_consents')
-      .select('consent_key, granted, updated_at')
-      .eq('user_id', user.id);
+    // Fetch consents + profile consent_completed in parallel
+    const [consentsRes, profileRes] = await Promise.all([
+      supabase
+        .from('user_consents')
+        .select('consent_key, granted, updated_at')
+        .eq('user_id', user.id),
+      supabase
+        .from('profiles')
+        .select('consent_completed')
+        .eq('user_id', user.id)
+        .maybeSingle(),
+    ]);
 
-    if (data && data.length > 0) {
+    if (profileRes.data) {
+      setConsentCompleted(profileRes.data.consent_completed ?? false);
+    }
+
+    if (consentsRes.data && consentsRes.data.length > 0) {
       const map: Record<string, boolean> = {};
       let maxDate = '';
-      data.forEach((r: any) => {
+      consentsRes.data.forEach((r: any) => {
         map[r.consent_key] = r.granted;
         if (r.updated_at > maxDate) maxDate = r.updated_at;
       });
@@ -85,7 +100,7 @@ export const ConsentProvider = ({ children }: { children: ReactNode }) => {
   const hasConsent = useCallback((key: ConsentKey) => consents[key] === true, [consents]);
 
   return (
-    <ConsentContext.Provider value={{ consents, loaded, hasConsent, refresh: fetchConsents, lastUpdated }}>
+    <ConsentContext.Provider value={{ consents, loaded, hasConsent, refresh: fetchConsents, lastUpdated, consentCompleted, setConsentCompleted }}>
       {children}
     </ConsentContext.Provider>
   );
