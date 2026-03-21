@@ -36,6 +36,7 @@ export const ConsentProvider = ({ children }: { children: ReactNode }) => {
   const [consents, setConsents] = useState<Record<string, boolean>>({});
   const [loaded, setLoaded] = useState(false);
   const [lastUpdated, setLastUpdated] = useState<string | null>(null);
+  const [consentCompleted, setConsentCompleted] = useState(false);
 
   const fetchConsents = useCallback(async () => {
     if (!user) { setConsents({}); setLoaded(true); return; }
