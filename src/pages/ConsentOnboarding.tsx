@@ -39,6 +39,7 @@ const ConsentOnboarding = () => {
       .eq('user_id', user.id);
     if (pErr) { toast.error(pErr.message); setSaving(false); return; }
 
+    setConsentCompleted(true); // optimistic update to prevent re-redirect
     await refreshConsent();
     navigate(localePath('/journal'));
   };

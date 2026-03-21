@@ -1,7 +1,6 @@
-import { useEffect, useState } from 'react';
 import { Navigate, useLocation } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
-import { supabase } from '@/integrations/supabase/client';
+import { useConsent } from '@/hooks/useConsent';
 
 interface ProtectedRouteProps {
   children: React.ReactNode;
@@ -10,25 +9,11 @@ interface ProtectedRouteProps {
 
 const ProtectedRoute = ({ children, skipConsentCheck }: ProtectedRouteProps) => {
   const { user, loading } = useAuth();
+  const { loaded, consentCompleted } = useConsent();
   const location = useLocation();
   const isEn = location.pathname.startsWith('/en');
-  const [consentChecked, setConsentChecked] = useState(false);
-  const [consentCompleted, setConsentCompleted] = useState(true);
 
-  useEffect(() => {
-    if (!user || skipConsentCheck) { setConsentChecked(true); return; }
-    supabase
-      .from('profiles')
-      .select('consent_completed')
-      .eq('user_id', user.id)
-      .maybeSingle()
-      .then(({ data }) => {
-        setConsentCompleted(data?.consent_completed ?? false);
-        setConsentChecked(true);
-      });
-  }, [user, skipConsentCheck]);
-
-  if (loading || !consentChecked) {
+  if (loading || !loaded) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-background">
         <p className="text-sm text-muted-foreground font-mono">Loading...</p>
