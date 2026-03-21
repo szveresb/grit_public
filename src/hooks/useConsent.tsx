@@ -11,6 +11,8 @@ interface ConsentState {
   hasConsent: (key: ConsentKey) => boolean;
   refresh: () => Promise<void>;
   lastUpdated: string | null;
+  consentCompleted: boolean;
+  setConsentCompleted: (v: boolean) => void;
 }
 
 const ConsentContext = createContext<ConsentState | undefined>(undefined);
