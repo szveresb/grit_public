@@ -72,8 +72,8 @@ const SelfChecks = () => {
       const opts = qq.options as string[] | null;
       let scaleMin = 1, scaleMax = 5;
       if (qq.question_type === 'scale' && opts && opts.length >= 2) {
-        scaleMin = Number(opts[0]) || 1;
-        scaleMax = Number(opts[1]) || 5;
+        scaleMin = opts[0] !== undefined && opts[0] !== '' ? Number(opts[0]) : 1;
+        scaleMax = opts[1] !== undefined && opts[1] !== '' ? Number(opts[1]) : 5;
       }
       // Detect reverse scoring pattern: answer_scores exist and match reversed values
       const scores = (qq.answer_scores as Record<string, number>) ?? {};

@@ -162,7 +162,7 @@ const QuestionnaireFiller = ({ onCompleted }: { onCompleted?: () => void }) => {
         // If answer_scores exist (e.g. reverse scoring), use them
         if (q.question_type === 'scale') {
           const opts = q.options as string[] | null;
-          const sMax = opts && opts.length >= 2 ? Number(opts[1]) || 5 : 5;
+          const sMax = opts && opts.length >= 2 && opts[1] !== '' ? Number(opts[1]) : 5;
           if (q.answer_scores && Object.keys(q.answer_scores).length > 0) {
             score = q.answer_scores[answer] ?? 0;
             maxScore = Math.max(...Object.values(q.answer_scores));
@@ -243,8 +243,8 @@ const QuestionnaireFiller = ({ onCompleted }: { onCompleted?: () => void }) => {
     switch (q.question_type) {
       case 'scale': {
         const opts = q.options as string[] | null;
-        const sMin = opts && opts.length >= 2 ? Number(opts[0]) || 1 : 1;
-        const sMax = opts && opts.length >= 2 ? Number(opts[1]) || 5 : 5;
+        const sMin = opts && opts.length >= 2 && opts[0] !== '' ? Number(opts[0]) : 1;
+        const sMax = opts && opts.length >= 2 && opts[1] !== '' ? Number(opts[1]) : 5;
         const points = Array.from({ length: sMax - sMin + 1 }, (_, i) => sMin + i);
         const labels = (q.options_localized ?? {}) as Record<string, string>;
         return (
