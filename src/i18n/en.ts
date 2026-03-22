@@ -525,5 +525,6 @@ export const en: Dictionary = {
     relationshipLabel: 'Relationship type',
     subjectAdded: 'Person added',
     subjectRemoved: 'Person removed',
+    subjectUpdated: 'Person updated',
   },
 };

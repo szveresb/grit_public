@@ -525,5 +525,6 @@ export const hu: Dictionary = {
     relationshipLabel: 'Kapcsolat típusa',
     subjectAdded: 'Személy hozzáadva',
     subjectRemoved: 'Személy eltávolítva',
+    subjectUpdated: 'Személy frissítve',
   },
 };
