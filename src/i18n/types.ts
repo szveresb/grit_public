@@ -516,5 +516,6 @@ export interface Dictionary {
     relationshipLabel: string;
     subjectAdded: string;
     subjectRemoved: string;
+    subjectUpdated: string;
   };
 }

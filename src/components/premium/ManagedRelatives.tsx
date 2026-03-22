@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { FUsers, FPlus, FTrash, FSparkles } from '@/components/icons/FreudIcons';
+import { FUsers, FPlus, FTrash, FSparkles, FPencil } from '@/components/icons/FreudIcons';
 import { toast } from 'sonner';
 import { Badge } from '@/components/ui/badge';
 
@@ -27,6 +27,10 @@ const ManagedRelatives = () => {
   const [newRelType, setNewRelType] = useState<string>('other');
   const [adding, setAdding] = useState(false);
   const [deleting, setDeleting] = useState<string | null>(null);
+  const [editingId, setEditingId] = useState<string | null>(null);
+  const [editName, setEditName] = useState('');
+  const [editRelType, setEditRelType] = useState<string>('other');
+  const [saving, setSaving] = useState(false);
 
   const fetchSubjects = async () => {
     if (!user) return;
@@ -65,6 +69,35 @@ const ManagedRelatives = () => {
     fetchSubjects();
   };
 
+  const startEdit = (s: Subject) => {
+    setEditingId(s.id);
+    setEditName(s.name);
+    setEditRelType(s.relationship_type);
+  };
+
+  const cancelEdit = () => {
+    setEditingId(null);
+    setEditName('');
+    setEditRelType('other');
+  };
+
+  const handleSaveEdit = async () => {
+    if (!editingId || !editName.trim()) return;
+    setSaving(true);
+    const { error } = await supabase
+      .from('subjects')
+      .update({ name: editName.trim(), relationship_type: editRelType as any })
+      .eq('id', editingId);
+    if (error) {
+      toast.error(error.message);
+    } else {
+      toast.success(t.premium.subjectUpdated);
+      cancelEdit();
+      fetchSubjects();
+    }
+    setSaving(false);
+  };
+
   const relLabels = t.subjects.relationshipTypes;
 
   return (
@@ -88,31 +121,91 @@ const ManagedRelatives = () => {
 
       {subjects.length > 0 && (
         <div className="space-y-2">
-          {subjects.map((s) => (
-            <div
-              key={s.id}
-              className="flex items-center gap-3 border border-border rounded-2xl p-3 bg-card/40"
-            >
-              <div className="h-8 w-8 rounded-full bg-accent flex items-center justify-center text-xs font-bold text-accent-foreground">
-                {s.name.charAt(0).toUpperCase()}
+          {subjects.map((s) =>
+            editingId === s.id ? (
+              <div key={s.id} className="border border-primary/30 rounded-2xl p-4 space-y-3 bg-card/40 animate-fade-in">
+                <div className="space-y-2">
+                  <Label className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+                    {t.subjects.namePlaceholder}
+                  </Label>
+                  <Input
+                    value={editName}
+                    onChange={(e) => setEditName(e.target.value)}
+                    placeholder={t.subjects.namePlaceholder}
+                    className="rounded-2xl"
+                    autoFocus
+                  />
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+                    {t.premium.relationshipLabel}
+                  </Label>
+                  <Select value={editRelType} onValueChange={setEditRelType}>
+                    <SelectTrigger className="rounded-2xl">
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {RELATIONSHIP_TYPES.map((rt) => (
+                        <SelectItem key={rt} value={rt}>
+                          {relLabels[rt] ?? rt}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="flex gap-2">
+                  <Button
+                    size="sm"
+                    className="rounded-2xl"
+                    onClick={handleSaveEdit}
+                    disabled={saving || !editName.trim()}
+                  >
+                    {saving ? t.saving : t.save}
+                  </Button>
+                  <Button
+                    size="sm"
+                    variant="ghost"
+                    className="rounded-2xl"
+                    onClick={cancelEdit}
+                  >
+                    {t.cancel}
+                  </Button>
+                </div>
               </div>
-              <div className="flex-1 min-w-0">
-                <span className="text-sm font-semibold block truncate">{s.name}</span>
-                <span className="text-[10px] text-muted-foreground">
-                  {relLabels[s.relationship_type as keyof typeof relLabels] ?? s.relationship_type}
-                </span>
-              </div>
-              <Button
-                variant="ghost"
-                size="icon"
-                className="h-7 w-7 shrink-0 text-muted-foreground hover:text-destructive"
-                onClick={() => handleDelete(s.id)}
-                disabled={deleting === s.id}
+            ) : (
+              <div
+                key={s.id}
+                className="flex items-center gap-3 border border-border rounded-2xl p-3 bg-card/40"
               >
-                <FTrash className="h-3.5 w-3.5" />
-              </Button>
-            </div>
-          ))}
+                <div className="h-8 w-8 rounded-full bg-accent flex items-center justify-center text-xs font-bold text-accent-foreground">
+                  {s.name.charAt(0).toUpperCase()}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <span className="text-sm font-semibold block truncate">{s.name}</span>
+                  <span className="text-[10px] text-muted-foreground">
+                    {relLabels[s.relationship_type as keyof typeof relLabels] ?? s.relationship_type}
+                  </span>
+                </div>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-7 w-7 shrink-0 text-muted-foreground hover:text-foreground"
+                  onClick={() => startEdit(s)}
+                >
+                  <FPencil className="h-3.5 w-3.5" />
+                </Button>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="h-7 w-7 shrink-0 text-muted-foreground hover:text-destructive"
+                  onClick={() => handleDelete(s.id)}
+                  disabled={deleting === s.id}
+                >
+                  <FTrash className="h-3.5 w-3.5" />
+                </Button>
+              </div>
+            )
+          )}
         </div>
       )}
 
