@@ -221,6 +221,7 @@ export interface Dictionary {
     questionnaireUpdated: string;
     questionnaireCreated: string;
     questionnaireDeleted: string;
+    questionnaireCloned: string;
     submitting: string;
     repeatInterval: string;
     repeatOnce: string;
