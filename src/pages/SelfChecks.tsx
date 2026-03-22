@@ -132,6 +132,39 @@ const SelfChecks = () => {
     toast.success(q.is_published ? 'Unpublished' : 'Published'); fetchQuestionnaires();
   };
 
+  const handleClone = async (q: Questionnaire) => {
+    if (!user) return;
+    // Clone the questionnaire (unpublished draft)
+    const { data: cloned, error } = await supabase.from('questionnaires').insert({
+      title: `${q.title} (copy)`,
+      description: q.description,
+      created_by: user.id,
+      is_published: false,
+      repeat_interval: q.repeat_interval,
+      scoring_enabled: q.scoring_enabled,
+      scoring_mode: q.scoring_mode,
+      score_ranges: q.score_ranges,
+    } as any).select('id').single();
+    if (error || !cloned) { toast.error(error ? friendlyDbError(error) : 'Failed'); return; }
+    // Clone questions
+    const { data: origQuestions } = await supabase.from('questionnaire_questions').select('*').eq('questionnaire_id', q.id).order('sort_order');
+    if (origQuestions && origQuestions.length > 0) {
+      const qRows = origQuestions.map(oq => ({
+        questionnaire_id: cloned.id,
+        question_text: oq.question_text,
+        question_type: oq.question_type,
+        options: oq.options,
+        sort_order: oq.sort_order,
+        answer_scores: oq.answer_scores,
+        options_localized: oq.options_localized,
+        question_text_localized: oq.question_text_localized,
+      }));
+      await supabase.from('questionnaire_questions').insert(qRows);
+    }
+    toast.success(t.questionnaires_manage.questionnaireCloned);
+    fetchQuestionnaires();
+  };
+
   const handleSubmitAnswers = async () => {
     if (!user || !selectedQ) return;
     setSubmitting(true);
