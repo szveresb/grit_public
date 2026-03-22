@@ -211,6 +211,7 @@ export const en: Dictionary = {
     questionnaireUpdated: 'Questionnaire updated',
     questionnaireCreated: 'Questionnaire created',
     questionnaireDeleted: 'Questionnaire deleted',
+    questionnaireCloned: 'Questionnaire cloned',
     submitting: 'Submitting...',
     repeatInterval: 'Repeat',
     repeatOnce: 'One-time',

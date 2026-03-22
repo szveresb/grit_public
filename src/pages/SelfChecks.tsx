@@ -132,6 +132,39 @@ const SelfChecks = () => {
     toast.success(q.is_published ? 'Unpublished' : 'Published'); fetchQuestionnaires();
   };
 
+  const handleClone = async (q: Questionnaire) => {
+    if (!user) return;
+    // Clone the questionnaire (unpublished draft)
+    const { data: cloned, error } = await supabase.from('questionnaires').insert({
+      title: `${q.title} (copy)`,
+      description: q.description,
+      created_by: user.id,
+      is_published: false,
+      repeat_interval: q.repeat_interval,
+      scoring_enabled: q.scoring_enabled,
+      scoring_mode: q.scoring_mode,
+      score_ranges: q.score_ranges,
+    } as any).select('id').single();
+    if (error || !cloned) { toast.error(error ? friendlyDbError(error) : 'Failed'); return; }
+    // Clone questions
+    const { data: origQuestions } = await supabase.from('questionnaire_questions').select('*').eq('questionnaire_id', q.id).order('sort_order');
+    if (origQuestions && origQuestions.length > 0) {
+      const qRows = origQuestions.map(oq => ({
+        questionnaire_id: cloned.id,
+        question_text: oq.question_text,
+        question_type: oq.question_type,
+        options: oq.options,
+        sort_order: oq.sort_order,
+        answer_scores: oq.answer_scores,
+        options_localized: oq.options_localized,
+        question_text_localized: oq.question_text_localized,
+      }));
+      await supabase.from('questionnaire_questions').insert(qRows);
+    }
+    toast.success(t.questionnaires_manage.questionnaireCloned);
+    fetchQuestionnaires();
+  };
+
   const handleSubmitAnswers = async () => {
     if (!user || !selectedQ) return;
     setSubmitting(true);
@@ -420,6 +453,9 @@ const SelfChecks = () => {
                     <Switch checked={q.is_published} className="pointer-events-none scale-75" />
                   </Button>
                   <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => openEdit(q)}><FPencil className="h-3.5 w-3.5" /></Button>
+                  <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleClone(q)} title={t.questionnaires_manage.questionnaireCloned}>
+                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-3.5 w-3.5"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                  </Button>
                   <AlertDialog>
                     <AlertDialogTrigger asChild>
                       <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:text-destructive"><FTrash className="h-3.5 w-3.5" /></Button>

@@ -211,6 +211,7 @@ export const hu: Dictionary = {
     questionnaireUpdated: 'Kérdőív frissítve',
     questionnaireCreated: 'Kérdőív létrehozva',
     questionnaireDeleted: 'Kérdőív törölve',
+    questionnaireCloned: 'Kérdőív klónozva',
     submitting: 'Beküldés...',
     repeatInterval: 'Ismétlődés',
     repeatOnce: 'Egyszeri',
