@@ -77,7 +77,7 @@ export const ConsentProvider = ({ children }: { children: ReactNode }) => {
       });
       setConsents(map);
       setLastUpdated(maxDate || null);
-      writeCache(user.id, map, maxDate);
+      writeCache(user.id, map, maxDate, profileRes.data?.consent_completed ?? false);
     }
     setLoaded(true);
   }, [user]);
