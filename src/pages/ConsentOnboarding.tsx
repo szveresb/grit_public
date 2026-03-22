@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate, Navigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { useLanguage } from '@/hooks/useLanguage';
 import { useConsent } from '@/hooks/useConsent';
@@ -13,14 +13,9 @@ import { toast } from 'sonner';
 const ConsentOnboarding = () => {
   const { user } = useAuth();
   const { localePath } = useLanguage();
-  const { refresh: refreshConsent, setConsentCompleted, consentCompleted, loaded } = useConsent();
+  const { refresh: refreshConsent, setConsentCompleted } = useConsent();
   const navigate = useNavigate();
   const [saving, setSaving] = useState(false);
-
-  // If consent is already completed, redirect to journal
-  if (loaded && consentCompleted) {
-    return <Navigate to={localePath('/journal')} replace />;
-  }
 
   const handleComplete = async (consents: Record<string, boolean>) => {
     if (!user) return;
