@@ -69,7 +69,7 @@ const ScoreResults = ({ totalScore, maxPossibleScore, questionScores, scoreRange
               <p className="text-xs font-medium text-foreground truncate">{i + 1}. {qs.questionText}</p>
               <p className="text-[11px] text-muted-foreground">{qs.answer}</p>
             </div>
-            <span className="text-sm font-semibold text-foreground shrink-0">+{qs.score}</span>
+            <span className="text-sm font-semibold text-foreground shrink-0">{qs.score >= 0 ? '+' : ''}{qs.score}</span>
           </div>
         ))}
       </div>
