@@ -28,7 +28,7 @@ const ScoreResults = ({ totalScore, maxPossibleScore, questionScores, scoreRange
   const { t } = useLanguage();
 
   const matchedRange = scoreRanges.find(r => totalScore >= r.min && totalScore <= r.max);
-  const pct = maxPossibleScore > 0 ? Math.round((totalScore / maxPossibleScore) * 100) : 0;
+  const pct = maxPossibleScore > 0 ? Math.round(Math.max(0, (totalScore / maxPossibleScore) * 100)) : 0;
 
   return (
     <div className="space-y-5 animate-fade-in">
@@ -69,7 +69,7 @@ const ScoreResults = ({ totalScore, maxPossibleScore, questionScores, scoreRange
               <p className="text-xs font-medium text-foreground truncate">{i + 1}. {qs.questionText}</p>
               <p className="text-[11px] text-muted-foreground">{qs.answer}</p>
             </div>
-            <span className="text-sm font-semibold text-foreground shrink-0">+{qs.score}</span>
+            <span className="text-sm font-semibold text-foreground shrink-0">{qs.score >= 0 ? '+' : ''}{qs.score}</span>
           </div>
         ))}
       </div>
