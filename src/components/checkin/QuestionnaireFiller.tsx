@@ -162,7 +162,7 @@ const QuestionnaireFiller = ({ onCompleted }: { onCompleted?: () => void }) => {
         // If answer_scores exist (e.g. reverse scoring), use them
         if (q.question_type === 'scale') {
           const opts = q.options as string[] | null;
-          const sMax = opts && opts.length >= 2 ? Number(opts[1]) || 5 : 5;
+          const sMax = opts && opts.length >= 2 && opts[1] !== '' ? Number(opts[1]) : 5;
           if (q.answer_scores && Object.keys(q.answer_scores).length > 0) {
             score = q.answer_scores[answer] ?? 0;
             maxScore = Math.max(...Object.values(q.answer_scores));
