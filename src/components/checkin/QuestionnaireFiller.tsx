@@ -156,7 +156,7 @@ const QuestionnaireFiller = ({ onCompleted }: { onCompleted?: () => void }) => {
 
       if (questionnaire.scoring_mode === 'weighted' && q.answer_scores) {
         score = q.answer_scores[answer] ?? 0;
-        maxScore = Math.max(...Object.values(q.answer_scores), 0);
+        maxScore = Math.max(...Object.values(q.answer_scores));
       } else {
         // Sum mode: scale value directly, yes=1/no=0
         // If answer_scores exist (e.g. reverse scoring), use them
