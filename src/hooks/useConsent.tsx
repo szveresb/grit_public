@@ -43,23 +43,8 @@ export const ConsentProvider = ({ children }: { children: ReactNode }) => {
   const [lastUpdated, setLastUpdated] = useState<string | null>(null);
   const [consentCompleted, setConsentCompleted] = useState(false);
 
-  // Reset loaded when user identity changes so ProtectedRoute shows
-  // the loading screen instead of prematurely redirecting to /consent.
-  const prevUserId = useRef<string | null>(null);
-  useEffect(() => {
-    const uid = user?.id ?? null;
-    if (uid !== prevUserId.current) {
-      prevUserId.current = uid;
-      // Only reset when switching *to* a real user – avoids keeping
-      // loaded=false forever for logged-out visitors hitting public pages.
-      if (uid) {
-        setLoaded(false);
-      }
-    }
-  }, [user]);
-
   const fetchConsents = useCallback(async () => {
-    if (!user) { setConsents({}); setLoaded(true); setConsentCompleted(false); return; }
+    if (!user) { setConsents({}); setConsentCompleted(false); return; }
 
     // Try cache first
     const cached = readCache(user.id);
