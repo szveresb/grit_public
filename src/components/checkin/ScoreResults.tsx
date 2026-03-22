@@ -28,7 +28,7 @@ const ScoreResults = ({ totalScore, maxPossibleScore, questionScores, scoreRange
   const { t } = useLanguage();
 
   const matchedRange = scoreRanges.find(r => totalScore >= r.min && totalScore <= r.max);
-  const pct = maxPossibleScore > 0 ? Math.round((totalScore / maxPossibleScore) * 100) : 0;
+  const pct = maxPossibleScore > 0 ? Math.round(Math.max(0, (totalScore / maxPossibleScore) * 100)) : 0;
 
   return (
     <div className="space-y-5 animate-fade-in">
