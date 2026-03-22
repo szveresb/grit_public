@@ -192,7 +192,7 @@ const ManagedRelatives = () => {
                   className="h-7 w-7 shrink-0 text-muted-foreground hover:text-foreground"
                   onClick={() => startEdit(s)}
                 >
-                  <FEdit className="h-3.5 w-3.5" />
+                  <FPencil className="h-3.5 w-3.5" />
                 </Button>
                 <Button
                   variant="ghost"
