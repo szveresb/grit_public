@@ -13,9 +13,14 @@ import { toast } from 'sonner';
 const ConsentOnboarding = () => {
   const { user } = useAuth();
   const { localePath } = useLanguage();
-  const { refresh: refreshConsent, setConsentCompleted } = useConsent();
+  const { refresh: refreshConsent, setConsentCompleted, consentCompleted, loaded } = useConsent();
   const navigate = useNavigate();
   const [saving, setSaving] = useState(false);
+
+  // If consent is already completed, redirect to journal
+  if (loaded && consentCompleted) {
+    return <Navigate to={localePath('/journal')} replace />;
+  }
 
   const handleComplete = async (consents: Record<string, boolean>) => {
     if (!user) return;
