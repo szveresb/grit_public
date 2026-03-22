@@ -17,18 +17,20 @@ interface ConsentState {
 
 const ConsentContext = createContext<ConsentState | undefined>(undefined);
 
-function readCache(userId: string): Record<string, boolean> | null {
+interface CacheData { consents: Record<string, boolean>; consentCompleted: boolean; }
+
+function readCache(userId: string): CacheData | null {
   try {
     const raw = localStorage.getItem(CACHE_KEY);
     if (!raw) return null;
     const parsed = JSON.parse(raw);
     if (parsed?.userId !== userId) return null;
-    return parsed.consents;
+    return { consents: parsed.consents ?? {}, consentCompleted: parsed.consentCompleted ?? false };
   } catch { return null; }
 }
 
-function writeCache(userId: string, consents: Record<string, boolean>, lastUpdated: string | null) {
-  localStorage.setItem(CACHE_KEY, JSON.stringify({ userId, consents, lastUpdated, ts: Date.now() }));
+function writeCache(userId: string, consents: Record<string, boolean>, lastUpdated: string | null, consentCompleted: boolean) {
+  localStorage.setItem(CACHE_KEY, JSON.stringify({ userId, consents, lastUpdated, consentCompleted, ts: Date.now() }));
 }
 
 export const ConsentProvider = ({ children }: { children: ReactNode }) => {
@@ -44,7 +46,8 @@ export const ConsentProvider = ({ children }: { children: ReactNode }) => {
     // Try cache first
     const cached = readCache(user.id);
     if (cached) {
-      setConsents(cached);
+      setConsents(cached.consents);
+      setConsentCompleted(cached.consentCompleted);
       setLoaded(true);
     }
 
@@ -74,7 +77,7 @@ export const ConsentProvider = ({ children }: { children: ReactNode }) => {
       });
       setConsents(map);
       setLastUpdated(maxDate || null);
-      writeCache(user.id, map, maxDate);
+      writeCache(user.id, map, maxDate, profileRes.data?.consent_completed ?? false);
     }
     setLoaded(true);
   }, [user]);
