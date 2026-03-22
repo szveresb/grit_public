@@ -243,8 +243,8 @@ const QuestionnaireFiller = ({ onCompleted }: { onCompleted?: () => void }) => {
     switch (q.question_type) {
       case 'scale': {
         const opts = q.options as string[] | null;
-        const sMin = opts && opts.length >= 2 ? Number(opts[0]) || 1 : 1;
-        const sMax = opts && opts.length >= 2 ? Number(opts[1]) || 5 : 5;
+        const sMin = opts && opts.length >= 2 && opts[0] !== '' ? Number(opts[0]) : 1;
+        const sMax = opts && opts.length >= 2 && opts[1] !== '' ? Number(opts[1]) : 5;
         const points = Array.from({ length: sMax - sMin + 1 }, (_, i) => sMin + i);
         const labels = (q.options_localized ?? {}) as Record<string, string>;
         return (
