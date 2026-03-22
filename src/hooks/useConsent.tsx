@@ -46,7 +46,8 @@ export const ConsentProvider = ({ children }: { children: ReactNode }) => {
     // Try cache first
     const cached = readCache(user.id);
     if (cached) {
-      setConsents(cached);
+      setConsents(cached.consents);
+      setConsentCompleted(cached.consentCompleted);
       setLoaded(true);
     }
 
