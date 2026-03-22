@@ -19,6 +19,9 @@ const ConsentContext = createContext<ConsentState | undefined>(undefined);
 
 interface CacheData { consents: Record<string, boolean>; consentCompleted: boolean; }
 
+const hasCompletedConsentSet = (consentMap: Record<string, boolean>) =>
+  CONSENT_KEYS.every((key) => Object.prototype.hasOwnProperty.call(consentMap, key));
+
 function readCache(userId: string): CacheData | null {
   try {
     const raw = localStorage.getItem(CACHE_KEY);
@@ -47,7 +50,7 @@ export const ConsentProvider = ({ children }: { children: ReactNode }) => {
     const cached = readCache(user.id);
     if (cached) {
       setConsents(cached.consents);
-      setConsentCompleted(cached.consentCompleted);
+      setConsentCompleted(hasCompletedConsentSet(cached.consents));
       setLoaded(true);
     }
 
@@ -64,21 +67,30 @@ export const ConsentProvider = ({ children }: { children: ReactNode }) => {
         .maybeSingle(),
     ]);
 
-    if (profileRes.data) {
-      setConsentCompleted(profileRes.data.consent_completed ?? false);
-    }
+    const map: Record<string, boolean> = {};
+    let maxDate = '';
 
     if (consentsRes.data && consentsRes.data.length > 0) {
-      const map: Record<string, boolean> = {};
-      let maxDate = '';
       consentsRes.data.forEach((r: any) => {
         map[r.consent_key] = r.granted;
         if (r.updated_at > maxDate) maxDate = r.updated_at;
       });
-      setConsents(map);
-      setLastUpdated(maxDate || null);
-      writeCache(user.id, map, maxDate, profileRes.data?.consent_completed ?? false);
     }
+
+    const consentIsComplete = hasCompletedConsentSet(map);
+    setConsents(map);
+    setLastUpdated(maxDate || null);
+    setConsentCompleted(consentIsComplete);
+    writeCache(user.id, map, maxDate || null, consentIsComplete);
+
+    // Heal stale profile flag when all consent cards are already decided.
+    if (consentIsComplete && profileRes.data && !profileRes.data.consent_completed) {
+      await supabase
+        .from('profiles')
+        .update({ consent_completed: true })
+        .eq('user_id', user.id);
+    }
+
     setLoaded(true);
   }, [user]);
 
