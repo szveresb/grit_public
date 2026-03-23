@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useLanguage } from '@/hooks/useLanguage';
+import { useStance } from '@/hooks/useStance';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -38,6 +39,7 @@ const iconMap: Record<string, React.ReactNode> = {
 const ObservationStepper = ({ onLogged }: { onLogged?: () => void }) => {
   const { user } = useAuth();
   const { t, lang } = useLanguage();
+  const { subjectColor: globalSubjectColor } = useStance();
   const [step, setStep] = useState(0);
   const [categories, setCategories] = useState<Category[]>([]);
   const [concepts, setConcepts] = useState<Concept[]>([]);
@@ -156,7 +158,7 @@ const ObservationStepper = ({ onLogged }: { onLogged?: () => void }) => {
       {/* Step 1: Categories */}
       {step === 1 && (
         <div className="space-y-3 animate-fade-in">
-          <StanceBanner subjectType={subjectType} subjectName={subjectName ?? undefined} onSwitch={() => setStep(0)} compact />
+          <StanceBanner subjectType={subjectType} subjectName={subjectName ?? undefined} subjectColor={globalSubjectColor} onSwitch={() => setStep(0)} compact />
           <Button variant="ghost" size="sm" className="rounded-2xl" onClick={() => setStep(0)}>
             <FArrowLeft className="h-4 w-4 mr-1" /> {t.observations.back}
           </Button>
@@ -185,7 +187,7 @@ const ObservationStepper = ({ onLogged }: { onLogged?: () => void }) => {
       {/* Step 2: Concepts */}
       {step === 2 && (
         <div className="space-y-3 animate-fade-in">
-          <StanceBanner subjectType={subjectType} subjectName={subjectName ?? undefined} onSwitch={() => setStep(0)} compact />
+          <StanceBanner subjectType={subjectType} subjectName={subjectName ?? undefined} subjectColor={globalSubjectColor} onSwitch={() => setStep(0)} compact />
           <Button variant="ghost" size="sm" className="rounded-2xl" onClick={() => setStep(1)}>
             <FArrowLeft className="h-4 w-4 mr-1" /> {t.observations.back}
           </Button>
@@ -214,7 +216,7 @@ const ObservationStepper = ({ onLogged }: { onLogged?: () => void }) => {
       {/* Step 3: Qualifiers */}
       {step === 3 && (
         <div className="space-y-5 animate-fade-in">
-          <StanceBanner subjectType={subjectType} subjectName={subjectName ?? undefined} onSwitch={() => setStep(0)} />
+          <StanceBanner subjectType={subjectType} subjectName={subjectName ?? undefined} subjectColor={globalSubjectColor} onSwitch={() => setStep(0)} />
           <Button variant="ghost" size="sm" className="rounded-2xl" onClick={() => setStep(2)}>
             <FArrowLeft className="h-4 w-4 mr-1" /> {t.observations.back}
           </Button>

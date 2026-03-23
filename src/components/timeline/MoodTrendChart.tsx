@@ -24,6 +24,7 @@ interface MoodTrendChartProps {
   isPremium?: boolean;
   onPremiumClick?: () => void;
   t: { timeline: { moodTrendTitle: string; moodTrendSubtitle: string; moodTrendEmpty: string } };
+  accentColor?: string; // optional hsl color string for observer mode
 }
 
 type RangePreset = '7d' | '30d' | 'all';
@@ -69,8 +70,9 @@ function aggregateByDay(data: MoodDataPoint[]): AggregatedPoint[] {
     .sort((a, b) => a.ts - b.ts);
 }
 
-const MoodTrendChart = ({ data, lang, isPremium = false, onPremiumClick, t }: MoodTrendChartProps) => {
+const MoodTrendChart = ({ data, lang, isPremium = false, onPremiumClick, t, accentColor }: MoodTrendChartProps) => {
   const aggregated = useMemo(() => aggregateByDay(data), [data]);
+  const strokeColor = accentColor || 'hsl(var(--primary))';
   const [preset, setPreset] = useState<RangePreset>('all');
 
   const filtered = useMemo(() => {
@@ -158,8 +160,8 @@ const MoodTrendChart = ({ data, lang, isPremium = false, onPremiumClick, t }: Mo
         >
           <defs>
             <linearGradient id="moodGradient" x1="0" y1="0" x2="0" y2="1">
-              <stop offset="0%" stopColor="hsl(var(--primary))" stopOpacity={0.35} />
-              <stop offset="100%" stopColor="hsl(var(--primary))" stopOpacity={0.05} />
+              <stop offset="0%" stopColor={strokeColor} stopOpacity={0.35} />
+              <stop offset="100%" stopColor={strokeColor} stopOpacity={0.05} />
             </linearGradient>
           </defs>
           <CartesianGrid strokeDasharray="3 3" className="stroke-border/40" />
@@ -195,11 +197,11 @@ const MoodTrendChart = ({ data, lang, isPremium = false, onPremiumClick, t }: Mo
           <Area
             type="monotone"
             dataKey="level"
-            stroke="hsl(var(--primary))"
+            stroke={strokeColor}
             strokeWidth={2.5}
             fill="url(#moodGradient)"
-            dot={{ r: 4, fill: 'hsl(var(--primary))', strokeWidth: 0 }}
-            activeDot={{ r: 6, fill: 'hsl(var(--primary))' }}
+            dot={{ r: 4, fill: strokeColor, strokeWidth: 0 }}
+            activeDot={{ r: 6, fill: strokeColor }}
           />
           {filtered.length > 3 && isPremium && (
             <Brush

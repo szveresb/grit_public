@@ -2,25 +2,33 @@ import { FUser, FUsers, FSparkles } from '@/components/icons/FreudIcons';
 import { useLanguage } from '@/hooks/useLanguage';
 import { Badge } from '@/components/ui/badge';
 
+import type { SubjectColor } from '@/hooks/useStance';
+
 interface StanceBannerProps {
   subjectType: 'self' | 'relative';
   subjectName?: string;
+  subjectColor?: SubjectColor | null;
   onSwitch?: () => void;
   compact?: boolean;
 }
 
-const StanceBanner = ({ subjectType, subjectName, onSwitch, compact }: StanceBannerProps) => {
+const StanceBanner = ({ subjectType, subjectName, subjectColor, onSwitch, compact }: StanceBannerProps) => {
   const { t } = useLanguage();
 
   const isObserver = subjectType === 'relative';
 
   if (compact) {
     return (
-      <div className={`flex items-center gap-2 rounded-2xl px-3 py-2 text-xs font-semibold transition-colors ${
-        isObserver
-          ? 'bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800 text-amber-800 dark:text-amber-300'
-          : 'bg-primary/5 border border-primary/20 text-primary'
-      }`}>
+      <div
+        className="flex items-center gap-2 rounded-2xl px-3 py-2 text-xs font-semibold transition-colors"
+        style={isObserver && subjectColor ? {
+          backgroundColor: subjectColor.bg,
+          borderColor: subjectColor.border,
+          color: subjectColor.text,
+          borderWidth: 1,
+          borderStyle: 'solid',
+        } : undefined}
+      >
         {isObserver ? <FUsers className="h-3.5 w-3.5" /> : <FUser className="h-3.5 w-3.5" />}
         <span>
           {isObserver
@@ -47,11 +55,15 @@ const StanceBanner = ({ subjectType, subjectName, onSwitch, compact }: StanceBan
   }
 
   return (
-    <div className={`flex items-center gap-3 rounded-2xl px-4 py-3 transition-colors ${
-      isObserver
-        ? 'bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800'
-        : 'bg-primary/5 border border-primary/20'
-    }`}>
+    <div
+      className="flex items-center gap-3 rounded-2xl px-4 py-3 transition-colors"
+      style={isObserver && subjectColor ? {
+        backgroundColor: subjectColor.bg,
+        borderColor: subjectColor.border,
+        borderWidth: 1,
+        borderStyle: 'solid',
+      } : undefined}
+    >
       <div className={`h-8 w-8 rounded-xl flex items-center justify-center ${
         isObserver ? 'bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-300' : 'bg-primary/10 text-primary'
       }`}>

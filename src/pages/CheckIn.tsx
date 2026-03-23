@@ -3,6 +3,7 @@ import { useSearchParams } from 'react-router-dom';
 import { differenceInDays, parseISO, format, startOfWeek, endOfWeek, isFuture, startOfDay } from 'date-fns';
 import DashboardLayout from '@/components/DashboardLayout';
 import { useLanguage } from '@/hooks/useLanguage';
+import { useStance } from '@/hooks/useStance';
 import QuickPulse from '@/components/checkin/QuickPulse';
 import ConsentGate from '@/components/consent/ConsentGate';
 import FeedCalendar from '@/components/checkin/FeedCalendar';
@@ -32,6 +33,7 @@ interface ConceptEntry { id: string; name_hu: string; name_en: string; }
 
 const CheckIn = () => {
   const { t, lang } = useLanguage();
+  const { subjectType, selectedSubjectId, subjectColor } = useStance();
   const { user } = useAuth();
   const [searchParams, setSearchParams] = useSearchParams();
   const feedRef = useRef<HTMLDivElement>(null);
@@ -80,57 +82,81 @@ const CheckIn = () => {
       .then(({ data }) => { if (data) setIsPremium(data.premium); });
   }, [user]);
 
-  // Fetch all timeline data
+  // Fetch all timeline data — filtered by current stance
   useEffect(() => {
     if (!user) return;
+    const isObserver = subjectType === 'relative' && !!selectedSubjectId;
     const fetchAll = async () => {
+      // Journal entries are always self — hide in observer mode
+      const journalPromise = isObserver
+        ? Promise.resolve({ data: [] })
+        : supabase.from('journal_entries').select('id, title, entry_date, impact_level').eq('user_id', user.id);
+
+      // Questionnaire responses are always self — hide in observer mode
+      const responsePromise = isObserver
+        ? Promise.resolve({ data: [] })
+        : supabase.from('questionnaire_responses').select('id, questionnaire_id, completed_at, questionnaires(title)').eq('user_id', user.id);
+
+      // Observation logs filtered by stance
+      let obsQuery = supabase.from('observation_logs').select('id, intensity, frequency, logged_at, concept_id, user_narrative, journal_entry_id, subject_type, subject_id').eq('user_id', user.id);
+      if (isObserver) {
+        obsQuery = obsQuery.eq('subject_type', 'relative').eq('subject_id', selectedSubjectId);
+      } else {
+        obsQuery = obsQuery.eq('subject_type', 'self');
+      }
+
+      // Mood pulses filtered by stance
+      let pulseQuery = (supabase.from as any)('mood_pulses').select('level, entry_date').eq('user_id', user.id);
+      if (isObserver) {
+        pulseQuery = pulseQuery.eq('subject_type', 'relative').eq('subject_id', selectedSubjectId);
+      } else {
+        pulseQuery = pulseQuery.eq('subject_type', 'self');
+      }
+
       const [journalRes, responseRes, obsRes, pulseRes] = await Promise.all([
-        supabase.from('journal_entries').select('id, title, entry_date, impact_level').eq('user_id', user.id),
-        supabase.from('questionnaire_responses').select('id, questionnaire_id, completed_at, questionnaires(title)').eq('user_id', user.id),
-        supabase.from('observation_logs').select('id, intensity, frequency, logged_at, concept_id, user_narrative, journal_entry_id, subject_type, subject_id').eq('user_id', user.id),
-        (supabase.from as any)('mood_pulses').select('level, entry_date').eq('user_id', user.id),
+        journalPromise,
+        responsePromise,
+        obsQuery,
+        pulseQuery,
       ]);
 
-      const journalData = journalRes.data ?? [];
+      const journalData = (journalRes.data ?? []) as any[];
       const journalItems: TimelineItem[] = journalData.map(j => ({ id: j.id, type: 'journal', title: j.title, date: j.entry_date, detail: j.impact_level ? `${t.journal.cardImpact}: ${j.impact_level}/5` : undefined }));
-      // Mood trend chart fed exclusively from mood_pulses
-      setMoodData((pulseRes.data ?? []).map(p => ({ date: p.entry_date, level: p.level })));
+      setMoodData((pulseRes.data ?? []).map((p: any) => ({ date: p.entry_date, level: p.level })));
 
-      // Check inactivity
-      if (journalData.length > 0) {
-        const sorted = [...journalData].sort((a, b) => b.entry_date.localeCompare(a.entry_date));
+      // Check inactivity (only meaningful in self mode)
+      if (!isObserver && journalData.length > 0) {
+        const sorted = [...journalData].sort((a: any, b: any) => b.entry_date.localeCompare(a.entry_date));
         setDaysSinceLastEntry(differenceInDays(new Date(), parseISO(sorted[0].entry_date)));
       } else {
         setDaysSinceLastEntry(null);
       }
 
-      const qItems: TimelineItem[] = (responseRes.data ?? []).map((r: any) => ({ id: r.id, type: 'questionnaire', title: r.questionnaires?.title ?? t.nav.questionnaires, date: r.completed_at.split('T')[0] }));
+      const qItems: TimelineItem[] = ((responseRes.data ?? []) as any[]).map((r: any) => ({ id: r.id, type: 'questionnaire', title: r.questionnaires?.title ?? t.nav.questionnaires, date: r.completed_at.split('T')[0] }));
 
       let obsItems: TimelineItem[] = [];
       const obsData = obsRes.data ?? [];
-      // Filter out observations already linked to a journal entry (avoid duplicates)
-      const standaloneObs = obsData.filter(o => !o.journal_entry_id);
-      if (obsData.length > 0) {
-        const conceptIds = [...new Set(obsData.map(o => o.concept_id))];
+      const standaloneObs = (obsData as any[]).filter((o: any) => !o.journal_entry_id);
+      if ((obsData as any[]).length > 0) {
+        const conceptIds = [...new Set((obsData as any[]).map((o: any) => o.concept_id))];
         const { data: concepts } = await supabase.from('observation_concepts').select('id, name_hu, name_en').in('id', conceptIds);
         const conMap = Object.fromEntries((concepts ?? []).map(c => [c.id, c]));
         setConceptMap(conMap);
-        setObsLogs(obsData.map(o => ({ concept_id: o.concept_id, logged_at: o.logged_at, intensity: o.intensity, user_narrative: o.user_narrative })));
+        setObsLogs((obsData as any[]).map((o: any) => ({ concept_id: o.concept_id, logged_at: o.logged_at, intensity: o.intensity, user_narrative: o.user_narrative })));
 
-        obsItems = standaloneObs.map(o => {
+        obsItems = standaloneObs.map((o: any) => {
           const concept = conMap[o.concept_id];
           const name = concept ? (lang === 'en' ? concept.name_en : concept.name_hu) : t.observations.tabObservations;
-          const subjectType = (o as any).subject_type as 'self' | 'relative' | undefined;
-          return { id: o.id, type: 'observation' as const, title: name, date: o.logged_at, detail: `${t.observations.intensity}: ${o.intensity}/5`, subjectType: subjectType ?? 'self' };
+          return { id: o.id, type: 'observation' as const, title: name, date: o.logged_at, detail: `${t.observations.intensity}: ${o.intensity}/5` };
         });
 
         // Current-week nudges
         const now = new Date();
         const weekStart = format(startOfWeek(now, { weekStartsOn: 1 }), 'yyyy-MM-dd');
         const weekEnd = format(endOfWeek(now, { weekStartsOn: 1 }), 'yyyy-MM-dd');
-        const weekObs = obsData.filter(o => o.logged_at >= weekStart && o.logged_at <= weekEnd);
+        const weekObs = (obsData as any[]).filter((o: any) => o.logged_at >= weekStart && o.logged_at <= weekEnd);
         const countByConceptId: Record<string, number> = {};
-        weekObs.forEach(o => { countByConceptId[o.concept_id] = (countByConceptId[o.concept_id] || 0) + 1; });
+        weekObs.forEach((o: any) => { countByConceptId[o.concept_id] = (countByConceptId[o.concept_id] || 0) + 1; });
         const detectedNudges: PatternNudge[] = [];
         for (const [cid, count] of Object.entries(countByConceptId)) {
           if (count >= 3) {
@@ -140,16 +166,18 @@ const CheckIn = () => {
           }
         }
         setNudges(detectedNudges);
+      } else {
+        setConceptMap({});
+        setObsLogs([]);
+        setNudges([]);
       }
 
       const allItems = [...journalItems, ...qItems, ...obsItems].sort((a, b) => b.date.localeCompare(a.date));
       setTimelineItems(allItems);
-
-      // Feed calendar items
-      setCalendarItems(allItems.map(i => ({ id: i.id, type: i.type, title: i.title, date: i.date, subjectType: (i as any).subjectType })));
+      setCalendarItems(allItems.map(i => ({ id: i.id, type: i.type, title: i.title, date: i.date })));
     };
     fetchAll();
-  }, [user, refreshKey]);
+  }, [user, refreshKey, subjectType, selectedSubjectId]);
 
   const handleEntryClick = useCallback((type: string, dbId: string) => {
     if (type === 'journal') setReflectEntryId(dbId);
@@ -219,7 +247,7 @@ const CheckIn = () => {
 
         {/* Mood trend chart — gated by mood_tracking */}
         <ConsentGate consentKey="mood_tracking">
-          <MoodTrendChart data={moodData} lang={lang} isPremium={isPremium} onPremiumClick={() => setPremiumOpen(true)} t={t} />
+          <MoodTrendChart data={moodData} lang={lang} isPremium={isPremium} onPremiumClick={() => setPremiumOpen(true)} t={t} accentColor={subjectColor?.dot} />
         </ConsentGate>
 
         {/* 8-week pattern frequency chart — gated by pattern_detection */}
