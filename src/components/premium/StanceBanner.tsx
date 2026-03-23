@@ -12,7 +12,7 @@ interface StanceBannerProps {
   compact?: boolean;
 }
 
-const StanceBanner = ({ subjectType, subjectName, onSwitch, compact }: StanceBannerProps) => {
+const StanceBanner = ({ subjectType, subjectName, subjectColor, onSwitch, compact }: StanceBannerProps) => {
   const { t } = useLanguage();
 
   const isObserver = subjectType === 'relative';
