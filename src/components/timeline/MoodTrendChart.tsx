@@ -197,11 +197,11 @@ const MoodTrendChart = ({ data, lang, isPremium = false, onPremiumClick, t, acce
           <Area
             type="monotone"
             dataKey="level"
-            stroke="hsl(var(--primary))"
+            stroke={strokeColor}
             strokeWidth={2.5}
             fill="url(#moodGradient)"
-            dot={{ r: 4, fill: 'hsl(var(--primary))', strokeWidth: 0 }}
-            activeDot={{ r: 6, fill: 'hsl(var(--primary))' }}
+            dot={{ r: 4, fill: strokeColor, strokeWidth: 0 }}
+            activeDot={{ r: 6, fill: strokeColor }}
           />
           {filtered.length > 3 && isPremium && (
             <Brush
