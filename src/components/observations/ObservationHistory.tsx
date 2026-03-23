@@ -70,7 +70,7 @@ const ObservationHistory = ({ refreshKey }: { refreshKey?: number }) => {
     setLogs(data.map(d => ({ ...d, concept: conMap[d.concept_id] })) as LogEntry[]);
   };
 
-  useEffect(() => { fetchLogs(); }, [user, refreshKey]);
+  useEffect(() => { fetchLogs(); }, [user, refreshKey, subjectType, selectedSubjectId]);
 
   const name = (item: { name_hu: string; name_en: string }) => lang === 'en' ? item.name_en : item.name_hu;
 

@@ -33,11 +33,12 @@ const RoleIndicator = () => {
       >
         <Badge
           variant="outline"
-          className={`flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-medium uppercase tracking-widest backdrop-blur rounded-full cursor-pointer transition-colors ${
-            isObserver
-              ? 'bg-amber-50/90 dark:bg-amber-950/60 border-amber-300 dark:border-amber-700 text-amber-700 dark:text-amber-400'
-              : 'bg-card/80 border-border text-muted-foreground'
-          }`}
+          className="flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-medium uppercase tracking-widest backdrop-blur rounded-full cursor-pointer transition-colors"
+          style={isObserver && subjectColor ? {
+            backgroundColor: subjectColor.bg,
+            borderColor: subjectColor.border,
+            color: subjectColor.text,
+          } : undefined}
         >
           {isObserver ? <FUsers className="h-3 w-3" /> : <FUser className="h-3 w-3" />}
           <span className="max-w-[120px] truncate">
@@ -45,7 +46,7 @@ const RoleIndicator = () => {
               ? (selectedSubjectName ?? t.subjects.otherLabel)
               : t.subjects.selfLabel}
           </span>
-          {isObserver && <FSparkles className="h-2.5 w-2.5 text-amber-500" />}
+          {isObserver && <FSparkles className="h-2.5 w-2.5" />}
         </Badge>
       </button>
 
