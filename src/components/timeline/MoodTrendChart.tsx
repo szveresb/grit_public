@@ -24,6 +24,7 @@ interface MoodTrendChartProps {
   isPremium?: boolean;
   onPremiumClick?: () => void;
   t: { timeline: { moodTrendTitle: string; moodTrendSubtitle: string; moodTrendEmpty: string } };
+  accentColor?: string; // optional hsl color string for observer mode
 }
 
 type RangePreset = '7d' | '30d' | 'all';
