@@ -158,7 +158,7 @@ const ObservationStepper = ({ onLogged }: { onLogged?: () => void }) => {
       {/* Step 1: Categories */}
       {step === 1 && (
         <div className="space-y-3 animate-fade-in">
-          <StanceBanner subjectType={subjectType} subjectName={subjectName ?? undefined} onSwitch={() => setStep(0)} compact />
+          <StanceBanner subjectType={subjectType} subjectName={subjectName ?? undefined} subjectColor={globalSubjectColor} onSwitch={() => setStep(0)} compact />
           <Button variant="ghost" size="sm" className="rounded-2xl" onClick={() => setStep(0)}>
             <FArrowLeft className="h-4 w-4 mr-1" /> {t.observations.back}
           </Button>
@@ -187,7 +187,7 @@ const ObservationStepper = ({ onLogged }: { onLogged?: () => void }) => {
       {/* Step 2: Concepts */}
       {step === 2 && (
         <div className="space-y-3 animate-fade-in">
-          <StanceBanner subjectType={subjectType} subjectName={subjectName ?? undefined} onSwitch={() => setStep(0)} compact />
+          <StanceBanner subjectType={subjectType} subjectName={subjectName ?? undefined} subjectColor={globalSubjectColor} onSwitch={() => setStep(0)} compact />
           <Button variant="ghost" size="sm" className="rounded-2xl" onClick={() => setStep(1)}>
             <FArrowLeft className="h-4 w-4 mr-1" /> {t.observations.back}
           </Button>
@@ -216,7 +216,7 @@ const ObservationStepper = ({ onLogged }: { onLogged?: () => void }) => {
       {/* Step 3: Qualifiers */}
       {step === 3 && (
         <div className="space-y-5 animate-fade-in">
-          <StanceBanner subjectType={subjectType} subjectName={subjectName ?? undefined} onSwitch={() => setStep(0)} />
+          <StanceBanner subjectType={subjectType} subjectName={subjectName ?? undefined} subjectColor={globalSubjectColor} onSwitch={() => setStep(0)} />
           <Button variant="ghost" size="sm" className="rounded-2xl" onClick={() => setStep(2)}>
             <FArrowLeft className="h-4 w-4 mr-1" /> {t.observations.back}
           </Button>
