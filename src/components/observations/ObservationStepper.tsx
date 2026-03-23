@@ -39,6 +39,7 @@ const iconMap: Record<string, React.ReactNode> = {
 const ObservationStepper = ({ onLogged }: { onLogged?: () => void }) => {
   const { user } = useAuth();
   const { t, lang } = useLanguage();
+  const { subjectColor: globalSubjectColor } = useStance();
   const [step, setStep] = useState(0);
   const [categories, setCategories] = useState<Category[]>([]);
   const [concepts, setConcepts] = useState<Concept[]>([]);
