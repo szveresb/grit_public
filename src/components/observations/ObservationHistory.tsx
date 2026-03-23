@@ -27,14 +27,24 @@ interface LogEntry {
 const ObservationHistory = ({ refreshKey }: { refreshKey?: number }) => {
   const { user } = useAuth();
   const { t, lang } = useLanguage();
+  const { subjectType, selectedSubjectId } = useStance();
   const [logs, setLogs] = useState<LogEntry[]>([]);
 
   const fetchLogs = async () => {
     if (!user) return;
-    const { data } = await supabase
+    const isObserver = subjectType === 'relative' && !!selectedSubjectId;
+    let query = supabase
       .from('observation_logs')
       .select('id, intensity, frequency, context_modifier, user_narrative, logged_at, concept_id')
-      .eq('user_id', user.id)
+      .eq('user_id', user.id);
+
+    if (isObserver) {
+      query = query.eq('subject_type', 'relative').eq('subject_id', selectedSubjectId);
+    } else {
+      query = query.eq('subject_type', 'self');
+    }
+
+    const { data } = await query
       .order('logged_at', { ascending: false })
       .order('created_at', { ascending: false })
       .limit(50);
