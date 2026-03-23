@@ -55,11 +55,15 @@ const StanceBanner = ({ subjectType, subjectName, subjectColor, onSwitch, compac
   }
 
   return (
-    <div className={`flex items-center gap-3 rounded-2xl px-4 py-3 transition-colors ${
-      isObserver
-        ? 'bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800'
-        : 'bg-primary/5 border border-primary/20'
-    }`}>
+    <div
+      className="flex items-center gap-3 rounded-2xl px-4 py-3 transition-colors"
+      style={isObserver && subjectColor ? {
+        backgroundColor: subjectColor.bg,
+        borderColor: subjectColor.border,
+        borderWidth: 1,
+        borderStyle: 'solid',
+      } : undefined}
+    >
       <div className={`h-8 w-8 rounded-xl flex items-center justify-center ${
         isObserver ? 'bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-300' : 'bg-primary/10 text-primary'
       }`}>
