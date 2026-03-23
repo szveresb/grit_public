@@ -7,7 +7,7 @@ import SubjectSelector from '@/components/observations/SubjectSelector';
 
 const RoleIndicator = () => {
   const { t } = useLanguage();
-  const { subjectType, selectedSubjectName, setSubjectType, setSelectedSubjectId, setSelectedSubjectName, resetToSelf } = useStance();
+  const { subjectType, selectedSubjectName, subjectColor, setSubjectType, setSelectedSubjectId, setSelectedSubjectName, resetToSelf } = useStance();
   const [showPicker, setShowPicker] = useState(false);
   const pickerRef = useRef<HTMLDivElement>(null);
 
