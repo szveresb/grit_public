@@ -2,9 +2,12 @@ import { FUser, FUsers, FSparkles } from '@/components/icons/FreudIcons';
 import { useLanguage } from '@/hooks/useLanguage';
 import { Badge } from '@/components/ui/badge';
 
+import type { SubjectColor } from '@/hooks/useStance';
+
 interface StanceBannerProps {
   subjectType: 'self' | 'relative';
   subjectName?: string;
+  subjectColor?: SubjectColor | null;
   onSwitch?: () => void;
   compact?: boolean;
 }
