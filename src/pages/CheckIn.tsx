@@ -3,6 +3,7 @@ import { useSearchParams } from 'react-router-dom';
 import { differenceInDays, parseISO, format, startOfWeek, endOfWeek, isFuture, startOfDay } from 'date-fns';
 import DashboardLayout from '@/components/DashboardLayout';
 import { useLanguage } from '@/hooks/useLanguage';
+import { useStance } from '@/hooks/useStance';
 import QuickPulse from '@/components/checkin/QuickPulse';
 import ConsentGate from '@/components/consent/ConsentGate';
 import FeedCalendar from '@/components/checkin/FeedCalendar';
