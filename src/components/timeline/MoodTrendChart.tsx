@@ -70,8 +70,9 @@ function aggregateByDay(data: MoodDataPoint[]): AggregatedPoint[] {
     .sort((a, b) => a.ts - b.ts);
 }
 
-const MoodTrendChart = ({ data, lang, isPremium = false, onPremiumClick, t }: MoodTrendChartProps) => {
+const MoodTrendChart = ({ data, lang, isPremium = false, onPremiumClick, t, accentColor }: MoodTrendChartProps) => {
   const aggregated = useMemo(() => aggregateByDay(data), [data]);
+  const strokeColor = accentColor || 'hsl(var(--primary))';
   const [preset, setPreset] = useState<RangePreset>('all');
 
   const filtered = useMemo(() => {
