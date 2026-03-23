@@ -33,6 +33,7 @@ interface ConceptEntry { id: string; name_hu: string; name_en: string; }
 
 const CheckIn = () => {
   const { t, lang } = useLanguage();
+  const { subjectType, selectedSubjectId, subjectColor } = useStance();
   const { user } = useAuth();
   const [searchParams, setSearchParams] = useSearchParams();
   const feedRef = useRef<HTMLDivElement>(null);
