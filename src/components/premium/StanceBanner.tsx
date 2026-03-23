@@ -19,11 +19,16 @@ const StanceBanner = ({ subjectType, subjectName, subjectColor, onSwitch, compac
 
   if (compact) {
     return (
-      <div className={`flex items-center gap-2 rounded-2xl px-3 py-2 text-xs font-semibold transition-colors ${
-        isObserver
-          ? 'bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800 text-amber-800 dark:text-amber-300'
-          : 'bg-primary/5 border border-primary/20 text-primary'
-      }`}>
+      <div
+        className="flex items-center gap-2 rounded-2xl px-3 py-2 text-xs font-semibold transition-colors"
+        style={isObserver && subjectColor ? {
+          backgroundColor: subjectColor.bg,
+          borderColor: subjectColor.border,
+          color: subjectColor.text,
+          borderWidth: 1,
+          borderStyle: 'solid',
+        } : undefined}
+      >
         {isObserver ? <FUsers className="h-3.5 w-3.5" /> : <FUser className="h-3.5 w-3.5" />}
         <span>
           {isObserver
