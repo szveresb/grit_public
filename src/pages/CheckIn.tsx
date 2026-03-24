@@ -106,16 +106,11 @@ const CheckIn = () => {
         ? Promise.resolve({ data: [] })
         : supabase.from('journal_entries').select('id, title, entry_date, impact_level').eq('user_id', user.id);
 
-      // Questionnaire responses filtered by the active subject context
-      let responseQuery: any = supabase
+      // Questionnaire responses (not stance-filtered — table lacks subject columns)
+      const responseQuery = supabase
         .from('questionnaire_responses')
-        .select('id, questionnaire_id, completed_at, questionnaires(title), subject_type, subject_id')
+        .select('id, questionnaire_id, completed_at, questionnaires(title)')
         .eq('user_id', user.id);
-      if (isObserver) {
-        responseQuery = responseQuery.eq('subject_type', 'relative').eq('subject_id', selectedSubjectId);
-      } else {
-        responseQuery = responseQuery.eq('subject_type', 'self').is('subject_id', null);
-      }
 
       // Observation logs filtered by stance
       let obsQuery = supabase.from('observation_logs').select('id, intensity, frequency, logged_at, concept_id, user_narrative, journal_entry_id, subject_type, subject_id').eq('user_id', user.id);
