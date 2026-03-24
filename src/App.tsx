@@ -6,6 +6,7 @@ import { BrowserRouter, Routes, Route, Navigate } from "react-router-dom";
 import { AuthProvider } from "@/hooks/useAuth";
 import { LanguageProvider } from "@/hooks/useLanguage";
 import { ConsentProvider } from "@/hooks/useConsent";
+import { StanceProvider } from "@/hooks/useStance";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import Index from "./pages/Index";
 import Auth from "./pages/Auth";
@@ -93,7 +94,9 @@ const App = () => (
           <Sonner />
           <BrowserRouter>
             <LanguageProvider>
-              <AppRoutes />
+              <StanceProvider>
+                <AppRoutes />
+              </StanceProvider>
             </LanguageProvider>
           </BrowserRouter>
         </TooltipProvider>

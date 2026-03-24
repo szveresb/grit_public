@@ -1,6 +1,6 @@
 import { useNavigate, Link } from 'react-router-dom';
 import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
-import { StanceProvider, useStance } from '@/hooks/useStance';
+import { useStance } from '@/hooks/useStance';
 import AppSidebar from '@/components/AppSidebar';
 import EmergencyExit from '@/components/EmergencyExit';
 import LanguageToggle from '@/components/LanguageToggle';
@@ -81,11 +81,7 @@ const DashboardShell = ({ children }: DashboardLayoutProps) => {
 };
 
 const DashboardLayout = ({ children }: DashboardLayoutProps) => {
-  return (
-    <StanceProvider>
-      <DashboardShell>{children}</DashboardShell>
-    </StanceProvider>
-  );
+  return <DashboardShell>{children}</DashboardShell>;
 };
 
 export default DashboardLayout;
