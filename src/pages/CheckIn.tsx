@@ -86,7 +86,8 @@ const CheckIn = () => {
     setObservationOpen(false);
     setDaysSinceLastEntry(null);
     setHighlightDate(null);
-    setRefreshKey(k => k + 1);
+    // Don't bump refreshKey here — the fetch effect already depends on
+    // subjectType / selectedSubjectId, so it will re-run automatically.
   }, [activeSubject.key]);
 
   // Fetch premium status
