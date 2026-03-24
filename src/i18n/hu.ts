@@ -504,6 +504,15 @@ export const hu: Dictionary = {
     },
     selfDot: 'Saját',
     proxyDot: 'Gondozott',
+    registryLabel: 'Alanyi munkatér',
+    registryHint: 'Lapozz a profilkártyák között annak kiválasztásához, kinek az adatnézetében dolgozol.',
+    registryCardHint: 'Az aktív kártya állítja be a globális naplózási kontextust.',
+    selfCardTitle: 'Saját profil',
+    selfCardSubtitle: 'A saját napló-, hangulat- és kérdőívadataid',
+    selfWorkspaceLabel: 'Saját profil',
+    supportedWorkspaceLabel: 'Támogatott személy',
+    activeBadge: 'Aktív',
+    inactiveBadge: 'Készenlét',
   },
 
   premium: {

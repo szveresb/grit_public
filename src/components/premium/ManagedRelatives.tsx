@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
+import { useStance } from '@/hooks/useStance';
 import { useLanguage } from '@/hooks/useLanguage';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -20,6 +21,7 @@ const RELATIONSHIP_TYPES = ['child', 'spouse', 'parent', 'sibling', 'other'] as 
 
 const ManagedRelatives = () => {
   const { user } = useAuth();
+  const { refetchSubjects } = useStance();
   const { t } = useLanguage();
   const [subjects, setSubjects] = useState<Subject[]>([]);
   const [showAdd, setShowAdd] = useState(false);
@@ -40,6 +42,7 @@ const ManagedRelatives = () => {
       .eq('user_id', user.id)
       .order('created_at');
     setSubjects((data as Subject[]) ?? []);
+    await refetchSubjects();
   };
 
   useEffect(() => { fetchSubjects(); }, [user]);

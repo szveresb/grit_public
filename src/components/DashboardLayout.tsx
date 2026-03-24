@@ -3,8 +3,8 @@ import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
 import { StanceProvider } from '@/hooks/useStance';
 import AppSidebar from '@/components/AppSidebar';
 import EmergencyExit from '@/components/EmergencyExit';
-import RoleIndicator from '@/components/RoleIndicator';
 import LanguageToggle from '@/components/LanguageToggle';
+import SubjectCardRegistry from '@/components/SubjectCardRegistry';
 import { useAuth } from '@/hooks/useAuth';
 import { useLanguage } from '@/hooks/useLanguage';
 import { Button } from '@/components/ui/button';
@@ -28,7 +28,6 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
     <StanceProvider>
     <SidebarProvider>
       <EmergencyExit />
-      <RoleIndicator />
       <div
         className="fixed inset-0 z-0 bg-cover bg-center"
         style={{ backgroundImage: `url(${bambooBg})`, opacity: 0.08 }}
@@ -69,6 +68,7 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
           </header>
           <div className="flex-1 px-4 md:px-8 py-6 md:py-8 pb-20">
             <div className="max-w-7xl mx-auto w-full">
+              {user && <SubjectCardRegistry />}
               {children}
             </div>
           </div>
