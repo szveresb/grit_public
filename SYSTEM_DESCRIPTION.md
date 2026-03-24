@@ -124,7 +124,9 @@ Curated research articles with bilingual support.
 
 **RLS:** Authenticated users see questions of published questionnaires (or observers). Editors have full CRUD.
 
-**Editor features:** Questions can be duplicated (deep copy of all settings). Scale questions support a "Reverse scoring" toggle that auto-populates `answer_scores` with inverted values using `score(n) = (min + max) - n`.
+**Editor features:** Questions can be duplicated (deep copy of all settings). Scale questions support a "Reverse scoring" toggle that auto-populates `answer_scores` with inverted values using `score(n) = (min + max) - n`. Entire questionnaires can be **cloned** (deep copy of questionnaire + all questions) as unpublished drafts with a "(copy)" suffix.
+
+**Scoring:** Supports `sum` and `weighted` modes. Score ranges accept **zero and negative values** for both `min` and `max` bounds — enabling instruments with inverse or baseline-adjusted scoring.
 
 #### `questionnaire_responses`
 
