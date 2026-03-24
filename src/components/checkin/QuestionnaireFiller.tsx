@@ -87,7 +87,7 @@ const QuestionnaireFiller = ({ onCompleted }: { onCompleted?: () => void }) => {
               .from('questionnaire_responses')
               .select('questionnaire_id, completed_at')
               .eq('user_id', user.id)
-              .eq('subject_type', activeSubject.type);
+              .eq('subject_type', activeSubject.type) as any;
 
             if (activeSubject.type === 'relative') {
               query = query.eq('subject_id', activeSubject.id);

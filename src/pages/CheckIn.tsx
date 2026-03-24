@@ -112,7 +112,7 @@ const CheckIn = () => {
         .select('id, questionnaire_id, completed_at, questionnaires(title), subject_type, subject_id')
         .eq('user_id', user.id);
       if (isObserver) {
-        responseQuery = responseQuery.eq('subject_type', 'relative').eq('subject_id', selectedSubjectId);
+        responseQuery = responseQuery.eq('subject_type', 'relative').eq('subject_id', selectedSubjectId) as any;
       } else {
         responseQuery = responseQuery.eq('subject_type', 'self').is('subject_id', null);
       }
