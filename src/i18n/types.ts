@@ -494,6 +494,15 @@ export interface Dictionary {
     };
     selfDot: string;
     proxyDot: string;
+    registryLabel: string;
+    registryHint: string;
+    registryCardHint: string;
+    selfCardTitle: string;
+    selfCardSubtitle: string;
+    selfWorkspaceLabel: string;
+    supportedWorkspaceLabel: string;
+    activeBadge: string;
+    inactiveBadge: string;
   };
 
   // Premium / dual-perspective
