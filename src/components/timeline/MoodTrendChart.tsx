@@ -24,7 +24,6 @@ interface MoodTrendChartProps {
   isPremium?: boolean;
   onPremiumClick?: () => void;
   t: { timeline: { moodTrendTitle: string; moodTrendSubtitle: string; moodTrendEmpty: string } };
-  accentColor?: string; // optional hsl color string for observer mode
 }
 
 type RangePreset = '7d' | '30d' | 'all';
@@ -70,9 +69,9 @@ function aggregateByDay(data: MoodDataPoint[]): AggregatedPoint[] {
     .sort((a, b) => a.ts - b.ts);
 }
 
-const MoodTrendChart = ({ data, lang, isPremium = false, onPremiumClick, t, accentColor }: MoodTrendChartProps) => {
+const MoodTrendChart = ({ data, lang, isPremium = false, onPremiumClick, t }: MoodTrendChartProps) => {
   const aggregated = useMemo(() => aggregateByDay(data), [data]);
-  const strokeColor = accentColor || 'hsl(var(--primary))';
+  const strokeColor = 'hsl(var(--primary))';
   const [preset, setPreset] = useState<RangePreset>('all');
 
   const filtered = useMemo(() => {

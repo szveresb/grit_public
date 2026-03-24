@@ -31,7 +31,7 @@ interface ConceptEntry { id: string; name_hu: string; name_en: string; }
 
 const CheckIn = () => {
   const { t, lang } = useLanguage();
-  const { subjectType, selectedSubjectId, subjectColor, activeSubject } = useStance();
+  const { subjectType, selectedSubjectId, activeSubject } = useStance();
   const { user } = useAuth();
   const [searchParams, setSearchParams] = useSearchParams();
   const feedRef = useRef<HTMLDivElement>(null);
@@ -227,7 +227,7 @@ const CheckIn = () => {
         {/* Quick Pulse — gated by mood_tracking */}
         {isSelfContext && (
           <ConsentGate consentKey="mood_tracking">
-            <div className="bg-card/60 backdrop-blur border border-border rounded-3xl p-6">
+            <div className="context-panel p-6">
               <QuickPulse key={`pulse-${activeSubject.key}`} onPulseSaved={refresh} />
             </div>
           </ConsentGate>
@@ -258,20 +258,20 @@ const CheckIn = () => {
 
         {/* Observation Stepper (collapsible) */}
         <Collapsible open={observationOpen} onOpenChange={setObservationOpen}>
-          <CollapsibleTrigger className="w-full bg-card/60 backdrop-blur border border-border rounded-3xl p-5 flex items-center justify-between hover:border-primary/30 transition-colors">
+          <CollapsibleTrigger className="context-panel w-full p-5 flex items-center justify-between hover:border-primary/30 transition-colors">
             <h2 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
               {t.checkIn.whatHappenedTitle}
             </h2>
             <FChevronDown className={`h-4 w-4 text-muted-foreground transition-transform ${observationOpen ? 'rotate-180' : ''}`} />
           </CollapsibleTrigger>
-          <CollapsibleContent className="bg-card/60 backdrop-blur border border-border border-t-0 rounded-b-3xl p-6 -mt-3">
+          <CollapsibleContent className="context-panel border-t-0 rounded-b-3xl p-6 -mt-3">
             <ObservationStepper key={`observation-${activeSubject.key}`} onLogged={refresh} />
           </CollapsibleContent>
         </Collapsible>
 
         {/* Mood trend chart — gated by mood_tracking */}
         <ConsentGate consentKey="mood_tracking">
-          <MoodTrendChart data={moodData} lang={lang} isPremium={isPremium} onPremiumClick={() => setPremiumOpen(true)} t={t} accentColor={subjectColor?.dot} />
+          <MoodTrendChart data={moodData} lang={lang} isPremium={isPremium} onPremiumClick={() => setPremiumOpen(true)} t={t} />
         </ConsentGate>
 
         {/* 8-week pattern frequency chart — gated by pattern_detection */}
@@ -280,7 +280,7 @@ const CheckIn = () => {
         </ConsentGate>
 
         {/* Horizontal timeline dot viewer */}
-        <div ref={feedRef} className="bg-card/60 backdrop-blur border border-border rounded-3xl p-5">
+        <div ref={feedRef} className="context-panel p-5">
           <h2 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-4">{t.timeline.allActivity}</h2>
           {timelineItems.length === 0 ? (
             <p className="text-sm text-muted-foreground">{t.timeline.noActivity}</p>
@@ -290,7 +290,7 @@ const CheckIn = () => {
         </div>
 
         {/* Calendar */}
-        <div className="bg-card/60 backdrop-blur border border-border rounded-3xl p-6">
+        <div className="context-panel p-6">
           <FeedCalendar
             items={calendarItems}
             currentMonth={calendarMonth}

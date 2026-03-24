@@ -2,21 +2,8 @@ import React, { createContext, useContext, useState, useCallback, useMemo, useEf
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
 
-/** Deterministic hue from a UUID string */
-function hueFromId(id: string): number {
-  let hash = 0;
-  for (let i = 0; i < id.length; i++) {
-    hash = id.charCodeAt(i) + ((hash << 5) - hash);
-  }
-  return ((hash % 360) + 360) % 360;
-}
-
-/** Pre-defined palette of pleasant, distinguishable hues */
-const SUBJECT_HUES = [32, 190, 280, 340, 160, 45, 210, 310]; // amber, teal, purple, rose, green, gold, blue, magenta
-
 export interface SubjectColor {
-  hue: number;
-  bg: string;       // tailwind-compatible bg class value (hsl inline)
+  bg: string;
   border: string;
   text: string;
   dot: string;
@@ -35,16 +22,6 @@ export interface ActiveSubjectContext {
   name: string;
   relationshipType?: string;
   color: SubjectColor | null;
-}
-
-function colorFromHue(hue: number): SubjectColor {
-  return {
-    hue,
-    bg: `hsl(${hue} 60% 95%)`,
-    border: `hsl(${hue} 50% 60%)`,
-    text: `hsl(${hue} 55% 35%)`,
-    dot: `hsl(${hue} 55% 50%)`,
-  };
 }
 
 export interface StanceContextValue {
@@ -74,10 +51,14 @@ export const StanceProvider = ({ children }: { children: React.ReactNode }) => {
   const [subjectsLoading, setSubjectsLoading] = useState(true);
 
   const subjectColor = useMemo(() => {
-    if (subjectType !== 'relative' || !selectedSubjectId) return null;
-    const hue = SUBJECT_HUES[hueFromId(selectedSubjectId) % SUBJECT_HUES.length];
-    return colorFromHue(hue);
-  }, [subjectType, selectedSubjectId]);
+    if (subjectType !== 'relative') return null;
+    return {
+      bg: 'hsl(var(--surface-observer))',
+      border: 'hsl(var(--surface-observer-border))',
+      text: 'hsl(var(--surface-observer-foreground))',
+      dot: 'hsl(var(--observer-primary))',
+    };
+  }, [subjectType]);
 
   const refetchSubjects = useCallback(async () => {
     if (!user) {

@@ -27,7 +27,7 @@ const Surveys = () => {
         </div>
 
         <Tabs defaultValue="fill" className="w-full">
-          <TabsList className="rounded-2xl bg-card/60 backdrop-blur border border-border w-full">
+          <TabsList className="rounded-2xl bg-context-surface/80 backdrop-blur border border-context-border w-full">
             <TabsTrigger value="fill" className="rounded-xl flex-1 text-xs">
               {activeSubject.type === 'relative' ? t.questionnaires_manage.thirdPartyTab : t.nav.surveys}
             </TabsTrigger>
@@ -37,7 +37,7 @@ const Surveys = () => {
           </TabsList>
 
           <TabsContent value="fill" className="mt-4">
-            <div className="bg-card/60 backdrop-blur border border-border rounded-3xl p-6 space-y-4">
+            <div className="context-panel p-6 space-y-4">
               <StanceBanner
                 subjectType={activeSubject.type}
                 subjectName={activeSubject.type === 'relative' ? activeSubject.name : undefined}
@@ -48,7 +48,7 @@ const Surveys = () => {
           </TabsContent>
 
           <TabsContent value="history" className="mt-4">
-            <div className="bg-card/60 backdrop-blur border border-border rounded-3xl p-6">
+            <div className="context-panel p-6">
               <h3 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-1">
                 {t.questionnaires_manage.scoreHistory}
               </h3>

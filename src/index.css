@@ -12,14 +12,32 @@
     --background: 100 20% 97%;
     --foreground: 150 15% 20%;
 
+    --self-primary: 145 30% 42%;
+    --self-primary-foreground: 100 30% 97%;
+    --self-accent: 145 20% 90%;
+    --self-accent-foreground: 150 15% 20%;
+    --surface-soft: 100 24% 95%;
+    --surface-soft-foreground: 150 15% 20%;
+    --surface-soft-border: 145 18% 80%;
+    --surface-soft-muted: 145 12% 40%;
+
+    --observer-primary: 210 52% 38%;
+    --observer-primary-foreground: 210 40% 98%;
+    --observer-accent: 210 38% 90%;
+    --observer-accent-foreground: 210 30% 24%;
+    --surface-observer: 210 45% 95%;
+    --surface-observer-foreground: 210 30% 24%;
+    --surface-observer-border: 210 28% 72%;
+    --surface-observer-muted: 210 18% 40%;
+
     --card: 0 0% 100%;
     --card-foreground: 150 15% 20%;
 
     --popover: 0 0% 100%;
     --popover-foreground: 150 15% 20%;
 
-    --primary: 145 30% 42%;
-    --primary-foreground: 100 30% 97%;
+    --primary: var(--self-primary);
+    --primary-foreground: var(--self-primary-foreground);
 
     --secondary: 100 15% 92%;
     --secondary-foreground: 150 15% 25%;
@@ -27,15 +45,22 @@
     --muted: 100 12% 94%;
     --muted-foreground: 150 8% 48%;
 
-    --accent: 145 20% 90%;
-    --accent-foreground: 150 15% 20%;
+    --accent: var(--self-accent);
+    --accent-foreground: var(--self-accent-foreground);
 
     --destructive: 0 60% 55%;
     --destructive-foreground: 0 0% 100%;
 
     --border: 140 12% 86%;
     --input: 140 12% 86%;
-    --ring: 145 30% 42%;
+    --ring: var(--self-primary);
+
+    --context-surface: var(--surface-soft);
+    --context-foreground: var(--surface-soft-foreground);
+    --context-border: var(--surface-soft-border);
+    --context-muted: var(--surface-soft-muted);
+    --context-accent: var(--self-primary);
+    --context-accent-foreground: var(--self-primary-foreground);
 
     --radius: 1.25rem;
 
@@ -48,17 +73,35 @@
 
     --sidebar-background: 100 15% 96%;
     --sidebar-foreground: 150 15% 25%;
-    --sidebar-primary: 145 30% 42%;
+    --sidebar-primary: var(--self-primary);
     --sidebar-primary-foreground: 100 30% 97%;
-    --sidebar-accent: 145 20% 90%;
+    --sidebar-accent: var(--self-accent);
     --sidebar-accent-foreground: 150 15% 20%;
     --sidebar-border: 140 12% 88%;
-    --sidebar-ring: 145 30% 42%;
+    --sidebar-ring: var(--self-primary);
   }
 
   .dark {
     --background: 150 15% 8%;
     --foreground: 100 15% 90%;
+
+    --self-primary: 145 30% 50%;
+    --self-primary-foreground: 150 15% 8%;
+    --self-accent: 150 15% 16%;
+    --self-accent-foreground: 100 15% 90%;
+    --surface-soft: 150 14% 14%;
+    --surface-soft-foreground: 100 15% 90%;
+    --surface-soft-border: 150 10% 24%;
+    --surface-soft-muted: 140 8% 62%;
+
+    --observer-primary: 205 62% 68%;
+    --observer-primary-foreground: 210 35% 10%;
+    --observer-accent: 210 22% 20%;
+    --observer-accent-foreground: 210 35% 90%;
+    --surface-observer: 210 24% 16%;
+    --surface-observer-foreground: 210 34% 90%;
+    --surface-observer-border: 210 20% 32%;
+    --surface-observer-muted: 210 14% 68%;
 
     --card: 150 15% 11%;
     --card-foreground: 100 15% 90%;
@@ -66,8 +109,8 @@
     --popover: 150 15% 11%;
     --popover-foreground: 100 15% 90%;
 
-    --primary: 145 30% 50%;
-    --primary-foreground: 150 15% 8%;
+    --primary: var(--self-primary);
+    --primary-foreground: var(--self-primary-foreground);
 
     --secondary: 150 12% 16%;
     --secondary-foreground: 100 15% 90%;
@@ -75,15 +118,22 @@
     --muted: 150 12% 16%;
     --muted-foreground: 140 8% 55%;
 
-    --accent: 150 15% 16%;
-    --accent-foreground: 100 15% 90%;
+    --accent: var(--self-accent);
+    --accent-foreground: var(--self-accent-foreground);
 
     --destructive: 0 55% 40%;
     --destructive-foreground: 0 0% 100%;
 
     --border: 150 10% 20%;
     --input: 150 10% 20%;
-    --ring: 145 30% 50%;
+    --ring: var(--self-primary);
+
+    --context-surface: var(--surface-soft);
+    --context-foreground: var(--surface-soft-foreground);
+    --context-border: var(--surface-soft-border);
+    --context-muted: var(--surface-soft-muted);
+    --context-accent: var(--self-primary);
+    --context-accent-foreground: var(--self-primary-foreground);
 
     --bamboo-sage: 145 25% 45%;
     --bamboo-sage-light: 145 15% 18%;
@@ -93,12 +143,46 @@
 
     --sidebar-background: 150 15% 10%;
     --sidebar-foreground: 100 12% 88%;
-    --sidebar-primary: 145 30% 50%;
+    --sidebar-primary: var(--self-primary);
     --sidebar-primary-foreground: 0 0% 100%;
-    --sidebar-accent: 150 12% 15%;
+    --sidebar-accent: var(--self-accent);
     --sidebar-accent-foreground: 100 12% 88%;
     --sidebar-border: 150 10% 18%;
-    --sidebar-ring: 145 30% 50%;
+    --sidebar-ring: var(--self-primary);
+  }
+
+  .theme-self {
+    --primary: var(--self-primary);
+    --primary-foreground: var(--self-primary-foreground);
+    --accent: var(--self-accent);
+    --accent-foreground: var(--self-accent-foreground);
+    --ring: var(--self-primary);
+    --context-surface: var(--surface-soft);
+    --context-foreground: var(--surface-soft-foreground);
+    --context-border: var(--surface-soft-border);
+    --context-muted: var(--surface-soft-muted);
+    --context-accent: var(--self-primary);
+    --context-accent-foreground: var(--self-primary-foreground);
+    --sidebar-primary: var(--self-primary);
+    --sidebar-accent: var(--self-accent);
+    --sidebar-ring: var(--self-primary);
+  }
+
+  .theme-observer {
+    --primary: var(--observer-primary);
+    --primary-foreground: var(--observer-primary-foreground);
+    --accent: var(--observer-accent);
+    --accent-foreground: var(--observer-accent-foreground);
+    --ring: var(--observer-primary);
+    --context-surface: var(--surface-observer);
+    --context-foreground: var(--surface-observer-foreground);
+    --context-border: var(--surface-observer-border);
+    --context-muted: var(--surface-observer-muted);
+    --context-accent: var(--observer-primary);
+    --context-accent-foreground: var(--observer-primary-foreground);
+    --sidebar-primary: var(--observer-primary);
+    --sidebar-accent: var(--observer-accent);
+    --sidebar-ring: var(--observer-primary);
   }
 }
 
@@ -115,5 +199,35 @@
     @apply bg-background text-foreground antialiased w-full overflow-x-hidden;
     font-family: 'Quicksand', system-ui, -apple-system, sans-serif;
     line-height: 1.75;
+  }
+}
+
+@layer components {
+  .context-panel {
+    @apply rounded-3xl border backdrop-blur;
+    background-color: hsl(var(--context-surface) / 0.8);
+    border-color: hsl(var(--context-border));
+    color: hsl(var(--context-foreground));
+  }
+
+  .stance-banner-self {
+    @apply border border-primary/20 bg-surface-soft text-foreground;
+  }
+
+  .stance-banner-observer {
+    @apply border bg-surface-observer text-observer-foreground;
+    border-color: hsl(var(--surface-observer-border));
+  }
+
+  .subject-card-self {
+    @apply border border-primary/20 bg-surface-soft text-foreground;
+  }
+
+  .subject-card-observer {
+    @apply border border-observer/35 bg-surface-observer text-observer-foreground;
+  }
+
+  .subject-card-active {
+    @apply ring-2 ring-primary/25 shadow-sm;
   }
 }

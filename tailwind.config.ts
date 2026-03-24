@@ -68,6 +68,26 @@ export default {
           mist: "hsl(var(--bamboo-mist))",
           cream: "hsl(var(--bamboo-cream))",
         },
+        observer: {
+          DEFAULT: "hsl(var(--observer-primary))",
+          foreground: "hsl(var(--observer-primary-foreground))",
+          accent: "hsl(var(--observer-accent))",
+          "accent-foreground": "hsl(var(--observer-accent-foreground))",
+        },
+        surface: {
+          soft: "hsl(var(--surface-soft))",
+          "soft-foreground": "hsl(var(--surface-soft-foreground))",
+          observer: "hsl(var(--surface-observer))",
+          "observer-foreground": "hsl(var(--surface-observer-foreground))",
+        },
+        context: {
+          surface: "hsl(var(--context-surface))",
+          foreground: "hsl(var(--context-foreground))",
+          border: "hsl(var(--context-border))",
+          muted: "hsl(var(--context-muted))",
+          accent: "hsl(var(--context-accent))",
+          "accent-foreground": "hsl(var(--context-accent-foreground))",
+        },
       },
       borderRadius: {
         lg: "var(--radius)",

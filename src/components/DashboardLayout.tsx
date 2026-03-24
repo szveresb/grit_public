@@ -1,6 +1,6 @@
 import { useNavigate, Link } from 'react-router-dom';
 import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
-import { StanceProvider } from '@/hooks/useStance';
+import { StanceProvider, useStance } from '@/hooks/useStance';
 import AppSidebar from '@/components/AppSidebar';
 import EmergencyExit from '@/components/EmergencyExit';
 import LanguageToggle from '@/components/LanguageToggle';
@@ -16,17 +16,18 @@ interface DashboardLayoutProps {
   children: React.ReactNode;
 }
 
-const DashboardLayout = ({ children }: DashboardLayoutProps) => {
+const DashboardShell = ({ children }: DashboardLayoutProps) => {
+  const { activeSubject } = useStance();
   const { user, signOut } = useAuth();
   const { t, localePath } = useLanguage();
   const navigate = useNavigate();
+  const themeClass = activeSubject.type === 'relative' ? 'theme-observer' : 'theme-self';
 
   const handleGatedClick = (path: string) => {
     navigate(user ? localePath(path) : localePath('/auth'));
   };
 
   return (
-    <StanceProvider>
     <SidebarProvider>
       <EmergencyExit />
       <div
@@ -35,17 +36,16 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
       />
       <div className="fixed inset-0 z-0 bg-background/85" />
 
-      <div className="min-h-screen flex w-full relative z-10 overflow-x-hidden">
+      <div className={`min-h-screen flex w-full relative z-10 overflow-x-hidden ${themeClass}`}>
         <AppSidebar />
         <main className="flex-1 flex flex-col min-w-0">
-          <header className="h-14 flex items-center border-b border-border/60 px-4 md:px-6 bg-card/40 backdrop-blur-sm gap-3">
+          <header className="h-14 flex items-center border-b border-context-border/70 px-4 md:px-6 bg-context-surface/80 backdrop-blur-sm gap-3">
             <SidebarTrigger />
             <Link to={localePath('/')} className="lg:hidden text-sm font-bold tracking-tight text-foreground">
-              🌿 {t.brand}
+              Grit.hu
             </Link>
             <nav className="hidden lg:flex items-center justify-center flex-1 gap-8">
               <a href={`${localePath('/')}#library`} className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">{t.nav.library}</a>
-              
               <button onClick={() => handleGatedClick('/journal')} className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1.5">
                 {t.nav.checkIn}
               </button>
@@ -77,6 +77,13 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
         </main>
       </div>
     </SidebarProvider>
+  );
+};
+
+const DashboardLayout = ({ children }: DashboardLayoutProps) => {
+  return (
+    <StanceProvider>
+      <DashboardShell>{children}</DashboardShell>
     </StanceProvider>
   );
 };

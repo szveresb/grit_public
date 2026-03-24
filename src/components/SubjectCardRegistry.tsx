@@ -4,6 +4,7 @@ import { Carousel, CarouselApi, CarouselContent, CarouselItem } from '@/componen
 import { FUser, FUsers } from '@/components/icons/FreudIcons';
 import { useLanguage } from '@/hooks/useLanguage';
 import { useStance } from '@/hooks/useStance';
+import { cn } from '@/lib/utils';
 
 interface SubjectCardItem {
   key: string;
@@ -11,11 +12,6 @@ interface SubjectCardItem {
   id: string | null;
   name: string;
   subtitle: string;
-  accentStyle?: {
-    backgroundColor: string;
-    borderColor: string;
-    color: string;
-  };
 }
 
 const SubjectCardRegistry = () => {
@@ -31,30 +27,13 @@ const SubjectCardRegistry = () => {
       name: t.subjects.selfCardTitle,
       subtitle: t.subjects.selfCardSubtitle,
     },
-    ...subjects.map((subject) => {
-      const relationshipLabel = t.subjects.relationshipTypes[subject.relationshipType as keyof typeof t.subjects.relationshipTypes] ?? subject.relationshipType;
-      const hue = (() => {
-        let hash = 0;
-        for (let i = 0; i < subject.id.length; i++) {
-          hash = subject.id.charCodeAt(i) + ((hash << 5) - hash);
-        }
-        const subjectHues = [32, 190, 280, 340, 160, 45, 210, 310];
-        return subjectHues[((hash % 360) + 360) % 360 % subjectHues.length];
-      })();
-
-      return {
+    ...subjects.map((subject) => ({
         key: `relative:${subject.id}`,
         type: 'relative' as const,
         id: subject.id,
         name: subject.name,
-        subtitle: relationshipLabel,
-        accentStyle: {
-          backgroundColor: `hsl(${hue} 60% 95%)`,
-          borderColor: `hsl(${hue} 50% 60%)`,
-          color: `hsl(${hue} 55% 35%)`,
-        },
-      };
-    }),
+        subtitle: t.subjects.relationshipTypes[subject.relationshipType as keyof typeof t.subjects.relationshipTypes] ?? subject.relationshipType,
+      })),
   ], [subjects, t.subjects.relationshipTypes, t.subjects.selfCardSubtitle, t.subjects.selfCardTitle]);
 
   useEffect(() => {
@@ -129,16 +108,18 @@ const SubjectCardRegistry = () => {
 
                     setActiveSubjectContext({ type: 'relative', id: card.id!, name: card.name });
                   }}
-                  className={`w-full rounded-3xl border p-5 text-left backdrop-blur transition-all ${
-                    isActive ? 'border-primary/50 bg-card shadow-sm' : 'border-border bg-card/70 hover:border-primary/30'
-                  }`}
-                  style={isRelative ? card.accentStyle : undefined}
+                  className={cn(
+                    'w-full rounded-3xl p-5 text-left transition-all',
+                    isRelative ? 'subject-card-observer hover:border-observer/55' : 'subject-card-self hover:border-primary/35',
+                    isActive && 'subject-card-active'
+                  )}
                   aria-pressed={isActive}
                 >
                   <div className="flex items-start justify-between gap-3">
-                    <div className={`flex h-11 w-11 items-center justify-center rounded-2xl ${isRelative ? '' : 'bg-primary/10 text-primary'}`} style={isRelative ? {
-                      backgroundColor: 'rgba(255,255,255,0.55)',
-                    } : undefined}>
+                    <div className={cn(
+                      'flex h-11 w-11 items-center justify-center rounded-2xl',
+                      isRelative ? 'bg-observer/15 text-observer' : 'bg-primary/10 text-primary'
+                    )}>
                       {isRelative ? <FUsers className="h-5 w-5" /> : <FUser className="h-5 w-5" />}
                     </div>
                     <Badge variant={isActive ? 'default' : 'outline'} className="rounded-full text-[10px] uppercase tracking-wider">

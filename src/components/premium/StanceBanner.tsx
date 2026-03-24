@@ -1,6 +1,7 @@
 import { FUser, FUsers, FSparkles } from '@/components/icons/FreudIcons';
 import { useLanguage } from '@/hooks/useLanguage';
 import { Badge } from '@/components/ui/badge';
+import { cn } from '@/lib/utils';
 
 import type { SubjectColor } from '@/hooks/useStance';
 
@@ -19,16 +20,10 @@ const StanceBanner = ({ subjectType, subjectName, subjectColor, onSwitch, compac
 
   if (compact) {
     return (
-      <div
-        className="flex items-center gap-2 rounded-2xl px-3 py-2 text-xs font-semibold transition-colors"
-        style={isObserver && subjectColor ? {
-          backgroundColor: subjectColor.bg,
-          borderColor: subjectColor.border,
-          color: subjectColor.text,
-          borderWidth: 1,
-          borderStyle: 'solid',
-        } : undefined}
-      >
+      <div className={cn(
+        'flex items-center gap-2 rounded-2xl px-3 py-2 text-xs font-semibold transition-colors',
+        isObserver ? 'stance-banner-observer' : 'stance-banner-self'
+      )}>
         {isObserver ? <FUsers className="h-3.5 w-3.5" /> : <FUser className="h-3.5 w-3.5" />}
         <span>
           {isObserver
@@ -36,7 +31,7 @@ const StanceBanner = ({ subjectType, subjectName, subjectColor, onSwitch, compac
             : `${t.premium.loggingFor}: ${t.subjects.selfLabel}`}
         </span>
         {isObserver && (
-          <Badge variant="outline" className="ml-auto rounded-full text-[9px] font-semibold gap-0.5 border-amber-300 text-amber-600 dark:border-amber-700 dark:text-amber-400 px-1.5 py-0">
+          <Badge variant="outline" className="ml-auto rounded-full text-[9px] font-semibold gap-0.5 border-observer/35 text-observer px-1.5 py-0">
             <FSparkles className="h-2 w-2" />
             Premium
           </Badge>
@@ -55,22 +50,17 @@ const StanceBanner = ({ subjectType, subjectName, subjectColor, onSwitch, compac
   }
 
   return (
-    <div
-      className="flex items-center gap-3 rounded-2xl px-4 py-3 transition-colors"
-      style={isObserver && subjectColor ? {
-        backgroundColor: subjectColor.bg,
-        borderColor: subjectColor.border,
-        borderWidth: 1,
-        borderStyle: 'solid',
-      } : undefined}
-    >
+    <div className={cn(
+      'flex items-center gap-3 rounded-2xl px-4 py-3 transition-colors',
+      isObserver ? 'stance-banner-observer' : 'stance-banner-self'
+    )}>
       <div className={`h-8 w-8 rounded-xl flex items-center justify-center ${
-        isObserver ? 'bg-amber-100 dark:bg-amber-900/40 text-amber-700 dark:text-amber-300' : 'bg-primary/10 text-primary'
+        isObserver ? 'bg-observer/15 text-observer' : 'bg-primary/10 text-primary'
       }`}>
         {isObserver ? <FUsers className="h-4 w-4" /> : <FUser className="h-4 w-4" />}
       </div>
       <div className="flex-1 min-w-0">
-        <p className={`text-xs font-semibold ${isObserver ? 'text-amber-800 dark:text-amber-200' : 'text-primary'}`}>
+        <p className={`text-xs font-semibold ${isObserver ? 'text-observer' : 'text-primary'}`}>
           {t.premium.loggingFor}
         </p>
         <p className="text-sm font-bold text-foreground truncate">
@@ -78,7 +68,7 @@ const StanceBanner = ({ subjectType, subjectName, subjectColor, onSwitch, compac
         </p>
       </div>
       {isObserver && (
-        <Badge variant="outline" className="rounded-full text-[10px] font-semibold gap-1 border-amber-300 text-amber-700 dark:border-amber-700 dark:text-amber-400">
+        <Badge variant="outline" className="rounded-full text-[10px] font-semibold gap-1 border-observer/35 text-observer">
           <FSparkles className="h-2.5 w-2.5" />
           Premium
         </Badge>
