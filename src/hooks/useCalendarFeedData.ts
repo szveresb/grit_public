@@ -87,17 +87,12 @@ export const useCalendarFeedData = ({
             .select('id, title, entry_date, impact_level')
             .eq('user_id', userId);
 
-      let responseQuery: any = supabase
-        .from('questionnaire_responses')
-        .select('id, questionnaire_id, completed_at, questionnaires(title)')
-        .eq('user_id', userId)
-        .eq('subject_type', subjectType);
-
-      if (isObserver) {
-        responseQuery = responseQuery.eq('subject_id', subjectId);
-      } else {
-        responseQuery = responseQuery.is('subject_id', null);
-      }
+      const responseQuery = isObserver
+        ? Promise.resolve({ data: [] })
+        : supabase
+            .from('questionnaire_responses')
+            .select('id, questionnaire_id, completed_at, questionnaires(title)')
+            .eq('user_id', userId);
 
       let obsQuery: any = supabase
         .from('observation_logs')
