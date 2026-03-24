@@ -83,11 +83,11 @@ const QuestionnaireFiller = ({ onCompleted }: { onCompleted?: () => void }) => {
 
       const responseQuery = user
         ? (() => {
-            let query = supabase
+            let query: any = supabase
               .from('questionnaire_responses')
               .select('questionnaire_id, completed_at')
               .eq('user_id', user.id)
-              .eq('subject_type', activeSubject.type) as any;
+              .eq('subject_type', activeSubject.type);
 
             if (activeSubject.type === 'relative') {
               query = query.eq('subject_id', activeSubject.id);

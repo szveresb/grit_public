@@ -107,12 +107,12 @@ const CheckIn = () => {
         : supabase.from('journal_entries').select('id, title, entry_date, impact_level').eq('user_id', user.id);
 
       // Questionnaire responses filtered by the active subject context
-      let responseQuery = supabase
+      let responseQuery: any = supabase
         .from('questionnaire_responses')
         .select('id, questionnaire_id, completed_at, questionnaires(title), subject_type, subject_id')
         .eq('user_id', user.id);
       if (isObserver) {
-        responseQuery = responseQuery.eq('subject_type', 'relative').eq('subject_id', selectedSubjectId) as any;
+        responseQuery = responseQuery.eq('subject_type', 'relative').eq('subject_id', selectedSubjectId);
       } else {
         responseQuery = responseQuery.eq('subject_type', 'self').is('subject_id', null);
       }
