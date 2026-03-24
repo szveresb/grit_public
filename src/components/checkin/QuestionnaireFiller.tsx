@@ -82,21 +82,11 @@ const QuestionnaireFiller = ({ onCompleted }: { onCompleted?: () => void }) => {
       setScoreResult(null);
 
       const responseQuery = user
-        ? (() => {
-            let query = supabase
-              .from('questionnaire_responses')
-              .select('questionnaire_id, completed_at')
-              .eq('user_id', user.id)
-              .eq('subject_type', activeSubject.type);
-
-            if (activeSubject.type === 'relative') {
-              query = query.eq('subject_id', activeSubject.id);
-            } else {
-              query = query.is('subject_id', null);
-            }
-
-            return query.order('completed_at', { ascending: false });
-          })()
+        ? supabase
+            .from('questionnaire_responses')
+            .select('questionnaire_id, completed_at')
+            .eq('user_id', user.id)
+            .order('completed_at', { ascending: false })
         : Promise.resolve({ data: [] });
 
       const [qRes, rRes] = await Promise.all([
