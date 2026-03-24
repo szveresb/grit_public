@@ -45,34 +45,10 @@ const SubjectCardRegistry = () => {
     }
   }, [activeSubject.key, api, cards]);
 
-  useEffect(() => {
-    if (!api) return;
-
-    const onSelect = () => {
-      const selectedCard = cards[api.selectedScrollSnap()];
-      if (!selectedCard) return;
-
-      if (selectedCard.type === 'self') {
-        setActiveSubjectContext({ type: 'self' });
-        return;
-      }
-
-      setActiveSubjectContext({
-        type: 'relative',
-        id: selectedCard.id!,
-        name: selectedCard.name,
-      });
-    };
-
-    onSelect();
-    api.on('select', onSelect);
-    api.on('reInit', onSelect);
-
-    return () => {
-      api.off('select', onSelect);
-      api.off('reInit', onSelect);
-    };
-  }, [api, cards, setActiveSubjectContext]);
+  // Sync carousel scroll position when the active subject changes
+  // (e.g. from sidebar or other external control).
+  // Stance is set exclusively via the card button onClick — NOT from
+	// carousel scroll events — to avoid circular state updates.
 
   return (
     <section className="mb-6 md:mb-8">
