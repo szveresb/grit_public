@@ -100,7 +100,8 @@ const CheckIn = () => {
   // Fetch all timeline data — filtered by current stance
   useEffect(() => {
     if (!user) return;
-    const isObserver = subjectType === 'relative' && !!selectedSubjectId;
+    const isObserver = activeSubject.type === 'relative' && !!activeSubject.id;
+    const currentSubjectId = activeSubject.id;
     const fetchAll = async () => {
       // Journal entries are always self — hide in observer mode
       const journalPromise = isObserver
@@ -114,17 +115,17 @@ const CheckIn = () => {
         .eq('user_id', user.id);
 
       // Observation logs filtered by stance
-      let obsQuery = supabase.from('observation_logs').select('id, intensity, frequency, logged_at, concept_id, user_narrative, journal_entry_id, subject_type, subject_id').eq('user_id', user.id);
+      let obsQuery: any = supabase.from('observation_logs').select('id, intensity, frequency, logged_at, concept_id, user_narrative, journal_entry_id, subject_type, subject_id').eq('user_id', user.id);
       if (isObserver) {
-        obsQuery = obsQuery.eq('subject_type', 'relative').eq('subject_id', selectedSubjectId);
+        obsQuery = obsQuery.eq('subject_type', 'relative').eq('subject_id', currentSubjectId);
       } else {
         obsQuery = obsQuery.eq('subject_type', 'self');
       }
 
       // Mood pulses filtered by stance
-      let pulseQuery = (supabase.from as any)('mood_pulses').select('level, entry_date').eq('user_id', user.id);
+      let pulseQuery: any = supabase.from('mood_pulses').select('level, entry_date').eq('user_id', user.id);
       if (isObserver) {
-        pulseQuery = pulseQuery.eq('subject_type', 'relative').eq('subject_id', selectedSubjectId);
+        pulseQuery = pulseQuery.eq('subject_type', 'relative').eq('subject_id', currentSubjectId);
       } else {
         pulseQuery = pulseQuery.eq('subject_type', 'self');
       }
