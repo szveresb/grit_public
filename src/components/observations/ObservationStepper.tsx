@@ -10,7 +10,6 @@ import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
 import { friendlyDbError } from '@/lib/db-error';
 import { FArrowLeft, FHeart, FMessageCircle, FShield, FCheck, FUsers } from '@/components/icons/FreudIcons';
-import SubjectSelector from './SubjectSelector';
 import StanceBanner from '@/components/premium/StanceBanner';
 
 interface Category {
@@ -39,7 +38,7 @@ const iconMap: Record<string, React.ReactNode> = {
 const ObservationStepper = ({ onLogged }: { onLogged?: () => void }) => {
   const { user } = useAuth();
   const { t, lang } = useLanguage();
-  const { subjectColor: globalSubjectColor } = useStance();
+  const { activeSubject, subjectColor: globalSubjectColor } = useStance();
   const [step, setStep] = useState(0);
   const [categories, setCategories] = useState<Category[]>([]);
   const [concepts, setConcepts] = useState<Concept[]>([]);
@@ -47,19 +46,29 @@ const ObservationStepper = ({ onLogged }: { onLogged?: () => void }) => {
   const [selectedConcept, setSelectedConcept] = useState<string | null>(null);
   const [intensity, setIntensity] = useState(3);
 
-  // Subject / perspective state
-  const [subjectType, setSubjectType] = useState<'self' | 'relative'>('self');
-  const [subjectId, setSubjectId] = useState<string | null>(null);
-  const [subjectName, setSubjectName] = useState<string | null>(null);
-
   const [context, setContext] = useState('');
   const [narrative, setNarrative] = useState('');
   const [submitting, setSubmitting] = useState(false);
+
+  const subjectType = activeSubject.type;
+  const subjectId = activeSubject.id;
+  const subjectName = activeSubject.type === 'relative' ? activeSubject.name : null;
 
   useEffect(() => {
     supabase.from('observation_categories').select('*').eq('is_active', true).order('sort_order')
       .then(({ data }) => setCategories((data as Category[]) ?? []));
   }, []);
+
+  useEffect(() => {
+    setStep(0);
+    setSelectedCategory(null);
+    setSelectedConcept(null);
+    setConcepts([]);
+    setIntensity(3);
+    setContext('');
+    setNarrative('');
+    setSubmitting(false);
+  }, [activeSubject.key]);
 
   const selectCategory = async (catId: string) => {
     setSelectedCategory(catId);
@@ -94,7 +103,6 @@ const ObservationStepper = ({ onLogged }: { onLogged?: () => void }) => {
     toast.success(t.observations.logged);
     setStep(0); setSelectedCategory(null); setSelectedConcept(null);
     setIntensity(3); setContext(''); setNarrative('');
-    setSubjectType('self'); setSubjectId(null);
     setSubmitting(false);
     onLogged?.();
   };
@@ -123,29 +131,14 @@ const ObservationStepper = ({ onLogged }: { onLogged?: () => void }) => {
       {/* Step 0: Perspective toggle */}
       {step === 0 && (
         <div className="space-y-4 animate-fade-in">
-          <SubjectSelector
-            subjectType={subjectType}
-            onSubjectTypeChange={setSubjectType}
-            selectedSubjectId={subjectId}
-            onSubjectIdChange={(id) => {
-              setSubjectId(id);
-              // Try to find subject name from the selector's fetched data
-            }}
-          />
+          <StanceBanner subjectType={subjectType} subjectName={subjectName ?? undefined} subjectColor={globalSubjectColor} compact />
           <Button
             size="sm"
             className="rounded-2xl w-full"
-            onClick={async () => {
+            onClick={() => {
               if (subjectType === 'relative' && !subjectId) {
                 toast.error(t.subjects.selectSubjectError);
                 return;
-              }
-              // Fetch subject name for stance banner
-              if (subjectType === 'relative' && subjectId && user) {
-                const { data } = await supabase.from('subjects').select('name').eq('id', subjectId).maybeSingle();
-                setSubjectName(data?.name ?? null);
-              } else {
-                setSubjectName(null);
               }
               setStep(1);
             }}

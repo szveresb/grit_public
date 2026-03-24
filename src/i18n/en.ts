@@ -249,6 +249,7 @@ export const en: Dictionary = {
     scoreHistory: 'Score History',
     scoreHistoryEmpty: 'No scored results yet.',
     scoreHistorySubtitle: 'Track your progress over time.',
+    selfOnlyContext: 'Questionnaires are only available in your Self workspace. Switch back to Self to view or complete them.',
     scoreTrend: 'Trend',
     noScoredSurveys: 'No questionnaires with scoring enabled.',
     completedOn: 'Completed on',

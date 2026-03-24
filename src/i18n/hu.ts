@@ -249,6 +249,7 @@ export const hu: Dictionary = {
     scoreHistory: 'Pontszám előzmények',
     scoreHistoryEmpty: 'Még nincsenek pontozásos eredmények.',
     scoreHistorySubtitle: 'Követd nyomon a fejlődésedet az idő során.',
+    selfOnlyContext: 'A kérdőívek csak a saját munkateredben érhetők el. A megtekintéshez vagy kitöltéshez válts vissza a Saját profilra.',
     scoreTrend: 'Trend',
     noScoredSurveys: 'Nincs pontozással rendelkező kérdőív.',
     completedOn: 'Kitöltve',

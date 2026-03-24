@@ -1,13 +1,17 @@
 import { useState } from 'react';
 import DashboardLayout from '@/components/DashboardLayout';
 import { useLanguage } from '@/hooks/useLanguage';
+import { useStance } from '@/hooks/useStance';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import QuestionnaireFiller from '@/components/checkin/QuestionnaireFiller';
 import ScoreHistory from '@/components/checkin/ScoreHistory';
+import StanceBanner from '@/components/premium/StanceBanner';
 
 const Surveys = () => {
   const { t } = useLanguage();
+  const { activeSubject, subjectColor } = useStance();
   const [refreshKey, setRefreshKey] = useState(0);
+  const isRelativeContext = activeSubject.type === 'relative';
 
   return (
     <DashboardLayout>
@@ -21,6 +25,16 @@ const Surveys = () => {
           </p>
         </div>
 
+        {isRelativeContext && (
+          <div className="bg-card/60 backdrop-blur border border-border rounded-3xl p-6 space-y-4">
+            <StanceBanner subjectType="relative" subjectName={activeSubject.name} subjectColor={subjectColor} />
+            <p className="text-sm text-muted-foreground leading-relaxed">
+              {t.questionnaires_manage.selfOnlyContext}
+            </p>
+          </div>
+        )}
+
+        {!isRelativeContext && (
         <Tabs defaultValue="fill" className="w-full">
           <TabsList className="rounded-2xl bg-card/60 backdrop-blur border border-border w-full">
             <TabsTrigger value="fill" className="rounded-xl flex-1 text-xs">
@@ -33,7 +47,7 @@ const Surveys = () => {
 
           <TabsContent value="fill" className="mt-4">
             <div className="bg-card/60 backdrop-blur border border-border rounded-3xl p-6">
-              <QuestionnaireFiller onCompleted={() => setRefreshKey(k => k + 1)} />
+              <QuestionnaireFiller key={`fill-${activeSubject.key}`} onCompleted={() => setRefreshKey(k => k + 1)} />
             </div>
           </TabsContent>
 
@@ -45,10 +59,11 @@ const Surveys = () => {
               <p className="text-xs text-muted-foreground mb-4">
                 {t.questionnaires_manage.scoreHistorySubtitle}
               </p>
-              <ScoreHistory key={refreshKey} />
+              <ScoreHistory key={`${activeSubject.key}-${refreshKey}`} />
             </div>
           </TabsContent>
         </Tabs>
+        )}
       </div>
     </DashboardLayout>
   );

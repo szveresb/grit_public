@@ -33,7 +33,7 @@ interface ConceptEntry { id: string; name_hu: string; name_en: string; }
 
 const CheckIn = () => {
   const { t, lang } = useLanguage();
-  const { subjectType, selectedSubjectId, subjectColor } = useStance();
+  const { subjectType, selectedSubjectId, subjectColor, activeSubject } = useStance();
   const { user } = useAuth();
   const [searchParams, setSearchParams] = useSearchParams();
   const feedRef = useRef<HTMLDivElement>(null);
@@ -74,6 +74,22 @@ const CheckIn = () => {
   }, []);
 
   const refresh = useCallback(() => setRefreshKey(k => k + 1), []);
+
+  useEffect(() => {
+    setTimelineItems([]);
+    setMoodData([]);
+    setObsLogs([]);
+    setConceptMap({});
+    setNudges([]);
+    setCalendarItems([]);
+    setCalendarSelectedDate(null);
+    setReflectEntryId(null);
+    setReflectObsId(null);
+    setObservationOpen(false);
+    setDaysSinceLastEntry(null);
+    setHighlightDate(null);
+    setRefreshKey(k => k + 1);
+  }, [activeSubject.key]);
 
   // Fetch premium status
   useEffect(() => {
@@ -174,10 +190,10 @@ const CheckIn = () => {
 
       const allItems = [...journalItems, ...qItems, ...obsItems].sort((a, b) => b.date.localeCompare(a.date));
       setTimelineItems(allItems);
-      setCalendarItems(allItems.map(i => ({ id: i.id, type: i.type, title: i.title, date: i.date })));
+      setCalendarItems(allItems.map(i => ({ id: i.id, type: i.type, title: i.title, date: i.date, subjectType: i.type === 'observation' ? subjectType : 'self' })));
     };
     fetchAll();
-  }, [user, refreshKey, subjectType, selectedSubjectId]);
+  }, [user, refreshKey, subjectType, selectedSubjectId, lang, t]);
 
   const handleEntryClick = useCallback((type: string, dbId: string) => {
     if (type === 'journal') setReflectEntryId(dbId);
@@ -205,7 +221,7 @@ const CheckIn = () => {
         {/* Quick Pulse — gated by mood_tracking */}
         <ConsentGate consentKey="mood_tracking">
           <div className="bg-card/60 backdrop-blur border border-border rounded-3xl p-6">
-            <QuickPulse onPulseSaved={refresh} />
+            <QuickPulse key={`pulse-${activeSubject.key}`} onPulseSaved={refresh} />
           </div>
         </ConsentGate>
 
@@ -241,7 +257,7 @@ const CheckIn = () => {
             <FChevronDown className={`h-4 w-4 text-muted-foreground transition-transform ${observationOpen ? 'rotate-180' : ''}`} />
           </CollapsibleTrigger>
           <CollapsibleContent className="bg-card/60 backdrop-blur border border-border border-t-0 rounded-b-3xl p-6 -mt-3">
-            <ObservationStepper onLogged={refresh} />
+            <ObservationStepper key={`observation-${activeSubject.key}`} onLogged={refresh} />
           </CollapsibleContent>
         </Collapsible>
 
