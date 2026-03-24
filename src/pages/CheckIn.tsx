@@ -165,7 +165,14 @@ const CheckIn = () => {
         </Collapsible>
 
         <ConsentGate consentKey="mood_tracking">
-          <MoodTrendChart data={moodData} lang={lang} isPremium={isPremium} onPremiumClick={() => setPremiumOpen(true)} t={t} />
+          <MoodTrendChart
+            key={`trend-${activeSubject.key}`}
+            data={moodData}
+            lang={lang}
+            isPremium={isPremium}
+            onPremiumClick={() => setPremiumOpen(true)}
+            t={t}
+          />
         </ConsentGate>
 
         <ConsentGate consentKey="pattern_detection">
@@ -183,6 +190,7 @@ const CheckIn = () => {
 
         <div className="context-panel p-6">
           <FeedCalendar
+            key={`calendar-${activeSubject.key}`}
             items={calendarItems}
             currentMonth={calendarMonth}
             onMonthChange={setCalendarMonth}
