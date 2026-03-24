@@ -112,21 +112,20 @@ const SubjectCardRegistry = () => {
                     </p>
                     <h2 className={cn(
                       'text-lg font-bold tracking-tight text-balance sm:text-xl',
-                      isRelative ? 'text-surface-observer-foreground' : 'text-surface-soft-foreground'
+                      isRelative ? 'text-foreground' : 'text-foreground'
                     )}>
                       {card.name}
                     </h2>
                     <p className={cn(
                       'text-sm leading-relaxed text-pretty',
-                      isRelative ? 'text-surface-observer-foreground/78' : 'text-muted-foreground'
+                      isRelative ? 'text-muted-foreground' : 'text-muted-foreground'
                     )}>
                       {card.subtitle}
                     </p>
                   </div>
 
                   <p className={cn(
-                    'mt-auto pt-5 text-xs leading-relaxed',
-                    isRelative ? 'text-surface-observer-foreground/66' : 'text-muted-foreground'
+                    'mt-auto pt-5 text-xs leading-relaxed text-muted-foreground'
                   )}>
                     {subjectsLoading ? t.loading : t.subjects.registryCardHint}
                   </p>
