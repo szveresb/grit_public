@@ -31,6 +31,14 @@ Role checks use `has_role()` and `has_any_role()` — SECURITY DEFINER functions
 - Email verification required (no auto-confirm)
 - On signup, `handle_new_user()` trigger creates a `profiles` row automatically
 
+### 3.1 Consent Flow
+
+Seven granular consent categories (journal storage, mood tracking, free-text AI, pattern detection, questionnaire data, FHIR export, anonymized analytics) are presented as a card carousel during onboarding. The consent gate (`ConsentGate`) shows **only once** — on first registration or when new consent keys are added that the user hasn't addressed.
+
+Consent state is **cached in `localStorage`** (`grit_consent_v1` key, scoped per `userId`) to prevent redundant network fetches and false re-prompts on page refresh. The cache stores consent map, `consentCompleted` flag, and timestamp. Background database sync runs after the cache is served, silently updating if newer data is found.
+
+`profiles.consent_completed` is the authoritative flag — set to `true` once the user has addressed all `CONSENT_KEYS`. The flag is re-evaluated against the current key set, so adding a new key will re-trigger onboarding for that key only.
+
 ---
 
 ## 4. Database Schema
@@ -124,7 +132,9 @@ Curated research articles with bilingual support.
 
 **RLS:** Authenticated users see questions of published questionnaires (or observers). Editors have full CRUD.
 
-**Editor features:** Questions can be duplicated (deep copy of all settings). Scale questions support a "Reverse scoring" toggle that auto-populates `answer_scores` with inverted values using `score(n) = (min + max) - n`.
+**Editor features:** Questions can be duplicated (deep copy of all settings). Scale questions support a "Reverse scoring" toggle that auto-populates `answer_scores` with inverted values using `score(n) = (min + max) - n`. Entire questionnaires can be **cloned** (deep copy of questionnaire + all questions) as unpublished drafts with a "(copy)" suffix.
+
+**Scoring:** Supports `sum` and `weighted` modes. Score ranges accept **zero and negative values** for both `min` and `max` bounds — enabling instruments with inverse or baseline-adjusted scoring.
 
 #### `questionnaire_responses`
 
@@ -189,6 +199,15 @@ Lightweight one-tap mood recordings from the QuickPulse widget.
 | `created_at` | timestamptz | Default `now()` |
 
 **RLS:** Users manage own pulses only.
+
+#### Stance-aware filtering
+
+The `useStance` context tracks the current perspective: `self` or `relative` (with a `selectedSubjectId`). When the user switches stance:
+
+- **Self mode:** Shows only `mood_pulses` with `subject_type = 'self'`, journal entries, and questionnaire data.
+- **Observer mode:** Shows only `mood_pulses` and `observation_logs` matching the selected `subject_id`; journal entries and questionnaire results are hidden.
+
+Each supported person receives a **deterministic color palette** derived from their UUID (hue, background, border, text, dot), drawn from a pre-defined set of 8 distinguishable hues (amber, teal, purple, rose, green, gold, blue, magenta). These colors are applied to `RoleIndicator`, `StanceBanner`, `MoodTrendChart` accent, and `ObservationStepper` badges.
 
 ---
 
