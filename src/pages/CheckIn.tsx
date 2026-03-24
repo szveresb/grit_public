@@ -17,6 +17,7 @@ import type { EntryModalPrefill } from '@/components/checkin/EntryModal';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { Skeleton } from '@/components/ui/skeleton';
 import { FChevronDown, FTrendingUp } from '@/components/icons/FreudIcons';
 import RecapBanner from '@/components/checkin/RecapBanner';
 import MoodTrendChart from '@/components/timeline/MoodTrendChart';
@@ -47,7 +48,7 @@ const CheckIn = () => {
   const refresh = useCallback(() => setRefreshKey((key) => key + 1), []);
   const isSelfContext = subjectType === 'self';
 
-  const { data: moodData } = useMoodTrendData({
+  const { data: moodData, loading: moodLoading } = useMoodTrendData({
     userId: user?.id,
     subjectType: activeSubject.type,
     subjectId: activeSubject.id,
@@ -60,6 +61,7 @@ const CheckIn = () => {
     conceptMap,
     nudges,
     daysSinceLastEntry,
+    loading: calendarLoading,
   } = useCalendarFeedData({
     userId: user?.id,
     subjectType: activeSubject.type,
@@ -165,23 +167,36 @@ const CheckIn = () => {
         </Collapsible>
 
         <ConsentGate consentKey="mood_tracking">
-          <MoodTrendChart
-            key={`trend-${activeSubject.key}`}
-            data={moodData}
-            lang={lang}
-            isPremium={isPremium}
-            onPremiumClick={() => setPremiumOpen(true)}
-            t={t}
-          />
+          {moodLoading ? (
+            <div className="context-panel p-5 space-y-3">
+              <Skeleton className="h-5 w-32 rounded-full" />
+              <Skeleton className="h-4 w-52 rounded-full" />
+              <Skeleton className="h-56 w-full rounded-3xl" />
+            </div>
+          ) : (
+            <MoodTrendChart
+              key={`trend-${activeSubject.key}`}
+              data={moodData}
+              lang={lang}
+              isPremium={isPremium}
+              onPremiumClick={() => setPremiumOpen(true)}
+              t={t}
+            />
+          )}
         </ConsentGate>
 
         <ConsentGate consentKey="pattern_detection">
           <PatternChart logs={obsLogs} conceptMap={conceptMap} />
         </ConsentGate>
 
-        <div ref={feedRef} className="context-panel p-5">
+        <div key={`timeline-${activeSubject.key}`} ref={feedRef} className="context-panel p-5">
           <h2 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-4">{t.timeline.allActivity}</h2>
-          {timelineItems.length === 0 ? (
+          {calendarLoading ? (
+            <div className="space-y-3">
+              <Skeleton className="h-4 w-36 rounded-full" />
+              <Skeleton className="h-24 w-full rounded-3xl" />
+            </div>
+          ) : timelineItems.length === 0 ? (
             <p className="text-sm text-muted-foreground">{t.timeline.noActivity}</p>
           ) : (
             <HorizontalTimeline items={timelineItems} lang={lang} t={t} />
@@ -189,16 +204,27 @@ const CheckIn = () => {
         </div>
 
         <div className="context-panel p-6">
-          <FeedCalendar
-            key={`calendar-${activeSubject.key}`}
-            items={calendarItems}
-            currentMonth={calendarMonth}
-            onMonthChange={setCalendarMonth}
-            selectedDate={calendarSelectedDate}
-            onSelectDate={setCalendarSelectedDate}
-            onEntryClick={handleEntryClick}
-            onCreateEntry={isSelfContext ? (date) => openEntryModal(date) : undefined}
-          />
+          {calendarLoading ? (
+            <div className="space-y-4">
+              <div className="flex items-center justify-between">
+                <Skeleton className="h-9 w-9 rounded-full" />
+                <Skeleton className="h-4 w-28 rounded-full" />
+                <Skeleton className="h-9 w-9 rounded-full" />
+              </div>
+              <Skeleton className="h-52 w-full rounded-3xl" />
+            </div>
+          ) : (
+            <FeedCalendar
+              key={`calendar-${activeSubject.key}`}
+              items={calendarItems}
+              currentMonth={calendarMonth}
+              onMonthChange={setCalendarMonth}
+              selectedDate={calendarSelectedDate}
+              onSelectDate={setCalendarSelectedDate}
+              onEntryClick={handleEntryClick}
+              onCreateEntry={isSelfContext ? (date) => openEntryModal(date) : undefined}
+            />
+          )}
         </div>
       </div>
 
