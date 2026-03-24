@@ -31,7 +31,7 @@ const SubjectCardRegistry = () => {
         key: `relative:${subject.id}`,
         type: 'relative' as const,
         id: subject.id,
-        name: subject.name,
+        name: subject.name?.trim() || t.subjects.otherLabel,
         subtitle: t.subjects.relationshipTypes[subject.relationshipType as keyof typeof t.subjects.relationshipTypes] ?? subject.relationshipType,
       })),
   ], [subjects, t.subjects.relationshipTypes, t.subjects.selfCardSubtitle, t.subjects.selfCardTitle]);
@@ -73,7 +73,7 @@ const SubjectCardRegistry = () => {
             const isRelative = card.type === 'relative';
 
             return (
-              <CarouselItem key={card.key} className="pl-3 basis-[94%] sm:basis-[78%] md:basis-[62%] xl:basis-[46%]">
+              <CarouselItem key={card.key} className="pl-3 basis-[90%] sm:basis-[72%] md:basis-[58%] lg:basis-[48%] 2xl:basis-[42%]">
                 <button
                   type="button"
                   onClick={() => {
@@ -85,7 +85,7 @@ const SubjectCardRegistry = () => {
                     setActiveSubjectContext({ type: 'relative', id: card.id!, name: card.name });
                   }}
                   className={cn(
-                    'flex h-full min-h-[216px] w-full flex-col rounded-3xl p-5 text-left transition-all sm:min-h-[232px]',
+                    'flex h-full min-h-[204px] w-full flex-col rounded-3xl p-5 text-left transition-all sm:min-h-[220px] sm:p-6',
                     isRelative ? 'subject-card-observer hover:-translate-y-0.5 hover:shadow-lg' : 'subject-card-self hover:-translate-y-0.5 hover:shadow-lg',
                     isActive && 'subject-card-active'
                   )}
@@ -111,14 +111,14 @@ const SubjectCardRegistry = () => {
                       {card.type === 'self' ? t.subjects.selfWorkspaceLabel : t.subjects.supportedWorkspaceLabel}
                     </p>
                     <h2 className={cn(
-                      'text-lg font-bold tracking-tight text-balance',
-                      isRelative ? 'text-observer-foreground' : 'text-foreground'
+                      'text-lg font-bold tracking-tight text-balance sm:text-xl',
+                      isRelative ? 'text-surface-observer-foreground' : 'text-surface-soft-foreground'
                     )}>
                       {card.name}
                     </h2>
                     <p className={cn(
                       'text-sm leading-relaxed text-pretty',
-                      isRelative ? 'text-observer-foreground/78' : 'text-muted-foreground'
+                      isRelative ? 'text-surface-observer-foreground/78' : 'text-muted-foreground'
                     )}>
                       {card.subtitle}
                     </p>
@@ -126,7 +126,7 @@ const SubjectCardRegistry = () => {
 
                   <p className={cn(
                     'mt-auto pt-5 text-xs leading-relaxed',
-                    isRelative ? 'text-observer-foreground/66' : 'text-muted-foreground'
+                    isRelative ? 'text-surface-observer-foreground/66' : 'text-muted-foreground'
                   )}>
                     {subjectsLoading ? t.loading : t.subjects.registryCardHint}
                   </p>
