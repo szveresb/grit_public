@@ -86,7 +86,7 @@ const SubjectCardRegistry = () => {
                   }}
                   className={cn(
                     'w-full rounded-3xl p-5 text-left transition-all',
-                    isRelative ? 'subject-card-observer hover:border-observer/55' : 'subject-card-self hover:border-primary/35',
+                    isRelative ? 'subject-card-observer hover:-translate-y-0.5 hover:shadow-lg' : 'subject-card-self hover:-translate-y-0.5 hover:shadow-lg',
                     isActive && 'subject-card-active'
                   )}
                   aria-pressed={isActive}

@@ -31,7 +31,7 @@ const StanceBanner = ({ subjectType, subjectName, subjectColor, onSwitch, compac
             : `${t.premium.loggingFor}: ${t.subjects.selfLabel}`}
         </span>
         {isObserver && (
-          <Badge variant="outline" className="ml-auto rounded-full text-[9px] font-semibold gap-0.5 border-observer/35 text-observer px-1.5 py-0">
+          <Badge variant="outline" className="ml-auto rounded-full text-[9px] font-semibold gap-0.5 bg-card/55 text-observer border-transparent px-1.5 py-0 shadow-sm">
             <FSparkles className="h-2 w-2" />
             Premium
           </Badge>
@@ -68,7 +68,7 @@ const StanceBanner = ({ subjectType, subjectName, subjectColor, onSwitch, compac
         </p>
       </div>
       {isObserver && (
-        <Badge variant="outline" className="rounded-full text-[10px] font-semibold gap-1 border-observer/35 text-observer">
+        <Badge variant="outline" className="rounded-full text-[10px] font-semibold gap-1 bg-card/55 text-observer border-transparent shadow-sm">
           <FSparkles className="h-2.5 w-2.5" />
           Premium
         </Badge>
