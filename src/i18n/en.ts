@@ -250,6 +250,8 @@ export const en: Dictionary = {
     scoreHistoryEmpty: 'No scored results yet.',
     scoreHistorySubtitle: 'Track your progress over time.',
     selfOnlyContext: 'Questionnaires are only available in your Self workspace. Switch back to Self to view or complete them.',
+    supportedContextSubtitle: 'Structured questionnaires for notes about {name}.',
+    thirdPartyTab: 'Observer questionnaires',
     scoreTrend: 'Trend',
     noScoredSurveys: 'No questionnaires with scoring enabled.',
     completedOn: 'Completed on',
@@ -514,6 +516,14 @@ export const en: Dictionary = {
     supportedWorkspaceLabel: 'Supported person',
     activeBadge: 'Active',
     inactiveBadge: 'Standby',
+    selfJournalTitle: 'Private journal',
+    selfJournalDesc: 'Write personal entries and keep your own reflection history in view.',
+    selfQuestionnaireTitle: 'Self-check questionnaires',
+    selfQuestionnaireDesc: 'Complete questionnaires about your own current state.',
+    observerLogTitle: 'Observation log',
+    observerLogDesc: 'Capture what you are noticing about this supported person.',
+    thirdPartyQuestionnaireTitle: 'Third-party questionnaires',
+    thirdPartyQuestionnaireDesc: 'Fill questionnaires in the context of {name} without mixing them with your Self workspace.',
   },
 
   premium: {

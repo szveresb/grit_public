@@ -11,7 +11,6 @@ const Surveys = () => {
   const { t } = useLanguage();
   const { activeSubject, subjectColor } = useStance();
   const [refreshKey, setRefreshKey] = useState(0);
-  const isRelativeContext = activeSubject.type === 'relative';
 
   return (
     <DashboardLayout>
@@ -21,24 +20,16 @@ const Surveys = () => {
             {t.nav.surveys}
           </h1>
           <p className="mt-1 text-sm text-muted-foreground leading-relaxed">
-            {t.questionnaires_manage.subtitle}
+            {activeSubject.type === 'relative'
+              ? t.questionnaires_manage.supportedContextSubtitle.replace('{name}', activeSubject.name)
+              : t.questionnaires_manage.subtitle}
           </p>
         </div>
 
-        {isRelativeContext && (
-          <div className="bg-card/60 backdrop-blur border border-border rounded-3xl p-6 space-y-4">
-            <StanceBanner subjectType="relative" subjectName={activeSubject.name} subjectColor={subjectColor} />
-            <p className="text-sm text-muted-foreground leading-relaxed">
-              {t.questionnaires_manage.selfOnlyContext}
-            </p>
-          </div>
-        )}
-
-        {!isRelativeContext && (
         <Tabs defaultValue="fill" className="w-full">
           <TabsList className="rounded-2xl bg-card/60 backdrop-blur border border-border w-full">
             <TabsTrigger value="fill" className="rounded-xl flex-1 text-xs">
-              {t.nav.surveys}
+              {activeSubject.type === 'relative' ? t.questionnaires_manage.thirdPartyTab : t.nav.surveys}
             </TabsTrigger>
             <TabsTrigger value="history" className="rounded-xl flex-1 text-xs">
               {t.questionnaires_manage.scoreHistory}
@@ -46,7 +37,12 @@ const Surveys = () => {
           </TabsList>
 
           <TabsContent value="fill" className="mt-4">
-            <div className="bg-card/60 backdrop-blur border border-border rounded-3xl p-6">
+            <div className="bg-card/60 backdrop-blur border border-border rounded-3xl p-6 space-y-4">
+              <StanceBanner
+                subjectType={activeSubject.type}
+                subjectName={activeSubject.type === 'relative' ? activeSubject.name : undefined}
+                subjectColor={subjectColor}
+              />
               <QuestionnaireFiller key={`fill-${activeSubject.key}`} onCompleted={() => setRefreshKey(k => k + 1)} />
             </div>
           </TabsContent>
@@ -63,7 +59,6 @@ const Surveys = () => {
             </div>
           </TabsContent>
         </Tabs>
-        )}
       </div>
     </DashboardLayout>
   );

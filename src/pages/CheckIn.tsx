@@ -15,8 +15,6 @@ import EntryModal from '@/components/checkin/EntryModal';
 import type { EntryModalPrefill } from '@/components/checkin/EntryModal';
 import { useAuth } from '@/hooks/useAuth';
 import { supabase } from '@/integrations/supabase/client';
-import { toast } from 'sonner';
-import { friendlyDbError } from '@/lib/db-error';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { FChevronDown, FTrendingUp } from '@/components/icons/FreudIcons';
 import RecapBanner from '@/components/checkin/RecapBanner';
@@ -108,10 +106,16 @@ const CheckIn = () => {
         ? Promise.resolve({ data: [] })
         : supabase.from('journal_entries').select('id, title, entry_date, impact_level').eq('user_id', user.id);
 
-      // Questionnaire responses are always self — hide in observer mode
-      const responsePromise = isObserver
-        ? Promise.resolve({ data: [] })
-        : supabase.from('questionnaire_responses').select('id, questionnaire_id, completed_at, questionnaires(title)').eq('user_id', user.id);
+      // Questionnaire responses filtered by the active subject context
+      let responseQuery = supabase
+        .from('questionnaire_responses')
+        .select('id, questionnaire_id, completed_at, questionnaires(title), subject_type, subject_id')
+        .eq('user_id', user.id);
+      if (isObserver) {
+        responseQuery = responseQuery.eq('subject_type', 'relative').eq('subject_id', selectedSubjectId);
+      } else {
+        responseQuery = responseQuery.eq('subject_type', 'self').is('subject_id', null);
+      }
 
       // Observation logs filtered by stance
       let obsQuery = supabase.from('observation_logs').select('id, intensity, frequency, logged_at, concept_id, user_narrative, journal_entry_id, subject_type, subject_id').eq('user_id', user.id);
@@ -131,7 +135,7 @@ const CheckIn = () => {
 
       const [journalRes, responseRes, obsRes, pulseRes] = await Promise.all([
         journalPromise,
-        responsePromise,
+        responseQuery,
         obsQuery,
         pulseQuery,
       ]);
@@ -200,6 +204,8 @@ const CheckIn = () => {
     if (type === 'observation') setReflectObsId(dbId);
   }, []);
 
+  const isSelfContext = subjectType === 'self';
+
   const openEntryModal = (date?: Date, prefill?: EntryModalPrefill) => {
     const d = date ?? new Date();
     // Never allow future dates
@@ -219,14 +225,16 @@ const CheckIn = () => {
         </div>
 
         {/* Quick Pulse — gated by mood_tracking */}
-        <ConsentGate consentKey="mood_tracking">
-          <div className="bg-card/60 backdrop-blur border border-border rounded-3xl p-6">
-            <QuickPulse key={`pulse-${activeSubject.key}`} onPulseSaved={refresh} />
-          </div>
-        </ConsentGate>
+        {isSelfContext && (
+          <ConsentGate consentKey="mood_tracking">
+            <div className="bg-card/60 backdrop-blur border border-border rounded-3xl p-6">
+              <QuickPulse key={`pulse-${activeSubject.key}`} onPulseSaved={refresh} />
+            </div>
+          </ConsentGate>
+        )}
 
         {/* Recap banner */}
-        {daysSinceLastEntry !== null && daysSinceLastEntry >= 14 && !recapDismissed && (
+        {isSelfContext && daysSinceLastEntry !== null && daysSinceLastEntry >= 14 && !recapDismissed && (
           <RecapBanner
             days={daysSinceLastEntry}
             onCatchUp={() => openEntryModal()}
@@ -290,16 +298,18 @@ const CheckIn = () => {
             selectedDate={calendarSelectedDate}
             onSelectDate={setCalendarSelectedDate}
             onEntryClick={handleEntryClick}
-            onCreateEntry={(date) => openEntryModal(date)}
+            onCreateEntry={isSelfContext ? (date) => openEntryModal(date) : undefined}
           />
         </div>
       </div>
 
-      <EntryReflectDialog
-        entryId={reflectEntryId}
-        onClose={() => setReflectEntryId(null)}
-        onSaved={refresh}
-      />
+      {isSelfContext && (
+        <EntryReflectDialog
+          entryId={reflectEntryId}
+          onClose={() => setReflectEntryId(null)}
+          onSaved={refresh}
+        />
+      )}
 
       <ObservationReflectDialog
         observationId={reflectObsId}
@@ -307,13 +317,15 @@ const CheckIn = () => {
         onSaved={refresh}
       />
 
-      <EntryModal
-        open={entryModalOpen}
-        onOpenChange={setEntryModalOpen}
-        entryDate={entryModalDate}
-        prefill={entryModalPrefill}
-        onSaved={refresh}
-      />
+      {isSelfContext && (
+        <EntryModal
+          open={entryModalOpen}
+          onOpenChange={setEntryModalOpen}
+          entryDate={entryModalDate}
+          prefill={entryModalPrefill}
+          onSaved={refresh}
+        />
+      )}
 
       <PremiumModal open={premiumOpen} onOpenChange={setPremiumOpen} />
     </DashboardLayout>

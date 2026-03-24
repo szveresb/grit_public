@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useLanguage } from '@/hooks/useLanguage';
+import { useStance } from '@/hooks/useStance';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
@@ -11,6 +12,7 @@ import { FClipboardCheck, FArrowRight, FClock } from '@/components/icons/FreudIc
 import { formatDistanceToNow, differenceInHours } from 'date-fns';
 import { getDateLocale } from '@/lib/date-locale';
 import ScoreResults from './ScoreResults';
+import StanceBanner from '@/components/premium/StanceBanner';
 
 interface Questionnaire {
   id: string;
@@ -54,6 +56,7 @@ const INTERVAL_DAYS: Record<string, number> = {
 const QuestionnaireFiller = ({ onCompleted }: { onCompleted?: () => void }) => {
   const { user } = useAuth();
   const { t, lang } = useLanguage();
+  const { activeSubject, subjectColor } = useStance();
   const [questionnaires, setQuestionnaires] = useState<Questionnaire[]>([]);
   const [lastResponses, setLastResponses] = useState<LastResponse[]>([]);
   const [selectedQ, setSelectedQ] = useState<string | null>(null);
@@ -72,19 +75,37 @@ const QuestionnaireFiller = ({ onCompleted }: { onCompleted?: () => void }) => {
 
   useEffect(() => {
     const load = async () => {
+      setLoading(true);
+      setSelectedQ(null);
+      setQuestions([]);
+      setAnswers({});
+      setScoreResult(null);
+
+      const responseQuery = user
+        ? (() => {
+            let query = supabase
+              .from('questionnaire_responses')
+              .select('questionnaire_id, completed_at')
+              .eq('user_id', user.id)
+              .eq('subject_type', activeSubject.type);
+
+            if (activeSubject.type === 'relative') {
+              query = query.eq('subject_id', activeSubject.id);
+            } else {
+              query = query.is('subject_id', null);
+            }
+
+            return query.order('completed_at', { ascending: false });
+          })()
+        : Promise.resolve({ data: [] });
+
       const [qRes, rRes] = await Promise.all([
         supabase
           .from('questionnaires')
           .select('id, title, description, repeat_interval, scoring_enabled, scoring_mode, score_ranges')
           .eq('is_published', true)
           .order('created_at', { ascending: false }),
-        user
-          ? supabase
-              .from('questionnaire_responses')
-              .select('questionnaire_id, completed_at')
-              .eq('user_id', user.id)
-              .order('completed_at', { ascending: false })
-          : Promise.resolve({ data: [] }),
+        responseQuery,
       ]);
       setQuestionnaires((qRes.data ?? []) as unknown as Questionnaire[]);
       // Keep only the latest response per questionnaire
@@ -100,7 +121,7 @@ const QuestionnaireFiller = ({ onCompleted }: { onCompleted?: () => void }) => {
       setLoading(false);
     };
     load();
-  }, [user]);
+  }, [activeSubject.id, activeSubject.type, user]);
 
   const getLastCompletion = (qId: string) =>
     lastResponses.find((r) => r.questionnaire_id === qId);
@@ -208,7 +229,13 @@ const QuestionnaireFiller = ({ onCompleted }: { onCompleted?: () => void }) => {
 
     const { data: resp, error } = await supabase
       .from('questionnaire_responses')
-      .insert({ user_id: user.id, questionnaire_id: selectedQ, total_score: totalScore } as any)
+      .insert({
+        user_id: user.id,
+        questionnaire_id: selectedQ,
+        total_score: totalScore,
+        subject_type: activeSubject.type,
+        subject_id: activeSubject.type === 'relative' ? activeSubject.id : null,
+      } as any)
       .select('id')
       .single();
     if (error || !resp) {
@@ -368,6 +395,12 @@ const QuestionnaireFiller = ({ onCompleted }: { onCompleted?: () => void }) => {
   // List available questionnaires
   return (
     <div className="space-y-3">
+      <StanceBanner
+        subjectType={activeSubject.type}
+        subjectName={activeSubject.type === 'relative' ? activeSubject.name : undefined}
+        subjectColor={subjectColor}
+        compact
+      />
       {questionnaires.map((q) => {
         const last = getLastCompletion(q.id);
         const available = isAvailable(q);

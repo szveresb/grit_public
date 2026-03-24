@@ -2,6 +2,7 @@ import { useEffect, useState, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useLanguage } from '@/hooks/useLanguage';
+import { useStance } from '@/hooks/useStance';
 import { format } from 'date-fns';
 import { getDateLocale } from '@/lib/date-locale';
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
@@ -40,6 +41,7 @@ interface ScoreRange {
 const ScoreHistory = () => {
   const { user } = useAuth();
   const { t, lang } = useLanguage();
+  const { activeSubject } = useStance();
   const dateLocale = getDateLocale(lang);
   const [groups, setGroups] = useState<GroupedScores[]>([]);
   const [loading, setLoading] = useState(true);
@@ -49,11 +51,24 @@ const ScoreHistory = () => {
   useEffect(() => {
     if (!user) return;
     const load = async () => {
-      const { data: responses } = await supabase
+      setLoading(true);
+      setGroups([]);
+      setExpandedEntries(new Set());
+      setAnswerCache({});
+
+      let responseQuery = supabase
         .from('questionnaire_responses')
         .select('id, questionnaire_id, total_score, completed_at')
         .eq('user_id', user.id)
-        .order('completed_at', { ascending: true });
+        .eq('subject_type', activeSubject.type);
+
+      if (activeSubject.type === 'relative') {
+        responseQuery = responseQuery.eq('subject_id', activeSubject.id);
+      } else {
+        responseQuery = responseQuery.is('subject_id', null);
+      }
+
+      const { data: responses } = await responseQuery.order('completed_at', { ascending: true });
 
       if (!responses || responses.length === 0) {
         setLoading(false);
@@ -126,7 +141,7 @@ const ScoreHistory = () => {
       setLoading(false);
     };
     load();
-  }, [user]);
+  }, [activeSubject.id, activeSubject.type, user]);
 
   const toggleEntry = useCallback(async (responseId: string) => {
     setExpandedEntries(prev => {

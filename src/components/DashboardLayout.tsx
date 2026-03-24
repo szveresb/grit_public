@@ -4,6 +4,7 @@ import { StanceProvider } from '@/hooks/useStance';
 import AppSidebar from '@/components/AppSidebar';
 import EmergencyExit from '@/components/EmergencyExit';
 import LanguageToggle from '@/components/LanguageToggle';
+import ContextAwareToolPanel from '@/components/ContextAwareToolPanel';
 import SubjectCardRegistry from '@/components/SubjectCardRegistry';
 import { useAuth } from '@/hooks/useAuth';
 import { useLanguage } from '@/hooks/useLanguage';
@@ -69,6 +70,7 @@ const DashboardLayout = ({ children }: DashboardLayoutProps) => {
           <div className="flex-1 px-4 md:px-8 py-6 md:py-8 pb-20">
             <div className="max-w-7xl mx-auto w-full">
               {user && <SubjectCardRegistry />}
+              {user && <ContextAwareToolPanel />}
               {children}
             </div>
           </div>

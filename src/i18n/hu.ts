@@ -250,6 +250,8 @@ export const hu: Dictionary = {
     scoreHistoryEmpty: 'Még nincsenek pontozásos eredmények.',
     scoreHistorySubtitle: 'Követd nyomon a fejlődésedet az idő során.',
     selfOnlyContext: 'A kérdőívek csak a saját munkateredben érhetők el. A megtekintéshez vagy kitöltéshez válts vissza a Saját profilra.',
+    supportedContextSubtitle: 'Strukturált kérdőívek {name} nézőpontjához.',
+    thirdPartyTab: 'Megfigyelői kérdőívek',
     scoreTrend: 'Trend',
     noScoredSurveys: 'Nincs pontozással rendelkező kérdőív.',
     completedOn: 'Kitöltve',
@@ -514,6 +516,14 @@ export const hu: Dictionary = {
     supportedWorkspaceLabel: 'Támogatott személy',
     activeBadge: 'Aktív',
     inactiveBadge: 'Készenlét',
+    selfJournalTitle: 'Privát napló',
+    selfJournalDesc: 'Írj személyes bejegyzéseket, és tartsd szem előtt a saját reflexióidat.',
+    selfQuestionnaireTitle: 'Önellenőrző kérdőívek',
+    selfQuestionnaireDesc: 'A saját aktuális állapotodról szóló kérdőívek kitöltése.',
+    observerLogTitle: 'Megfigyelési napló',
+    observerLogDesc: 'Rögzítsd, mit észlelsz erről a támogatott személyről.',
+    thirdPartyQuestionnaireTitle: 'Harmadik személyű kérdőívek',
+    thirdPartyQuestionnaireDesc: 'Tölts ki kérdőíveket {name} kontextusában anélkül, hogy azok a Saját profil nézetével keverednének.',
   },
 
   premium: {

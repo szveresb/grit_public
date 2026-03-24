@@ -261,6 +261,9 @@ export interface Dictionary {
     scoreHistory: string;
     scoreHistoryEmpty: string;
     scoreHistorySubtitle: string;
+    selfOnlyContext: string;
+    supportedContextSubtitle: string;
+    thirdPartyTab: string;
     scoreTrend: string;
     noScoredSurveys: string;
     completedOn: string;
@@ -503,6 +506,14 @@ export interface Dictionary {
     supportedWorkspaceLabel: string;
     activeBadge: string;
     inactiveBadge: string;
+    selfJournalTitle: string;
+    selfJournalDesc: string;
+    selfQuestionnaireTitle: string;
+    selfQuestionnaireDesc: string;
+    observerLogTitle: string;
+    observerLogDesc: string;
+    thirdPartyQuestionnaireTitle: string;
+    thirdPartyQuestionnaireDesc: string;
   };
 
   // Premium / dual-perspective
