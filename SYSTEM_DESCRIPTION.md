@@ -190,6 +190,15 @@ Lightweight one-tap mood recordings from the QuickPulse widget.
 
 **RLS:** Users manage own pulses only.
 
+#### Stance-aware filtering
+
+The `useStance` context tracks the current perspective: `self` or `relative` (with a `selectedSubjectId`). When the user switches stance:
+
+- **Self mode:** Shows only `mood_pulses` with `subject_type = 'self'`, journal entries, and questionnaire data.
+- **Observer mode:** Shows only `mood_pulses` and `observation_logs` matching the selected `subject_id`; journal entries and questionnaire results are hidden.
+
+Each supported person receives a **deterministic color palette** derived from their UUID (hue, background, border, text, dot), drawn from a pre-defined set of 8 distinguishable hues (amber, teal, purple, rose, green, gold, blue, magenta). These colors are applied to `RoleIndicator`, `StanceBanner`, `MoodTrendChart` accent, and `ObservationStepper` badges.
+
 ---
 
 ### 4.7 Structured Observation Engine
