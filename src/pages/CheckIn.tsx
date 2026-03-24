@@ -191,10 +191,10 @@ const CheckIn = () => {
 
       const allItems = [...journalItems, ...qItems, ...obsItems].sort((a, b) => b.date.localeCompare(a.date));
       setTimelineItems(allItems);
-      setCalendarItems(allItems.map(i => ({ id: i.id, type: i.type, title: i.title, date: i.date, subjectType: i.type === 'observation' ? subjectType : 'self' })));
+      setCalendarItems(allItems.map(i => ({ id: i.id, type: i.type, title: i.title, date: i.date, subjectType: i.type === 'observation' ? activeSubject.type : 'self' })));
     };
     fetchAll();
-  }, [user, refreshKey, subjectType, selectedSubjectId, lang, t]);
+  }, [user, refreshKey, activeSubject.key, lang, t]);
 
   const handleEntryClick = useCallback((type: string, dbId: string) => {
     if (type === 'journal') setReflectEntryId(dbId);
