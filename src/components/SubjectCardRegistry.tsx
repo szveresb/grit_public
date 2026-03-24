@@ -73,7 +73,7 @@ const SubjectCardRegistry = () => {
             const isRelative = card.type === 'relative';
 
             return (
-              <CarouselItem key={card.key} className="pl-3 basis-[88%] sm:basis-[65%] lg:basis-[42%]">
+              <CarouselItem key={card.key} className="pl-3 basis-[94%] sm:basis-[78%] md:basis-[62%] xl:basis-[46%]">
                 <button
                   type="button"
                   onClick={() => {
@@ -85,7 +85,7 @@ const SubjectCardRegistry = () => {
                     setActiveSubjectContext({ type: 'relative', id: card.id!, name: card.name });
                   }}
                   className={cn(
-                    'w-full rounded-3xl p-5 text-left transition-all',
+                    'flex h-full min-h-[216px] w-full flex-col rounded-3xl p-5 text-left transition-all sm:min-h-[232px]',
                     isRelative ? 'subject-card-observer hover:-translate-y-0.5 hover:shadow-lg' : 'subject-card-self hover:-translate-y-0.5 hover:shadow-lg',
                     isActive && 'subject-card-active'
                   )}
@@ -98,24 +98,36 @@ const SubjectCardRegistry = () => {
                     )}>
                       {isRelative ? <FUsers className="h-5 w-5" /> : <FUser className="h-5 w-5" />}
                     </div>
-                    <Badge variant={isActive ? 'default' : 'outline'} className="rounded-full text-[10px] uppercase tracking-wider">
+                    <Badge variant={isActive ? 'default' : 'outline'} className="rounded-full text-[10px] uppercase tracking-wider shrink-0">
                       {isActive ? t.subjects.activeBadge : t.subjects.inactiveBadge}
                     </Badge>
                   </div>
 
-                  <div className="mt-5 space-y-1">
-                    <p className="text-xs font-semibold uppercase tracking-widest opacity-75">
+                  <div className="mt-5 space-y-2">
+                    <p className={cn(
+                      'text-xs font-semibold uppercase tracking-widest',
+                      isRelative ? 'text-observer/80' : 'text-muted-foreground'
+                    )}>
                       {card.type === 'self' ? t.subjects.selfWorkspaceLabel : t.subjects.supportedWorkspaceLabel}
                     </p>
-                    <h2 className="text-lg font-bold tracking-tight">
+                    <h2 className={cn(
+                      'text-lg font-bold tracking-tight text-balance',
+                      isRelative ? 'text-observer-foreground' : 'text-foreground'
+                    )}>
                       {card.name}
                     </h2>
-                    <p className="text-sm opacity-80">
+                    <p className={cn(
+                      'text-sm leading-relaxed text-pretty',
+                      isRelative ? 'text-observer-foreground/78' : 'text-muted-foreground'
+                    )}>
                       {card.subtitle}
                     </p>
                   </div>
 
-                  <p className="mt-5 text-xs opacity-70">
+                  <p className={cn(
+                    'mt-auto pt-5 text-xs leading-relaxed',
+                    isRelative ? 'text-observer-foreground/66' : 'text-muted-foreground'
+                  )}>
                     {subjectsLoading ? t.loading : t.subjects.registryCardHint}
                   </p>
                 </button>
