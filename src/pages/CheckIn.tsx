@@ -1,13 +1,14 @@
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { useSearchParams } from 'react-router-dom';
-import { differenceInDays, parseISO, format, startOfWeek, endOfWeek, isFuture, startOfDay } from 'date-fns';
+import { format, isFuture, startOfDay } from 'date-fns';
 import DashboardLayout from '@/components/DashboardLayout';
 import { useLanguage } from '@/hooks/useLanguage';
 import { useStance } from '@/hooks/useStance';
+import { useMoodTrendData } from '@/hooks/useMoodTrendData';
+import { useCalendarFeedData } from '@/hooks/useCalendarFeedData';
 import QuickPulse from '@/components/checkin/QuickPulse';
 import ConsentGate from '@/components/consent/ConsentGate';
 import FeedCalendar from '@/components/checkin/FeedCalendar';
-import type { CalendarFeedItem } from '@/components/checkin/FeedCalendar';
 import ObservationStepper from '@/components/observations/ObservationStepper';
 import EntryReflectDialog from '@/components/checkin/EntryReflectDialog';
 import ObservationReflectDialog from '@/components/checkin/ObservationReflectDialog';
@@ -23,15 +24,9 @@ import PatternChart from '@/components/timeline/PatternChart';
 import HorizontalTimeline from '@/components/timeline/HorizontalTimeline';
 import PremiumModal from '@/components/premium/PremiumModal';
 
-interface MoodPoint { date: string; level: number; }
-interface TimelineItem { id: string; type: 'journal' | 'questionnaire' | 'observation'; title: string; date: string; detail?: string; }
-interface PatternNudge { name: string; count: number; }
-interface ObsLog { concept_id: string; logged_at: string; intensity: number; user_narrative?: string | null; }
-interface ConceptEntry { id: string; name_hu: string; name_en: string; }
-
 const CheckIn = () => {
   const { t, lang } = useLanguage();
-  const { subjectType, selectedSubjectId, activeSubject } = useStance();
+  const { subjectType, activeSubject } = useStance();
   const { user } = useAuth();
   const [searchParams, setSearchParams] = useSearchParams();
   const feedRef = useRef<HTMLDivElement>(null);
@@ -42,23 +37,38 @@ const CheckIn = () => {
   const [observationOpen, setObservationOpen] = useState(false);
   const [calendarMonth, setCalendarMonth] = useState(new Date());
   const [calendarSelectedDate, setCalendarSelectedDate] = useState<Date | null>(null);
-  const [calendarItems, setCalendarItems] = useState<CalendarFeedItem[]>([]);
   const [reflectEntryId, setReflectEntryId] = useState<string | null>(null);
   const [reflectObsId, setReflectObsId] = useState<string | null>(null);
-  const [daysSinceLastEntry, setDaysSinceLastEntry] = useState<number | null>(null);
   const [recapDismissed, setRecapDismissed] = useState(false);
   const [highlightDate, setHighlightDate] = useState<string | null>(null);
   const [isPremium, setIsPremium] = useState(false);
   const [premiumOpen, setPremiumOpen] = useState(false);
 
-  // Timeline data
-  const [timelineItems, setTimelineItems] = useState<TimelineItem[]>([]);
-  const [moodData, setMoodData] = useState<MoodPoint[]>([]);
-  const [obsLogs, setObsLogs] = useState<ObsLog[]>([]);
-  const [conceptMap, setConceptMap] = useState<Record<string, ConceptEntry>>({});
-  const [nudges, setNudges] = useState<PatternNudge[]>([]);
+  const refresh = useCallback(() => setRefreshKey((key) => key + 1), []);
+  const isSelfContext = subjectType === 'self';
 
-  // Read ?date param on mount and scroll to feed
+  const { data: moodData } = useMoodTrendData({
+    userId: user?.id,
+    subjectType: activeSubject.type,
+    subjectId: activeSubject.id,
+  });
+
+  const {
+    timelineItems,
+    calendarItems,
+    obsLogs,
+    conceptMap,
+    nudges,
+    daysSinceLastEntry,
+  } = useCalendarFeedData({
+    userId: user?.id,
+    subjectType: activeSubject.type,
+    subjectId: activeSubject.id,
+    lang,
+    t,
+    refreshKey,
+  });
+
   useEffect(() => {
     const dateParam = searchParams.get('date');
     if (dateParam) {
@@ -71,143 +81,36 @@ const CheckIn = () => {
     }
   }, []);
 
-  const refresh = useCallback(() => setRefreshKey(k => k + 1), []);
-
   useEffect(() => {
-    setTimelineItems([]);
-    setMoodData([]);
-    setObsLogs([]);
-    setConceptMap({});
-    setNudges([]);
-    setCalendarItems([]);
     setCalendarSelectedDate(null);
     setReflectEntryId(null);
     setReflectObsId(null);
     setObservationOpen(false);
-    setDaysSinceLastEntry(null);
     setHighlightDate(null);
-    // Don't bump refreshKey here — the fetch effect already depends on
-    // subjectType / selectedSubjectId, so it will re-run automatically.
   }, [activeSubject.key]);
 
-  // Fetch premium status
   useEffect(() => {
     if (!user) return;
-    supabase.from('profiles').select('premium').eq('user_id', user.id).maybeSingle()
-      .then(({ data }) => { if (data) setIsPremium(data.premium); });
+    supabase
+      .from('profiles')
+      .select('premium')
+      .eq('user_id', user.id)
+      .maybeSingle()
+      .then(({ data }) => {
+        if (data) setIsPremium(data.premium);
+      });
   }, [user]);
-
-  // Fetch all timeline data — filtered by current stance
-  useEffect(() => {
-    if (!user) return;
-    const isObserver = activeSubject.type === 'relative' && !!activeSubject.id;
-    const currentSubjectId = activeSubject.id;
-    const fetchAll = async () => {
-      // Journal entries are always self — hide in observer mode
-      const journalPromise = isObserver
-        ? Promise.resolve({ data: [] })
-        : supabase.from('journal_entries').select('id, title, entry_date, impact_level').eq('user_id', user.id);
-
-      // Questionnaire responses (not stance-filtered — table lacks subject columns)
-      const responseQuery = supabase
-        .from('questionnaire_responses')
-        .select('id, questionnaire_id, completed_at, questionnaires(title)')
-        .eq('user_id', user.id);
-
-      // Observation logs filtered by stance
-      let obsQuery: any = supabase.from('observation_logs').select('id, intensity, frequency, logged_at, concept_id, user_narrative, journal_entry_id, subject_type, subject_id').eq('user_id', user.id);
-      if (isObserver) {
-        obsQuery = obsQuery.eq('subject_type', 'relative').eq('subject_id', currentSubjectId);
-      } else {
-        obsQuery = obsQuery.eq('subject_type', 'self');
-      }
-
-      // Mood pulses filtered by stance
-      let pulseQuery: any = supabase.from('mood_pulses').select('level, entry_date').eq('user_id', user.id);
-      if (isObserver) {
-        pulseQuery = pulseQuery.eq('subject_type', 'relative').eq('subject_id', currentSubjectId);
-      } else {
-        pulseQuery = pulseQuery.eq('subject_type', 'self');
-      }
-
-      const [journalRes, responseRes, obsRes, pulseRes] = await Promise.all([
-        journalPromise,
-        responseQuery,
-        obsQuery,
-        pulseQuery,
-      ]);
-
-      const journalData = (journalRes.data ?? []) as any[];
-      const journalItems: TimelineItem[] = journalData.map(j => ({ id: j.id, type: 'journal', title: j.title, date: j.entry_date, detail: j.impact_level ? `${t.journal.cardImpact}: ${j.impact_level}/5` : undefined }));
-      setMoodData((pulseRes.data ?? []).map((p: any) => ({ date: p.entry_date, level: p.level })));
-
-      // Check inactivity (only meaningful in self mode)
-      if (!isObserver && journalData.length > 0) {
-        const sorted = [...journalData].sort((a: any, b: any) => b.entry_date.localeCompare(a.entry_date));
-        setDaysSinceLastEntry(differenceInDays(new Date(), parseISO(sorted[0].entry_date)));
-      } else {
-        setDaysSinceLastEntry(null);
-      }
-
-      const qItems: TimelineItem[] = ((responseRes.data ?? []) as any[]).map((r: any) => ({ id: r.id, type: 'questionnaire', title: r.questionnaires?.title ?? t.nav.questionnaires, date: r.completed_at.split('T')[0] }));
-
-      let obsItems: TimelineItem[] = [];
-      const obsData = obsRes.data ?? [];
-      const standaloneObs = (obsData as any[]).filter((o: any) => !o.journal_entry_id);
-      if ((obsData as any[]).length > 0) {
-        const conceptIds = [...new Set((obsData as any[]).map((o: any) => o.concept_id))];
-        const { data: concepts } = await supabase.from('observation_concepts').select('id, name_hu, name_en').in('id', conceptIds);
-        const conMap = Object.fromEntries((concepts ?? []).map(c => [c.id, c]));
-        setConceptMap(conMap);
-        setObsLogs((obsData as any[]).map((o: any) => ({ concept_id: o.concept_id, logged_at: o.logged_at, intensity: o.intensity, user_narrative: o.user_narrative })));
-
-        obsItems = standaloneObs.map((o: any) => {
-          const concept = conMap[o.concept_id];
-          const name = concept ? (lang === 'en' ? concept.name_en : concept.name_hu) : t.observations.tabObservations;
-          return { id: o.id, type: 'observation' as const, title: name, date: o.logged_at, detail: `${t.observations.intensity}: ${o.intensity}/5` };
-        });
-
-        // Current-week nudges
-        const now = new Date();
-        const weekStart = format(startOfWeek(now, { weekStartsOn: 1 }), 'yyyy-MM-dd');
-        const weekEnd = format(endOfWeek(now, { weekStartsOn: 1 }), 'yyyy-MM-dd');
-        const weekObs = (obsData as any[]).filter((o: any) => o.logged_at >= weekStart && o.logged_at <= weekEnd);
-        const countByConceptId: Record<string, number> = {};
-        weekObs.forEach((o: any) => { countByConceptId[o.concept_id] = (countByConceptId[o.concept_id] || 0) + 1; });
-        const detectedNudges: PatternNudge[] = [];
-        for (const [cid, count] of Object.entries(countByConceptId)) {
-          if (count >= 3) {
-            const concept = conMap[cid];
-            const name = concept ? (lang === 'en' ? concept.name_en : concept.name_hu) : '';
-            if (name) detectedNudges.push({ name, count });
-          }
-        }
-        setNudges(detectedNudges);
-      } else {
-        setConceptMap({});
-        setObsLogs([]);
-        setNudges([]);
-      }
-
-      const allItems = [...journalItems, ...qItems, ...obsItems].sort((a, b) => b.date.localeCompare(a.date));
-      setTimelineItems(allItems);
-      setCalendarItems(allItems.map(i => ({ id: i.id, type: i.type, title: i.title, date: i.date, subjectType: i.type === 'observation' ? activeSubject.type : 'self' })));
-    };
-    fetchAll();
-  }, [user, refreshKey, activeSubject.key, lang, t]);
 
   const handleEntryClick = useCallback((type: string, dbId: string) => {
     if (type === 'journal') setReflectEntryId(dbId);
     if (type === 'observation') setReflectObsId(dbId);
   }, []);
 
-  const isSelfContext = subjectType === 'self';
-
   const openEntryModal = (date?: Date, prefill?: EntryModalPrefill) => {
-    const d = date ?? new Date();
-    // Never allow future dates
-    if (isFuture(startOfDay(d))) return;
-    setEntryModalDate(format(d, 'yyyy-MM-dd'));
+    const targetDate = date ?? new Date();
+    if (isFuture(startOfDay(targetDate))) return;
+
+    setEntryModalDate(format(targetDate, 'yyyy-MM-dd'));
     setEntryModalPrefill(prefill ?? null);
     setEntryModalOpen(true);
   };
@@ -215,13 +118,11 @@ const CheckIn = () => {
   return (
     <DashboardLayout>
       <div className="max-w-2xl mx-auto w-full space-y-8">
-        {/* Header */}
         <div>
           <h1 className="text-lg md:text-xl font-bold tracking-tight text-foreground">{t.checkIn.title}</h1>
           <p className="mt-1 text-sm text-muted-foreground leading-relaxed">{t.checkIn.subtitle}</p>
         </div>
 
-        {/* Quick Pulse — gated by mood_tracking */}
         {isSelfContext && (
           <ConsentGate consentKey="mood_tracking">
             <div className="context-panel p-6">
@@ -230,7 +131,6 @@ const CheckIn = () => {
           </ConsentGate>
         )}
 
-        {/* Recap banner */}
         {isSelfContext && daysSinceLastEntry !== null && daysSinceLastEntry >= 14 && !recapDismissed && (
           <RecapBanner
             days={daysSinceLastEntry}
@@ -239,21 +139,19 @@ const CheckIn = () => {
           />
         )}
 
-        {/* Pattern nudges */}
         {nudges.length > 0 && (
           <div className="bg-primary/10 border border-primary/20 rounded-3xl p-4 flex items-start gap-3">
             <FTrendingUp className="h-4 w-4 text-primary mt-0.5 shrink-0" />
             <div className="space-y-1">
-              {nudges.map(n => (
-                <p key={n.name} className="text-sm text-foreground">
-                  {t.timeline.patternNudge.replace('{name}', n.name).replace('{count}', String(n.count))}
+              {nudges.map((nudge) => (
+                <p key={nudge.name} className="text-sm text-foreground">
+                  {t.timeline.patternNudge.replace('{name}', nudge.name).replace('{count}', String(nudge.count))}
                 </p>
               ))}
             </div>
           </div>
         )}
 
-        {/* Observation Stepper (collapsible) */}
         <Collapsible open={observationOpen} onOpenChange={setObservationOpen}>
           <CollapsibleTrigger className="context-panel w-full p-5 flex items-center justify-between hover:border-primary/30 transition-colors">
             <h2 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
@@ -266,17 +164,14 @@ const CheckIn = () => {
           </CollapsibleContent>
         </Collapsible>
 
-        {/* Mood trend chart — gated by mood_tracking */}
         <ConsentGate consentKey="mood_tracking">
           <MoodTrendChart data={moodData} lang={lang} isPremium={isPremium} onPremiumClick={() => setPremiumOpen(true)} t={t} />
         </ConsentGate>
 
-        {/* 8-week pattern frequency chart — gated by pattern_detection */}
         <ConsentGate consentKey="pattern_detection">
           <PatternChart logs={obsLogs} conceptMap={conceptMap} />
         </ConsentGate>
 
-        {/* Horizontal timeline dot viewer */}
         <div ref={feedRef} className="context-panel p-5">
           <h2 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-4">{t.timeline.allActivity}</h2>
           {timelineItems.length === 0 ? (
@@ -286,7 +181,6 @@ const CheckIn = () => {
           )}
         </div>
 
-        {/* Calendar */}
         <div className="context-panel p-6">
           <FeedCalendar
             items={calendarItems}
