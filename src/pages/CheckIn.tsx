@@ -127,7 +127,7 @@ const CheckIn = () => {
 
         {isSelfContext && (
           <ConsentGate consentKey="mood_tracking">
-            <div className="context-panel p-6">
+            <div className="surface-card p-6">
               <QuickPulse key={`pulse-${activeSubject.key}`} onPulseSaved={refresh} />
             </div>
           </ConsentGate>
