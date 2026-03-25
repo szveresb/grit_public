@@ -155,13 +155,13 @@ const CheckIn = () => {
         )}
 
         <Collapsible open={observationOpen} onOpenChange={setObservationOpen}>
-          <CollapsibleTrigger className="context-panel w-full p-5 flex items-center justify-between hover:border-primary/30 transition-colors">
+          <CollapsibleTrigger className="surface-card w-full p-5 flex items-center justify-between hover:border-primary/30 transition-colors">
             <h2 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
               {t.checkIn.whatHappenedTitle}
             </h2>
             <FChevronDown className={`h-4 w-4 text-muted-foreground transition-transform ${observationOpen ? 'rotate-180' : ''}`} />
           </CollapsibleTrigger>
-          <CollapsibleContent className="context-panel border-t-0 rounded-b-3xl p-6 -mt-3">
+          <CollapsibleContent className="surface-card border-t-0 rounded-t-none p-6 -mt-3">
             <ObservationStepper key={`observation-${activeSubject.key}`} onLogged={refresh} />
           </CollapsibleContent>
         </Collapsible>
