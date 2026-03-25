@@ -12,9 +12,9 @@ interface ActionCardProps {
 }
 
 const variantStyles: Record<ActionCardProps['variant'], string> = {
-  sage: 'reference-surface text-foreground',
-  leaf: 'reference-surface text-foreground',
-  mist: 'reference-surface text-foreground',
+  sage: 'surface-card text-foreground',
+  leaf: 'surface-card text-foreground',
+  mist: 'surface-card text-foreground',
 };
 
 const iconVariantStyles: Record<ActionCardProps['variant'], string> = {
