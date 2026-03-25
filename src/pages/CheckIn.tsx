@@ -142,7 +142,7 @@ const CheckIn = () => {
         )}
 
         {nudges.length > 0 && (
-          <div className="bg-primary/10 border border-primary/20 rounded-3xl p-4 flex items-start gap-3">
+          <div className="surface-card p-4 flex items-start gap-3">
             <FTrendingUp className="h-4 w-4 text-primary mt-0.5 shrink-0" />
             <div className="space-y-1">
               {nudges.map((nudge) => (
