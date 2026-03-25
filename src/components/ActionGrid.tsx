@@ -12,9 +12,9 @@ interface ActionCardProps {
 }
 
 const variantStyles: Record<ActionCardProps['variant'], string> = {
-  sage: 'reference-surface text-foreground',
-  leaf: 'reference-surface text-foreground',
-  mist: 'reference-surface text-foreground',
+  sage: 'surface-card text-foreground',
+  leaf: 'surface-card text-foreground',
+  mist: 'surface-card text-foreground',
 };
 
 const iconVariantStyles: Record<ActionCardProps['variant'], string> = {
@@ -27,7 +27,7 @@ const ActionCard = ({ title, description, icon: Icon, variant, onClick }: Action
   return (
     <button
       onClick={onClick}
-      className={`flex flex-col items-start gap-3 rounded-3xl p-6 text-left transition-colors ${variantStyles[variant]}`}
+      className={`flex h-full flex-col items-start gap-3 p-5 text-left transition-colors ${variantStyles[variant]}`}
     >
       <Icon className={`h-5 w-5 ${iconVariantStyles[variant]}`} />
       <div>
@@ -47,7 +47,7 @@ const ActionGrid = () => {
   return (
     <div className="space-y-6">
       {/* Quick Pulse */}
-      <div className="reference-surface rounded-3xl p-5">
+      <div className="surface-card p-5">
         <h2 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-3">
           {t.dash.quickPulse}
         </h2>

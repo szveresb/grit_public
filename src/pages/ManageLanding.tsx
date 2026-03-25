@@ -94,7 +94,7 @@ const ManageLanding = () => {
             <FLoader className="h-4 w-4 animate-spin" /> Betöltés...
           </div>
         ) : sections.map(section => (
-          <div key={section.id} className="bg-card/60 backdrop-blur border border-border rounded-3xl p-6 space-y-5">
+          <div key={section.id} className="surface-card p-6 space-y-5">
             <div className="flex items-center justify-between">
               <h2 className="text-sm font-semibold text-foreground uppercase tracking-widest">
                 {section.section_key.replace('_', ' ')}

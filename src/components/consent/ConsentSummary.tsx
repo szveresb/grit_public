@@ -13,7 +13,7 @@ const ConsentSummary = ({ categories, consents, onToggle, readOnly }: ConsentSum
   const { t } = useLanguage();
 
   return (
-    <div className="bg-card/60 backdrop-blur border border-border rounded-3xl p-6 space-y-4 w-full max-w-md mx-auto">
+    <div className="surface-card p-6 space-y-4 w-full max-w-md mx-auto">
       <h3 className="text-sm font-semibold text-foreground">{t.consent.summaryTitle}</h3>
       <div className="space-y-3">
         {categories.map((cat) => (

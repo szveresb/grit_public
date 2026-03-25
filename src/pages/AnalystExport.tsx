@@ -56,7 +56,7 @@ const AnalystExport = () => {
           <h1 className="text-xl font-bold tracking-tight text-foreground">{t.analystExport.title}</h1>
           <p className="mt-1 text-sm text-muted-foreground leading-relaxed">{t.analystExport.subtitle}</p>
         </div>
-        <div className="bg-card/60 backdrop-blur border border-border rounded-3xl p-6 space-y-4">
+        <div className="surface-card p-6 space-y-4">
           <div className="flex items-start gap-3">
             <FBarChart className="h-5 w-5 text-primary mt-0.5 shrink-0" />
             <div className="space-y-1 text-sm text-muted-foreground leading-relaxed">

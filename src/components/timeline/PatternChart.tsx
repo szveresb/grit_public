@@ -71,7 +71,7 @@ const PatternChart = ({ logs, conceptMap }: PatternChartProps) => {
   const toggleExpand = (key: string) => setExpanded(prev => prev === key ? null : key);
 
   return (
-    <div className="bg-card/60 backdrop-blur border border-border rounded-3xl p-5 space-y-4">
+    <div className="surface-card p-5 space-y-4">
       <div className="flex items-center gap-2">
         <FTimeline className="h-4 w-4 text-primary" />
         <div>

@@ -164,7 +164,7 @@ const ObservationStepper = ({ onLogged }: { onLogged?: () => void }) => {
                 <button
                   key={cat.id}
                   onClick={() => selectCategory(cat.id)}
-                  className="bg-card/60 backdrop-blur border border-border rounded-3xl p-5 flex items-center gap-4 text-left hover:border-primary/50 transition-colors"
+                  className="surface-card p-5 flex items-center gap-4 text-left hover:border-primary/50 transition-colors"
                 >
                   <div className="h-10 w-10 rounded-2xl bg-primary/10 flex items-center justify-center text-primary">
                     {cat.icon && iconMap[cat.icon] ? iconMap[cat.icon] : <FHeart className="h-5 w-5" />}

@@ -39,7 +39,7 @@ const ConsentGate = ({ consentKey, children, variant = 'card' }: ConsentGateProp
   }
 
   return (
-    <div className="bg-card/60 backdrop-blur border border-border rounded-3xl p-6 space-y-3">
+    <div className="surface-card p-6 space-y-3">
       <div className="flex items-center gap-2">
         <FShield className="h-5 w-5 text-muted-foreground" />
         <h3 className="text-sm font-semibold text-foreground">{t.consent.gateTitle}</h3>

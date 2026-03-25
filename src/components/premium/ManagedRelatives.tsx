@@ -104,7 +104,7 @@ const ManagedRelatives = () => {
   const relLabels = t.subjects.relationshipTypes;
 
   return (
-    <div className="bg-card/60 backdrop-blur border border-border rounded-3xl p-6 space-y-4">
+    <div className="surface-card p-6 space-y-4">
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <FUsers className="h-4 w-4 text-muted-foreground" />

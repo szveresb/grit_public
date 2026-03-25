@@ -33,7 +33,7 @@ const JournalEntryCard = ({
   const { t, lang } = useLanguage();
 
   return (
-    <div className="bg-card/60 backdrop-blur border border-border rounded-3xl overflow-hidden">
+    <div className="surface-card overflow-hidden">
       <div className="flex items-center">
         <button onClick={onToggleExpand} className="flex-1 flex items-center justify-between p-4 text-left hover:bg-accent/30 transition-colors">
           <div className="flex items-center gap-2 flex-wrap">

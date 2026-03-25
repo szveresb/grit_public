@@ -127,7 +127,7 @@ const CheckIn = () => {
 
         {isSelfContext && (
           <ConsentGate consentKey="mood_tracking">
-            <div className="context-panel p-6">
+            <div className="surface-card p-6">
               <QuickPulse key={`pulse-${activeSubject.key}`} onPulseSaved={refresh} />
             </div>
           </ConsentGate>
@@ -142,7 +142,7 @@ const CheckIn = () => {
         )}
 
         {nudges.length > 0 && (
-          <div className="bg-primary/10 border border-primary/20 rounded-3xl p-4 flex items-start gap-3">
+          <div className="surface-card p-4 flex items-start gap-3">
             <FTrendingUp className="h-4 w-4 text-primary mt-0.5 shrink-0" />
             <div className="space-y-1">
               {nudges.map((nudge) => (
@@ -155,20 +155,20 @@ const CheckIn = () => {
         )}
 
         <Collapsible open={observationOpen} onOpenChange={setObservationOpen}>
-          <CollapsibleTrigger className="context-panel w-full p-5 flex items-center justify-between hover:border-primary/30 transition-colors">
+          <CollapsibleTrigger className="surface-card w-full p-5 flex items-center justify-between hover:border-primary/30 transition-colors">
             <h2 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
               {t.checkIn.whatHappenedTitle}
             </h2>
             <FChevronDown className={`h-4 w-4 text-muted-foreground transition-transform ${observationOpen ? 'rotate-180' : ''}`} />
           </CollapsibleTrigger>
-          <CollapsibleContent className="context-panel border-t-0 rounded-b-3xl p-6 -mt-3">
+          <CollapsibleContent className="surface-card border-t-0 rounded-t-none p-6 -mt-3">
             <ObservationStepper key={`observation-${activeSubject.key}`} onLogged={refresh} />
           </CollapsibleContent>
         </Collapsible>
 
         <ConsentGate consentKey="mood_tracking">
           {moodLoading ? (
-            <div className="context-panel p-5 space-y-3">
+            <div className="surface-card p-5 space-y-3">
               <Skeleton className="h-5 w-32 rounded-full" />
               <Skeleton className="h-4 w-52 rounded-full" />
               <Skeleton className="h-56 w-full rounded-3xl" />
@@ -189,7 +189,7 @@ const CheckIn = () => {
           <PatternChart logs={obsLogs} conceptMap={conceptMap} />
         </ConsentGate>
 
-        <div key={`timeline-${activeSubject.key}`} ref={feedRef} className="context-panel p-5">
+        <div key={`timeline-${activeSubject.key}`} ref={feedRef} className="surface-card p-5">
           <h2 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-4">{t.timeline.allActivity}</h2>
           {calendarLoading ? (
             <div className="space-y-3">
@@ -203,7 +203,7 @@ const CheckIn = () => {
           )}
         </div>
 
-        <div className="context-panel p-6">
+        <div className="surface-card p-6">
           {calendarLoading ? (
             <div className="space-y-4">
               <div className="flex items-center justify-between">

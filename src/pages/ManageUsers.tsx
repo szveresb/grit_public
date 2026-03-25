@@ -64,14 +64,14 @@ const ManageUsers = () => {
           {loading ? (
             <p className="text-sm text-muted-foreground">{t.manageUsers.loadingUsers}</p>
           ) : users.length === 0 ? (
-            <div className="bg-card/60 backdrop-blur border border-border rounded-3xl p-6">
+            <div className="surface-card p-6">
               <p className="text-sm text-muted-foreground">{t.manageUsers.noUsers}</p>
             </div>
           ) : (
             users.map(u => {
               const missingRoles = ALL_ROLES.filter(r => !u.roles.includes(r));
               return (
-                <div key={u.user_id} className="bg-card/60 backdrop-blur border border-border rounded-3xl p-5 space-y-3">
+                <div key={u.user_id} className="surface-card p-5 space-y-3">
                   <div className="flex items-center gap-2">
                     <FShield className="h-4 w-4 text-muted-foreground" />
                     <span className="text-sm font-semibold text-foreground truncate">{u.display_name || 'Unnamed user'}</span>

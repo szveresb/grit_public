@@ -203,6 +203,16 @@
 }
 
 @layer components {
+  /* ── Unified card surface ── */
+  .surface-card {
+    @apply rounded-3xl;
+    background: hsl(var(--card));
+    border: 1px solid hsl(var(--border));
+    box-shadow:
+      0 24px 44px -30px hsl(140 16% 26% / 0.14),
+      0 6px 14px hsl(140 10% 30% / 0.03);
+  }
+
   .reference-surface {
     background: hsl(var(--card));
     border: 1px solid hsl(var(--border));
@@ -235,31 +245,6 @@
       0 2px 6px hsl(34 10% 30% / 0.03);
   }
 
-  .subject-card-self {
-    @apply text-foreground;
-    background: hsl(var(--card));
-    border: 1px solid hsl(var(--surface-soft-border));
-    box-shadow:
-      0 24px 44px -30px hsl(140 16% 26% / 0.18),
-      0 6px 14px hsl(140 10% 30% / 0.035);
-    isolation: isolate;
-  }
-
-  .subject-card-observer {
-    @apply text-foreground;
-    background: hsl(var(--card));
-    border: 1px solid hsl(var(--surface-soft-border));
-    box-shadow:
-      0 24px 44px -30px hsl(140 16% 26% / 0.18),
-      0 6px 14px hsl(140 10% 30% / 0.035);
-    isolation: isolate;
-  }
-
-  .subject-card-active {
-    box-shadow:
-      0 24px 44px -30px hsl(140 16% 26% / 0.18),
-      0 6px 14px hsl(140 10% 30% / 0.035);
-  }
 
   .reference-auth-card {
     background: hsl(var(--card));
