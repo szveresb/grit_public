@@ -98,7 +98,7 @@ const MoodTrendChart = ({ data, lang, isPremium = false, onPremiumClick, t }: Mo
 
   if (aggregated.length < 2) {
     return (
-      <div className="bg-card/60 backdrop-blur border border-border rounded-3xl p-5">
+      <div className="surface-card p-5">
         <h2 className="text-sm font-semibold text-foreground">{t.timeline.moodTrendTitle}</h2>
         <p className="text-xs text-muted-foreground mt-1">{t.timeline.moodTrendEmpty}</p>
       </div>
@@ -127,7 +127,7 @@ const MoodTrendChart = ({ data, lang, isPremium = false, onPremiumClick, t }: Mo
   const entryLabel = lang === 'hu' ? 'bejegyzés' : 'entry';
 
   return (
-    <div className="bg-card/60 backdrop-blur border border-border rounded-3xl p-5 space-y-2">
+    <div className="surface-card p-5 space-y-2">
       {/* Header with preset toggle */}
       <div className="flex items-start justify-between gap-2">
         <div>

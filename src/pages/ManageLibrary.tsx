@@ -119,7 +119,7 @@ const ManageLibrary = () => {
         </div>
 
         {showForm && (
-          <div ref={formRef} className="bg-card/60 backdrop-blur border border-border rounded-3xl p-6 space-y-4 animate-fade-in">
+          <div ref={formRef} className="surface-card p-6 space-y-4 animate-fade-in">
             <div className="flex items-center justify-between">
               <h2 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
                 {editingId ? t.manageLibrary.editArticle : t.manageLibrary.newArticle}
@@ -196,12 +196,12 @@ const ManageLibrary = () => {
           {loading ? (
             <p className="text-sm text-muted-foreground">{t.manageLibrary.loadingArticles}</p>
           ) : filteredArticles.length === 0 ? (
-            <div className="bg-card/60 backdrop-blur border border-border rounded-3xl p-6">
+            <div className="surface-card p-6">
               <p className="text-sm text-muted-foreground">{articles.length === 0 ? t.manageLibrary.noArticles : t.manageLibrary.noMatch}</p>
             </div>
           ) : (
             filteredArticles.map(a => (
-              <div key={a.id} className="bg-card/60 backdrop-blur border border-border rounded-3xl p-5 flex items-start gap-4">
+              <div key={a.id} className="surface-card p-5 flex items-start gap-4">
                 {a.image_url && (
                   <img src={a.image_url} alt="" className="h-16 w-16 rounded-2xl object-cover shrink-0 border border-border" onError={e => (e.currentTarget.style.display = 'none')} />
                 )}

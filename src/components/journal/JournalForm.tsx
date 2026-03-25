@@ -39,7 +39,7 @@ const JournalForm = ({ form, onChange, onSubmit, onClose, saving, isEditing, sho
   };
 
   return (
-    <div className="bg-card/60 backdrop-blur border border-border rounded-3xl p-4 sm:p-6 space-y-4 animate-fade-in">
+    <div className="surface-card p-4 sm:p-6 space-y-4 animate-fade-in">
       <div className="flex items-center justify-between">
         <h2 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
           {isEditing ? t.journal.formEditEntry : t.journal.formNewEntry}

@@ -101,7 +101,7 @@ const ObservationHistory = ({ refreshKey }: { refreshKey?: number }) => {
           <p className="text-xs font-medium text-muted-foreground">{format(new Date(date), 'yyyy. MM. dd.')}</p>
           {entries.map(entry => (
             <Collapsible key={entry.id}>
-              <CollapsibleTrigger className="w-full bg-card/60 backdrop-blur border border-border rounded-3xl p-4 flex items-center justify-between text-left hover:border-primary/30 transition-colors">
+              <CollapsibleTrigger className="w-full surface-card p-4 flex items-center justify-between text-left hover:border-primary/30 transition-colors">
                 <div className="flex items-center gap-3 min-w-0">
                   <div className="h-7 w-7 rounded-full bg-primary/10 text-primary flex items-center justify-center text-xs font-bold shrink-0">
                     {entry.intensity}

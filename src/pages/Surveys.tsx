@@ -37,7 +37,7 @@ const Surveys = () => {
           </TabsList>
 
           <TabsContent value="fill" className="mt-4">
-            <div className="context-panel p-6 space-y-4">
+            <div className="surface-card p-6 space-y-4">
               <StanceBanner
                 subjectType={activeSubject.type}
                 subjectName={activeSubject.type === 'relative' ? activeSubject.name : undefined}
@@ -48,7 +48,7 @@ const Surveys = () => {
           </TabsContent>
 
           <TabsContent value="history" className="mt-4">
-            <div className="context-panel p-6">
+            <div className="surface-card p-6">
               <h3 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-1">
                 {t.questionnaires_manage.scoreHistory}
               </h3>

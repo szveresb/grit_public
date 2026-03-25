@@ -231,7 +231,7 @@ const SelfChecks = () => {
       )}
 
       {showForm && isEditor && (
-        <div className="bg-card/60 backdrop-blur border border-border rounded-3xl p-6 space-y-4 animate-fade-in mb-4">
+        <div className="surface-card p-6 space-y-4 animate-fade-in mb-4">
           <div className="flex items-center justify-between">
             <h2 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
               {editingId ? t.questionnaires_manage.editQuestionnaire : t.questionnaires_manage.newQuestionnaire}
@@ -419,7 +419,7 @@ const SelfChecks = () => {
       )}
 
       {selectedQ ? (
-        <div className="bg-card/60 backdrop-blur border border-border rounded-3xl p-6 space-y-5 animate-fade-in">
+        <div className="surface-card p-6 space-y-5 animate-fade-in">
           <h2 className="text-sm font-semibold text-foreground">{questionnaires.find(q => q.id === selectedQ)?.title}</h2>
           {questions.map((q, i) => (
             <div key={q.id} className="space-y-2">
@@ -435,11 +435,11 @@ const SelfChecks = () => {
       ) : (
         <div className="space-y-3">
           {questionnaires.length === 0 ? (
-            <div className="bg-card/60 backdrop-blur border border-border rounded-3xl p-6">
+            <div className="surface-card p-6">
               <p className="text-sm text-muted-foreground">{t.questionnaires_manage.noAvailable}</p>
             </div>
           ) : questionnaires.map(q => (
-            <div key={q.id} className="bg-card/60 backdrop-blur border border-border rounded-3xl p-5 flex items-start gap-4">
+            <div key={q.id} className="surface-card p-5 flex items-start gap-4">
               <button onClick={() => loadQuestions(q.id)} className="flex-1 text-left hover:opacity-80 transition-opacity min-w-0">
                 <div className="flex items-center gap-2 mb-1">
                   <span className="text-sm font-semibold">{q.title}</span>
@@ -499,7 +499,7 @@ const SelfChecks = () => {
           </TabsContent>
 
           <TabsContent value="observations" className="mt-4 space-y-6">
-            <div className="bg-card/60 backdrop-blur border border-border rounded-3xl p-6">
+            <div className="surface-card p-6">
               <ObservationStepper onLogged={() => setObsRefreshKey(k => k + 1)} />
             </div>
             <ObservationHistory refreshKey={obsRefreshKey} />

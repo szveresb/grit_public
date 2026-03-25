@@ -40,7 +40,7 @@ const JournalCalendar = ({ entries, currentMonth, onMonthChange, selectedDate, o
   };
 
   return (
-    <div className="bg-card/60 backdrop-blur border border-border rounded-3xl p-5">
+    <div className="surface-card p-5">
       {/* Month navigation */}
       <div className="flex items-center justify-between mb-4">
         <Button variant="ghost" size="icon" className="rounded-full" onClick={() => onMonthChange(new Date(currentMonth.getFullYear(), currentMonth.getMonth() - 1))}>
