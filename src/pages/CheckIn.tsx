@@ -203,7 +203,7 @@ const CheckIn = () => {
           )}
         </div>
 
-        <div className="context-panel p-6">
+        <div className="surface-card p-6">
           {calendarLoading ? (
             <div className="space-y-4">
               <div className="flex items-center justify-between">

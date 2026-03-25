@@ -229,7 +229,7 @@ const Journal = () => {
         ) : (
           <div className="space-y-3">
             {filteredEntries.length === 0 ? (
-              <div className="bg-card/60 backdrop-blur border border-border rounded-3xl p-6">
+              <div className="surface-card p-6">
                 <p className="text-sm text-muted-foreground">{entries.length === 0 ? t.journal.noEntries : t.journal.noMatch}</p>
               </div>
             ) : filteredEntries.map(entry => (
