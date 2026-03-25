@@ -265,11 +265,13 @@ A SNOMED CT-inspired three-level hierarchy for logging interpersonal patterns.
 | `user_narrative` | text | Free-text anchor |
 | `logged_at` | date | Default `CURRENT_DATE` |
 | `status` | text | FHIR Observation status; default `'final'` |
+| `subject_type` | `subject_type` enum | Default `'self'`; `'self'` or `'relative'` |
+| `subject_id` | uuid (FK) | Nullable; → `subjects.id`; required when `subject_type = 'relative'` (enforced by trigger) |
 | `created_at` | timestamptz | |
 
 **RLS:** Users manage own logs only.
 
-**Validation:** `validate_observation_intensity()` trigger enforces intensity ∈ [1, 5].
+**Validation:** `validate_observation_intensity()` trigger enforces intensity ∈ [1, 5] and requires `subject_id` when `subject_type = 'relative'`.
 
 ---
 
