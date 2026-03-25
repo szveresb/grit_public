@@ -165,6 +165,8 @@ Curated research articles with bilingual support.
 
 #### `journal_entries`
 
+Self-reflection journal — only available in self stance (hidden in observer mode).
+
 | Column | Type | Notes |
 |---|---|---|
 | `id` | uuid (PK) | |
@@ -179,7 +181,7 @@ Curated research articles with bilingual support.
 | `free_text` | text | Nullable |
 | `created_at` / `updated_at` | timestamptz | |
 
-**RLS:** Users CRUD own entries only.
+**RLS:** Users CRUD own entries only. No stance columns — journal entries are always personal.
 
 ---
 
