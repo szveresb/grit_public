@@ -168,7 +168,7 @@ const CheckIn = () => {
 
         <ConsentGate consentKey="mood_tracking">
           {moodLoading ? (
-            <div className="context-panel p-5 space-y-3">
+            <div className="surface-card p-5 space-y-3">
               <Skeleton className="h-5 w-32 rounded-full" />
               <Skeleton className="h-4 w-52 rounded-full" />
               <Skeleton className="h-56 w-full rounded-3xl" />
