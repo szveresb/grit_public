@@ -144,6 +144,7 @@ Curated research articles with bilingual support.
 | `scoring_mode` | text | `'sum'` (default) or `'weighted'`; determines scoring method |
 | `score_ranges` | jsonb | Nullable; array of `{min, max, label, description?}` for result interpretation |
 | `repeat_interval` | text | Nullable; suggested repeat cadence |
+| `snomed_code` | text | Nullable; SNOMED CT code for clinical interoperability |
 | `created_by` | uuid | Nullable |
 | `created_at` / `updated_at` | timestamptz | |
 
