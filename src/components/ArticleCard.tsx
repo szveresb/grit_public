@@ -19,7 +19,7 @@ const ArticleCard = ({ id, title, excerpt, category, source, author, featured = 
   return (
     <Link
       to={localePath(`/library/${id}`)}
-      className={`app-surface block rounded-3xl transition-colors group ${
+      className={`reference-surface block rounded-3xl transition-colors group ${
         featured ? 'p-6 md:p-7' : 'p-6'
       }`}
     >

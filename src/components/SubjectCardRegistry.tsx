@@ -94,7 +94,7 @@ const SubjectCardRegistry = () => {
                   <div className="flex items-start justify-between gap-3">
                     <div className={cn(
                       'flex h-11 w-11 items-center justify-center rounded-2xl',
-                      isRelative ? 'bg-observer/15 text-observer' : 'bg-primary/10 text-primary'
+                      'bg-primary/10 text-primary'
                     )}>
                       {isRelative ? <FUsers className="h-5 w-5" /> : <FUser className="h-5 w-5" />}
                     </div>
@@ -106,7 +106,7 @@ const SubjectCardRegistry = () => {
                   <div className="mt-5 space-y-2">
                     <p className={cn(
                       'text-xs font-semibold uppercase tracking-widest',
-                      isRelative ? 'text-observer/80' : 'text-muted-foreground'
+                      isRelative ? 'text-muted-foreground' : 'text-muted-foreground'
                     )}>
                       {card.type === 'self' ? t.subjects.selfWorkspaceLabel : t.subjects.supportedWorkspaceLabel}
                     </p>

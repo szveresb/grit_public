@@ -77,7 +77,7 @@ const LandingPreview = () => {
 
   if (loading) {
     return (
-      <div className="app-surface rounded-[40px] p-6 md:p-8 space-y-5">
+      <div className="reference-surface rounded-[40px] p-6 md:p-8 space-y-5">
         <Skeleton className="h-4 w-32" />
         {[1, 2, 3].map(i => (
           <div key={i} className="border border-border rounded-2xl p-4 space-y-2">
@@ -94,7 +94,7 @@ const LandingPreview = () => {
   }
 
   return (
-    <div className="app-surface rounded-[40px] p-6 md:p-8 space-y-5">
+    <div className="reference-surface rounded-[40px] p-6 md:p-8 space-y-5">
       <h3 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
         {data.title}
       </h3>

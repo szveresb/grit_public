@@ -12,27 +12,27 @@ interface ActionCardProps {
 }
 
 const variantStyles: Record<ActionCardProps['variant'], string> = {
-  sage: 'bg-primary text-primary-foreground border-primary/30',
-  leaf: 'bg-bamboo-sage-light text-foreground border-border',
-  mist: 'bg-card text-foreground border-border',
+  sage: 'reference-surface text-foreground',
+  leaf: 'reference-surface text-foreground',
+  mist: 'reference-surface text-foreground',
 };
 
 const iconVariantStyles: Record<ActionCardProps['variant'], string> = {
-  sage: 'text-primary-foreground/80',
+  sage: 'text-primary',
   leaf: 'text-bamboo-sage',
-  mist: 'text-muted-foreground',
+  mist: 'text-primary',
 };
 
 const ActionCard = ({ title, description, icon: Icon, variant, onClick }: ActionCardProps) => {
   return (
     <button
       onClick={onClick}
-      className={`flex flex-col items-start gap-3 rounded-3xl border p-6 text-left transition-all hover:shadow-md hover:scale-[1.02] ${variantStyles[variant]}`}
+      className={`flex flex-col items-start gap-3 rounded-3xl p-6 text-left transition-colors ${variantStyles[variant]}`}
     >
       <Icon className={`h-5 w-5 ${iconVariantStyles[variant]}`} />
       <div>
         <h3 className="text-sm font-semibold">{title}</h3>
-        <p className={`mt-1 text-xs leading-relaxed ${variant === 'sage' ? 'opacity-80' : 'text-muted-foreground'}`}>
+        <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
           {description}
         </p>
       </div>
@@ -47,7 +47,7 @@ const ActionGrid = () => {
   return (
     <div className="space-y-6">
       {/* Quick Pulse */}
-      <div className="app-surface p-5 rounded-3xl">
+      <div className="reference-surface rounded-3xl p-5">
         <h2 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-3">
           {t.dash.quickPulse}
         </h2>
