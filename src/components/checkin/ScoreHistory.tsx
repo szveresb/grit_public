@@ -56,17 +56,17 @@ const ScoreHistory = () => {
       setExpandedEntries(new Set());
       setAnswerCache({});
 
-      let responseQuery = supabase
+      // questionnaire_responses does not yet have subject_type/subject_id columns
+      // so in observer mode we show nothing; in self mode we show all user responses
+      if (activeSubject.type === 'relative') {
+        setLoading(false);
+        return;
+      }
+
+      const responseQuery = supabase
         .from('questionnaire_responses')
         .select('id, questionnaire_id, total_score, completed_at')
-        .eq('user_id', user.id)
-        .eq('subject_type', activeSubject.type);
-
-      if (activeSubject.type === 'relative') {
-        responseQuery = responseQuery.eq('subject_id', activeSubject.id);
-      } else {
-        responseQuery = responseQuery.is('subject_id', null);
-      }
+        .eq('user_id', user.id);
 
       const { data: responses } = await responseQuery.order('completed_at', { ascending: true });
 
