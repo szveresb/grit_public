@@ -5,7 +5,7 @@ const TimelineCard = () => {
     <div className="w-full h-full flex items-center justify-center p-8">
       <div className="w-full max-w-sm">
         {/* Card */}
-        <div className="border border-border rounded-sm bg-card p-6 space-y-5">
+        <div className="surface-card p-6 space-y-5">
           {/* Header */}
           <div className="flex items-center justify-between border-b border-border pb-4">
             <span className="text-xs font-mono uppercase tracking-widest text-muted-foreground">
