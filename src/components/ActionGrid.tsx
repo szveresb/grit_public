@@ -27,7 +27,7 @@ const ActionCard = ({ title, description, icon: Icon, variant, onClick }: Action
   return (
     <button
       onClick={onClick}
-      className={`flex flex-col items-start gap-3 rounded-3xl p-6 text-left transition-colors ${variantStyles[variant]}`}
+      className={`flex h-full flex-col items-start gap-3 p-5 text-left transition-colors ${variantStyles[variant]}`}
     >
       <Icon className={`h-5 w-5 ${iconVariantStyles[variant]}`} />
       <div>
