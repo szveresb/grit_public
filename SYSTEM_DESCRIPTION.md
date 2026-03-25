@@ -52,6 +52,8 @@ Stores user display information. Created automatically on signup.
 | `id` | uuid (PK) | Auto-generated |
 | `user_id` | uuid (UNIQUE) | References auth user |
 | `display_name` | text | Nullable, set from email or metadata |
+| `consent_completed` | boolean | Default `false`; set `true` after all consent keys addressed |
+| `premium` | boolean | Default `true`; gates premium features (timeline brush, etc.) |
 | `created_at` | timestamptz | Default `now()` |
 | `updated_at` | timestamptz | Default `now()` |
 
