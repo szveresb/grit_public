@@ -202,14 +202,33 @@ Lightweight one-tap mood recordings from the QuickPulse widget.
 
 **RLS:** Users manage own pulses only.
 
+### 4.6.1 Subjects (Supported Persons)
+
+#### `subjects`
+
+| Column | Type | Notes |
+|---|---|---|
+| `id` | uuid (PK) | Auto-generated |
+| `user_id` | uuid | Auth user (the caregiver) |
+| `name` | text | Display name for the supported person |
+| `relationship_type` | `relationship_type` enum | `child`, `spouse`, `parent`, `sibling`, `other` |
+| `created_at` | timestamptz | Default `now()` |
+
+**RLS:** Users manage own subjects only.
+
 #### Stance-aware filtering
 
 The `useStance` context tracks the current perspective: `self` or `relative` (with a `selectedSubjectId`). When the user switches stance:
 
 - **Self mode:** Shows only `mood_pulses` with `subject_type = 'self'`, journal entries, and questionnaire data.
 - **Observer mode:** Shows only `mood_pulses` and `observation_logs` matching the selected `subject_id`; journal entries and questionnaire results are hidden.
+- **Questionnaire responses** do not yet have `subject_type`/`subject_id` columns — in observer mode the questionnaire history is hidden entirely.
 
 Each supported person receives a **deterministic color palette** derived from their UUID (hue, background, border, text, dot), drawn from a pre-defined set of 8 distinguishable hues (amber, teal, purple, rose, green, gold, blue, magenta). These colors are applied to `RoleIndicator`, `StanceBanner`, `MoodTrendChart` accent, and `ObservationStepper` badges.
+
+#### `SubjectCardRegistry`
+
+A horizontally scrollable card carousel on the Dashboard that shows all subjects (self + supported persons). Clicking a card triggers a global stance switch via `useStance.setActiveSubjectContext()`. The active card is visually distinguished with a primary border and "Aktív" badge. Each subject card displays the person's name, relationship type, and deterministic color accent.
 
 ---
 
