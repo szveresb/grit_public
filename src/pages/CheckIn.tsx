@@ -189,7 +189,7 @@ const CheckIn = () => {
           <PatternChart logs={obsLogs} conceptMap={conceptMap} />
         </ConsentGate>
 
-        <div key={`timeline-${activeSubject.key}`} ref={feedRef} className="context-panel p-5">
+        <div key={`timeline-${activeSubject.key}`} ref={feedRef} className="surface-card p-5">
           <h2 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-4">{t.timeline.allActivity}</h2>
           {calendarLoading ? (
             <div className="space-y-3">
