@@ -53,8 +53,8 @@ const LandingMoodPreview = ({ title, subtitle, ctaText, moodLabels }: MoodPrevie
             <div key={i} className="flex flex-col items-center gap-1.5">
               <button
                 onClick={() => handleMoodTap(i)}
-                className={`flex items-center justify-center w-14 h-14 rounded-2xl border transition-all hover:scale-105 hover:shadow-md border-border bg-card/60 backdrop-blur ${
-                  selectedIndex === i ? 'ring-2 ring-primary scale-110 shadow-lg' : 'hover:border-primary/50'
+                className={`app-pill-field flex items-center justify-center w-14 h-14 rounded-2xl transition-all ${
+                  selectedIndex === i ? 'ring-2 ring-primary scale-110' : 'hover:border-primary/50'
                 }`}
               >
                 <span className={`text-primary ${opacityLevels[i]}`}>{icon}</span>

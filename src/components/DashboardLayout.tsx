@@ -39,7 +39,7 @@ const DashboardShell = ({ children }: DashboardLayoutProps) => {
       <div className={`min-h-screen flex w-full relative z-10 overflow-x-hidden ${themeClass}`}>
         <AppSidebar />
         <main className="flex-1 flex flex-col min-w-0">
-          <header className="h-14 flex items-center border-b border-context-border/70 px-4 md:px-6 bg-context-surface/80 backdrop-blur-sm gap-3">
+          <header className="h-14 flex items-center border-b border-context-border/70 px-4 md:px-6 bg-context-surface gap-3">
             <SidebarTrigger />
             <Link to={localePath('/')} className="lg:hidden text-sm font-bold tracking-tight text-foreground">
               Grit.hu

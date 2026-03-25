@@ -87,7 +87,7 @@ const Index = () => {
       {user && (
         <section className="relative z-10 px-4 md:px-8 py-16 max-w-7xl mx-auto">
           <div className="max-w-lg mx-auto">
-            <div className="bg-card/60 backdrop-blur border border-border rounded-3xl p-6">
+            <div className="app-surface rounded-3xl p-6">
               <QuickPulse onMoodSelected={() => navigate(localePath('/journal'))} />
             </div>
           </div>
@@ -110,7 +110,7 @@ const Index = () => {
 
         {articlesLoading ? (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
-            <div className="bg-card/70 backdrop-blur border border-border rounded-3xl p-8 space-y-4">
+            <div className="app-surface rounded-3xl p-8 space-y-4">
               <Skeleton className="h-5 w-24 rounded-full" />
               <Skeleton className="h-6 w-3/4" />
               <Skeleton className="h-4 w-full" />
@@ -119,7 +119,7 @@ const Index = () => {
             </div>
             <div className="space-y-5">
               {[1, 2].map(i => (
-                <div key={i} className="bg-card/70 backdrop-blur border border-border rounded-3xl p-6 space-y-3">
+                <div key={i} className="app-surface rounded-3xl p-6 space-y-3">
                   <Skeleton className="h-5 w-20 rounded-full" />
                   <Skeleton className="h-4 w-full" />
                   <Skeleton className="h-3 w-full" />
@@ -164,7 +164,7 @@ const Index = () => {
 
 
       {/* Footer */}
-      <footer className="relative z-10 border-t border-border bg-card/40 backdrop-blur-xl">
+      <footer className="relative z-10 border-t border-border bg-card">
         <div className="max-w-7xl mx-auto px-4 md:px-8 py-6 flex flex-col sm:flex-row items-center justify-between gap-4">
           <span className="text-xs text-muted-foreground">{t.landing.footerRights.replace('{year}', String(new Date().getFullYear()))}</span>
           <div className="flex items-center gap-6">

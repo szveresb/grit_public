@@ -6,7 +6,6 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
-import bambooBg from '@/assets/bamboo-bg.jpg';
 import { useAuth } from '@/hooks/useAuth';
 import { useLanguage } from '@/hooks/useLanguage';
 import { lovable } from '@/integrations/lovable/index';
@@ -81,8 +80,7 @@ const Auth = () => {
 
   return (
     <div className="relative flex min-h-screen items-center justify-center p-4">
-      <div className="fixed inset-0 z-0 bg-cover bg-center" style={{ backgroundImage: `url(${bambooBg})`, opacity: 0.12 }} />
-      <div className="fixed inset-0 z-0 bg-background/92" />
+      <div className="fixed inset-0 z-0 bg-background" />
 
       <div className="fixed right-4 top-4 z-20">
         <LanguageToggle />

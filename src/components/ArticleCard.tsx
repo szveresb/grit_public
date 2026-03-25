@@ -20,7 +20,7 @@ const ArticleCard = ({ id, title, excerpt, category, source, author, featured = 
     <Link
       to={localePath(`/library/${id}`)}
       className={`app-surface block rounded-3xl transition-colors group ${
-        featured ? 'p-8' : 'p-6'
+        featured ? 'p-6 md:p-7' : 'p-6'
       }`}
     >
       <div className="flex items-center gap-2 mb-3">
@@ -29,7 +29,7 @@ const ArticleCard = ({ id, title, excerpt, category, source, author, featured = 
         </Badge>
       </div>
       <h3 className={`font-semibold text-foreground leading-snug group-hover:text-primary transition-colors ${
-        featured ? 'text-lg md:text-xl' : 'text-sm'
+        featured ? 'text-base md:text-lg' : 'text-sm'
       }`}>
         {title}
       </h3>

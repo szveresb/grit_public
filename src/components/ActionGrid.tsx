@@ -47,7 +47,7 @@ const ActionGrid = () => {
   return (
     <div className="space-y-6">
       {/* Quick Pulse */}
-      <div className="bg-card/60 backdrop-blur border border-border rounded-3xl p-5">
+      <div className="app-surface p-5 rounded-3xl">
         <h2 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-3">
           {t.dash.quickPulse}
         </h2>

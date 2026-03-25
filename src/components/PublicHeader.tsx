@@ -18,7 +18,7 @@ const PublicHeader = () => {
   };
 
   return (
-    <header className="relative z-10 border-b border-border bg-card/60 backdrop-blur-xl">
+    <header className="relative z-10 border-b border-border bg-card">
       <div className="max-w-7xl mx-auto flex items-center justify-between px-4 md:px-8 py-4">
         <Link to={localePath('/')} className="text-lg font-bold tracking-tight text-foreground">
           {t.brand}
