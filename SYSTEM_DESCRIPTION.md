@@ -39,6 +39,35 @@ Consent state is **cached in `localStorage`** (`grit_consent_v1` key, scoped per
 
 `profiles.consent_completed` is the authoritative flag — set to `true` once the user has addressed all `CONSENT_KEYS`. The flag is re-evaluated against the current key set, so adding a new key will re-trigger onboarding for that key only.
 
+#### Consent Tables
+
+##### `user_consents`
+
+| Column | Type | Notes |
+|---|---|---|
+| `id` | uuid (PK) | Auto-generated |
+| `user_id` | uuid | Auth user |
+| `consent_key` | text | One of 7 consent categories |
+| `granted` | boolean | Default `false` |
+| `updated_at` | timestamptz | Default `now()` |
+
+**RLS:** Users can view/insert/update own consents. No DELETE.
+
+##### `consent_history_logs`
+
+Immutable audit trail — populated by `log_consent_change()` trigger on `user_consents` UPDATE.
+
+| Column | Type | Notes |
+|---|---|---|
+| `id` | uuid (PK) | Auto-generated |
+| `user_id` | uuid | Auth user |
+| `consent_key` | text | Which consent changed |
+| `granted` | boolean | New value |
+| `changed_at` | timestamptz | Default `now()` |
+| `scope_snapshot` | jsonb | Nullable; snapshot of all consent states at time of change |
+
+**RLS:** Users can SELECT own history only. No INSERT/UPDATE/DELETE from client.
+
 ---
 
 ## 4. Database Schema
