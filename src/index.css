@@ -217,6 +217,24 @@
     box-shadow: inset 0 1px 0 hsl(0 0% 100% / 0.55);
   }
 
+  .app-surface {
+    background: hsl(var(--card));
+    border: 1px solid hsl(var(--border));
+    box-shadow:
+      0 18px 38px -26px hsl(140 18% 28% / 0.18),
+      0 2px 6px hsl(140 10% 30% / 0.04);
+    backdrop-filter: none;
+  }
+
+  .app-context-surface {
+    background: hsl(var(--context-surface));
+    border: 1px solid hsl(var(--context-border));
+    box-shadow:
+      0 14px 30px -24px hsl(140 18% 28% / 0.12),
+      0 2px 6px hsl(140 10% 30% / 0.03);
+    backdrop-filter: none;
+  }
+
   .context-panel {
     @apply rounded-3xl;
     background: hsl(var(--context-surface));
@@ -267,26 +285,4 @@
       0 0 0 1px hsl(var(--primary) / 0.18);
   }
 
-  [class*='bg-card/40'],
-  [class*='bg-card/60'],
-  [class*='bg-card/70'],
-  [class*='bg-card/80'] {
-    background: hsl(var(--card));
-    border-color: hsl(var(--border));
-    box-shadow:
-      0 18px 38px -26px hsl(140 18% 28% / 0.18),
-      0 2px 6px hsl(140 10% 30% / 0.04);
-  }
-
-  [class*='bg-context-surface/80'] {
-    background: hsl(var(--context-surface));
-    border-color: hsl(var(--context-border));
-    box-shadow:
-      0 14px 30px -24px hsl(140 18% 28% / 0.12),
-      0 2px 6px hsl(140 10% 30% / 0.03);
-  }
-
-  [class*='backdrop-blur'] {
-    backdrop-filter: none;
-  }
 }

@@ -5,7 +5,7 @@ const LanguageToggle = () => {
   const { lang, setLang, t } = useLanguage();
 
   return (
-    <div className="flex items-center rounded-full border border-border bg-card/60 backdrop-blur overflow-hidden text-xs font-semibold">
+    <div className="app-pill-field flex items-center overflow-hidden rounded-full text-xs font-semibold">
       {(['hu', 'en'] as Lang[]).map((l) => (
         <button
           key={l}
