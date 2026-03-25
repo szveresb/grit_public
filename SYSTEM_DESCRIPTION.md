@@ -39,6 +39,35 @@ Consent state is **cached in `localStorage`** (`grit_consent_v1` key, scoped per
 
 `profiles.consent_completed` is the authoritative flag — set to `true` once the user has addressed all `CONSENT_KEYS`. The flag is re-evaluated against the current key set, so adding a new key will re-trigger onboarding for that key only.
 
+#### Consent Tables
+
+##### `user_consents`
+
+| Column | Type | Notes |
+|---|---|---|
+| `id` | uuid (PK) | Auto-generated |
+| `user_id` | uuid | Auth user |
+| `consent_key` | text | One of 7 consent categories |
+| `granted` | boolean | Default `false` |
+| `updated_at` | timestamptz | Default `now()` |
+
+**RLS:** Users can view/insert/update own consents. No DELETE.
+
+##### `consent_history_logs`
+
+Immutable audit trail — populated by `log_consent_change()` trigger on `user_consents` UPDATE.
+
+| Column | Type | Notes |
+|---|---|---|
+| `id` | uuid (PK) | Auto-generated |
+| `user_id` | uuid | Auth user |
+| `consent_key` | text | Which consent changed |
+| `granted` | boolean | New value |
+| `changed_at` | timestamptz | Default `now()` |
+| `scope_snapshot` | jsonb | Nullable; snapshot of all consent states at time of change |
+
+**RLS:** Users can SELECT own history only. No INSERT/UPDATE/DELETE from client.
+
 ---
 
 ## 4. Database Schema
@@ -52,6 +81,8 @@ Stores user display information. Created automatically on signup.
 | `id` | uuid (PK) | Auto-generated |
 | `user_id` | uuid (UNIQUE) | References auth user |
 | `display_name` | text | Nullable, set from email or metadata |
+| `consent_completed` | boolean | Default `false`; set `true` after all consent keys addressed |
+| `premium` | boolean | Default `true`; gates premium features (timeline brush, etc.) |
 | `created_at` | timestamptz | Default `now()` |
 | `updated_at` | timestamptz | Default `now()` |
 
@@ -113,6 +144,7 @@ Curated research articles with bilingual support.
 | `scoring_mode` | text | `'sum'` (default) or `'weighted'`; determines scoring method |
 | `score_ranges` | jsonb | Nullable; array of `{min, max, label, description?}` for result interpretation |
 | `repeat_interval` | text | Nullable; suggested repeat cadence |
+| `snomed_code` | text | Nullable; SNOMED CT code for clinical interoperability |
 | `created_by` | uuid | Nullable |
 | `created_at` / `updated_at` | timestamptz | |
 
@@ -165,6 +197,8 @@ Curated research articles with bilingual support.
 
 #### `journal_entries`
 
+Self-reflection journal — only available in self stance (hidden in observer mode).
+
 | Column | Type | Notes |
 |---|---|---|
 | `id` | uuid (PK) | |
@@ -179,7 +213,7 @@ Curated research articles with bilingual support.
 | `free_text` | text | Nullable |
 | `created_at` / `updated_at` | timestamptz | |
 
-**RLS:** Users CRUD own entries only.
+**RLS:** Users CRUD own entries only. No stance columns — journal entries are always personal.
 
 ---
 
@@ -196,9 +230,25 @@ Lightweight one-tap mood recordings from the QuickPulse widget.
 | `level` | integer | 1–5 (struggling → strong) |
 | `label` | text | Localized mood label at time of recording |
 | `entry_date` | date | Default `CURRENT_DATE` |
+| `subject_type` | `subject_type` enum | Default `'self'`; `'self'` or `'relative'` |
+| `subject_id` | uuid (FK) | Nullable; → `subjects.id`; set when `subject_type = 'relative'` |
 | `created_at` | timestamptz | Default `now()` |
 
 **RLS:** Users manage own pulses only.
+
+### 4.6.1 Subjects (Supported Persons)
+
+#### `subjects`
+
+| Column | Type | Notes |
+|---|---|---|
+| `id` | uuid (PK) | Auto-generated |
+| `user_id` | uuid | Auth user (the caregiver) |
+| `name` | text | Display name for the supported person |
+| `relationship_type` | `relationship_type` enum | `child`, `spouse`, `parent`, `sibling`, `other` |
+| `created_at` | timestamptz | Default `now()` |
+
+**RLS:** Users manage own subjects only.
 
 #### Stance-aware filtering
 
@@ -206,8 +256,13 @@ The `useStance` context tracks the current perspective: `self` or `relative` (wi
 
 - **Self mode:** Shows only `mood_pulses` with `subject_type = 'self'`, journal entries, and questionnaire data.
 - **Observer mode:** Shows only `mood_pulses` and `observation_logs` matching the selected `subject_id`; journal entries and questionnaire results are hidden.
+- **Questionnaire responses** do not yet have `subject_type`/`subject_id` columns — in observer mode the questionnaire history is hidden entirely.
 
 Each supported person receives a **deterministic color palette** derived from their UUID (hue, background, border, text, dot), drawn from a pre-defined set of 8 distinguishable hues (amber, teal, purple, rose, green, gold, blue, magenta). These colors are applied to `RoleIndicator`, `StanceBanner`, `MoodTrendChart` accent, and `ObservationStepper` badges.
+
+#### `SubjectCardRegistry`
+
+A horizontally scrollable card carousel on the Dashboard that shows all subjects (self + supported persons). Clicking a card triggers a global stance switch via `useStance.setActiveSubjectContext()`. The active card is visually distinguished with a primary border and "Aktív" badge. Each subject card displays the person's name, relationship type, and deterministic color accent.
 
 ---
 
@@ -263,11 +318,13 @@ A SNOMED CT-inspired three-level hierarchy for logging interpersonal patterns.
 | `user_narrative` | text | Free-text anchor |
 | `logged_at` | date | Default `CURRENT_DATE` |
 | `status` | text | FHIR Observation status; default `'final'` |
+| `subject_type` | `subject_type` enum | Default `'self'`; `'self'` or `'relative'` |
+| `subject_id` | uuid (FK) | Nullable; → `subjects.id`; required when `subject_type = 'relative'` (enforced by trigger) |
 | `created_at` | timestamptz | |
 
 **RLS:** Users manage own logs only.
 
-**Validation:** `validate_observation_intensity()` trigger enforces intensity ∈ [1, 5].
+**Validation:** `validate_observation_intensity()` trigger enforces intensity ∈ [1, 5] and requires `subject_id` when `subject_type = 'relative'`.
 
 ---
 
@@ -300,7 +357,9 @@ Admin/editor-managed content sections for the public landing page.
 | `has_any_role(uuid, app_role[])` | Check any of multiple roles | DEFINER |
 | `handle_new_user()` | Auto-create profile on signup | DEFINER (trigger) |
 | `update_updated_at_column()` | Auto-set `updated_at` on UPDATE | Trigger |
-| `validate_observation_intensity()` | Enforce intensity 1–5 | Trigger |
+| `validate_observation_intensity()` | Enforce intensity 1–5 + require `subject_id` for relative logs | Trigger |
+| `validate_mood_pulse_level()` | Enforce mood level 1–5 | Trigger |
+| `log_consent_change()` | Audit log on consent update → `consent_history_logs` | DEFINER (trigger) |
 | `analyst_journal_aggregates()` | Anonymized journal stats | DEFINER |
 | `analyst_questionnaire_aggregates()` | Anonymized questionnaire stats | DEFINER |
 | `analyst_role_distribution()` | Role count distribution | DEFINER |
