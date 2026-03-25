@@ -1,0 +1,35 @@
+name: Publish to public repo (Direct Push)
+on:
+  workflow_dispatch:
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Push Directly to Public Main
+        env:
+          PUBLIC_REPO_TOKEN: ${{ secrets.PUBLIC_REPO_TOKEN }}
+          TARGET_REPO: "szveresb/grit_public"
+        run: |
+          set -euo pipefail
+          
+          # Setup Auth
+          ASKPASS_FILE="$(mktemp)"
+          printf '#!/bin/sh\nprintf "%%s\\n" "$PUBLIC_REPO_TOKEN"' > "${ASKPASS_FILE}"
+          chmod +x "${ASKPASS_FILE}"
+          export GIT_ASKPASS="${ASKPASS_FILE}"
+
+          # Push the current HEAD directly to the 'main' branch of the target
+          # Using --force to ensure the public repo exactly matches your private one
+          git -c credential.username=x-access-token push --force \
+            "https://github.com/${TARGET_REPO}.git" \
+            "HEAD:refs/heads/main"
+          
+          echo "Successfully pushed to main on ${TARGET_REPO}"
+          rm -f "${ASKPASS_FILE}"
