@@ -196,6 +196,8 @@ Lightweight one-tap mood recordings from the QuickPulse widget.
 | `level` | integer | 1–5 (struggling → strong) |
 | `label` | text | Localized mood label at time of recording |
 | `entry_date` | date | Default `CURRENT_DATE` |
+| `subject_type` | `subject_type` enum | Default `'self'`; `'self'` or `'relative'` |
+| `subject_id` | uuid (FK) | Nullable; → `subjects.id`; set when `subject_type = 'relative'` |
 | `created_at` | timestamptz | Default `now()` |
 
 **RLS:** Users manage own pulses only.
