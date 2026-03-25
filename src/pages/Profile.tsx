@@ -79,7 +79,7 @@ const Profile = () => {
           </Button>
         </div>
 
-        <div className="bg-card/60 backdrop-blur border border-border rounded-3xl p-6 space-y-4">
+        <div className="surface-card p-6 space-y-4">
           <h2 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">{t.profile.roleFraming}</h2>
           {roleLoading ? (
             <p className="text-sm text-muted-foreground">{t.loading}</p>
