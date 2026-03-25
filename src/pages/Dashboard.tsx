@@ -62,7 +62,7 @@ const Dashboard = () => {
 
         <ActionGrid />
 
-        <div className="bg-card/60 backdrop-blur border border-border rounded-3xl p-6">
+        <div className="surface-card p-6">
           <h2 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-4">{t.dash.recentActivity}</h2>
           {loading ? (
             <p className="text-sm text-muted-foreground">{t.loading}</p>

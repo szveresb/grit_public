@@ -23,7 +23,7 @@ const ConsentCard = ({ category, granted, onToggle }: ConsentCardProps) => {
   const { t } = useLanguage();
 
   return (
-    <div className="bg-card/60 backdrop-blur border border-border rounded-3xl p-6 space-y-4 w-full max-w-md mx-auto">
+    <div className="surface-card p-6 space-y-4 w-full max-w-md mx-auto">
       <div className="flex items-start gap-4">
         <div className="flex-shrink-0 h-10 w-10 rounded-2xl bg-primary/10 flex items-center justify-center text-primary">
           {category.icon}

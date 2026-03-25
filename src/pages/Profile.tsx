@@ -117,7 +117,7 @@ const Profile = () => {
           )}
         </div>
 
-        <div className="bg-card/60 backdrop-blur border border-border rounded-3xl p-6 space-y-4">
+        <div className="surface-card p-6 space-y-4">
           <h2 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">{t.profile.yourData}</h2>
           <p className="text-sm text-muted-foreground leading-relaxed">{t.profile.yourDataDesc}</p>
           <Button onClick={handleExport} size="sm" variant="outline" className="rounded-2xl">
