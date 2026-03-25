@@ -9,41 +9,41 @@
 
 @layer base {
   :root {
-    --background: 100 20% 97%;
-    --foreground: 150 15% 20%;
+    --background: 48 19% 96%;
+    --foreground: 146 15% 24%;
 
-    --self-primary: 145 30% 42%;
-    --self-primary-foreground: 100 30% 97%;
-    --self-accent: 145 20% 90%;
-    --self-accent-foreground: 150 15% 20%;
-    --surface-soft: 100 24% 95%;
-    --surface-soft-foreground: 150 15% 20%;
-    --surface-soft-border: 145 18% 80%;
-    --surface-soft-muted: 145 12% 40%;
+    --self-primary: 143 28% 44%;
+    --self-primary-foreground: 48 20% 97%;
+    --self-accent: 120 17% 95%;
+    --self-accent-foreground: 146 15% 24%;
+    --surface-soft: 60 16% 97%;
+    --surface-soft-foreground: 146 15% 24%;
+    --surface-soft-border: 120 17% 84%;
+    --surface-soft-muted: 140 8% 52%;
 
-    --observer-primary: 34 32% 40%;
-    --observer-primary-foreground: 45 30% 97%;
-    --observer-accent: 42 34% 91%;
-    --observer-accent-foreground: 34 24% 24%;
-    --surface-observer: 45 34% 94%;
-    --surface-observer-foreground: 34 24% 24%;
-    --surface-observer-border: 40 20% 78%;
-    --surface-observer-muted: 34 16% 42%;
+    --observer-primary: 34 26% 42%;
+    --observer-primary-foreground: 48 20% 97%;
+    --observer-accent: 40 24% 94%;
+    --observer-accent-foreground: 34 20% 24%;
+    --surface-observer: 48 22% 96%;
+    --surface-observer-foreground: 34 20% 24%;
+    --surface-observer-border: 38 18% 82%;
+    --surface-observer-muted: 34 10% 48%;
 
-    --card: 0 0% 100%;
-    --card-foreground: 150 15% 20%;
+    --card: 60 14% 98%;
+    --card-foreground: 146 15% 24%;
 
-    --popover: 0 0% 100%;
-    --popover-foreground: 150 15% 20%;
+    --popover: 60 14% 98%;
+    --popover-foreground: 146 15% 24%;
 
     --primary: var(--self-primary);
     --primary-foreground: var(--self-primary-foreground);
 
-    --secondary: 100 15% 92%;
-    --secondary-foreground: 150 15% 25%;
+    --secondary: 60 12% 95%;
+    --secondary-foreground: 146 15% 24%;
 
-    --muted: 100 12% 94%;
-    --muted-foreground: 150 8% 48%;
+    --muted: 60 10% 96%;
+    --muted-foreground: 140 8% 56%;
 
     --accent: var(--self-accent);
     --accent-foreground: var(--self-accent-foreground);
@@ -51,8 +51,8 @@
     --destructive: 0 60% 55%;
     --destructive-foreground: 0 0% 100%;
 
-    --border: 140 12% 86%;
-    --input: 140 12% 86%;
+    --border: 120 17% 84%;
+    --input: 120 17% 84%;
     --ring: var(--self-primary);
 
     --context-surface: var(--surface-soft);
@@ -62,22 +62,22 @@
     --context-accent: var(--self-primary);
     --context-accent-foreground: var(--self-primary-foreground);
 
-    --radius: 1.25rem;
+    --radius: 1.5rem;
 
     /* Bamboo tokens */
-    --bamboo-sage: 145 25% 52%;
-    --bamboo-sage-light: 145 20% 90%;
-    --bamboo-leaf: 140 30% 38%;
-    --bamboo-mist: 100 20% 97%;
-    --bamboo-cream: 45 30% 95%;
+    --bamboo-sage: 143 24% 50%;
+    --bamboo-sage-light: 120 17% 93%;
+    --bamboo-leaf: 140 24% 36%;
+    --bamboo-mist: 48 19% 96%;
+    --bamboo-cream: 48 24% 95%;
 
-    --sidebar-background: 100 15% 96%;
-    --sidebar-foreground: 150 15% 25%;
+    --sidebar-background: 60 14% 97%;
+    --sidebar-foreground: 146 15% 24%;
     --sidebar-primary: var(--self-primary);
     --sidebar-primary-foreground: 100 30% 97%;
     --sidebar-accent: var(--self-accent);
     --sidebar-accent-foreground: 150 15% 20%;
-    --sidebar-border: 140 12% 88%;
+    --sidebar-border: 120 17% 86%;
     --sidebar-ring: var(--self-primary);
   }
 
@@ -203,54 +203,90 @@
 }
 
 @layer components {
-  .context-panel {
-    @apply rounded-3xl backdrop-blur;
-    background:
-      linear-gradient(180deg, hsl(var(--context-surface) / 0.9), hsl(var(--card) / 0.7));
+  .app-card {
+    background: hsl(var(--card));
+    border: 1px solid hsl(var(--border));
     box-shadow:
-      0 14px 40px -28px hsl(var(--context-accent) / 0.42),
-      inset 0 1px 0 hsl(var(--card) / 0.75);
+      0 18px 38px -26px hsl(140 18% 28% / 0.2),
+      0 2px 6px hsl(140 10% 30% / 0.05);
+  }
+
+  .app-pill-field {
+    background: hsl(var(--card));
+    border: 1px solid hsl(var(--input));
+    box-shadow: inset 0 1px 0 hsl(0 0% 100% / 0.55);
+  }
+
+  .context-panel {
+    @apply rounded-3xl;
+    background: hsl(var(--context-surface));
+    border: 1px solid hsl(var(--context-border));
+    box-shadow:
+      0 18px 38px -26px hsl(140 18% 28% / 0.18),
+      0 2px 6px hsl(140 10% 30% / 0.04);
     color: hsl(var(--context-foreground));
   }
 
   .stance-banner-self {
     @apply bg-surface-soft text-foreground;
     box-shadow:
-      0 10px 28px -22px hsl(var(--primary) / 0.32),
-      inset 0 1px 0 hsl(var(--card) / 0.75);
+      0 14px 30px -24px hsl(140 18% 28% / 0.16),
+      0 2px 6px hsl(140 10% 30% / 0.03);
   }
 
   .stance-banner-observer {
     @apply bg-surface-observer text-observer-foreground;
     box-shadow:
-      0 10px 28px -22px hsl(var(--observer-primary) / 0.28),
-      inset 0 1px 0 hsl(var(--card) / 0.6);
+      0 14px 30px -24px hsl(34 18% 26% / 0.14),
+      0 2px 6px hsl(34 10% 30% / 0.03);
   }
 
   .subject-card-self {
     @apply bg-surface-soft text-foreground;
-    background:
-      linear-gradient(180deg, hsl(var(--surface-soft) / 0.96), hsl(var(--card) / 0.76));
+    background: hsl(var(--surface-soft));
+    border: 1px solid hsl(var(--surface-soft-border));
     box-shadow:
-      0 16px 38px -28px hsl(var(--primary) / 0.28),
-      inset 0 1px 0 hsl(var(--card) / 0.78);
+      0 18px 38px -28px hsl(140 18% 28% / 0.16),
+      0 2px 6px hsl(140 10% 30% / 0.04);
     isolation: isolate;
   }
 
   .subject-card-observer {
     @apply bg-surface-observer text-observer-foreground;
-    background:
-      linear-gradient(180deg, hsl(var(--surface-observer) / 0.98), hsl(var(--card) / 0.58));
+    background: hsl(var(--surface-observer));
+    border: 1px solid hsl(var(--surface-observer-border));
     box-shadow:
-      0 16px 38px -28px hsl(var(--observer-primary) / 0.24),
-      inset 0 1px 0 hsl(var(--card) / 0.56);
+      0 18px 38px -28px hsl(34 18% 26% / 0.14),
+      0 2px 6px hsl(34 10% 30% / 0.04);
     isolation: isolate;
   }
 
   .subject-card-active {
     box-shadow:
-      0 20px 44px -26px hsl(var(--primary) / 0.34),
-      0 0 0 1px hsl(var(--primary) / 0.1),
-      inset 0 1px 0 hsl(var(--card) / 0.82);
+      0 20px 42px -26px hsl(140 18% 28% / 0.2),
+      0 0 0 1px hsl(var(--primary) / 0.18);
+  }
+
+  [class*='bg-card/40'],
+  [class*='bg-card/60'],
+  [class*='bg-card/70'],
+  [class*='bg-card/80'] {
+    background: hsl(var(--card));
+    border-color: hsl(var(--border));
+    box-shadow:
+      0 18px 38px -26px hsl(140 18% 28% / 0.18),
+      0 2px 6px hsl(140 10% 30% / 0.04);
+  }
+
+  [class*='bg-context-surface/80'] {
+    background: hsl(var(--context-surface));
+    border-color: hsl(var(--context-border));
+    box-shadow:
+      0 14px 30px -24px hsl(140 18% 28% / 0.12),
+      0 2px 6px hsl(140 10% 30% / 0.03);
+  }
+
+  [class*='backdrop-blur'] {
+    backdrop-filter: none;
   }
 }

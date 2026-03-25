@@ -85,8 +85,8 @@ const SubjectCardRegistry = () => {
                     setActiveSubjectContext({ type: 'relative', id: card.id!, name: card.name });
                   }}
                   className={cn(
-                    'flex h-full min-h-[204px] w-full flex-col rounded-3xl p-5 text-left transition-all sm:min-h-[220px] sm:p-6',
-                    isRelative ? 'subject-card-observer hover:-translate-y-0.5 hover:shadow-lg' : 'subject-card-self hover:-translate-y-0.5 hover:shadow-lg',
+                    'flex h-full min-h-[204px] w-full flex-col rounded-3xl p-5 text-left transition-colors sm:min-h-[220px] sm:p-6',
+                    isRelative ? 'subject-card-observer' : 'subject-card-self',
                     isActive && 'subject-card-active'
                   )}
                   aria-pressed={isActive}

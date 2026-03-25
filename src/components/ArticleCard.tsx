@@ -19,7 +19,7 @@ const ArticleCard = ({ id, title, excerpt, category, source, author, featured = 
   return (
     <Link
       to={localePath(`/library/${id}`)}
-      className={`block bg-card/70 backdrop-blur border border-border rounded-3xl hover:shadow-md transition-all group ${
+      className={`block bg-card/70 border border-border rounded-3xl transition-colors group ${
         featured ? 'p-8' : 'p-6'
       }`}
     >

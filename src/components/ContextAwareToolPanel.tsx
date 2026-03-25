@@ -46,7 +46,7 @@ const ContextAwareToolPanel = () => {
           key={tool.title}
           type="button"
           onClick={() => navigate(localePath(tool.href))}
-          className="context-panel p-5 text-left transition-colors hover:border-primary/30"
+          className="context-panel p-5 text-left transition-colors hover:border-border"
         >
           <tool.icon className="h-5 w-5 text-primary" />
           <h2 className="mt-4 text-sm font-semibold text-foreground">{tool.title}</h2>
