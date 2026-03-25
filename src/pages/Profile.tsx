@@ -64,7 +64,7 @@ const Profile = () => {
           <p className="mt-1 text-sm text-muted-foreground leading-relaxed">{t.profile.subtitle}</p>
         </div>
 
-        <div className="bg-card/60 backdrop-blur border border-border rounded-3xl p-6 space-y-4">
+        <div className="surface-card p-6 space-y-4">
           <h2 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">{t.profile.profileSection}</h2>
           <div className="space-y-2">
             <Label className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">{t.profile.emailLabel}</Label>
