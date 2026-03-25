@@ -1,4 +1,4 @@
-import { useNavigate, Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
 import { useStance } from '@/hooks/useStance';
 import AppSidebar from '@/components/AppSidebar';
@@ -14,9 +14,15 @@ import bambooBg from '@/assets/bamboo-bg.jpg';
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
+  showSubjectRegistry?: boolean;
+  showContextToolPanel?: boolean;
 }
 
-const DashboardShell = ({ children }: DashboardLayoutProps) => {
+const DashboardShell = ({
+  children,
+  showSubjectRegistry = true,
+  showContextToolPanel = true,
+}: DashboardLayoutProps) => {
   const { activeSubject } = useStance();
   const { user, signOut } = useAuth();
   const { t, localePath } = useLanguage();
@@ -69,8 +75,8 @@ const DashboardShell = ({ children }: DashboardLayoutProps) => {
           </header>
           <div className="flex-1 px-4 md:px-8 py-6 md:py-8 pb-20">
             <div className="max-w-7xl mx-auto w-full">
-              {user && <SubjectCardRegistry />}
-              {user && <ContextAwareToolPanel />}
+              {user && showSubjectRegistry && <SubjectCardRegistry />}
+              {user && showContextToolPanel && <ContextAwareToolPanel />}
               {children}
             </div>
           </div>
@@ -80,8 +86,12 @@ const DashboardShell = ({ children }: DashboardLayoutProps) => {
   );
 };
 
-const DashboardLayout = ({ children }: DashboardLayoutProps) => {
-  return <DashboardShell>{children}</DashboardShell>;
+const DashboardLayout = ({ children, showSubjectRegistry, showContextToolPanel }: DashboardLayoutProps) => {
+  return (
+    <DashboardShell showSubjectRegistry={showSubjectRegistry} showContextToolPanel={showContextToolPanel}>
+      {children}
+    </DashboardShell>
+  );
 };
 
 export default DashboardLayout;

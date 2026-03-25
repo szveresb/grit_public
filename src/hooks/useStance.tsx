@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useCallback, useMemo, useEffect } from 'react';
+import React, { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
 
@@ -28,7 +28,7 @@ export interface StanceContextValue {
   subjectType: 'self' | 'relative';
   selectedSubjectId: string | null;
   selectedSubjectName: string | undefined;
-  subjectColor: SubjectColor | null; // null when self
+  subjectColor: SubjectColor | null;
   subjects: SupportedSubject[];
   subjectsLoading: boolean;
   activeSubject: ActiveSubjectContext;
@@ -40,7 +40,37 @@ export interface StanceContextValue {
   resetToSelf: () => void;
 }
 
+const defaultStance: StanceContextValue = {
+  subjectType: 'self',
+  selectedSubjectId: null,
+  selectedSubjectName: undefined,
+  subjectColor: null,
+  subjects: [],
+  subjectsLoading: false,
+  activeSubject: {
+    key: 'self',
+    type: 'self',
+    id: null,
+    name: 'Self',
+    color: null,
+  },
+  setSubjectType: () => {},
+  setSelectedSubjectId: () => {},
+  setSelectedSubjectName: () => {},
+  setActiveSubjectContext: () => {},
+  refetchSubjects: async () => {},
+  resetToSelf: () => {},
+};
+
 const StanceContext = createContext<StanceContextValue | undefined>(undefined);
+const ScopedStanceContext = createContext<StanceContextValue | undefined>(undefined);
+
+const observerSubjectColor: SubjectColor = {
+  bg: 'hsl(var(--surface-observer))',
+  border: 'hsl(var(--surface-observer-border))',
+  text: 'hsl(var(--surface-observer-foreground))',
+  dot: 'hsl(var(--observer-primary))',
+};
 
 export const StanceProvider = ({ children }: { children: React.ReactNode }) => {
   const { user } = useAuth();
@@ -52,12 +82,7 @@ export const StanceProvider = ({ children }: { children: React.ReactNode }) => {
 
   const subjectColor = useMemo(() => {
     if (subjectType !== 'relative') return null;
-    return {
-      bg: 'hsl(var(--surface-observer))',
-      border: 'hsl(var(--surface-observer-border))',
-      text: 'hsl(var(--surface-observer-foreground))',
-      dot: 'hsl(var(--observer-primary))',
-    };
+    return observerSubjectColor;
   }, [subjectType]);
 
   const refetchSubjects = useCallback(async () => {
@@ -74,11 +99,13 @@ export const StanceProvider = ({ children }: { children: React.ReactNode }) => {
       .eq('user_id', user.id)
       .order('created_at');
 
-    setSubjects(((data ?? []) as Array<{ id: string; name: string; relationship_type: string }>).map((subject) => ({
-      id: subject.id,
-      name: subject.name,
-      relationshipType: subject.relationship_type,
-    })));
+    setSubjects(
+      ((data ?? []) as Array<{ id: string; name: string; relationship_type: string }>).map((subject) => ({
+        id: subject.id,
+        name: subject.name,
+        relationshipType: subject.relationship_type,
+      }))
+    );
     setSubjectsLoading(false);
   }, [user]);
 
@@ -150,41 +177,76 @@ export const StanceProvider = ({ children }: { children: React.ReactNode }) => {
   }, [selectedSubjectId, selectedSubjectName, subjectColor, subjectType, subjects]);
 
   return (
-    <StanceContext.Provider value={{
-      subjectType, selectedSubjectId, selectedSubjectName, subjectColor,
-      subjects, subjectsLoading, activeSubject,
-      setSubjectType, setSelectedSubjectId, setSelectedSubjectName,
-      setActiveSubjectContext, refetchSubjects,
-      resetToSelf,
-    }}>
+    <StanceContext.Provider
+      value={{
+        subjectType,
+        selectedSubjectId,
+        selectedSubjectName,
+        subjectColor,
+        subjects,
+        subjectsLoading,
+        activeSubject,
+        setSubjectType,
+        setSelectedSubjectId,
+        setSelectedSubjectName,
+        setActiveSubjectContext,
+        refetchSubjects,
+        resetToSelf,
+      }}
+    >
       {children}
     </StanceContext.Provider>
   );
 };
 
-const defaultStance: StanceContextValue = {
-  subjectType: 'self',
-  selectedSubjectId: null,
-  selectedSubjectName: undefined,
-  subjectColor: null,
-  subjects: [],
-  subjectsLoading: false,
-  activeSubject: {
-    key: 'self',
-    type: 'self',
-    id: null,
-    name: 'Self',
-    color: null,
-  },
-  setSubjectType: () => {},
-  setSelectedSubjectId: () => {},
-  setSelectedSubjectName: () => {},
-  setActiveSubjectContext: () => {},
-  refetchSubjects: async () => {},
-  resetToSelf: () => {},
+interface ScopedStanceProviderProps {
+  children: React.ReactNode;
+  subject: { type: 'self' } | { type: 'relative'; id: string; name: string; relationshipType?: string };
+}
+
+export const ScopedStanceProvider = ({ children, subject }: ScopedStanceProviderProps) => {
+  const parent = useContext(StanceContext) ?? defaultStance;
+
+  const scopedValue = useMemo<StanceContextValue>(() => {
+    const activeSubject: ActiveSubjectContext = subject.type === 'relative'
+      ? {
+          key: `relative:${subject.id}`,
+          type: 'relative',
+          id: subject.id,
+          name: subject.name,
+          relationshipType: subject.relationshipType,
+          color: observerSubjectColor,
+        }
+      : {
+          key: 'self',
+          type: 'self',
+          id: null,
+          name: 'Self',
+          color: null,
+        };
+
+    return {
+      ...parent,
+      subjectType: activeSubject.type,
+      selectedSubjectId: activeSubject.id,
+      selectedSubjectName: activeSubject.type === 'relative' ? activeSubject.name : undefined,
+      subjectColor: activeSubject.color,
+      activeSubject,
+      setSubjectType: () => {},
+      setSelectedSubjectId: () => {},
+      setSelectedSubjectName: () => {},
+      setActiveSubjectContext: () => {},
+      resetToSelf: () => {},
+    };
+  }, [parent, subject]);
+
+  return <ScopedStanceContext.Provider value={scopedValue}>{children}</ScopedStanceContext.Provider>;
 };
 
 export const useStance = () => {
+  const scoped = useContext(ScopedStanceContext);
+  if (scoped) return scoped;
+
   const ctx = useContext(StanceContext);
   return ctx ?? defaultStance;
 };

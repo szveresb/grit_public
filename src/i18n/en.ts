@@ -508,7 +508,7 @@ export const en: Dictionary = {
     selfDot: 'Self',
     proxyDot: 'Cared-for',
     registryLabel: 'Subject workspace',
-    registryHint: 'Swipe between profiles to choose whose workspace you are in.',
+    registryHint: 'Profiles are stacked vertically so each workspace stays visually separated.',
     registryCardHint: 'The active card sets the global logging context.',
     selfCardTitle: 'Self',
     selfCardSubtitle: 'Your own journal, mood, and survey data',
