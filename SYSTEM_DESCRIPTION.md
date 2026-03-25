@@ -304,7 +304,9 @@ Admin/editor-managed content sections for the public landing page.
 | `has_any_role(uuid, app_role[])` | Check any of multiple roles | DEFINER |
 | `handle_new_user()` | Auto-create profile on signup | DEFINER (trigger) |
 | `update_updated_at_column()` | Auto-set `updated_at` on UPDATE | Trigger |
-| `validate_observation_intensity()` | Enforce intensity 1–5 | Trigger |
+| `validate_observation_intensity()` | Enforce intensity 1–5 + require `subject_id` for relative logs | Trigger |
+| `validate_mood_pulse_level()` | Enforce mood level 1–5 | Trigger |
+| `log_consent_change()` | Audit log on consent update → `consent_history_logs` | DEFINER (trigger) |
 | `analyst_journal_aggregates()` | Anonymized journal stats | DEFINER |
 | `analyst_questionnaire_aggregates()` | Anonymized questionnaire stats | DEFINER |
 | `analyst_role_distribution()` | Role count distribution | DEFINER |
