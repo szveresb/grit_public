@@ -14,7 +14,7 @@ export const ROLE_LABELS: Record<AppRole, string> = {
 };
 
 // Roles users can self-select during signup / profile
-export const SELF_SELECT_ROLES: AppRole[] = ['affected_person', 'observer'];
+export const SELF_SELECT_ROLES: AppRole[] = ['affected_person'];
 
 // Roles only an admin can assign
 export const ADMIN_ONLY_ROLES: AppRole[] = ['admin', 'editor', 'analyst', 'guest_editor'];
