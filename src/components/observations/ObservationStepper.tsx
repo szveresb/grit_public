@@ -35,7 +35,7 @@ const iconMap: Record<string, React.ReactNode> = {
   shield: <FShield className="h-5 w-5" />,
 };
 
-const ObservationStepper = ({ onLogged }: { onLogged?: () => void }) => {
+const ObservationStepper = ({ onLogged, observationDate }: { onLogged?: () => void; observationDate?: string }) => {
   const { user } = useAuth();
   const { t, lang } = useLanguage();
   const { activeSubject, subjectColor: globalSubjectColor } = useStance();
@@ -98,6 +98,7 @@ const ObservationStepper = ({ onLogged }: { onLogged?: () => void }) => {
       user_narrative: narrative || null,
       subject_type: subjectType,
       subject_id: subjectType === 'relative' ? subjectId : null,
+      logged_at: observationDate || undefined,
     });
     if (error) { toast.error(friendlyDbError(error)); setSubmitting(false); return; }
     toast.success(t.observations.logged);

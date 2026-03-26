@@ -12,6 +12,7 @@ import ObservationStepper from '@/components/observations/ObservationStepper';
 import EntryReflectDialog from '@/components/checkin/EntryReflectDialog';
 import ObservationReflectDialog from '@/components/checkin/ObservationReflectDialog';
 import EntryModal from '@/components/checkin/EntryModal';
+import ObservationModal from '@/components/checkin/ObservationModal';
 import type { EntryModalPrefill } from '@/components/checkin/EntryModal';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -51,6 +52,8 @@ const SubjectWorkspaceSection = ({
   const [entryModalOpen, setEntryModalOpen] = useState(false);
   const [entryModalDate, setEntryModalDate] = useState(format(new Date(), 'yyyy-MM-dd'));
   const [entryModalPrefill, setEntryModalPrefill] = useState<EntryModalPrefill | null>(null);
+  const [observationModalOpen, setObservationModalOpen] = useState(false);
+  const [observationModalDate, setObservationModalDate] = useState(format(new Date(), 'yyyy-MM-dd'));
   const [observationOpen, setObservationOpen] = useState(true);
   const [calendarMonth, setCalendarMonth] = useState(new Date());
   const [calendarSelectedDate, setCalendarSelectedDate] = useState<Date | null>(null);
@@ -102,6 +105,14 @@ const SubjectWorkspaceSection = ({
     setEntryModalDate(format(targetDate, 'yyyy-MM-dd'));
     setEntryModalPrefill(prefill ?? null);
     setEntryModalOpen(true);
+  };
+
+  const openObservationModal = (date?: Date) => {
+    const targetDate = date ?? new Date();
+    if (isFuture(startOfDay(targetDate))) return;
+
+    setObservationModalDate(format(targetDate, 'yyyy-MM-dd'));
+    setObservationModalOpen(true);
   };
 
   return (
@@ -251,7 +262,7 @@ const SubjectWorkspaceSection = ({
                   selectedDate={calendarSelectedDate}
                   onSelectDate={setCalendarSelectedDate}
                   onEntryClick={handleEntryClick}
-                  onCreateEntry={isSelfContext ? (date) => openEntryModal(date) : undefined}
+                  onCreateEntry={(date) => isSelfContext ? openEntryModal(date) : openObservationModal(date)}
                 />
               )}
             </div>
@@ -279,6 +290,15 @@ const SubjectWorkspaceSection = ({
           onOpenChange={setEntryModalOpen}
           entryDate={entryModalDate}
           prefill={entryModalPrefill}
+          onSaved={refresh}
+        />
+      )}
+
+      {!isSelfContext && (
+        <ObservationModal
+          open={observationModalOpen}
+          onOpenChange={setObservationModalOpen}
+          entryDate={observationModalDate}
           onSaved={refresh}
         />
       )}
