@@ -83,7 +83,7 @@ const ManageLanding = () => {
 
   return (
     <DashboardLayout>
-      <div className="max-w-2xl space-y-6">
+      <div className="max-w-2xl mx-auto w-full space-y-6">
         <div>
           <h1 className="text-xl font-bold tracking-tight text-foreground">Landing szekciók kezelése</h1>
           <p className="mt-1 text-sm text-muted-foreground">A nyitólap dinamikus szekciói.</p>

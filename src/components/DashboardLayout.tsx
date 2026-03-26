@@ -20,7 +20,7 @@ interface DashboardLayoutProps {
 
 const DashboardShell = ({
   children,
-  showSubjectRegistry = true,
+  showSubjectRegistry = false,
   showContextToolPanel = true,
 }: DashboardLayoutProps) => {
   const { activeSubject } = useStance();

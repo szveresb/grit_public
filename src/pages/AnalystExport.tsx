@@ -38,7 +38,7 @@ const AnalystExport = () => {
   if (!canAccess) {
     return (
       <DashboardLayout>
-        <div className="max-w-lg space-y-4">
+        <div className="max-w-lg mx-auto w-full space-y-4">
           <div className="flex items-center gap-2 text-destructive">
             <FShieldAlert className="h-5 w-5" />
             <h1 className="text-xl font-bold tracking-tight">{t.analystExport.accessDenied}</h1>
@@ -51,7 +51,7 @@ const AnalystExport = () => {
 
   return (
     <DashboardLayout>
-      <div className="max-w-lg space-y-6">
+      <div className="max-w-lg mx-auto w-full space-y-6">
         <div>
           <h1 className="text-xl font-bold tracking-tight text-foreground">{t.analystExport.title}</h1>
           <p className="mt-1 text-sm text-muted-foreground leading-relaxed">{t.analystExport.subtitle}</p>

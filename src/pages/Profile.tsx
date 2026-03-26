@@ -57,7 +57,7 @@ const Profile = () => {
   };
 
   return (
-    <DashboardLayout>
+    <DashboardLayout showSubjectRegistry={true}>
       <div className="max-w-lg mx-auto w-full space-y-6">
         <div>
           <h1 className="text-lg md:text-xl font-bold tracking-tight text-foreground">{t.profile.title}</h1>

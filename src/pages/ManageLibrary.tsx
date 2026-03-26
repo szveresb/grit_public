@@ -96,7 +96,7 @@ const ManageLibrary = () => {
 
   return (
     <DashboardLayout>
-      <div className="max-w-3xl space-y-6">
+      <div className="max-w-3xl mx-auto w-full space-y-6">
         <div className="flex items-center justify-between">
           <div>
             <h1 className="text-xl font-bold tracking-tight text-foreground">{t.manageLibrary.title}</h1>
