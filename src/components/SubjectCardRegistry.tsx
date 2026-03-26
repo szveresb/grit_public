@@ -1,4 +1,5 @@
 import { useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { FUser, FUsers } from '@/components/icons/FreudIcons';
@@ -15,8 +16,9 @@ interface SubjectCardItem {
 }
 
 const SubjectCardRegistry = () => {
-  const { t } = useLanguage();
+  const { t, localePath } = useLanguage();
   const { activeSubject, subjects, subjectsLoading, setActiveSubjectContext } = useStance();
+  const navigate = useNavigate();
 
   const cards = useMemo<SubjectCardItem[]>(() => [
     {
@@ -63,8 +65,10 @@ const SubjectCardRegistry = () => {
             <div
               key={card.key}
               className={cn(
-                'flex min-h-[220px] w-full max-w-md mx-auto flex-col p-6 sm:p-8 text-center transition-colors surface-card',
-                isActive && 'ring-2 ring-primary/30'
+                'flex min-h-[220px] w-full max-w-md mx-auto flex-col p-6 sm:p-8 text-center transition-all duration-300 rounded-[2rem] border-2',
+                isActive 
+                  ? 'bg-primary/5 border-primary shadow-md scale-[1.02]' 
+                  : 'bg-card border-border/40 hover:border-primary/30 shadow-sm hover:shadow hover:-translate-y-0.5'
               )}
             >
               <div className="flex items-center justify-center gap-3 w-full">
@@ -91,14 +95,15 @@ const SubjectCardRegistry = () => {
                   onClick={() => {
                     if (card.type === 'self') {
                       setActiveSubjectContext({ type: 'self' });
-                      return;
+                    } else {
+                      setActiveSubjectContext({ type: 'relative', id: card.id!, name: card.name });
                     }
-                    setActiveSubjectContext({ type: 'relative', id: card.id!, name: card.name });
+                    navigate(localePath('/journal'));
                   }}
                   variant={isActive ? 'default' : 'outline'}
                   className="w-auto px-8 min-w-[160px] rounded-2xl"
                 >
-                  {isActive ? t.subjects.activeBadge : t.nav.explore || "Kiválasztás"}
+                  {isActive ? "Tovább a naplóhoz" : t.nav.explore || "Kiválasztás"}
                 </Button>
                 
                 <p className="text-[10px] leading-relaxed text-muted-foreground/70 uppercase tracking-widest">
