@@ -176,6 +176,8 @@ Curated research articles with bilingual support.
 | `user_id` | uuid | Auth user |
 | `questionnaire_id` | uuid (FK) | → `questionnaires.id` |
 | `total_score` | integer | Nullable; computed total when scoring is enabled |
+| `subject_type` | `subject_type` enum | Default `'self'`; `'self'` or `'relative'` |
+| `subject_id` | uuid (FK) | Nullable; → `subjects.id`; set when `subject_type = 'relative'` |
 | `completed_at` | timestamptz | Default `now()` |
 
 **RLS:** Users manage own responses only.
@@ -254,9 +256,9 @@ Lightweight one-tap mood recordings from the QuickPulse widget.
 
 The `useStance` context tracks the current perspective: `self` or `relative` (with a `selectedSubjectId`). When the user switches stance:
 
-- **Self mode:** Shows only `mood_pulses` with `subject_type = 'self'`, journal entries, and questionnaire data.
-- **Observer mode:** Shows only `mood_pulses` and `observation_logs` matching the selected `subject_id`; journal entries and questionnaire results are hidden.
-- **Questionnaire responses** do not yet have `subject_type`/`subject_id` columns — in observer mode the questionnaire history is hidden entirely.
+- **Self mode:** Shows only self-scoped `mood_pulses`, personal journal entries, and questionnaire responses where `subject_id IS NULL` and `subject_type` is `self` or legacy `NULL`.
+- **Observer mode:** Shows only `mood_pulses`, `observation_logs`, and questionnaire responses matching the selected supported person's `subject_id`.
+- **QuickPulse mounting:** Each `SubjectWorkspaceSection` mounts its own `QuickPulse` instance with `key={subjectId}` and an explicit `subjectId` prop, so supported-person cards keep isolated pulse logging/history context while preserving `theme-observer` styling tokens.
 
 Each supported person receives a **deterministic color palette** derived from their UUID (hue, background, border, text, dot), drawn from a pre-defined set of 8 distinguishable hues (amber, teal, purple, rose, green, gold, blue, magenta). These colors are applied to `RoleIndicator`, `StanceBanner`, `MoodTrendChart` accent, and `ObservationStepper` badges.
 
@@ -402,7 +404,7 @@ All routes are served under both `/` (Hungarian default) and `/en/` (English pre
 | `/` | `Index` (landing) | No | Public — featured articles, CMS sections; authenticated users see live `QuickPulse` instead of static mood preview |
 | `/library` | `Library` | No | Full library with search & category filter |
 | `/library/:id` | `Article` | No | Individual article detail page with bilingual content |
-| `/auth` | `Auth` (login/signup) | No | |
+| `/auth` | `Auth` (login/signup) | No | Compact centered auth card with reduced control heights and streamlined spacing; uses existing auth design tokens unchanged |
 | `/dashboard` | `Dashboard` | Yes | Quick Pulse widget + recent activity |
 | `/journal` | `CheckIn` | Yes | **Unified** — Quick Pulse + ObservationStepper + calendar feed + mood trends + pattern charts |
 | `/surveys` | `Surveys` | Yes | Tabbed view: questionnaire filler + score history with trend charts |
@@ -429,7 +431,7 @@ All routes are served under both `/` (Hungarian default) and `/en/` (English pre
 - **`EmergencyExit`** — Quick-exit safety button (always visible); redirects to neutral site
 - **`LanguageToggle`** — HU/EN language switcher; visible on every page (public header + dashboard)
 - **`ArticleCard`** — Library card linking to individual article detail page
-- **`QuickPulse`** — 5 botanical Freud-style mood icons (wilting sprout → full bamboo, opacity-graded sage-green); one-tap writes to `mood_pulses` table and optionally opens journal form pre-filled. Fetches managed labels/title from `landing_sections` (`mood_preview` config) so admin CMS changes are reflected everywhere.
+- **`QuickPulse`** — 5 botanical Freud-style mood icons (wilting sprout → full bamboo, opacity-graded sage-green); one-tap writes to `mood_pulses` table and optionally opens journal form pre-filled. Accepts an explicit `subjectId` override so stacked self/support-person cards save in the correct subject context. Fetches managed labels/title from `landing_sections` (`mood_preview` config) so admin CMS changes are reflected everywhere.
 - **`FeedCalendar`** — Calendar-based chronological feed of journal entries, observation logs, mood pulses, and questionnaire completions
 - **`ObservationStepper`** — 3-step progressive disclosure with warm labels ("What's going on?" → "How heavy?" → "Anything to add?")
 - **`EntryModal`** — Journal entry creation/editing dialog with optional observation linking
@@ -439,7 +441,7 @@ All routes are served under both `/` (Hungarian default) and `/en/` (English pre
 - **`HorizontalTimeline`** — Horizontal scrollable timeline of recent activity
 - **`JournalForm` / `JournalEntryCard`** — Fully localized journal creation and display with progressive disclosure for clinical codes
 - **`ScoreResults`** — Post-completion scoring breakdown: total score with progress bar, matched range label/description, and per-question point breakdown
-- **`ScoreHistory`** — Historical score tracking with `recharts` LineChart for repeated questionnaires, trend indicators (↑/↓), and last-5-completions list
+- **`ScoreHistory`** — Historical score tracking with `recharts` LineChart for repeated questionnaires, trend indicators (↑/↓), and last-5-completions list; filters strictly by the active subject context so self and supported-person histories stay separated
 - **`EntryReflectDialog` / `ObservationReflectDialog`** — AI-powered reflection prompts for journal entries and observations
 
 ### Internationalization
