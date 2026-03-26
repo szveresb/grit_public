@@ -1,6 +1,7 @@
 import { useNavigate } from 'react-router-dom';
 import { useLanguage } from '@/hooks/useLanguage';
 import QuickPulse from '@/components/checkin/QuickPulse';
+import { Button } from '@/components/ui/button';
 import { FHeartPulse, FClock } from '@/components/icons/FreudIcons';
 
 interface ActionCardProps {
@@ -25,18 +26,23 @@ const iconVariantStyles: Record<ActionCardProps['variant'], string> = {
 
 const ActionCard = ({ title, description, icon: Icon, variant, onClick }: ActionCardProps) => {
   return (
-    <button
-      onClick={onClick}
-      className={`flex h-full flex-col items-start gap-3 p-5 text-left transition-colors ${variantStyles[variant]}`}
+    <div
+      className={`flex h-full flex-col items-center gap-3 p-6 sm:p-8 text-center max-w-md mx-auto w-full transition-colors ${variantStyles[variant]}`}
     >
-      <Icon className={`h-5 w-5 ${iconVariantStyles[variant]}`} />
-      <div>
-        <h3 className="text-sm font-semibold">{title}</h3>
-        <p className="mt-1 text-xs leading-relaxed text-muted-foreground">
+      <Icon className={`h-6 w-6 mb-1 ${iconVariantStyles[variant]}`} />
+      <div className="flex-1">
+        <h3 className="text-base font-bold tracking-tight">{title}</h3>
+        <p className="mt-2 text-sm leading-relaxed text-muted-foreground">
           {description}
         </p>
       </div>
-    </button>
+      <Button
+        onClick={onClick}
+        className="mt-6 px-6 min-w-[160px] rounded-2xl w-auto"
+      >
+        {title}
+      </Button>
+    </div>
   );
 };
 
@@ -58,7 +64,7 @@ const ActionGrid = () => {
       </div>
 
       {/* Action cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-8 sm:gap-12">
         <ActionCard
           title={t.dash.completeJournal}
           description={t.dash.completeJournalDesc}

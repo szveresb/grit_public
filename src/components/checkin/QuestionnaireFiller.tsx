@@ -402,45 +402,57 @@ const QuestionnaireFiller = ({ onCompleted, readOnly }: { onCompleted?: () => vo
         const repeatLabel = getRepeatLabel(q.repeat_interval);
 
         return (
-          <button
+          <div
             key={q.id}
-            onClick={() => available && loadQuestions(q.id)}
-            disabled={!available}
-            className={`w-full text-left flex items-start gap-3 py-3 px-4 rounded-2xl transition-colors ${
+            className={`flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-5 rounded-3xl border border-border/50 max-w-md mx-auto w-full transition-colors ${
               available
-                ? 'hover:bg-accent/50 cursor-pointer'
-                : 'opacity-60 cursor-not-allowed'
+                ? 'bg-card/60 shadow-sm'
+                : 'opacity-70 bg-card/40 grayscale-[20%]'
             }`}
           >
-            <FClipboardCheck className="h-4 w-4 text-muted-foreground shrink-0 mt-0.5" />
-            <div className="flex-1 min-w-0">
-              <div className="flex items-center gap-2">
-                <span className="text-sm font-medium">{q.title}</span>
-                {q.repeat_interval && (
-                  <span className="text-[10px] px-2 py-0.5 rounded-full border border-border text-muted-foreground">
-                    {repeatLabel}
-                  </span>
-                )}
-              </div>
-              {q.description && (
-                <p className="text-xs text-muted-foreground truncate">{q.description}</p>
-              )}
-              {last && (
-                <div className="flex items-center gap-1.5 mt-1">
-                  <FClock className="h-3 w-3 text-muted-foreground" />
-                  <span className="text-[11px] text-muted-foreground">
-                    {t.questionnaires_manage.lastCompleted}: {formatDistanceToNow(new Date(last.completed_at), { addSuffix: true, locale: dateLocale })}
-                  </span>
+            <div className="flex items-start gap-3 flex-1 min-w-0 w-full">
+              <FClipboardCheck className="h-5 w-5 text-muted-foreground shrink-0 mt-0.5" />
+              <div className="flex-1 min-w-0">
+                <div className="flex flex-wrap items-center gap-2 mb-1.5">
+                  <span className="text-base font-semibold leading-tight">{q.title}</span>
+                  {q.repeat_interval && (
+                    <span className="text-[10px] px-2 py-0.5 rounded-full border border-border text-muted-foreground">
+                      {repeatLabel}
+                    </span>
+                  )}
                 </div>
-              )}
-              {!available && (
-                <span className="text-[11px] text-muted-foreground/70">
-                  {t.questionnaires_manage.alreadyCompleted}
-                </span>
-              )}
+                {q.description && (
+                  <p className="text-sm text-muted-foreground leading-snug line-clamp-2">{q.description}</p>
+                )}
+                
+                <div className="flex flex-col gap-1.5 mt-3">
+                  {last && (
+                    <div className="flex items-center gap-1.5">
+                      <FClock className="h-3.5 w-3.5 text-muted-foreground" />
+                      <span className="text-xs text-muted-foreground">
+                        {t.questionnaires_manage.lastCompleted}: {formatDistanceToNow(new Date(last.completed_at), { addSuffix: true, locale: dateLocale })}
+                      </span>
+                    </div>
+                  )}
+                  {!available && (
+                    <span className="text-xs font-semibold text-muted-foreground tracking-wide mt-1">
+                      ✓ {t.questionnaires_manage.alreadyCompleted}
+                    </span>
+                  )}
+                </div>
+              </div>
             </div>
-            {available && <FArrowRight className="h-3.5 w-3.5 text-muted-foreground shrink-0 mt-1" />}
-          </button>
+            
+            <div className="w-full sm:w-auto shrink-0 flex justify-end mt-2 sm:mt-0">
+              <Button
+                onClick={() => loadQuestions(q.id)}
+                disabled={!available}
+                className="w-auto px-6 min-w-[140px] rounded-2xl"
+              >
+                {t.nav.questionnaires || t.submit}
+              </Button>
+            </div>
+          </div>
         );
       })}
     </div>
