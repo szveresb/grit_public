@@ -16,7 +16,7 @@ const Auth = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [displayName, setDisplayName] = useState('');
-  const [role, setRole] = useState<'affected_person' | 'observer'>('affected_person');
+  const role = 'affected_person' as const;
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
   const [appleLoading, setAppleLoading] = useState(false);
@@ -143,33 +143,6 @@ const Auth = () => {
             />
           </div>
 
-          {isSignUp && (
-            <div className="space-y-2">
-              <Label className="px-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
-                {t.auth.howUse}
-              </Label>
-              <RadioGroup value={role} onValueChange={(v) => setRole(v as typeof role)} className="space-y-2">
-                <div className="reference-auth-field flex items-start space-x-3 rounded-[1.4rem] p-3.5">
-                  <RadioGroupItem value="affected_person" id="affected_person" />
-                  <div>
-                    <Label htmlFor="affected_person" className="cursor-pointer text-sm font-semibold">
-                      {t.auth.affectedPerson}
-                    </Label>
-                    <p className="text-xs text-muted-foreground">{t.auth.affectedPersonDesc}</p>
-                  </div>
-                </div>
-                <div className="reference-auth-field flex items-start space-x-3 rounded-[1.4rem] p-3.5">
-                  <RadioGroupItem value="observer" id="observer" />
-                  <div>
-                    <Label htmlFor="observer" className="cursor-pointer text-sm font-semibold">
-                      {t.auth.observer}
-                    </Label>
-                    <p className="text-xs text-muted-foreground">{t.auth.observerDesc}</p>
-                  </div>
-                </div>
-              </RadioGroup>
-            </div>
-          )}
 
           <Button type="submit" className="reference-auth-button h-10 w-full rounded-full text-sm font-semibold hover:bg-primary sm:h-11" disabled={loading}>
             {loading ? t.auth.pleaseWait : isSignUp ? t.auth.createAccount : t.auth.signIn}
