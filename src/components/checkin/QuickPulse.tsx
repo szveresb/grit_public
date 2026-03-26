@@ -27,9 +27,15 @@ interface QuickPulseProps {
   onPulseSaved?: () => void;
   onMoodSelected?: (mood: MoodSelection) => void;
   compact?: boolean;
+  subjectId?: string | null;
 }
 
-const QuickPulse = ({ onPulseSaved, onMoodSelected, compact = false }: QuickPulseProps) => {
+const QuickPulse = ({
+  onPulseSaved,
+  onMoodSelected,
+  compact = false,
+  subjectId = null,
+}: QuickPulseProps) => {
   const { user } = useAuth();
   const { t, lang } = useLanguage();
   const { subjectType, selectedSubjectId } = useStance();
@@ -37,6 +43,8 @@ const QuickPulse = ({ onPulseSaved, onMoodSelected, compact = false }: QuickPuls
   const [saved, setSaved] = useState(false);
   const [managedTitle, setManagedTitle] = useState<string | null>(null);
   const [managedLabels, setManagedLabels] = useState<string[] | null>(null);
+  const effectiveSubjectId = subjectId ?? selectedSubjectId;
+  const effectiveSubjectType = effectiveSubjectId ? 'relative' : subjectType;
 
   useEffect(() => {
     supabase.from('landing_sections').select('title, title_localized, config')
@@ -72,10 +80,10 @@ const QuickPulse = ({ onPulseSaved, onMoodSelected, compact = false }: QuickPuls
       level,
       label,
       entry_date: format(new Date(), 'yyyy-MM-dd'),
-      subject_type: subjectType,
+      subject_type: effectiveSubjectType,
     };
-    if (subjectType === 'relative' && selectedSubjectId) {
-      insertPayload.subject_id = selectedSubjectId;
+    if (effectiveSubjectType === 'relative' && effectiveSubjectId) {
+      insertPayload.subject_id = effectiveSubjectId;
     }
 
     const { error } = await (supabase.from as any)('mood_pulses').insert(insertPayload);

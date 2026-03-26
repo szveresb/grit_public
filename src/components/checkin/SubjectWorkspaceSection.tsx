@@ -149,13 +149,15 @@ const SubjectWorkspaceSection = ({
           </CollapsibleTrigger>
 
           <CollapsibleContent className="space-y-4">
-            {isSelfContext && (
-              <ConsentGate consentKey="mood_tracking">
-                <div className="surface-card p-6">
-                  <QuickPulse onPulseSaved={refresh} />
-                </div>
-              </ConsentGate>
-            )}
+            <ConsentGate consentKey="mood_tracking">
+              <div className="surface-card p-6">
+                <QuickPulse
+                  key={subject.id ?? 'self'}
+                  subjectId={subject.type === 'relative' ? subject.id : null}
+                  onPulseSaved={refresh}
+                />
+              </div>
+            </ConsentGate>
 
             {isSelfContext && daysSinceLastEntry !== null && daysSinceLastEntry >= 14 && !recapDismissed && (
               <RecapBanner
