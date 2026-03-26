@@ -491,6 +491,8 @@ export type Database = {
           completed_at: string
           id: string
           questionnaire_id: string
+          subject_id: string | null
+          subject_type: Database["public"]["Enums"]["subject_type"]
           total_score: number | null
           user_id: string
         }
@@ -498,6 +500,8 @@ export type Database = {
           completed_at?: string
           id?: string
           questionnaire_id: string
+          subject_id?: string | null
+          subject_type?: Database["public"]["Enums"]["subject_type"]
           total_score?: number | null
           user_id: string
         }
@@ -505,6 +509,8 @@ export type Database = {
           completed_at?: string
           id?: string
           questionnaire_id?: string
+          subject_id?: string | null
+          subject_type?: Database["public"]["Enums"]["subject_type"]
           total_score?: number | null
           user_id?: string
         }
@@ -514,6 +520,13 @@ export type Database = {
             columns: ["questionnaire_id"]
             isOneToOne: false
             referencedRelation: "questionnaires"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "questionnaire_responses_subject_id_fkey"
+            columns: ["subject_id"]
+            isOneToOne: false
+            referencedRelation: "subjects"
             referencedColumns: ["id"]
           },
         ]
