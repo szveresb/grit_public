@@ -180,7 +180,8 @@ Curated research articles with bilingual support.
 | `subject_id` | uuid (FK) | Nullable; → `subjects.id`; set when `subject_type = 'relative'` |
 | `completed_at` | timestamptz | Default `now()` |
 
-**RLS:** Users manage own responses only.
+**RLS:** Users manage own responses only. 
+**Stance Isolation:** Both availability interval-checking and historical score retrieval query responses strictly by `subject_type` and `subject_id`, guaranteeing that self and supported-person completions naturally track independent cadences even for the same user.
 
 #### `questionnaire_answers`
 
@@ -264,7 +265,9 @@ Each supported person receives a **deterministic color palette** derived from th
 
 #### `SubjectCardRegistry`
 
-A horizontally scrollable card carousel on the Dashboard that shows all subjects (self + supported persons). Clicking a card triggers a global stance switch via `useStance.setActiveSubjectContext()`. The active card is visually distinguished with a primary border and "Aktív" badge. Each subject card displays the person's name, relationship type, and deterministic color accent.
+#### `SubjectCardRegistry`
+
+A horizontally scrollable dashboard module, explicitly located on the **Profile page**, that manages all subjects (self + supported persons). Clicking a card triggers a global stance switch via `useStance.setActiveSubjectContext()` and automatically navigates the user to `/journal`. The active card is visually distinguished with a primary-tinted background, explicitly highlighted borders, and a scaled-up hover state. Each subject card displays the person's name, relationship type, and deterministic color accent, replacing the previous rigid grid with a flexible centering layout to ensure aesthetic symmetry.
 
 ---
 
@@ -432,9 +435,10 @@ All routes are served under both `/` (Hungarian default) and `/en/` (English pre
 - **`LanguageToggle`** — HU/EN language switcher; visible on every page (public header + dashboard)
 - **`ArticleCard`** — Library card linking to individual article detail page
 - **`QuickPulse`** — 5 botanical Freud-style mood icons (wilting sprout → full bamboo, opacity-graded sage-green); one-tap writes to `mood_pulses` table and optionally opens journal form pre-filled. Accepts an explicit `subjectId` override so stacked self/support-person cards save in the correct subject context. Fetches managed labels/title from `landing_sections` (`mood_preview` config) so admin CMS changes are reflected everywhere.
-- **`FeedCalendar`** — Calendar-based chronological feed of journal entries, observation logs, mood pulses, and questionnaire completions
-- **`ObservationStepper`** — 3-step progressive disclosure with warm labels ("What's going on?" → "How heavy?" → "Anything to add?")
-- **`EntryModal`** — Journal entry creation/editing dialog with optional observation linking
+- **`FeedCalendar`** — Calendar-based chronological feed of journal entries, observation logs, mood pulses, and questionnaire completions. Selecting past dates triggers retrospective logging modals conditionally matching the active stance.
+- **`ObservationStepper`** — 3-step progressive disclosure with warm labels ("What's going on?" → "How heavy?" → "Anything to add?"). Supports retrospective `observationDate` overrides for backdated logs.
+- **`ObservationModal`** — Date-aware dialog wrapper for the `ObservationStepper`, launched from the `FeedCalendar` to allow explicit historical observation logging in supported-person contexts.
+- **`EntryModal`** — Journal entry creation/editing dialog with optional observation linking, triggered contextually from the timeline or calendar for self-reporting.
 - **`RecapBanner`** — Weekly recap prompt when user has sufficient activity
 - **`MoodTrendChart`** — Recharts area chart of mood pulse history; timeline `<Brush>` slider is gated behind premium (non-premium users see an upsell badge)
 - **`PatternChart`** — Bar chart of observation concept frequency (pattern nudges for 3+/week)
