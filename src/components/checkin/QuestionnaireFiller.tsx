@@ -225,7 +225,7 @@ const QuestionnaireFiller = ({ onCompleted }: { onCompleted?: () => void }) => {
         total_score: totalScore,
         subject_type: activeSubject.type,
         subject_id: activeSubject.type === 'relative' ? activeSubject.id : null,
-      } as any)
+      })
       .select('id')
       .single();
     if (error || !resp) {
