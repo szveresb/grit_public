@@ -52,6 +52,9 @@ const DashboardShell = ({
             </Link>
             <nav className="hidden lg:flex items-center justify-center flex-1 gap-8">
               <a href={`${localePath('/')}#library`} className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">{t.nav.library}</a>
+              <button onClick={() => handleGatedClick('/surveys')} className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1.5">
+                {t.nav.surveys}
+              </button>
               <button onClick={() => handleGatedClick('/journal')} className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1.5">
                 {t.nav.checkIn}
               </button>

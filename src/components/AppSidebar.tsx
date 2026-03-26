@@ -38,6 +38,7 @@ const AppSidebar = () => {
 
   const topMenuItems = [
     { title: t.nav.library, url: '/#library', icon: FLibrary },
+    { title: t.nav.surveys, url: '/surveys', icon: FFileText },
     { title: t.nav.about, url: '/#about', icon: FInfo },
   ];
 

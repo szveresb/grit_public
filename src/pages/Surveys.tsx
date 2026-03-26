@@ -2,15 +2,26 @@ import { useState } from 'react';
 import DashboardLayout from '@/components/DashboardLayout';
 import { useLanguage } from '@/hooks/useLanguage';
 import { useStance } from '@/hooks/useStance';
+import { useUserRole } from '@/hooks/useUserRole';
+import { Navigate } from 'react-router-dom';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import ConsentGate from '@/components/consent/ConsentGate';
 import QuestionnaireFiller from '@/components/checkin/QuestionnaireFiller';
 import ScoreHistory from '@/components/checkin/ScoreHistory';
 import StanceBanner from '@/components/premium/StanceBanner';
 
 const Surveys = () => {
-  const { t } = useLanguage();
+  const { t, localePath } = useLanguage();
   const { activeSubject, subjectColor } = useStance();
+  const { hasAnyRole, hasRole } = useUserRole();
   const [refreshKey, setRefreshKey] = useState(0);
+
+  const isEditor = hasAnyRole('admin', 'editor', 'guest_editor');
+  const isObserver = hasRole('observer');
+
+  if (isEditor) {
+    return <Navigate to={localePath('/manage-questionnaires')} replace />;
+  }
 
   return (
     <DashboardLayout>
@@ -26,39 +37,41 @@ const Surveys = () => {
           </p>
         </div>
 
-        <Tabs defaultValue="fill" className="w-full">
-          <TabsList className="rounded-2xl bg-context-surface/80 backdrop-blur border border-context-border w-full">
-            <TabsTrigger value="fill" className="rounded-xl flex-1 text-xs">
-              {activeSubject.type === 'relative' ? t.questionnaires_manage.thirdPartyTab : t.nav.surveys}
-            </TabsTrigger>
-            <TabsTrigger value="history" className="rounded-xl flex-1 text-xs">
-              {t.questionnaires_manage.scoreHistory}
-            </TabsTrigger>
-          </TabsList>
-
-          <TabsContent value="fill" className="mt-4">
-            <div className="surface-card p-6 space-y-4">
-              <StanceBanner
-                subjectType={activeSubject.type}
-                subjectName={activeSubject.type === 'relative' ? activeSubject.name : undefined}
-                subjectColor={subjectColor}
-              />
-              <QuestionnaireFiller key={`fill-${activeSubject.key}`} onCompleted={() => setRefreshKey(k => k + 1)} />
-            </div>
-          </TabsContent>
-
-          <TabsContent value="history" className="mt-4">
-            <div className="surface-card p-6">
-              <h3 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-1">
+        <ConsentGate consentKey="questionnaire_data">
+          <Tabs defaultValue="fill" className="w-full">
+            <TabsList className="rounded-2xl bg-context-surface/80 backdrop-blur border border-context-border w-full">
+              <TabsTrigger value="fill" className="rounded-xl flex-1 text-xs">
+                {activeSubject.type === 'relative' ? t.questionnaires_manage.thirdPartyTab : t.nav.surveys}
+              </TabsTrigger>
+              <TabsTrigger value="history" className="rounded-xl flex-1 text-xs">
                 {t.questionnaires_manage.scoreHistory}
-              </h3>
-              <p className="text-xs text-muted-foreground mb-4">
-                {t.questionnaires_manage.scoreHistorySubtitle}
-              </p>
-              <ScoreHistory key={`${activeSubject.key}-${refreshKey}`} />
-            </div>
-          </TabsContent>
-        </Tabs>
+              </TabsTrigger>
+            </TabsList>
+
+            <TabsContent value="fill" className="mt-4">
+              <div className="surface-card p-6 space-y-4">
+                <StanceBanner
+                  subjectType={activeSubject.type}
+                  subjectName={activeSubject.type === 'relative' ? activeSubject.name : undefined}
+                  subjectColor={subjectColor}
+                />
+                <QuestionnaireFiller key={`fill-${activeSubject.key}`} onCompleted={() => setRefreshKey(k => k + 1)} readOnly={isObserver} />
+              </div>
+            </TabsContent>
+
+            <TabsContent value="history" className="mt-4">
+              <div className="surface-card p-6">
+                <h3 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-1">
+                  {t.questionnaires_manage.scoreHistory}
+                </h3>
+                <p className="text-xs text-muted-foreground mb-4">
+                  {t.questionnaires_manage.scoreHistorySubtitle}
+                </p>
+                <ScoreHistory key={`${activeSubject.key}-${refreshKey}`} />
+              </div>
+            </TabsContent>
+          </Tabs>
+        </ConsentGate>
       </div>
     </DashboardLayout>
   );

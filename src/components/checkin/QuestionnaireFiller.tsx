@@ -53,7 +53,7 @@ const INTERVAL_DAYS: Record<string, number> = {
   monthly: 30,
 };
 
-const QuestionnaireFiller = ({ onCompleted }: { onCompleted?: () => void }) => {
+const QuestionnaireFiller = ({ onCompleted, readOnly }: { onCompleted?: () => void; readOnly?: boolean }) => {
   const { user } = useAuth();
   const { t, lang } = useLanguage();
   const { activeSubject, subjectColor } = useStance();
@@ -89,12 +89,13 @@ const QuestionnaireFiller = ({ onCompleted }: { onCompleted?: () => void }) => {
             .order('completed_at', { ascending: false })
         : Promise.resolve({ data: [] });
 
+      const qQuery = supabase
+        .from('questionnaires')
+        .select('id, title, description, repeat_interval, scoring_enabled, scoring_mode, score_ranges')
+        .order('created_at', { ascending: false });
+
       const [qRes, rRes] = await Promise.all([
-        supabase
-          .from('questionnaires')
-          .select('id, title, description, repeat_interval, scoring_enabled, scoring_mode, score_ranges')
-          .eq('is_published', true)
-          .order('created_at', { ascending: false }),
+        readOnly ? qQuery : qQuery.eq('is_published', true),
         responseQuery,
       ]);
       setQuestionnaires((qRes.data ?? []) as unknown as Questionnaire[]);
@@ -370,10 +371,14 @@ const QuestionnaireFiller = ({ onCompleted }: { onCompleted?: () => void }) => {
             {renderInput(q)}
           </div>
         ))}
-        <div className="flex gap-2">
-          <Button size="sm" className="rounded-2xl" onClick={handleSubmit} disabled={submitting}>
-            {submitting ? t.questionnaires_manage.submitting : t.submit}
-          </Button>
+        <div className="flex gap-2 items-center">
+          {readOnly ? (
+            <p className="text-xs text-muted-foreground mr-2 italic">{t.disclaimer?.userReported || "Nézet csak olvasható."}</p>
+          ) : (
+            <Button size="sm" className="rounded-2xl" onClick={handleSubmit} disabled={submitting}>
+              {submitting ? t.questionnaires_manage.submitting : t.submit}
+            </Button>
+          )}
           <Button size="sm" variant="outline" className="rounded-2xl" onClick={() => setSelectedQ(null)}>
             {t.cancel}
           </Button>
