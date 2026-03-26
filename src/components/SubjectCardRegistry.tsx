@@ -1,5 +1,6 @@
 import { useMemo } from 'react';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { FUser, FUsers } from '@/components/icons/FreudIcons';
 import { useLanguage } from '@/hooks/useLanguage';
 import { useStance } from '@/hooks/useStance';
@@ -38,8 +39,8 @@ const SubjectCardRegistry = () => {
   ], [subjects, t.subjects.otherLabel, t.subjects.relationshipTypes, t.subjects.selfCardSubtitle, t.subjects.selfCardTitle]);
 
   return (
-    <section className="mb-6 md:mb-8">
-      <div className="mb-3 flex items-center justify-between gap-3">
+    <section className="mb-8 md:mb-12">
+      <div className="mb-6 flex items-center justify-between gap-3 max-w-md mx-auto lg:max-w-none">
         <div>
           <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
             {t.subjects.registryLabel}
@@ -53,54 +54,58 @@ const SubjectCardRegistry = () => {
         </Badge>
       </div>
 
-      <div className="space-y-3">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 sm:gap-12">
         {cards.map((card) => {
           const isActive = card.key === activeSubject.key;
           const isRelative = card.type === 'relative';
 
           return (
-            <button
+            <div
               key={card.key}
-              type="button"
-              onClick={() => {
-                if (card.type === 'self') {
-                  setActiveSubjectContext({ type: 'self' });
-                  return;
-                }
-
-                setActiveSubjectContext({ type: 'relative', id: card.id!, name: card.name });
-              }}
               className={cn(
-                'flex min-h-[204px] w-full flex-col p-5 text-left transition-colors sm:min-h-[220px] sm:p-6 surface-card',
+                'flex min-h-[220px] w-full max-w-md mx-auto flex-col p-6 sm:p-8 text-center transition-colors surface-card',
                 isActive && 'ring-2 ring-primary/30'
               )}
-              aria-pressed={isActive}
             >
-              <div className="flex items-start justify-between gap-3">
-                <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-primary/10 text-primary">
-                  {isRelative ? <FUsers className="h-5 w-5" /> : <FUser className="h-5 w-5" />}
+              <div className="flex items-center justify-center gap-3 w-full">
+                <div className="flex h-12 w-12 items-center justify-center rounded-3xl bg-primary/10 text-primary">
+                  {isRelative ? <FUsers className="h-6 w-6" /> : <FUser className="h-6 w-6" />}
                 </div>
-                <Badge variant={isActive ? 'default' : 'outline'} className="shrink-0 rounded-full text-[10px] uppercase tracking-wider">
-                  {isActive ? t.subjects.activeBadge : t.subjects.inactiveBadge}
-                </Badge>
               </div>
 
-              <div className="mt-5 space-y-2">
+              <div className="mt-6 space-y-2 flex-1">
                 <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
                   {card.type === 'self' ? t.subjects.selfWorkspaceLabel : t.subjects.supportedWorkspaceLabel}
                 </p>
-                <h2 className="text-lg font-bold tracking-tight text-balance text-foreground sm:text-xl">
+                <h2 className="text-xl font-bold tracking-tight text-balance text-foreground">
                   {card.name}
                 </h2>
-                <p className="text-sm leading-relaxed text-pretty text-muted-foreground">
+                <p className="mt-2 text-sm leading-relaxed text-pretty text-muted-foreground line-clamp-2">
                   {card.subtitle}
                 </p>
               </div>
 
-              <p className="mt-auto pt-5 text-xs leading-relaxed text-muted-foreground">
-                {subjectsLoading ? t.loading : t.subjects.registryCardHint}
-              </p>
-            </button>
+              <div className="mt-8 flex flex-col items-center gap-3 w-full">
+                <Button
+                  type="button"
+                  onClick={() => {
+                    if (card.type === 'self') {
+                      setActiveSubjectContext({ type: 'self' });
+                      return;
+                    }
+                    setActiveSubjectContext({ type: 'relative', id: card.id!, name: card.name });
+                  }}
+                  variant={isActive ? 'default' : 'outline'}
+                  className="w-auto px-8 min-w-[160px] rounded-2xl"
+                >
+                  {isActive ? t.subjects.activeBadge : t.nav.explore || "Kiválasztás"}
+                </Button>
+                
+                <p className="text-[10px] leading-relaxed text-muted-foreground/70 uppercase tracking-widest">
+                  {subjectsLoading ? t.loading : isActive ? t.subjects.activeBadge : t.subjects.inactiveBadge}
+                </p>
+              </div>
+            </div>
           );
         })}
       </div>

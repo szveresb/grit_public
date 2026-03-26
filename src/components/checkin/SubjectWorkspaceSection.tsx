@@ -16,6 +16,7 @@ import type { EntryModalPrefill } from '@/components/checkin/EntryModal';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Badge } from '@/components/ui/badge';
+import { Button } from '@/components/ui/button';
 import { FChevronDown, FTrendingUp, FUser, FUsers } from '@/components/icons/FreudIcons';
 import RecapBanner from '@/components/checkin/RecapBanner';
 import MoodTrendChart from '@/components/timeline/MoodTrendChart';
@@ -112,41 +113,43 @@ const SubjectWorkspaceSection = ({
       }
     >
       <Collapsible open={sectionOpen} onOpenChange={setSectionOpen}>
-        <section className={cn('space-y-4', subject.type === 'relative' ? 'theme-observer' : 'theme-self')}>
-          <CollapsibleTrigger
+        <section className={cn('space-y-4 max-w-md mx-auto w-full', subject.type === 'relative' ? 'theme-observer' : 'theme-self')}>
+          <div
             className={cn(
-              'flex min-h-[204px] w-full flex-col p-5 text-left transition-colors sm:min-h-[220px] sm:p-6 surface-card',
+              'flex min-h-[220px] w-full flex-col p-6 sm:p-8 text-center transition-colors surface-card',
               sectionOpen && 'ring-2 ring-primary/30'
             )}
           >
-            <div className="flex items-start justify-between gap-3">
-              <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-primary/10 text-primary">
-                {subject.type === 'relative' ? <FUsers className="h-5 w-5" /> : <FUser className="h-5 w-5" />}
-              </div>
-              <div className="flex items-center gap-2">
-                <Badge variant="default" className="shrink-0 rounded-full text-[10px] uppercase tracking-wider">
-                  {t.subjects.activeBadge}
-                </Badge>
-                <FChevronDown className={cn('h-4 w-4 text-muted-foreground transition-transform', sectionOpen && 'rotate-180')} />
+            <div className="flex items-center justify-center gap-3 w-full">
+              <div className="flex h-12 w-12 items-center justify-center rounded-3xl bg-primary/10 text-primary">
+                {subject.type === 'relative' ? <FUsers className="h-6 w-6" /> : <FUser className="h-6 w-6" />}
               </div>
             </div>
 
-            <div className="mt-5 space-y-2">
+            <div className="mt-6 space-y-2 flex-1">
               <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
                 {subject.type === 'self' ? t.subjects.selfWorkspaceLabel : t.subjects.supportedWorkspaceLabel}
               </p>
-              <h2 className="text-lg font-bold tracking-tight text-balance text-foreground sm:text-xl">
+              <h2 className="text-xl font-bold tracking-tight text-balance text-foreground">
                 {subject.name}
               </h2>
-              <p className="text-sm leading-relaxed text-pretty text-muted-foreground">
+              <p className="mt-2 text-sm leading-relaxed text-pretty text-muted-foreground line-clamp-2">
                 {subject.subtitle}
               </p>
             </div>
 
-            <p className="mt-auto pt-5 text-xs leading-relaxed text-muted-foreground">
-              {t.subjects.registryCardHint}
-            </p>
-          </CollapsibleTrigger>
+            <div className="mt-8 flex flex-col items-center gap-3 w-full">
+              <CollapsibleTrigger asChild>
+                <Button variant="outline" className="w-auto px-8 min-w-[160px] rounded-2xl gap-2">
+                  <span className="font-semibold">{t.subjects.activeBadge || 'Aktív'}</span>
+                  <FChevronDown className={cn('h-4 w-4 text-muted-foreground transition-transform', sectionOpen && 'rotate-180')} />
+                </Button>
+              </CollapsibleTrigger>
+              <p className="text-[10px] leading-relaxed text-muted-foreground/70 uppercase tracking-widest">
+                {t.subjects.registryCardHint}
+              </p>
+            </div>
+          </div>
 
           <CollapsibleContent className="space-y-4">
             <ConsentGate consentKey="mood_tracking">
