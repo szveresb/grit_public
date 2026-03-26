@@ -56,7 +56,7 @@ const SubjectCardRegistry = () => {
         </Badge>
       </div>
 
-      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 sm:gap-12">
+      <div className="flex flex-wrap justify-center gap-8 sm:gap-12">
         {cards.map((card) => {
           const isActive = card.key === activeSubject.key;
           const isRelative = card.type === 'relative';
@@ -65,7 +65,7 @@ const SubjectCardRegistry = () => {
             <div
               key={card.key}
               className={cn(
-                'flex min-h-[220px] w-full max-w-md mx-auto flex-col p-6 sm:p-8 text-center transition-all duration-300 rounded-[2rem] border-2',
+                'flex min-h-[220px] w-full max-w-sm flex-col p-6 sm:p-8 text-center transition-all duration-300 rounded-[2rem] border-2 flex-auto shrink-0',
                 isActive 
                   ? 'bg-primary/5 border-primary shadow-md scale-[1.02]' 
                   : 'bg-card border-border/40 hover:border-primary/30 shadow-sm hover:shadow hover:-translate-y-0.5'
