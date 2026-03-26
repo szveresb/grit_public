@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import DashboardLayout from '@/components/DashboardLayout';
 import { useAuth } from '@/hooks/useAuth';
 import { useLanguage } from '@/hooks/useLanguage';
@@ -49,12 +49,12 @@ const SelfChecks = () => {
   const [saving, setSaving] = useState(false);
   const [obsRefreshKey, setObsRefreshKey] = useState(0);
 
-  const fetchQuestionnaires = async () => {
+  const fetchQuestionnaires = useCallback(async () => {
     const { data } = await supabase.from('questionnaires').select('*').order('created_at', { ascending: false });
     setQuestionnaires((data ?? []) as unknown as Questionnaire[]);
-  };
+  }, []);
 
-  useEffect(() => { fetchQuestionnaires(); }, []);
+  useEffect(() => { fetchQuestionnaires(); }, [fetchQuestionnaires]);
 
   const loadQuestions = async (qId: string) => {
     setSelectedQ(qId); setAnswers({});

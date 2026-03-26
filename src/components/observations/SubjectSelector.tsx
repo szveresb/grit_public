@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useLanguage } from '@/hooks/useLanguage';
@@ -60,7 +60,7 @@ const SubjectSelector = ({
       .then(({ data }) => { if (data) setIsPremium(data.premium); });
   }, [user]);
 
-  const fetchSubjects = async () => {
+  const fetchSubjects = useCallback(async () => {
     if (!user) return;
     const { data } = await supabase
       .from('subjects')
@@ -68,11 +68,11 @@ const SubjectSelector = ({
       .eq('user_id', user.id)
       .order('created_at');
     setSubjects((data as Subject[]) ?? []);
-  };
+  }, [user]);
 
   useEffect(() => {
     fetchSubjects();
-  }, [user]);
+  }, [fetchSubjects]);
 
   const handleObserverClick = () => {
     if (!isPremium) {

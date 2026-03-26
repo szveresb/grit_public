@@ -112,7 +112,7 @@ const QuestionnaireFiller = ({ onCompleted, readOnly }: { onCompleted?: () => vo
       setLoading(false);
     };
     load();
-  }, [activeSubject.id, activeSubject.type, user]);
+  }, [activeSubject.id, activeSubject.type, user, readOnly]);
 
   const getLastCompletion = (qId: string) =>
     lastResponses.find((r) => r.questionnaire_id === qId);

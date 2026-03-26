@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useStance } from '@/hooks/useStance';
@@ -34,7 +34,7 @@ const ManagedRelatives = () => {
   const [editRelType, setEditRelType] = useState<string>('other');
   const [saving, setSaving] = useState(false);
 
-  const fetchSubjects = async () => {
+  const fetchSubjects = useCallback(async () => {
     if (!user) return;
     const { data } = await supabase
       .from('subjects')
@@ -43,9 +43,9 @@ const ManagedRelatives = () => {
       .order('created_at');
     setSubjects((data as Subject[]) ?? []);
     await refetchSubjects();
-  };
+  }, [user, refetchSubjects]);
 
-  useEffect(() => { fetchSubjects(); }, [user]);
+  useEffect(() => { fetchSubjects(); }, [fetchSubjects]);
 
   const handleAdd = async () => {
     if (!user || !newName.trim()) return;

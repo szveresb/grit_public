@@ -23,6 +23,11 @@ const DOT_GAP = 56; // px per entry group (used only when content overflows)
 const MIN_SCALE = 1;
 const MAX_SCALE = 3;
 
+const getTouchDist = (e: React.TouchEvent) => {
+  const [a, b] = [e.touches[0], e.touches[1]];
+  return Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY);
+};
+
 const iconFor = (type: string, selected: boolean) => {
   const cls = `h-4 w-4 ${selected ? 'text-primary-foreground' : type === 'journal' ? 'text-primary' : type === 'observation' ? 'text-accent-foreground/60' : 'text-muted-foreground'}`;
   if (type === 'journal') return <FBookOpen className={cls} />;
@@ -72,11 +77,6 @@ const HorizontalTimeline = ({ items, lang, t }: Props) => {
   }, [groupedLTR]);
 
   // Pinch-to-zoom handlers
-  const getTouchDist = (e: React.TouchEvent) => {
-    const [a, b] = [e.touches[0], e.touches[1]];
-    return Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY);
-  };
-
   const onTouchStart = useCallback((e: React.TouchEvent) => {
     if (e.touches.length === 2) {
       pinchRef.current = { startDist: getTouchDist(e), startScale: scale };
