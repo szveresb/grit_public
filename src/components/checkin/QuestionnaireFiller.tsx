@@ -81,13 +81,25 @@ const QuestionnaireFiller = ({ onCompleted, readOnly }: { onCompleted?: () => vo
       setAnswers({});
       setScoreResult(null);
 
-      const responseQuery = user
+      let responseQuery: any = user
         ? supabase
             .from('questionnaire_responses')
             .select('questionnaire_id, completed_at')
             .eq('user_id', user.id)
-            .order('completed_at', { ascending: false })
         : Promise.resolve({ data: [] });
+
+      if (user) {
+        if (activeSubject.type === 'relative') {
+          responseQuery = responseQuery
+            .eq('subject_type', 'relative')
+            .eq('subject_id', activeSubject.id);
+        } else {
+          responseQuery = responseQuery
+            .is('subject_id', null)
+            .or('subject_type.eq.self,subject_type.is.null');
+        }
+        responseQuery = responseQuery.order('completed_at', { ascending: false });
+      }
 
       const qQuery = supabase
         .from('questionnaires')
