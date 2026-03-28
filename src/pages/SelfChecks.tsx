@@ -178,7 +178,7 @@ const SelfChecks = () => {
           }));
         }
       });
-      await supabase.from('questionnaire_questions').insert(qRows);
+      await supabase.from('questionnaire_questions').insert(qRows as any);
     }
     toast.success(t.questionnaires_manage.questionnaireCloned);
     fetchQuestionnaires();
