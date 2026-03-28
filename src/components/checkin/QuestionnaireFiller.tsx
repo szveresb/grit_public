@@ -235,7 +235,6 @@ const QuestionnaireFiller = ({ onCompleted, readOnly }: { onCompleted?: () => vo
       .insert({
         user_id: user.id,
         questionnaire_id: selectedQ,
-        total_score: totalScore,
         subject_type: activeSubject.type,
         subject_id: activeSubject.type === 'relative' ? activeSubject.id : null,
       })
@@ -252,6 +251,19 @@ const QuestionnaireFiller = ({ onCompleted, readOnly }: { onCompleted?: () => vo
       answer: JSON.stringify(answer),
     }));
     if (answerRows.length) await supabase.from('questionnaire_answers').insert(answerRows);
+
+    // Fetch the authoritative total_score computed securely via Postgres triggers
+    if (questionnaire?.scoring_enabled) {
+      const { data: finalRes } = await supabase
+        .from('questionnaire_responses')
+        .select('total_score')
+        .eq('id', resp.id)
+        .single();
+      
+      if (finalRes?.total_score !== null) {
+        setScoreResult(prev => prev ? { ...prev, totalScore: finalRes.total_score } : null);
+      }
+    }
 
     toast.success(t.questionnaires_manage.completed);
     setLastResponses((prev) => [
