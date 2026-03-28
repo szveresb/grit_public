@@ -115,7 +115,7 @@ const SelfChecks = () => {
         else if (formScoringEnabled && nq.reverseScored && nq.type === 'scale') answerScores = nq.answerScores;
         return { questionnaire_id: q.id, question_text: nq.text, question_type: nq.type, options: nq.type === 'multiple_choice' ? nq.options.split(',').map(s => s.trim()).filter(Boolean) : nq.type === 'scale' ? [String(nq.scaleMin), String(nq.scaleMax)] : null, sort_order: i, answer_scores: answerScores, options_localized: nq.type === 'scale' && Object.keys(nq.scaleLabels).length > 0 ? nq.scaleLabels : null, logic_rules: nq.logicRules.length > 0 ? nq.logicRules : null };
       });
-      if (qRows.length) await supabase.from('questionnaire_questions').insert(qRows);
+      if (qRows.length) await supabase.from('questionnaire_questions').insert(qRows as any);
       toast.success(t.questionnaires_manage.questionnaireCreated);
     }
     setSaving(false); setShowForm(false); setEditingId(null); fetchQuestionnaires();
