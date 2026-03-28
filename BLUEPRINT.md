@@ -18,7 +18,7 @@ Grit.hu is a sensemaking platform designed for individuals in high-conflict rela
 - ✅ Respondent stepper: Auto-detected branching mode with one-question-at-a-time rendering, progress bar, and `__SKIPPED__` sentinel insertion in `QuestionnaireFiller.tsx`
 - ✅ Display: Skipped question badge in `ScoreResults.tsx`
 - ✅ i18n: 17 new bilingual keys for logic jump UI
-- ⏳ Migration deployment: Requires user presence per project safety rules
+- ✅ Migration deployed via Lovable SQL Editor
 
 ## Component Map
 1.  [`src/pages/CheckIn.tsx`](file:///c:/Users/veres.sz/Documents/GitHub/grit.hu/src/pages/CheckIn.tsx) — Primary unified "Journal" page: Quick Pulse, ObservationStepper, calendar feed, mood trends, pattern charts.
@@ -30,4 +30,4 @@ Grit.hu is a sensemaking platform designed for individuals in high-conflict rela
 7.  [`src/lib/logic-validation.ts`](file:///c:/Users/veres.sz/Documents/GitHub/grit.hu/src/lib/logic-validation.ts) — Forward-only validation and reachability analysis.
 
 ## State of Play
-**Dynamic Pathing feature is code-complete.** All frontend changes (editor UI, stepper mode, skip handling, i18n) are committed. The database migration (`20260328205500_add_logic_rules_and_skipped_guard.sql`) is ready but awaiting deployment with user oversight.
+**Dynamic Pathing feature is fully deployed and live.** All frontend changes and database migration are in place. The system supports conditional question branching with forward-only jumps, auto-stepper mode, and `__SKIPPED__` data integrity.
