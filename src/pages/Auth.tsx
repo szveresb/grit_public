@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import LanguageToggle from '@/components/LanguageToggle';
@@ -20,9 +20,15 @@ const Auth = () => {
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
   const [appleLoading, setAppleLoading] = useState(false);
-  const { signUp, signIn } = useAuth();
+  const { signUp, signIn, user, loading: authLoading } = useAuth();
   const { t, localePath } = useLanguage();
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if (user && !authLoading) {
+      navigate(localePath('/journal'));
+    }
+  }, [user, authLoading, navigate, localePath]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -45,7 +51,6 @@ const Auth = () => {
       }
 
       toast.success(t.auth.welcomeToast);
-      navigate(localePath('/journal'));
     } else {
       const { error } = await signIn(email, password);
       if (error) {
@@ -53,8 +58,6 @@ const Auth = () => {
         setLoading(false);
         return;
       }
-
-      navigate(localePath('/journal'));
     }
 
     setLoading(false);

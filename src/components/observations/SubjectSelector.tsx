@@ -7,7 +7,7 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { FPlus, FUser, FUsers, FSparkles } from '@/components/icons/FreudIcons';
+import { FPlus, FUser, FUsers, FSparkles, FCheck } from '@/components/icons/FreudIcons';
 import { toast } from 'sonner';
 import PremiumModal from '@/components/premium/PremiumModal';
 import ObserverConsentCard from '@/components/premium/ObserverConsentCard';
@@ -46,6 +46,7 @@ const SubjectSelector = ({
   const [premiumOpen, setPremiumOpen] = useState(false);
   const [isPremium, setIsPremium] = useState(true); // default true – everyone has access for now
   const [showObserverConsent, setShowObserverConsent] = useState(false);
+  const [newObserverConsent, setNewObserverConsent] = useState(false);
   const [observerConsentGiven, setObserverConsentGiven] = useState(false);
 
   useEffect(() => {
@@ -107,6 +108,7 @@ const SubjectSelector = ({
       onSubjectIdChange(data.id);
       onSubjectNameChange?.(data.name);
       setNewName('');
+      setNewObserverConsent(false);
       setShowAdd(false);
     }
     setAdding(false);
@@ -225,12 +227,30 @@ const SubjectSelector = ({
                   ))}
                 </SelectContent>
               </Select>
+              
+              <label className="flex items-start gap-3 cursor-pointer group pt-2 pb-1">
+                <button
+                  type="button"
+                  onClick={() => setNewObserverConsent(!newObserverConsent)}
+                  className={`mt-0.5 h-5 w-5 rounded-md border-2 flex items-center justify-center shrink-0 transition-all ${
+                    newObserverConsent
+                      ? 'bg-primary border-primary text-primary-foreground'
+                      : 'border-border group-hover:border-primary/50'
+                  }`}
+                >
+                  {newObserverConsent && <FCheck className="h-3 w-3" />}
+                </button>
+                <span className="text-xs text-muted-foreground leading-relaxed">
+                  {t.premium.observerConsentCheckbox}
+                </span>
+              </label>
+
               <div className="flex gap-2">
                 <Button
                   size="sm"
                   className="rounded-2xl"
                   onClick={handleAdd}
-                  disabled={adding || !newName.trim()}
+                  disabled={adding || !newName.trim() || !newObserverConsent}
                 >
                   {t.subjects.addSubject}
                 </Button>
@@ -238,7 +258,7 @@ const SubjectSelector = ({
                   size="sm"
                   variant="ghost"
                   className="rounded-2xl"
-                  onClick={() => setShowAdd(false)}
+                  onClick={() => { setShowAdd(false); setNewObserverConsent(false); }}
                 >
                   {t.cancel}
                 </Button>

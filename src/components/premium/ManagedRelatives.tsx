@@ -7,7 +7,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { FUsers, FPlus, FTrash, FSparkles, FPencil } from '@/components/icons/FreudIcons';
+import { FUsers, FPlus, FTrash, FSparkles, FPencil, FCheck } from '@/components/icons/FreudIcons';
 import { toast } from 'sonner';
 import { Badge } from '@/components/ui/badge';
 
@@ -29,6 +29,7 @@ const ManagedRelatives = () => {
   const [newRelType, setNewRelType] = useState<string>('other');
   const [adding, setAdding] = useState(false);
   const [deleting, setDeleting] = useState<string | null>(null);
+  const [observerConsent, setObserverConsent] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editName, setEditName] = useState('');
   const [editRelType, setEditRelType] = useState<string>('other');
@@ -58,6 +59,7 @@ const ManagedRelatives = () => {
       toast.success(t.premium.subjectAdded);
       setNewName('');
       setNewRelType('other');
+      setObserverConsent(false);
       setShowAdd(false);
       fetchSubjects();
     }
@@ -242,12 +244,30 @@ const ManagedRelatives = () => {
               </SelectContent>
             </Select>
           </div>
+          
+          <label className="flex items-start gap-3 cursor-pointer group pt-2 pb-1">
+            <button
+              type="button"
+              onClick={() => setObserverConsent(!observerConsent)}
+              className={`mt-0.5 h-5 w-5 rounded-md border-2 flex items-center justify-center shrink-0 transition-all ${
+                observerConsent
+                  ? 'bg-primary border-primary text-primary-foreground'
+                  : 'border-border group-hover:border-primary/50'
+              }`}
+            >
+              {observerConsent && <FCheck className="h-3 w-3" />}
+            </button>
+            <span className="text-xs text-muted-foreground leading-relaxed">
+              {t.premium.observerConsentCheckbox}
+            </span>
+          </label>
+
           <div className="flex gap-2">
             <Button
               size="sm"
               className="rounded-2xl"
               onClick={handleAdd}
-              disabled={adding || !newName.trim()}
+              disabled={adding || !newName.trim() || !observerConsent}
             >
               {t.subjects.addSubject}
             </Button>
@@ -255,7 +275,7 @@ const ManagedRelatives = () => {
               size="sm"
               variant="ghost"
               className="rounded-2xl"
-              onClick={() => setShowAdd(false)}
+              onClick={() => { setShowAdd(false); setObserverConsent(false); }}
             >
               {t.cancel}
             </Button>
