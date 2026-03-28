@@ -13,6 +13,8 @@ import { formatDistanceToNow, differenceInHours } from 'date-fns';
 import { getDateLocale } from '@/lib/date-locale';
 import ScoreResults from './ScoreResults';
 import StanceBanner from '@/components/premium/StanceBanner';
+import { evaluateLogicRules, computeVisiblePath, getSkippedQuestionIds, hasBranchingLogic } from '@/lib/logic-engine';
+import type { LogicRule, QuestionWithLogic } from '@/lib/logic-engine';
 
 interface Questionnaire {
   id: string;
@@ -39,6 +41,7 @@ interface Question {
   sort_order: number;
   answer_scores: Record<string, number> | null;
   options_localized: Record<string, string> | null;
+  logic_rules: LogicRule[] | null;
 }
 
 interface LastResponse {
@@ -158,11 +161,11 @@ const QuestionnaireFiller = ({ onCompleted, readOnly }: { onCompleted?: () => vo
     setScoreResult(null);
     const { data } = await supabase
       .from('questionnaire_questions')
-      .select('id, question_text, question_type, options, sort_order, answer_scores, options_localized')
+      .select('id, question_text, question_type, options, sort_order, answer_scores, options_localized, logic_rules')
       .eq('questionnaire_id', qId)
       .order('sort_order');
     setQuestions(
-      (data ?? []).map((q) => ({ ...q, options: q.options as string[] | null, answer_scores: q.answer_scores as Record<string, number> | null, options_localized: q.options_localized as Record<string, string> | null }))
+      (data ?? []).map((q) => ({ ...q, options: q.options as string[] | null, answer_scores: q.answer_scores as Record<string, number> | null, options_localized: q.options_localized as Record<string, string> | null, logic_rules: (q.logic_rules as LogicRule[] | null) ?? null }))
     );
   };
 
@@ -251,6 +254,23 @@ const QuestionnaireFiller = ({ onCompleted, readOnly }: { onCompleted?: () => vo
       answer: JSON.stringify(answer),
     }));
     if (answerRows.length) await supabase.from('questionnaire_answers').insert(answerRows);
+
+    // Insert __SKIPPED__ sentinel rows for questions hidden by logic jumps
+    const questionsWithLogic: QuestionWithLogic[] = questions.map(q => ({
+      id: q.id,
+      sort_order: q.sort_order,
+      logic_rules: q.logic_rules,
+    }));
+    const visiblePath = computeVisiblePath(questionsWithLogic, answers);
+    const skippedIds = getSkippedQuestionIds(questionsWithLogic, visiblePath);
+    if (skippedIds.length > 0) {
+      const skippedRows = skippedIds.map(qid => ({
+        response_id: resp.id,
+        question_id: qid,
+        answer: JSON.stringify('__SKIPPED__'),
+      }));
+      await supabase.from('questionnaire_answers').insert(skippedRows);
+    }
 
     // Fetch the authoritative total_score computed securely via Postgres triggers
     if (questionnaire?.scoring_enabled) {
@@ -384,6 +404,77 @@ const QuestionnaireFiller = ({ onCompleted, readOnly }: { onCompleted?: () => vo
   // Filling a specific questionnaire
   if (selectedQ) {
     const qTitle = questionnaires.find((q) => q.id === selectedQ)?.title;
+    const isBranching = hasBranchingLogic(questions as QuestionWithLogic[]);
+
+    if (isBranching) {
+      // Stepper mode: one question at a time
+      const questionsWithLogic: QuestionWithLogic[] = questions.map(q => ({
+        id: q.id, sort_order: q.sort_order, logic_rules: q.logic_rules,
+      }));
+      const visiblePath = computeVisiblePath(questionsWithLogic, answers);
+      const currentQuestionId = visiblePath[visiblePath.length - 1];
+      const currentQuestion = questions.find(q => q.id === currentQuestionId);
+      const answeredCount = visiblePath.filter(id => answers[id] !== undefined).length;
+      const isLastAnswered = currentQuestion && answers[currentQuestionId] !== undefined;
+
+      // Check if logic says skip_to_end after the last answer
+      const lastResult = currentQuestion && answers[currentQuestionId]
+        ? evaluateLogicRules(currentQuestion as QuestionWithLogic, answers[currentQuestionId])
+        : null;
+      const reachedEnd = lastResult?.action === 'skip_to_end' || (isLastAnswered && !lastResult?.targetId && questions.indexOf(currentQuestion!) === questions.length - 1);
+
+      return (
+        <div className="space-y-5 animate-fade-in">
+          <div className="flex items-center justify-between">
+            <h3 className="text-sm font-semibold text-foreground">{qTitle}</h3>
+            <span className="text-[10px] text-muted-foreground">
+              {t.questionnaires_manage.questionN.replace('{n}', String(answeredCount + (isLastAnswered ? 0 : 1)))} / ~{questions.length}
+            </span>
+          </div>
+
+          {/* Progress bar */}
+          <div className="h-1 bg-border/50 rounded-full overflow-hidden">
+            <div
+              className="h-full bg-primary rounded-full transition-all duration-500 ease-out"
+              style={{ width: `${Math.min(100, (answeredCount / questions.length) * 100)}%` }}
+            />
+          </div>
+
+          {reachedEnd ? (
+            <div className="space-y-4">
+              <p className="text-sm text-muted-foreground">{t.questionnaires_manage.completionSummary.replace('{count}', String(answeredCount))}</p>
+              <div className="flex gap-2 items-center">
+                {readOnly ? (
+                  <p className="text-xs text-muted-foreground mr-2 italic">{t.disclaimer?.userReported || ''}</p>
+                ) : (
+                  <Button size="sm" className="rounded-2xl" onClick={handleSubmit} disabled={submitting}>
+                    {submitting ? t.questionnaires_manage.submitting : t.submit}
+                  </Button>
+                )}
+                <Button size="sm" variant="outline" className="rounded-2xl" onClick={() => setSelectedQ(null)}>
+                  {t.cancel}
+                </Button>
+              </div>
+            </div>
+          ) : currentQuestion ? (
+            <div key={currentQuestion.id} className="space-y-3 animate-fade-in">
+              <Label className="text-sm font-medium">
+                {questions.indexOf(currentQuestion) + 1}. {currentQuestion.question_text}
+              </Label>
+              {renderInput(currentQuestion)}
+            </div>
+          ) : null}
+
+          <div className="flex gap-2 items-center">
+            <Button size="sm" variant="outline" className="rounded-2xl" onClick={() => setSelectedQ(null)}>
+              {t.cancel}
+            </Button>
+          </div>
+        </div>
+      );
+    }
+
+    // Flat list mode (no branching)
     return (
       <div className="space-y-5 animate-fade-in">
         <h3 className="text-sm font-semibold text-foreground">{qTitle}</h3>

@@ -162,11 +162,14 @@ Curated research articles with bilingual support.
 | `question_type` | text | Default `'text'`; supports `scale`, `multiple_choice` |
 | `options` / `options_localized` | jsonb | For multiple-choice |
 | `answer_scores` | jsonb | Nullable; maps option/scale values to numeric scores. Used for weighted mode and **reverse scoring** in sum mode |
+| `logic_rules` | jsonb | Nullable; array of `{condition: {answer_equals}, action: "jump_to"|"skip_to_end", target_question_id?}`. Forward-only. First match wins. |
 | `sort_order` | integer | Default `0` |
 
 **RLS:** Authenticated users see questions of published questionnaires (or observers). Editors have full CRUD.
 
-**Editor features:** Questions can be duplicated (deep copy of all settings). Scale questions support a "Reverse scoring" toggle that auto-populates `answer_scores` with inverted values using `score(n) = (min + max) - n`. Entire questionnaires can be **cloned** (deep copy of questionnaire + all questions) as unpublished drafts with a "(copy)" suffix.
+**Editor features:** Questions can be duplicated (deep copy of all settings; logic rules cleared on duplicate). Scale questions support a "Reverse scoring" toggle that auto-populates `answer_scores` with inverted values using `score(n) = (min + max) - n`. Entire questionnaires can be **cloned** (deep copy of questionnaire + all questions + remapped logic rules) as unpublished drafts with a "(copy)" suffix.
+
+**Conditional Branching (Logic Jumps):** Each non-text question can define forward-only `logic_rules` — when a respondent selects a matching answer, the system jumps to a later question or skips to end. Questionnaires with any logic rules automatically render in **stepper mode** (one question at a time) instead of the default flat list. Skipped questions are recorded with a `"__SKIPPED__"` sentinel in the `answer` field for data integrity. The `validate_logic_rules` client-side utility enforces forward-only constraints, detects unreachable questions, and validates target references before save.
 
 **Scoring:** Supports `sum` and `weighted` modes. Score ranges accept **zero and negative values** for both `min` and `max` bounds — enabling instruments with inverse or baseline-adjusted scoring.
 
@@ -195,7 +198,7 @@ Curated research articles with bilingual support.
 | `answer` | jsonb | |
 
 **RLS:** Users manage own answers (validated via response ownership). No admin bypass.
-**Scoring Engine:** The system employs an `AFTER INSERT ON questionnaire_answers` PostgreSQL trigger (`calculate_answer_score()`) that parses the generic JSONB payload against the structure's `answer_scores` configuration. It computes the algorithmic weighted point value natively in the database, sequentially aggregating and isolating the `total_score` on the master `questionnaire_responses` row in O(1) time without trusting client-side arithmetic.
+**Scoring Engine:** The system employs an `AFTER INSERT ON questionnaire_answers` PostgreSQL trigger (`calculate_answer_score()`) that parses the generic JSONB payload against the structure's `answer_scores` configuration. It computes the algorithmic weighted point value natively in the database, sequentially aggregating and isolating the `total_score` on the master `questionnaire_responses` row in O(1) time without trusting client-side arithmetic. The trigger includes a `__SKIPPED__` sentinel guard — answers with value `"__SKIPPED__"` (inserted for questions hidden by logic jumps) are silently ignored, contributing zero to the total score.
 
 ---
 

@@ -276,6 +276,23 @@ export interface Dictionary {
     answer: string;
     noAnswersRecorded: string;
     completionSummary: string;
+    // Logic jumps
+    logicJump: string;
+    logicJumpSection: string;
+    addLogicRule: string;
+    removeRule: string;
+    jumpTo: string;
+    skipToEnd: string;
+    whenAnswerIs: string;
+    thenGoTo: string;
+    questionN: string;
+    endOfSurvey: string;
+    previewMode: string;
+    previewModeDesc: string;
+    forwardOnlyWarning: string;
+    unreachableWarning: string;
+    skipped: string;
+    logicRulesSaved: string;
   };
 
   // Timeline

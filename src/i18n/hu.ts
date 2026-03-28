@@ -264,6 +264,23 @@ export const hu: Dictionary = {
     answer: 'Válasz',
     noAnswersRecorded: 'Ehhez a kitöltéshez nem lettek válaszok rögzítve.',
     completionSummary: '{count} kitöltés rögzítve',
+    // Logic jumps
+    logicJump: 'Logikai ugrás',
+    logicJumpSection: 'Feltételes kérdésugrás',
+    addLogicRule: 'Szabály hozzáadása',
+    removeRule: 'Szabály törlése',
+    jumpTo: 'Ugrás ide',
+    skipToEnd: 'Ugrás a végére',
+    whenAnswerIs: 'Ha a válasz',
+    thenGoTo: 'Akkor ugorjon ide',
+    questionN: '{n}. kérdés',
+    endOfSurvey: 'Kérdőív vége',
+    previewMode: 'Előnézet',
+    previewModeDesc: 'Teszteld az ugrási logikát mentés nélkül.',
+    forwardOnlyWarning: 'Az ugrások csak előre irányulhatnak.',
+    unreachableWarning: 'Figyelmeztetés: {count} kérdés nem érhető el.',
+    skipped: 'Kihagyva',
+    logicRulesSaved: 'Logikai szabályok mentve.',
   },
 
   timeline: {

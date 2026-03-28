@@ -11,9 +11,14 @@ Grit.hu is a sensemaking platform designed for individuals in high-conflict rela
 - **Design:** Custom "Freud" icon set, "Clinical Core, Human Surface" philosophy.
 
 ## Current Task
-No active task. The system is in a clean, stable state. Previous work sessions completed:
-- **Layout alignment** — `/journal` and `/surveys` pages now share `max-w-2xl mx-auto w-full` containers.
-- **Mood heatmap** — Calendar cells on the `/journal` page display color-coded backgrounds based on daily average `impact_level` from journal entries (emerald → red, 5-point scale).
+**Dynamic Pathing via Conditional Logic** — implementing logic jumps in the questionnaire system. Status:
+- ✅ Data layer: `logic_rules` JSONB column + `__SKIPPED__` trigger guard (migration created, awaiting deployment)
+- ✅ Logic engine: `src/lib/logic-engine.ts` (runtime evaluation) + `src/lib/logic-validation.ts` (editor-time validation)
+- ✅ Editor UI: Per-question logic rule configuration with inline badges and forward-only target selection in `SelfChecks.tsx`
+- ✅ Respondent stepper: Auto-detected branching mode with one-question-at-a-time rendering, progress bar, and `__SKIPPED__` sentinel insertion in `QuestionnaireFiller.tsx`
+- ✅ Display: Skipped question badge in `ScoreResults.tsx`
+- ✅ i18n: 17 new bilingual keys for logic jump UI
+- ⏳ Migration deployment: Requires user presence per project safety rules
 
 ## Component Map
 1.  [`src/pages/CheckIn.tsx`](file:///c:/Users/veres.sz/Documents/GitHub/grit.hu/src/pages/CheckIn.tsx) — Primary unified "Journal" page: Quick Pulse, ObservationStepper, calendar feed, mood trends, pattern charts.
@@ -21,6 +26,8 @@ No active task. The system is in a clean, stable state. Previous work sessions c
 3.  [`SYSTEM_DESCRIPTION.md`](file:///c:/Users/veres.sz/Documents/GitHub/grit.hu/SYSTEM_DESCRIPTION.md) — Comprehensive architectural blueprint and source of truth for the entire system.
 4.  [`src/hooks/useStance.tsx`](file:///c:/Users/veres.sz/Documents/GitHub/grit.hu/src/hooks/useStance.tsx) — Global state for "Self" vs "Observer" (relative) perspectives.
 5.  [`src/components/checkin/FeedCalendar.tsx`](file:///c:/Users/veres.sz/Documents/GitHub/grit.hu/src/components/checkin/FeedCalendar.tsx) — Calendar grid with mood heatmap overlay, moon phases, and day-detail drill-downs.
+6.  [`src/lib/logic-engine.ts`](file:///c:/Users/veres.sz/Documents/GitHub/grit.hu/src/lib/logic-engine.ts) — Logic jump rule evaluation, path computation, skip detection.
+7.  [`src/lib/logic-validation.ts`](file:///c:/Users/veres.sz/Documents/GitHub/grit.hu/src/lib/logic-validation.ts) — Forward-only validation and reachability analysis.
 
 ## State of Play
-**All system documentation is synchronized.** The `SYSTEM_DESCRIPTION.md` has been updated to reflect recent UI changes (standardized `max-w-2xl` layout on `/journal` and `/surveys`), the implementation of the **mood heatmap** in the calendar feed, and corrections to the **Freud icon set** descriptions. No active technical tasks remain; the system is in a stable, fully-documented state.
+**Dynamic Pathing feature is code-complete.** All frontend changes (editor UI, stepper mode, skip handling, i18n) are committed. The database migration (`20260328205500_add_logic_rules_and_skipped_guard.sql`) is ready but awaiting deployment with user oversight.

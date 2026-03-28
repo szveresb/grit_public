@@ -67,9 +67,17 @@ const ScoreResults = ({ totalScore, maxPossibleScore, questionScores, scoreRange
           <div key={i} className="flex items-center justify-between border border-border rounded-xl px-3 py-2">
             <div className="flex-1 min-w-0 mr-3">
               <p className="text-xs font-medium text-foreground truncate">{i + 1}. {qs.questionText}</p>
-              <p className="text-[11px] text-muted-foreground">{qs.answer}</p>
+              {qs.answer === '__SKIPPED__' ? (
+                <span className="text-[10px] px-1.5 py-0.5 rounded-full bg-muted text-muted-foreground font-semibold">
+                  {t.questionnaires_manage.skipped}
+                </span>
+              ) : (
+                <p className="text-[11px] text-muted-foreground">{qs.answer}</p>
+              )}
             </div>
-            <span className="text-sm font-semibold text-foreground shrink-0">{qs.score >= 0 ? '+' : ''}{qs.score}</span>
+            {qs.answer !== '__SKIPPED__' && (
+              <span className="text-sm font-semibold text-foreground shrink-0">{qs.score >= 0 ? '+' : ''}{qs.score}</span>
+            )}
           </div>
         ))}
       </div>

@@ -14,6 +14,8 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
 import { friendlyDbError } from '@/lib/db-error';
 import { FPlus, FTrash, FPencil, FClose, FSave } from '@/components/icons/FreudIcons';
+import type { LogicRule } from '@/lib/logic-engine';
+import { validateLogicRules } from '@/lib/logic-validation';
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
@@ -40,7 +42,7 @@ const SelfChecks = () => {
   const [formTitle, setFormTitle] = useState('');
   const [formDesc, setFormDesc] = useState('');
   const [formPublished, setFormPublished] = useState(true);
-  const [formQuestions, setFormQuestions] = useState<{ id?: string; text: string; type: string; options: string; answerScores: Record<string, number>; scaleMin: number; scaleMax: number; scaleLabels: Record<string, string>; reverseScored: boolean }[]>([{ text: '', type: 'text', options: '', answerScores: {}, scaleMin: 1, scaleMax: 5, scaleLabels: {}, reverseScored: false }]);
+  const [formQuestions, setFormQuestions] = useState<{ id?: string; text: string; type: string; options: string; answerScores: Record<string, number>; scaleMin: number; scaleMax: number; scaleLabels: Record<string, string>; reverseScored: boolean; logicRules: LogicRule[] }[]>([{ text: '', type: 'text', options: '', answerScores: {}, scaleMin: 1, scaleMax: 5, scaleLabels: {}, reverseScored: false, logicRules: [] }]);
   const [formRepeat, setFormRepeat] = useState<string>('');
   const [formScoringEnabled, setFormScoringEnabled] = useState(false);
   const [formScoringMode, setFormScoringMode] = useState<string>('sum');
@@ -62,7 +64,7 @@ const SelfChecks = () => {
     setQuestions((data ?? []).map(q => ({ ...q, options: q.options as string[] | null, answer_scores: q.answer_scores as Record<string, number> | null, options_localized: q.options_localized as Record<string, string> | null })));
   };
 
-  const openCreate = () => { setEditingId(null); setFormTitle(''); setFormDesc(''); setFormPublished(false); setFormRepeat(''); setFormScoringEnabled(false); setFormScoringMode('sum'); setFormScoreRanges([]); setFormQuestions([{ text: '', type: 'text', options: '', answerScores: {}, scaleMin: 1, scaleMax: 5, scaleLabels: {}, reverseScored: false }]); setShowForm(true); };
+  const openCreate = () => { setEditingId(null); setFormTitle(''); setFormDesc(''); setFormPublished(false); setFormRepeat(''); setFormScoringEnabled(false); setFormScoringMode('sum'); setFormScoreRanges([]); setFormQuestions([{ text: '', type: 'text', options: '', answerScores: {}, scaleMin: 1, scaleMax: 5, scaleLabels: {}, reverseScored: false, logicRules: [] }]); setShowForm(true); };
 
   const openEdit = async (q: Questionnaire) => {
     setEditingId(q.id); setFormTitle(q.title); setFormDesc(q.description ?? ''); setFormPublished(q.is_published); setFormRepeat(q.repeat_interval ?? '');
@@ -84,7 +86,7 @@ const SelfChecks = () => {
           if (scores[String(n)] !== (scaleMin + scaleMax) - n) { isReverse = false; break; }
         }
       }
-      return { id: qq.id, text: qq.question_text, type: qq.question_type, options: qq.question_type === 'multiple_choice' && opts ? opts.join(', ') : '', answerScores: scores, scaleMin, scaleMax, scaleLabels: (qq.options_localized as Record<string, string>) ?? {}, reverseScored: isReverse };
+      return { id: qq.id, text: qq.question_text, type: qq.question_type, options: qq.question_type === 'multiple_choice' && opts ? opts.join(', ') : '', answerScores: scores, scaleMin, scaleMax, scaleLabels: (qq.options_localized as Record<string, string>) ?? {}, reverseScored: isReverse, logicRules: (qq.logic_rules as LogicRule[]) ?? [] };
     }));
     setShowForm(true);
   };
@@ -100,7 +102,7 @@ const SelfChecks = () => {
         let answerScores: Record<string, number> | null = null;
         if (formScoringEnabled && formScoringMode === 'weighted') answerScores = nq.answerScores;
         else if (formScoringEnabled && nq.reverseScored && nq.type === 'scale') answerScores = nq.answerScores;
-        return { questionnaire_id: editingId, question_text: nq.text, question_type: nq.type, options: nq.type === 'multiple_choice' ? nq.options.split(',').map(s => s.trim()).filter(Boolean) : nq.type === 'scale' ? [String(nq.scaleMin), String(nq.scaleMax)] : null, sort_order: i, answer_scores: answerScores, options_localized: nq.type === 'scale' && Object.keys(nq.scaleLabels).length > 0 ? nq.scaleLabels : null };
+        return { questionnaire_id: editingId, question_text: nq.text, question_type: nq.type, options: nq.type === 'multiple_choice' ? nq.options.split(',').map(s => s.trim()).filter(Boolean) : nq.type === 'scale' ? [String(nq.scaleMin), String(nq.scaleMax)] : null, sort_order: i, answer_scores: answerScores, options_localized: nq.type === 'scale' && Object.keys(nq.scaleLabels).length > 0 ? nq.scaleLabels : null, logic_rules: nq.logicRules.length > 0 ? nq.logicRules : null };
       });
       if (qRows.length) await supabase.from('questionnaire_questions').insert(qRows);
       toast.success(t.questionnaires_manage.questionnaireUpdated);
@@ -111,7 +113,7 @@ const SelfChecks = () => {
         let answerScores: Record<string, number> | null = null;
         if (formScoringEnabled && formScoringMode === 'weighted') answerScores = nq.answerScores;
         else if (formScoringEnabled && nq.reverseScored && nq.type === 'scale') answerScores = nq.answerScores;
-        return { questionnaire_id: q.id, question_text: nq.text, question_type: nq.type, options: nq.type === 'multiple_choice' ? nq.options.split(',').map(s => s.trim()).filter(Boolean) : nq.type === 'scale' ? [String(nq.scaleMin), String(nq.scaleMax)] : null, sort_order: i, answer_scores: answerScores, options_localized: nq.type === 'scale' && Object.keys(nq.scaleLabels).length > 0 ? nq.scaleLabels : null };
+        return { questionnaire_id: q.id, question_text: nq.text, question_type: nq.type, options: nq.type === 'multiple_choice' ? nq.options.split(',').map(s => s.trim()).filter(Boolean) : nq.type === 'scale' ? [String(nq.scaleMin), String(nq.scaleMax)] : null, sort_order: i, answer_scores: answerScores, options_localized: nq.type === 'scale' && Object.keys(nq.scaleLabels).length > 0 ? nq.scaleLabels : null, logic_rules: nq.logicRules.length > 0 ? nq.logicRules : null };
       });
       if (qRows.length) await supabase.from('questionnaire_questions').insert(qRows);
       toast.success(t.questionnaires_manage.questionnaireCreated);
@@ -149,16 +151,33 @@ const SelfChecks = () => {
     // Clone questions
     const { data: origQuestions } = await supabase.from('questionnaire_questions').select('*').eq('questionnaire_id', q.id).order('sort_order');
     if (origQuestions && origQuestions.length > 0) {
-      const qRows = origQuestions.map(oq => ({
-        questionnaire_id: cloned.id,
-        question_text: oq.question_text,
-        question_type: oq.question_type,
-        options: oq.options,
-        sort_order: oq.sort_order,
-        answer_scores: oq.answer_scores,
-        options_localized: oq.options_localized,
-        question_text_localized: oq.question_text_localized,
-      }));
+      // Build a mapping from old question IDs to new ones for logic_rules target remapping
+      const idMap = new Map<string, string>();
+      const qRows = origQuestions.map(oq => {
+        const newId = crypto.randomUUID();
+        idMap.set(oq.id, newId);
+        return {
+          questionnaire_id: cloned.id,
+          question_text: oq.question_text,
+          question_type: oq.question_type,
+          options: oq.options,
+          sort_order: oq.sort_order,
+          answer_scores: oq.answer_scores,
+          options_localized: oq.options_localized,
+          question_text_localized: oq.question_text_localized,
+          logic_rules: null as LogicRule[] | null, // placeholder, remapped below
+        };
+      });
+      // Remap logic_rules target IDs to the new cloned question IDs
+      origQuestions.forEach((oq, idx) => {
+        const rules = oq.logic_rules as LogicRule[] | null;
+        if (rules && rules.length > 0) {
+          qRows[idx].logic_rules = rules.map(r => ({
+            ...r,
+            target_question_id: r.target_question_id ? (idMap.get(r.target_question_id) ?? r.target_question_id) : r.target_question_id,
+          }));
+        }
+      });
       await supabase.from('questionnaire_questions').insert(qRows);
     }
     toast.success(t.questionnaires_manage.questionnaireCloned);
@@ -394,9 +413,87 @@ const SelfChecks = () => {
                     </div>
                   </div>
                 )}
+                {/* Logic Jump Rules */}
+                {nq.type !== 'text' && (
+                  <div className="space-y-2 pt-2 border-t border-border/50">
+                    <div className="flex items-center justify-between">
+                      <Label className="text-[10px] uppercase tracking-widest text-muted-foreground">{t.questionnaires_manage.logicJumpSection}</Label>
+                      {nq.logicRules.length > 0 && (
+                        <div className="flex gap-1 flex-wrap">
+                          {nq.logicRules.map((rule, ri) => (
+                            <span key={ri} className="text-[9px] px-1.5 py-0.5 rounded-full bg-primary/10 text-primary font-semibold">
+                              {rule.condition.answer_equals} → {rule.action === 'skip_to_end' ? t.questionnaires_manage.endOfSurvey : `Q${(formQuestions.findIndex(fq => fq.id === rule.target_question_id) + 1) || '?'}`}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                    {nq.logicRules.map((rule, ri) => (
+                      <div key={ri} className="flex flex-wrap items-center gap-1.5 text-xs">
+                        <span className="text-muted-foreground shrink-0">{t.questionnaires_manage.whenAnswerIs}:</span>
+                        <select
+                          value={rule.condition.answer_equals}
+                          onChange={e => {
+                            const c = [...formQuestions];
+                            c[i].logicRules = [...c[i].logicRules];
+                            c[i].logicRules[ri] = { ...c[i].logicRules[ri], condition: { answer_equals: e.target.value } };
+                            setFormQuestions(c);
+                          }}
+                          className="border border-input rounded-xl px-2 py-1 text-xs bg-background min-w-[80px]"
+                        >
+                          <option value="">—</option>
+                          {(nq.type === 'yes_no' ? ['yes', 'no'] :
+                            nq.type === 'scale' ? Array.from({ length: nq.scaleMax - nq.scaleMin + 1 }, (_, k) => String(nq.scaleMin + k)) :
+                            nq.type === 'multiple_choice' ? nq.options.split(',').map(s => s.trim()).filter(Boolean) :
+                            []).map(opt => (
+                            <option key={opt} value={opt}>{opt}</option>
+                          ))}
+                        </select>
+                        <span className="text-muted-foreground shrink-0">{t.questionnaires_manage.thenGoTo}:</span>
+                        <select
+                          value={rule.action === 'skip_to_end' ? '__END__' : (rule.target_question_id ?? '')}
+                          onChange={e => {
+                            const c = [...formQuestions];
+                            c[i].logicRules = [...c[i].logicRules];
+                            if (e.target.value === '__END__') {
+                              c[i].logicRules[ri] = { ...c[i].logicRules[ri], action: 'skip_to_end', target_question_id: undefined };
+                            } else {
+                              c[i].logicRules[ri] = { ...c[i].logicRules[ri], action: 'jump_to', target_question_id: e.target.value };
+                            }
+                            setFormQuestions(c);
+                          }}
+                          className="border border-input rounded-xl px-2 py-1 text-xs bg-background min-w-[120px]"
+                        >
+                          <option value="">—</option>
+                          {/* Forward-only: only show questions after the current one */}
+                          {formQuestions.slice(i + 1).map((fq, fi) => (
+                            <option key={fq.id ?? `new-${i + 1 + fi}`} value={fq.id ?? ''}>
+                              {t.questionnaires_manage.questionN.replace('{n}', String(i + 2 + fi))}: {fq.text.substring(0, 30) || '...'}
+                            </option>
+                          ))}
+                          <option value="__END__">{t.questionnaires_manage.endOfSurvey}</option>
+                        </select>
+                        <Button type="button" variant="ghost" size="icon" className="h-6 w-6 text-destructive" onClick={() => {
+                          const c = [...formQuestions];
+                          c[i].logicRules = c[i].logicRules.filter((_, j) => j !== ri);
+                          setFormQuestions(c);
+                        }}>
+                          <FTrash className="h-3 w-3" />
+                        </Button>
+                      </div>
+                    ))}
+                    <Button type="button" variant="ghost" size="sm" className="h-7 text-[11px] text-muted-foreground" onClick={() => {
+                      const c = [...formQuestions];
+                      c[i].logicRules = [...c[i].logicRules, { condition: { answer_equals: '' }, action: 'jump_to' as const }];
+                      setFormQuestions(c);
+                    }}>
+                      <FPlus className="h-3 w-3 mr-1" /> {t.questionnaires_manage.addLogicRule}
+                    </Button>
+                  </div>
+                )}
                 <div className="flex justify-end pt-1 border-t border-border/30">
                   <Button type="button" variant="ghost" size="sm" className="h-7 text-[11px] text-muted-foreground hover:text-foreground gap-1" onClick={() => {
-                    const clone = { ...nq, id: undefined, text: nq.text ? `${nq.text} (copy)` : '', answerScores: { ...nq.answerScores }, scaleLabels: { ...nq.scaleLabels } };
+                    const clone = { ...nq, id: undefined, text: nq.text ? `${nq.text} (copy)` : '', answerScores: { ...nq.answerScores }, scaleLabels: { ...nq.scaleLabels }, logicRules: [] };
                     const c = [...formQuestions];
                     c.splice(i + 1, 0, clone);
                     setFormQuestions(c);
@@ -407,7 +504,7 @@ const SelfChecks = () => {
                 </div>
               </div>
             ))}
-            <Button type="button" variant="outline" size="sm" className="rounded-2xl" onClick={() => setFormQuestions(q => [...q, { text: '', type: 'text', options: '', answerScores: {}, scaleMin: 1, scaleMax: 5, scaleLabels: {}, reverseScored: false }])}>{t.questionnaires_manage.addQuestion}</Button>
+            <Button type="button" variant="outline" size="sm" className="rounded-2xl" onClick={() => setFormQuestions(q => [...q, { text: '', type: 'text', options: '', answerScores: {}, scaleMin: 1, scaleMax: 5, scaleLabels: {}, reverseScored: false, logicRules: [] }])}>{t.questionnaires_manage.addQuestion}</Button>
           </div>
           <div className="flex gap-2">
             <Button size="sm" className="rounded-2xl" onClick={handleSave} disabled={saving}>

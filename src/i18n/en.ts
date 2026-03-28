@@ -266,6 +266,23 @@ export const en: Dictionary = {
     answer: 'Answer',
     noAnswersRecorded: 'No answers were recorded for this submission.',
     completionSummary: '{count} submissions recorded',
+    // Logic jumps
+    logicJump: 'Logic Jump',
+    logicJumpSection: 'Conditional Question Branching',
+    addLogicRule: 'Add Rule',
+    removeRule: 'Remove Rule',
+    jumpTo: 'Jump to',
+    skipToEnd: 'Skip to end',
+    whenAnswerIs: 'When answer is',
+    thenGoTo: 'Then go to',
+    questionN: 'Question {n}',
+    endOfSurvey: 'End of survey',
+    previewMode: 'Preview',
+    previewModeDesc: 'Test the jump logic without saving.',
+    forwardOnlyWarning: 'Jumps must be forward-only.',
+    unreachableWarning: 'Warning: {count} question(s) unreachable.',
+    skipped: 'Skipped',
+    logicRulesSaved: 'Logic rules saved.',
   },
 
   timeline: {
