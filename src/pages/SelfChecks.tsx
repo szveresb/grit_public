@@ -86,7 +86,7 @@ const SelfChecks = () => {
           if (scores[String(n)] !== (scaleMin + scaleMax) - n) { isReverse = false; break; }
         }
       }
-      return { id: qq.id, text: qq.question_text, type: qq.question_type, options: qq.question_type === 'multiple_choice' && opts ? opts.join(', ') : '', answerScores: scores, scaleMin, scaleMax, scaleLabels: (qq.options_localized as Record<string, string>) ?? {}, reverseScored: isReverse, logicRules: (qq.logic_rules as LogicRule[]) ?? [] };
+      return { id: qq.id, text: qq.question_text, type: qq.question_type, options: qq.question_type === 'multiple_choice' && opts ? opts.join(', ') : '', answerScores: scores, scaleMin, scaleMax, scaleLabels: (qq.options_localized as Record<string, string>) ?? {}, reverseScored: isReverse, logicRules: ((qq as any).logic_rules as LogicRule[]) ?? [] };
     }));
     setShowForm(true);
   };
