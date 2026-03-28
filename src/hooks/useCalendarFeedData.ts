@@ -10,6 +10,7 @@ interface TimelineItem {
   title: string;
   date: string;
   detail?: string;
+  impactLevel?: number;
 }
 
 interface ObsLog {
@@ -121,6 +122,7 @@ export const useCalendarFeedData = ({
         title: entry.title,
         date: entry.entry_date,
         detail: entry.impact_level ? `${t.journal.cardImpact}: ${entry.impact_level}/5` : undefined,
+        impactLevel: entry.impact_level,
       }));
 
       if (!isObserver && journalData.length > 0) {
@@ -197,6 +199,7 @@ export const useCalendarFeedData = ({
         title: item.title,
         date: item.date,
         detail: item.detail,
+        impactLevel: item.impactLevel,
         subjectType: item.type === 'observation' ? subjectType : 'self',
       })));
       setLoading(false);

@@ -13,6 +13,7 @@ export interface CalendarFeedItem {
   title: string;
   date: string;
   detail?: string;
+  impactLevel?: number;
   subjectType?: 'self' | 'relative';
 }
 
@@ -26,15 +27,13 @@ interface Props {
   onCreateEntry?: (date: Date) => void;
 }
 
-const iconFor = (item: CalendarFeedItem) => {
-  switch (item.type) {
-    case 'journal': return <FBookOpen className="h-3.5 w-3.5 text-primary shrink-0" />;
-    case 'observation':
-      return item.subjectType === 'relative'
-        ? <FUsers className="h-3.5 w-3.5 text-amber-600/70 dark:text-amber-400/70 shrink-0" />
-        : <FEye className="h-3.5 w-3.5 text-accent-foreground/60 shrink-0" />;
-    case 'questionnaire': return <FClipboardCheck className="h-3.5 w-3.5 text-muted-foreground shrink-0" />;
-  }
+const getHeatmapColor = (avgImpact: number | null) => {
+  if (avgImpact === null) return '';
+  if (avgImpact >= 4.5) return 'bg-emerald-500/20 text-emerald-700 dark:text-emerald-400 border-emerald-500/20';
+  if (avgImpact >= 3.5) return 'bg-green-500/20 text-green-700 dark:text-green-400 border-green-500/20';
+  if (avgImpact >= 2.5) return 'bg-amber-500/20 text-amber-700 dark:text-amber-400 border-amber-500/20';
+  if (avgImpact >= 1.5) return 'bg-orange-500/20 text-orange-700 dark:text-orange-400 border-orange-500/20';
+  return 'bg-red-500/20 text-red-700 dark:text-red-400 border-red-500/20';
 };
 
 const FeedCalendar = ({ items, currentMonth, onMonthChange, selectedDate, onSelectDate, onEntryClick, onCreateEntry }: Props) => {
@@ -56,6 +55,24 @@ const FeedCalendar = ({ items, currentMonth, onMonthChange, selectedDate, onSele
   }, [items]);
 
   const getItemsForDate = (date: Date) => entryMap.get(format(date, 'yyyy-MM-dd')) ?? [];
+
+  const getAvgImpactForDate = (date: Date) => {
+    const dayItems = getItemsForDate(date);
+    const impacts = dayItems.filter(i => i.impactLevel !== undefined).map(i => i.impactLevel as number);
+    if (impacts.length === 0) return null;
+    return impacts.reduce((a, b) => a + b, 0) / impacts.length;
+  };
+
+  const iconFor = (item: CalendarFeedItem) => {
+    switch (item.type) {
+      case 'journal': return <FBookOpen className="h-3.5 w-3.5 text-primary shrink-0" />;
+      case 'observation':
+        return item.subjectType === 'relative'
+          ? <FUsers className="h-3.5 w-3.5 text-amber-600/70 dark:text-amber-400/70 shrink-0" />
+          : <FEye className="h-3.5 w-3.5 text-accent-foreground/60 shrink-0" />;
+      case 'questionnaire': return <FClipboardCheck className="h-3.5 w-3.5 text-muted-foreground shrink-0" />;
+    }
+  };
 
   return (
     <div className="space-y-4">
@@ -85,6 +102,9 @@ const FeedCalendar = ({ items, currentMonth, onMonthChange, selectedDate, onSele
             const future = isFuture(day);
             const moon = getMoonPhase(day);
             const isKeyPhase = moon.index === 0 || moon.index === 4;
+            const avgImpact = getAvgImpactForDate(day);
+
+            const heatmapClass = getHeatmapColor(avgImpact);
 
             return (
               <Tooltip key={day.toISOString()}>
@@ -92,8 +112,8 @@ const FeedCalendar = ({ items, currentMonth, onMonthChange, selectedDate, onSele
                   <button
                     onClick={() => !future && onSelectDate(isSelected ? null : day)}
                     disabled={future}
-                    className={`relative flex flex-col items-center justify-center p-1.5 text-center rounded-2xl transition-all min-h-[3.2rem]
-                      ${future ? 'opacity-30 cursor-not-allowed' : isSelected ? 'bg-primary text-primary-foreground shadow-md' : today ? 'bg-accent' : 'hover:bg-accent/50'}
+                    className={`relative flex flex-col items-center justify-center p-1.5 text-center rounded-2xl transition-all min-h-[3.2rem] border
+                      ${future ? 'opacity-30 cursor-not-allowed border-transparent' : isSelected ? 'bg-primary text-primary-foreground shadow-md border-primary' : today ? 'bg-accent border-transparent' : `${heatmapClass || 'hover:bg-accent/50 border-transparent'}`}
                     `}
                   >
                     <span className="text-sm leading-none">{format(day, 'd')}</span>
