@@ -11,14 +11,16 @@ Grit.hu is a sensemaking platform designed for individuals in high-conflict rela
 - **Design:** Custom "Freud" icon set, "Clinical Core, Human Surface" philosophy.
 
 ## Current Task
-Standardizing and aligning UI layouts across the portal, specifically focusing on making the `/journal` (CheckIn) page cards and components match the width constraints and centering of the `/surveys` page.
+No active task. The system is in a clean, stable state. Previous work sessions completed:
+- **Layout alignment** — `/journal` and `/surveys` pages now share `max-w-2xl mx-auto w-full` containers.
+- **Mood heatmap** — Calendar cells on the `/journal` page display color-coded backgrounds based on daily average `impact_level` from journal entries (emerald → red, 5-point scale).
 
 ## Component Map
-1.  [`src/pages/CheckIn.tsx`](file:///c:/Users/veres.sz/Documents/GitHub/grit.hu/src/pages/CheckIn.tsx) - The primary unified "Journal" page housing the calendar, mood pulses, and observations.
-2.  [`src/pages/Surveys.tsx`](file:///c:/Users/veres.sz/Documents/GitHub/grit.hu/src/pages/Surveys.tsx) - The central hub for filling out questionnaires and viewing historical scores.
-3.  [`SYSTEM_DESCRIPTION.md`](file:///c:/Users/veres.sz/Documents/GitHub/grit.hu/SYSTEM_DESCRIPTION.md) - The comprehensive architectural blueprint and source of truth for the entire system.
-4.  [`src/hooks/useStance.tsx`](file:///c:/Users/veres.sz/Documents/GitHub/grit.hu/src/hooks/useStance.tsx) - Manages the global state for "Self" vs "Observer" (relative) perspectives.
-5.  [`supabase/migrations/`](file:///c:/Users/veres.sz/Documents/GitHub/grit.hu/supabase/migrations/) - The source of truth for the database schema, RLS policies, and clinical triggers.
+1.  [`src/pages/CheckIn.tsx`](file:///c:/Users/veres.sz/Documents/GitHub/grit.hu/src/pages/CheckIn.tsx) — Primary unified "Journal" page: Quick Pulse, ObservationStepper, calendar feed, mood trends, pattern charts.
+2.  [`src/pages/Surveys.tsx`](file:///c:/Users/veres.sz/Documents/GitHub/grit.hu/src/pages/Surveys.tsx) — Questionnaire filler + score history with trend charts.
+3.  [`SYSTEM_DESCRIPTION.md`](file:///c:/Users/veres.sz/Documents/GitHub/grit.hu/SYSTEM_DESCRIPTION.md) — Comprehensive architectural blueprint and source of truth for the entire system.
+4.  [`src/hooks/useStance.tsx`](file:///c:/Users/veres.sz/Documents/GitHub/grit.hu/src/hooks/useStance.tsx) — Global state for "Self" vs "Observer" (relative) perspectives.
+5.  [`src/components/checkin/FeedCalendar.tsx`](file:///c:/Users/veres.sz/Documents/GitHub/grit.hu/src/components/checkin/FeedCalendar.tsx) — Calendar grid with mood heatmap overlay, moon phases, and day-detail drill-downs.
 
 ## State of Play
-The previous agent was interrupted while harmonizing the layout between the Journal and Survey pages. Container widths were being updated and restrictive `max-width` settings were being removed from the journal workspace components (e.g., `SubjectWorkspaceSection.tsx`) to ensure a consistent, centered, and responsive experience across all primary dashboard modules.
+**All previous agent work is complete.** Layout alignment between `/journal` and `/surveys` is done (both use `max-w-2xl mx-auto w-full`). The mood heatmap was implemented end-to-end: `useCalendarFeedData` extracts `impact_level` from `journal_entries`, passes it through `CalendarFeedItem.impactLevel`, and `FeedCalendar.getHeatmapColor()` maps the daily average to Tailwind color classes. No in-progress work or broken state was inherited.
