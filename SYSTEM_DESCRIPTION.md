@@ -39,6 +39,8 @@ Consent state is **cached in `localStorage`** (`grit_consent_v1` key, scoped per
 
 `profiles.consent_completed` is the authoritative flag — set to `true` once the user has addressed all `CONSENT_KEYS`. The flag is re-evaluated against the current key set, so adding a new key will re-trigger onboarding for that key only.
 
+**Registration Routing:** The `Auth` component implements purely reactive programmatic navigation relying on a hydrated `user` object. This eliminates synchronous routing race conditions, structurally guaranteeing that newly registered users are flawlessly evaluated by the `ProtectedRoute` gate and forcefully redirected to the initial `/consent` onboarding.
+
 #### Consent Tables
 
 ##### `user_consents`
@@ -101,7 +103,7 @@ Maps users to application roles. One user can have multiple roles.
 | `role` | `app_role` enum | See §2 |
 | `created_at` | timestamptz | Default `now()` |
 
-**RLS:** Users can view/insert/delete own roles. Admins can view/insert/delete all. No UPDATE.
+**RLS:** Users can view own roles. Users can ONLY self-insert the `affected_person` role (strict equality check). Admins can view/insert/delete all. No UPDATE. **Users cannot delete their own roles**, eliminating vulnerability bypasses.
 
 ---
 
@@ -192,7 +194,8 @@ Curated research articles with bilingual support.
 | `question_id` | uuid (FK) | → `questionnaire_questions.id` |
 | `answer` | jsonb | |
 
-**RLS:** Users manage own answers (validated via response ownership).
+**RLS:** Users manage own answers (validated via response ownership). No admin bypass.
+**Scoring Engine:** The system employs an `AFTER INSERT ON questionnaire_answers` PostgreSQL trigger (`calculate_answer_score()`) that parses the generic JSONB payload against the structure's `answer_scores` configuration. It computes the algorithmic weighted point value natively in the database, sequentially aggregating and isolating the `total_score` on the master `questionnaire_responses` row in O(1) time without trusting client-side arithmetic.
 
 ---
 
@@ -252,6 +255,7 @@ Lightweight one-tap mood recordings from the QuickPulse widget.
 | `created_at` | timestamptz | Default `now()` |
 
 **RLS:** Users manage own subjects only.
+**Consent Gate:** The Subject creation process explicitly enforces a mandatory Observer Consent confirmation (a visual checkbox port from `ObserverConsentCard`). Users cannot register a relative without validating their consent to track and manage third-party metadata.
 
 #### Stance-aware filtering
 
