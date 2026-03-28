@@ -173,6 +173,7 @@ export interface Dictionary {
     guidedTreeSelected: string;
     guidedTreeChange: string;
     guidedTreeContinue: string;
+    patternSummaryTitle: string;
   };
 
   // Check-in
@@ -281,9 +282,10 @@ export interface Dictionary {
   timeline: {
     title: string;
     subtitle: string;
-    allActivity: string;
     noActivity: string;
+    allActivity: string;
     noEntriesOnDay: string;
+    pinchToZoom: string;
     dayNames: string[];
     journalLabel: string;
     questionnaireLabel: string;
@@ -295,6 +297,67 @@ export interface Dictionary {
     moodTrendTitle: string;
     moodTrendSubtitle: string;
     moodTrendEmpty: string;
+    moodLabels: [string, string, string, string, string];
+    presets: {
+      '7d': string;
+      '30d': string;
+      all: string;
+    };
+    entries: string;
+    entry: string;
+    timelineSlider: string;
+  };
+
+  moon: {
+    title: string;
+    phases: {
+      new: string;
+      firstQ: string;
+      full: string;
+      lastQ: string;
+    };
+    counts: {
+      entry: string;
+      entries: string;
+    };
+  };
+
+  export: {
+    title: string;
+    subtitle: string;
+    desc: string;
+    exportAll: string;
+    therapistTitle: string;
+    therapistDesc: string;
+    therapistExport: string;
+    disclaimer: string;
+    noObservations: string;
+    bnoLabels: Record<string, string>;
+  };
+
+  error: {
+    submit: string;
+    load: string;
+    generic: string;
+  };
+
+  admin: {
+    manageLanding: {
+      title: string;
+      subtitle: string;
+      loading: string;
+      active: string;
+      save: string;
+      saved: string;
+      titleHu: string;
+      titleEn: string;
+      subtitleHu: string;
+      subtitleEn: string;
+      ctaHu: string;
+      ctaEn: string;
+      moodLabelsHu: string;
+      moodLabelsEn: string;
+    };
   };
 
   // Profile
@@ -312,18 +375,6 @@ export interface Dictionary {
     yourDataDesc: string;
     exportAllData: string;
     dataExported: string;
-  };
-
-  // Export
-  export: {
-    title: string;
-    subtitle: string;
-    desc: string;
-    exportAll: string;
-    therapistTitle: string;
-    therapistDesc: string;
-    therapistExport: string;
-    noObservations: string;
   };
 
   // Manage Library
@@ -514,6 +565,114 @@ export interface Dictionary {
     observerLogDesc: string;
     thirdPartyQuestionnaireTitle: string;
     thirdPartyQuestionnaireDesc: string;
+    goToJournal: string;
+    select: string;
+  };
+
+  // UI / Common
+  ui: {
+    close: string;
+    next: string;
+    prev: string;
+    more: string;
+    toggleSidebar: string;
+    breadcrumb: string;
+    premiumBadge: string;
+  };
+
+  // Legal
+  legal: {
+    about: {
+      title: string;
+      p1: string;
+      p2: string;
+      purposeTitle: string;
+      purposeItems: string[];
+      purposeNote: string;
+      regTitle: string;
+      reg1Title: string;
+      reg1Items: string[];
+      reg1SubTitle: string;
+      reg1SubItems: string[];
+      reg1NotTitle: string;
+      reg1NotItems: string[];
+      regAiTitle: string;
+      regAiDesc: string;
+      regAiItems: { title: string; desc: string }[];
+      regMdrTitle: string;
+      regMdrDesc: string;
+      regMdrItems: string[];
+      regMdrNotTitle: string;
+      regMdrNotItems: string[];
+      regMdrNote: string;
+      safetyTitle: string;
+      safetyZeroTitle: string;
+      safetyZeroDesc: string;
+      safetyZeroNote: string;
+      safetyHitlTitle: string;
+      safetyHitlItems: string[];
+      liabilityTitle: string;
+      liabilityDesc: string;
+      liabilityUserTitle: string;
+      liabilityUserItems: string[];
+      liabilityNote: string;
+      contact: string;
+    };
+    cookies: {
+      title: string;
+      lastUpdated: string;
+      s1Title: string;
+      s1Desc: string;
+      s2Title: string;
+      s2Item1Title: string;
+      s2Item1Desc: string;
+      s2Item2Title: string;
+      s2Item2Desc: string;
+      s2NoMarketing: string;
+      s3Title: string;
+      s3Desc: string;
+      s4Title: string;
+      s4Desc: string;
+    };
+    gdpr: {
+      title: string;
+      lastUpdated: string;
+      s1Title: string;
+      s1Desc: string;
+      s1Controller: string;
+      s2Title: string;
+      s2Item1Title: string;
+      s2Item1Desc: string;
+      s2Item2Title: string;
+      s2Item2Desc: string;
+      s2NoSensitive: string;
+      s3Title: string;
+      s3Desc: string;
+      s4Title: string;
+      s4Items: string[];
+      s5Title: string;
+      s5Desc: string;
+      s6Title: string;
+      s6Desc: string;
+      s7Title: string;
+      s7Desc: string;
+    };
+    terms: {
+      title: string;
+      lastUpdated: string;
+      s1Title: string;
+      s1Desc: string;
+      s2Title: string;
+      s2Desc: string;
+      s3Title: string;
+      s3Desc: string;
+      s4Title: string;
+      s4Desc: string;
+      s5Title: string;
+      s5Desc: string;
+      s6Title: string;
+      s6Desc: string;
+    };
   };
 
   // Premium / dual-perspective

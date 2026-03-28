@@ -241,7 +241,7 @@ const QuestionnaireFiller = ({ onCompleted, readOnly }: { onCompleted?: () => vo
       .select('id')
       .single();
     if (error || !resp) {
-      toast.error('Failed to submit');
+      toast.error(t.error.submit);
       setSubmitting(false);
       return;
     }

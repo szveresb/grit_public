@@ -100,9 +100,9 @@ const JournalCalendar = ({ entries, currentMonth, onMonthChange, selectedDate, o
                   </button>
                 </TooltipTrigger>
                 <TooltipContent side="top" className="text-xs">
-                  <p>{lang === 'en' ? moon.nameEn : moon.nameHu}</p>
+                  <p>{t.moon.phases[moon.nameEn.toLowerCase().replace(' phase', '').replace(' ', '') as keyof typeof t.moon.phases] || (lang === 'en' ? moon.nameEn : moon.nameHu)}</p>
                   {dayEntries.length > 0 && (
-                    <p className="text-muted-foreground">{dayEntries.length} {dayEntries.length === 1 ? (lang === 'en' ? 'entry' : 'bejegyzés') : (lang === 'en' ? 'entries' : 'bejegyzés')}</p>
+                    <p className="text-muted-foreground">{dayEntries.length} {dayEntries.length === 1 ? t.moon.counts.entry : t.moon.counts.entries}</p>
                   )}
                 </TooltipContent>
               </Tooltip>
@@ -113,11 +113,11 @@ const JournalCalendar = ({ entries, currentMonth, onMonthChange, selectedDate, o
 
       {/* Moon phase legend */}
       <div className="flex items-center gap-4 mt-4 pt-3 border-t border-border/50">
-        <span className="text-xs text-muted-foreground">{lang === 'en' ? 'Moon phases' : 'Holdfázisok'}:</span>
-        <span className="text-xs">🌑 {lang === 'en' ? 'New' : 'Új'}</span>
-        <span className="text-xs">🌓 {lang === 'en' ? 'First Q' : '1. negyed'}</span>
-        <span className="text-xs">🌕 {lang === 'en' ? 'Full' : 'Teli'}</span>
-        <span className="text-xs">🌗 {lang === 'en' ? 'Last Q' : 'Utolsó n.'}</span>
+        <span className="text-xs text-muted-foreground">{t.moon.title}:</span>
+        <span className="text-xs">🌑 {t.moon.phases.new}</span>
+        <span className="text-xs">🌓 {t.moon.phases.firstQ}</span>
+        <span className="text-xs">🌕 {t.moon.phases.full}</span>
+        <span className="text-xs">🌗 {t.moon.phases.lastQ}</span>
       </div>
 
       {/* Selected day detail */}

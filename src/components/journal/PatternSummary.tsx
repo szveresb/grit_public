@@ -18,7 +18,7 @@ const PatternSummary = ({ summary, isAnalyzing, onDismiss }: PatternSummaryProps
       <div className="flex items-center justify-between">
         <div className="flex items-center gap-2">
           <FTrendingUp className="h-4 w-4 text-primary" />
-          <span className="text-xs font-semibold uppercase tracking-widest text-primary">Pattern Summary</span>
+          <span className="text-xs font-semibold uppercase tracking-widest text-primary">{t.journal.patternSummaryTitle}</span>
           {isAnalyzing && <FLoader className="h-3 w-3 animate-spin text-muted-foreground" />}
         </div>
         {!isAnalyzing && summary && (

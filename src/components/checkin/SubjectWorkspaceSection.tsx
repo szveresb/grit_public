@@ -152,7 +152,7 @@ const SubjectWorkspaceSection = ({
             <div className="mt-8 flex flex-col items-center gap-3 w-full">
               <CollapsibleTrigger asChild>
                 <Button variant="outline" className="w-auto px-8 min-w-[160px] rounded-2xl gap-2">
-                  <span className="font-semibold">{t.subjects.activeBadge || 'Aktív'}</span>
+                  <span className="font-semibold">{t.subjects.activeBadge}</span>
                   <FChevronDown className={cn('h-4 w-4 text-muted-foreground transition-transform', sectionOpen && 'rotate-180')} />
                 </Button>
               </CollapsibleTrigger>

@@ -74,7 +74,7 @@ const ManageLanding = () => {
       })
       .eq('id', section.id);
     if (error) toast.error(friendlyDbError(error));
-    else toast.success('Mentve ✓');
+    else toast.success(t.admin.manageLanding.saved);
     setSaving(false);
   };
 
@@ -85,13 +85,13 @@ const ManageLanding = () => {
     <DashboardLayout>
       <div className="max-w-2xl mx-auto w-full space-y-6">
         <div>
-          <h1 className="text-xl font-bold tracking-tight text-foreground">Landing szekciók kezelése</h1>
-          <p className="mt-1 text-sm text-muted-foreground">A nyitólap dinamikus szekciói.</p>
+          <h1 className="text-xl font-bold tracking-tight text-foreground">{t.admin.manageLanding.title}</h1>
+          <p className="mt-1 text-sm text-muted-foreground">{t.admin.manageLanding.subtitle}</p>
         </div>
 
         {loading ? (
           <div className="flex items-center gap-2 text-muted-foreground text-sm">
-            <FLoader className="h-4 w-4 animate-spin" /> Betöltés...
+            <FLoader className="h-4 w-4 animate-spin" /> {t.admin.manageLanding.loading}
           </div>
         ) : sections.map(section => (
           <div key={section.id} className="surface-card p-6 space-y-5">
@@ -100,7 +100,7 @@ const ManageLanding = () => {
                 {section.section_key.replace('_', ' ')}
               </h2>
               <div className="flex items-center gap-2">
-                <Label htmlFor={`active-${section.id}`} className="text-xs text-muted-foreground">Aktív</Label>
+                <Label htmlFor={`active-${section.id}`} className="text-xs text-muted-foreground">{t.admin.manageLanding.active}</Label>
                 <Switch
                   id={`active-${section.id}`}
                   checked={section.is_active}
@@ -111,7 +111,7 @@ const ManageLanding = () => {
 
             {/* Title HU */}
             <div className="space-y-1.5">
-              <Label className="text-xs text-muted-foreground">Cím (HU)</Label>
+              <Label className="text-xs text-muted-foreground">{t.admin.manageLanding.titleHu}</Label>
               <Input
                 value={section.title}
                 onChange={e => updateSection(section.id, { title: e.target.value })}
@@ -121,7 +121,7 @@ const ManageLanding = () => {
 
             {/* Title EN */}
             <div className="space-y-1.5">
-              <Label className="text-xs text-muted-foreground">Cím (EN)</Label>
+              <Label className="text-xs text-muted-foreground">{t.admin.manageLanding.titleEn}</Label>
               <Input
                 value={section.title_localized?.en ?? ''}
                 onChange={e => updateSection(section.id, { title_localized: { ...(section.title_localized ?? {}), en: e.target.value } })}
@@ -131,7 +131,7 @@ const ManageLanding = () => {
 
             {/* Subtitle HU */}
             <div className="space-y-1.5">
-              <Label className="text-xs text-muted-foreground">Alcím (HU)</Label>
+              <Label className="text-xs text-muted-foreground">{t.admin.manageLanding.subtitleHu}</Label>
               <Textarea
                 value={section.subtitle ?? ''}
                 onChange={e => updateSection(section.id, { subtitle: e.target.value })}
@@ -141,7 +141,7 @@ const ManageLanding = () => {
 
             {/* Subtitle EN */}
             <div className="space-y-1.5">
-              <Label className="text-xs text-muted-foreground">Alcím (EN)</Label>
+              <Label className="text-xs text-muted-foreground">{t.admin.manageLanding.subtitleEn}</Label>
               <Textarea
                 value={section.subtitle_localized?.en ?? ''}
                 onChange={e => updateSection(section.id, { subtitle_localized: { ...(section.subtitle_localized ?? {}), en: e.target.value } })}
@@ -151,7 +151,7 @@ const ManageLanding = () => {
 
             {/* CTA HU */}
             <div className="space-y-1.5">
-              <Label className="text-xs text-muted-foreground">CTA gomb (HU)</Label>
+              <Label className="text-xs text-muted-foreground">{t.admin.manageLanding.ctaHu}</Label>
               <Input
                 value={section.cta_text ?? ''}
                 onChange={e => updateSection(section.id, { cta_text: e.target.value })}
@@ -161,7 +161,7 @@ const ManageLanding = () => {
 
             {/* CTA EN */}
             <div className="space-y-1.5">
-              <Label className="text-xs text-muted-foreground">CTA gomb (EN)</Label>
+              <Label className="text-xs text-muted-foreground">{t.admin.manageLanding.ctaEn}</Label>
               <Input
                 value={section.cta_text_localized?.en ?? ''}
                 onChange={e => updateSection(section.id, { cta_text_localized: { ...(section.cta_text_localized ?? {}), en: e.target.value } })}
@@ -173,7 +173,7 @@ const ManageLanding = () => {
             {section.section_key === 'mood_preview' && (
               <>
                 <div className="space-y-1.5">
-                  <Label className="text-xs text-muted-foreground">Hangulat címkék (HU, vesszővel elválasztva)</Label>
+                  <Label className="text-xs text-muted-foreground">{t.admin.manageLanding.moodLabelsHu}</Label>
                   <Input
                     value={(section.config?.mood_labels ?? []).join(', ')}
                     onChange={e => updateConfig(section.id, 'mood_labels', e.target.value.split(',').map((s: string) => s.trim()))}
@@ -181,7 +181,7 @@ const ManageLanding = () => {
                   />
                 </div>
                 <div className="space-y-1.5">
-                  <Label className="text-xs text-muted-foreground">Hangulat címkék (EN, vesszővel elválasztva)</Label>
+                  <Label className="text-xs text-muted-foreground">{t.admin.manageLanding.moodLabelsEn}</Label>
                   <Input
                     value={(section.config?.mood_labels_en ?? []).join(', ')}
                     onChange={e => updateConfig(section.id, 'mood_labels_en', e.target.value.split(',').map((s: string) => s.trim()))}
@@ -193,7 +193,7 @@ const ManageLanding = () => {
 
             <Button size="sm" className="rounded-2xl gap-1.5" onClick={() => handleSave(section)} disabled={saving}>
               {saving ? <FLoader className="h-4 w-4 animate-spin" /> : <FSave className="h-4 w-4" />}
-              Mentés
+              {t.admin.manageLanding.save}
             </Button>
           </div>
         ))}

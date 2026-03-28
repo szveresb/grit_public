@@ -103,7 +103,7 @@ const SubjectCardRegistry = () => {
                   variant={isActive ? 'default' : 'outline'}
                   className="w-auto px-8 min-w-[160px] rounded-2xl"
                 >
-                  {isActive ? "Tovább a naplóhoz" : t.nav.explore || "Kiválasztás"}
+                  {isActive ? t.subjects.goToJournal : t.subjects.select}
                 </Button>
                 
                 <p className="text-[10px] leading-relaxed text-muted-foreground/70 uppercase tracking-widest">

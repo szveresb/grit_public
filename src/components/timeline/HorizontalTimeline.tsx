@@ -188,7 +188,7 @@ const HorizontalTimeline = ({ items, lang, t }: Props) => {
 
       {/* Zoom hint for mobile */}
       <p className="text-[10px] text-muted-foreground text-center md:hidden">
-        {lang === 'hu' ? 'Csippentsd két ujjal a nagyításhoz' : 'Pinch to zoom'}
+        {t.timeline.pinchToZoom}
       </p>
 
       {/* Detail card */}

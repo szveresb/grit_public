@@ -6,26 +6,6 @@ import { Button } from '@/components/ui/button';
 import { toast } from 'sonner';
 import { FDownload } from '@/components/icons/FreudIcons';
 
-const BNO_LABELS_HU: Record<string, string> = {
-  'Z63.0': 'Házastárssal vagy partnerrel kapcsolatos problémák',
-  'Z63.1': 'Szülőkkel és anyóssal/apóssal kapcsolatos problémák',
-  'Z63.5': 'Családi különélés és válás',
-  'Z60.4': 'Társadalmi kirekesztés és visszautasítás',
-  'F43.2': 'Alkalmazkodási zavarok',
-  'F41.1': 'Generalizált szorongásos zavar',
-  'F32.9': 'Depressziós epizód m.n.o.',
-};
-
-const BNO_LABELS_EN: Record<string, string> = {
-  'Z63.0': 'Problems in relationship with spouse or partner',
-  'Z63.1': 'Problems with parents and in-laws',
-  'Z63.5': 'Family disruption by separation and divorce',
-  'Z60.4': 'Social exclusion and rejection',
-  'F43.2': 'Adjustment disorders',
-  'F41.1': 'Generalized anxiety disorder',
-  'F32.9': 'Depressive episode, unspecified',
-};
-
 interface FhirObservation {
   resourceType: 'Observation';
   status: string;
@@ -38,57 +18,20 @@ interface FhirObservation {
   component?: { code: { text: string }; valueString: string }[];
 }
 
-function buildPersonalFhirObservations(
-  logs: any[],
-  conceptMap: Record<string, { concept_code: string; name_en: string; bno_code?: string }>
-): FhirObservation[] {
-  return logs.map((log) => {
-    const concept = conceptMap[log.concept_id];
-    const coding: { system: string; code: string; display: string }[] = [
-      {
-        system: 'http://snomed.info/sct',
-        code: concept?.concept_code ?? 'unknown',
-        display: concept?.name_en ?? 'Unknown',
-      },
-    ];
-    if (concept?.bno_code) {
-      coding.push({
-        system: 'http://hl7.org/fhir/sid/icd-10',
-        code: concept.bno_code,
-        display: BNO_LABELS_EN[concept.bno_code] ?? concept.bno_code,
-      });
-    }
-    const obs: FhirObservation = {
-      resourceType: 'Observation',
-      status: log.status ?? 'final',
-      subject: { reference: 'Patient/anonymous' },
-      effectiveDateTime: log.logged_at,
-      code: { coding },
-      valueInteger: log.intensity,
-    };
-    const components: { code: { text: string }; valueString: string }[] = [];
-    if (log.frequency) components.push({ code: { text: 'frequency' }, valueString: log.frequency });
-    if (log.context_modifier) components.push({ code: { text: 'context' }, valueString: log.context_modifier });
-    if (components.length > 0) obs.component = components;
-    return obs;
-  });
-}
-
 const Export = () => {
   const { user } = useAuth();
-  const { t } = useLanguage();
+  const { t, lang } = useLanguage();
 
   const handleExport = async () => {
     if (!user) return;
 
-    const [entriesRes, responsesRes, logsRes, conceptsRes, questionnairesRes] = await Promise.all([
+    const [entriesRes, responsesRes, logsRes, conceptsRes] = await Promise.all([
       supabase.from('journal_entries').select('*').eq('user_id', user.id).order('entry_date'),
       supabase.from('questionnaire_responses')
         .select('*, questionnaires(title, snomed_code), questionnaire_answers(question_id, answer, questionnaire_questions(question_text))')
         .eq('user_id', user.id),
       supabase.from('observation_logs').select('*').eq('user_id', user.id).order('logged_at'),
       supabase.from('observation_concepts').select('id, concept_code, name_en, bno_code'),
-      supabase.from('questionnaires').select('id, title, snomed_code'),
     ]);
 
     const conceptMap: Record<string, { concept_code: string; name_en: string; bno_code?: string }> = {};
@@ -96,35 +39,44 @@ const Export = () => {
       conceptMap[c.id] = { concept_code: c.concept_code, name_en: c.name_en, bno_code: c.bno_code };
     });
 
-    const fhirObservations = buildPersonalFhirObservations(logsRes.data ?? [], conceptMap);
-
-    // Build FHIR QuestionnaireResponse resources from questionnaire responses
-    const fhirQuestionnaireResponses = (responsesRes.data ?? []).map((resp: any) => ({
-      resourceType: 'QuestionnaireResponse',
-      status: 'completed',
-      authored: resp.completed_at,
-      subject: { reference: 'Patient/anonymous' },
-      questionnaire: resp.questionnaires?.snomed_code
-        ? `http://snomed.info/sct|${resp.questionnaires.snomed_code}`
-        : resp.questionnaires?.title ?? 'Unknown',
-      item: (resp.questionnaire_answers ?? []).map((a: any) => ({
-        linkId: a.question_id,
-        text: a.questionnaire_questions?.question_text ?? '',
-        answer: [{ valueString: typeof a.answer === 'string' ? a.answer : JSON.stringify(a.answer) }],
-      })),
-      ...(resp.total_score != null ? { extension: [{ url: 'http://grit.hu/fhir/total-score', valueInteger: resp.total_score }] } : {}),
-    }));
+    // Build FHIR Observations with localized BNO displays
+    const fhirObservations = (logsRes.data ?? []).map((log) => {
+      const concept = conceptMap[log.concept_id];
+      const coding: { system: string; code: string; display: string }[] = [
+        {
+          system: 'http://snomed.info/sct',
+          code: concept?.concept_code ?? 'unknown',
+          display: concept?.name_en ?? 'Unknown',
+        },
+      ];
+      if (concept?.bno_code) {
+        coding.push({
+          system: 'http://hl7.org/fhir/sid/icd-10',
+          code: concept.bno_code,
+          display: t.export.bnoLabels[concept.bno_code] ?? concept.bno_code,
+        });
+      }
+      const obs: FhirObservation = {
+        resourceType: 'Observation',
+        status: log.status ?? 'final',
+        subject: { reference: 'Patient/anonymous' },
+        effectiveDateTime: log.logged_at,
+        code: { coding },
+        valueInteger: log.intensity,
+      };
+      const components: { code: { text: string }; valueString: string }[] = [];
+      if (log.frequency) components.push({ code: { text: 'frequency' }, valueString: log.frequency });
+      if (log.context_modifier) components.push({ code: { text: 'context' }, valueString: log.context_modifier });
+      if (components.length > 0) obs.component = components;
+      return obs;
+    });
 
     const exportData = {
-      disclaimer: {
-        en: 'Non-Diagnostic Data: This report contains raw user observations mapped to standard medical terminology. It does not constitute a clinical assessment.',
-        hu: 'Nem diagnosztikai adat: A jelentés felhasználó által rögzített megfigyeléseket tartalmaz, szabványos orvosi terminológiára leképezve. Nem minősül klinikai értékelésnek.',
-      },
+      disclaimer: t.export.disclaimer,
       exported_at: new Date().toISOString(),
       journal_entries: entriesRes.data ?? [],
       questionnaire_responses: responsesRes.data ?? [],
       observation_logs_fhir: fhirObservations,
-      questionnaire_responses_fhir: fhirQuestionnaireResponses,
     };
 
     const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
@@ -161,15 +113,7 @@ const Export = () => {
     const subjectMap: Record<string, any> = {};
     subjects.forEach((s: any) => { subjectMap[s.id] = s; });
 
-    // Group by subject_type + subject_id, then by BNO
-    const subjectGroups: Record<string, {
-      subject_label: string;
-      subject_type: string;
-      bno_groups: Record<string, {
-        bno_code: string;
-        observations: { concept_hu: string; intensity: number; logged_at: string; context: string | null }[];
-      }>;
-    }> = {};
+    const subjectGroups: Record<string, any> = {};
 
     for (const log of logs) {
       const subjectType = (log as any).subject_type ?? 'self';
@@ -194,24 +138,24 @@ const Export = () => {
         subjectGroups[subjectKey].bno_groups[bno] = { bno_code: bno, observations: [] };
       }
       subjectGroups[subjectKey].bno_groups[bno].observations.push({
-        concept_hu: concept?.name_hu ?? concept?.name_en ?? 'Unknown',
+        concept_localized: lang === 'hu' ? (concept?.name_hu ?? concept?.name_en) : concept?.name_en,
         intensity: log.intensity,
         logged_at: log.logged_at,
         context: log.context_modifier,
       });
     }
 
-    const subjectSummaries = Object.values(subjectGroups).map((sg) => ({
+    const subjectSummaries = Object.values(subjectGroups).map((sg: any) => ({
       subject_label: sg.subject_label,
       subject_type: sg.subject_type,
-      bno_summary: Object.values(sg.bno_groups).map((group) => {
-        const intensities = group.observations.map((o) => o.intensity);
-        const dates = group.observations.map((o) => o.logged_at).sort();
+      bno_summary: Object.values(sg.bno_groups).map((group: any) => {
+        const intensities = group.observations.map((o: any) => o.intensity);
+        const dates = group.observations.map((o: any) => o.logged_at).sort();
         return {
           bno_code: group.bno_code,
-          bno_label_hu: BNO_LABELS_HU[group.bno_code] ?? group.bno_code,
+          bno_label_localized: t.export.bnoLabels[group.bno_code] ?? group.bno_code,
           observation_count: group.observations.length,
-          avg_intensity: Math.round((intensities.reduce((a, b) => a + b, 0) / intensities.length) * 100) / 100,
+          avg_intensity: Math.round((intensities.reduce((a: any, b: any) => a + b, 0) / intensities.length) * 100) / 100,
           date_range: { from: dates[0], to: dates[dates.length - 1] },
           observations: group.observations,
         };
@@ -219,10 +163,7 @@ const Export = () => {
     }));
 
     const exportData = {
-      disclaimer: {
-        en: 'Non-Diagnostic Data: This report contains raw user observations mapped to standard medical terminology. It does not constitute a clinical assessment.',
-        hu: 'Nem diagnosztikai adat: A jelentés felhasználó által rögzített megfigyeléseket tartalmaz, szabványos orvosi terminológiára leképezve. Nem minősül klinikai értékelésnek.',
-      },
+      disclaimer: t.export.disclaimer,
       export_type: 'therapist_summary',
       exported_at: new Date().toISOString(),
       subjects: subjectSummaries,

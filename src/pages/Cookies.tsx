@@ -3,29 +3,30 @@ import PublicHeader from '@/components/PublicHeader';
 
 const Cookies = () => {
   const { t } = useLanguage();
+  const content = t.legal.cookies;
 
   return (
     <div className="min-h-screen bg-background">
       <PublicHeader />
 
       <main className="max-w-3xl mx-auto px-4 md:px-8 py-12 space-y-8">
-        <h1 className="text-2xl font-bold text-foreground">Cookie szabályzat</h1>
-        <p className="text-xs text-muted-foreground">Utolsó frissítés: 2026. március 1.</p>
+        <h1 className="text-2xl font-bold text-foreground">{content.title}</h1>
+        <p className="text-xs text-muted-foreground">{content.lastUpdated}</p>
 
         <section className="space-y-3 text-sm text-muted-foreground leading-relaxed">
-          <h2 className="text-base font-semibold text-foreground">1. Mik azok a cookie-k?</h2>
-          <p>A cookie-k kis szöveges fájlok, amelyeket a böngészője tárol az eszközén, amikor meglátogat egy weboldalt. Segítenek a webhely működésében, biztonságosabbá teszik azt, és jobb felhasználói élményt nyújtanak.</p>
+          <h2 className="text-base font-semibold text-foreground">{content.s1Title}</h2>
+          <p>{content.s1Desc}</p>
 
-          <h2 className="text-base font-semibold text-foreground">2. Milyen cookie-kat használunk?</h2>
-          <p><strong>Feltétlenül szükséges cookie-k:</strong> Ezek a Szolgáltatás működéséhez elengedhetetlenek, beleértve a bejelentkezési munkamenet fenntartását és a biztonsági funkciókat.</p>
-          <p><strong>Funkcionális cookie-k:</strong> Megjegyzik az Ön nyelvi beállításait és egyéb preferenciáit a jobb felhasználói élmény érdekében.</p>
-          <p>A Grit.hu <strong>nem</strong> használ marketing vagy nyomkövető cookie-kat, és nem oszt meg adatokat hirdetési hálózatokkal.</p>
+          <h2 className="text-base font-semibold text-foreground">{content.s2Title}</h2>
+          <p><strong>{content.s2Item1Title}:</strong> {content.s2Item1Desc}</p>
+          <p><strong>{content.s2Item2Title}:</strong> {content.s2Item2Desc}</p>
+          <p>{content.s2NoMarketing}</p>
 
-          <h2 className="text-base font-semibold text-foreground">3. Cookie-k kezelése</h2>
-          <p>A legtöbb böngésző lehetővé teszi a cookie-k kezelését a beállításokon keresztül. A cookie-k törlése vagy letiltása esetén a Szolgáltatás egyes funkciói korlátozottan működhetnek.</p>
+          <h2 className="text-base font-semibold text-foreground">{content.s3Title}</h2>
+          <p>{content.s3Desc}</p>
 
-          <h2 className="text-base font-semibold text-foreground">4. Kapcsolat</h2>
-          <p>Ha kérdése van a cookie szabályzattal kapcsolatban, kérjük vegye fel velünk a kapcsolatot az oldalon elérhető elérhetőségeken.</p>
+          <h2 className="text-base font-semibold text-foreground">{content.s4Title}</h2>
+          <p>{content.s4Desc}</p>
         </section>
       </main>
     </div>
