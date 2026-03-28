@@ -396,15 +396,17 @@ The UI uses warm, low-cognitive-load language ("How heavy was it?", "My truth", 
 
 The app uses a custom icon library (`src/components/icons/FreudIcons.tsx`) inspired by the [freud Mental Health & Mindfulness UI Icon Set](https://dribbble.com/shots/23883954). Icons feature thick rounded strokes, organic bubbly shapes, and mental-health-themed metaphors — replacing generic Lucide icons throughout. Key icons include:
 
-- **Navigation:** `FHome`, `FDashboard`, `FHeartPulse` (check-in/journal), `FClock`, `FDownload`, `FUser`, `FLibrary`, `FUsers`, `FBarChart`, `FFileText`, `FInfo`, `FLock`
-- **Actions:** `FSave`, `FClose`, `FPlus`, `FEdit`, `FTrash`, `FChevronDown/Right`, `FExternalLink`
-- **Domain:** `FShield` (boundaries), `FSparkles` (patterns), `FBrain` (mind), `FEye` (observation), `FTrendingUp` (trends)
-- **Mood (QuickPulse):** `FMoodStruggling` (wilting sprout) → `FMoodUneasy` (drooping leaf) → `FMoodOkay` (balanced branch) → `FMoodGood` (blooming leaf) → `FMoodStrong` (full bamboo) — botanical metaphors with opacity-graded sage-green, matching the bamboo soft-UI aesthetic
+- **Navigation:** `FHome`, `FDashboard`, `FHeartPulse` (check-in/journal), `FClock`, `FDownload`, `FUser`, `FLibrary`, `FUsers`, `FBarChart`, `FFileText`, `FInfo`, `FLock`, `FCalendar`, `FList`, `FTimeline`
+- **Actions:** `FSave`, `FClose`, `FPlus`, `FEdit`, `FTrash`, `FChevronDown/Up/Left/Right`, `FExternalLink`, `FArrowLeft/Right`, `FSearch`, `FCheck`
+- **Domain:** `FShield`, `FShieldAlert` (boundaries), `FSparkles` (patterns), `FBrain` (mind), `FEye` (observation), `FTrendingUp` (trends), `FBookOpen` (journal), `FClipboardCheck` (task/survey)
+- **Mood (QuickPulse):** `FMoodStruggling` → `FMoodUneasy` → `FMoodOkay` → `FMoodGood` → `FMoodStrong` — circular faces with expressive features, using opacity-graded sage-green (30% to 100%) to represent emotional intensity.
 - **Roles:** `FUserCheck`, `FUserSearch`, `FShieldCheck`, `FPenTool`, `FUserPen`
 
 ### URL Structure & Routing
 
-All routes are served under both `/` (Hungarian default) and `/en/` (English prefix). Language is auto-detected from URL prefix and persisted in `localStorage`.
+All routes are served under both `/` (Hungarian default) and `/en/` (English prefix). Language is auto-detected from URL prefix and persisted in `localStorage`. 
+
+**Layout Standardization:** The primary interactive pages (`/journal` and `/surveys`) share a consistent, centered layout using `max-w-2xl mx-auto w-full` containers to ensure visual symmetry and focus.
 
 | Route | Component | Auth Required | Notes |
 |---|---|---|---|
@@ -438,8 +440,8 @@ All routes are served under both `/` (Hungarian default) and `/en/` (English pre
 - **`EmergencyExit`** — Quick-exit safety button (always visible); redirects to neutral site
 - **`LanguageToggle`** — HU/EN language switcher; visible on every page (public header + dashboard)
 - **`ArticleCard`** — Library card linking to individual article detail page
-- **`QuickPulse`** — 5 botanical Freud-style mood icons (wilting sprout → full bamboo, opacity-graded sage-green); one-tap writes to `mood_pulses` table and optionally opens journal form pre-filled. Accepts an explicit `subjectId` override so stacked self/support-person cards save in the correct subject context. Fetches managed labels/title from `landing_sections` (`mood_preview` config) so admin CMS changes are reflected everywhere.
-- **`FeedCalendar`** — Calendar-based chronological feed of journal entries, observation logs, mood pulses, and questionnaire completions. Selecting past dates triggers retrospective logging modals conditionally matching the active stance.
+- **`QuickPulse`** — 5 expressive Freud-style mood icons (faces with opacity-graded sage-green); one-tap writes to `mood_pulses` table and optionally opens journal form pre-filled. Accepts an explicit `subjectId` override so stacked self/support-person cards save in the correct subject context. Fetches managed labels/title from `landing_sections` (`mood_preview` config) so admin CMS changes are reflected everywhere.
+- **`FeedCalendar`** — Calendar-based chronological feed of journal entries, observation logs, mood pulses, and questionnaire completions. Features a **mood heatmap** where cells display color-coded backgrounds (emerald → red) derived from the daily average `impact_level` of journal entries. Displays moon phases and day-detail drill-downs. Selecting past dates triggers retrospective logging modals conditionally matching the active stance.
 - **`ObservationStepper`** — 3-step progressive disclosure with warm labels ("What's going on?" → "How heavy?" → "Anything to add?"). Supports retrospective `observationDate` overrides for backdated logs.
 - **`ObservationModal`** — Date-aware dialog wrapper for the `ObservationStepper`, launched from the `FeedCalendar` to allow explicit historical observation logging in supported-person contexts.
 - **`EntryModal`** — Journal entry creation/editing dialog with optional observation linking, triggered contextually from the timeline or calendar for self-reporting.
