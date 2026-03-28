@@ -434,7 +434,9 @@ All routes are served under both `/` (Hungarian default) and `/en/` (English pre
 | `/cookies` | `Cookies` | No | Cookie policy |
 | `/gdpr` | `Gdpr` | No | GDPR / privacy policy |
 
-**Legacy redirects:** `/check-in` → `/journal`, `/self-checks` → `/surveys`, `/timeline` → `/journal`
+**Legacy redirects:** `/dashboard` → `/journal`, `/check-in` → `/journal`, `/self-checks` → `/surveys`, `/timeline` → `/journal`
+
+**Type generation note:** The `logic_rules` column on `questionnaire_questions` is deployed in the database but may not appear in the auto-generated `types.ts` until the next type sync. Code uses `as any` casts for reads and inserts involving this column until regeneration.
 
 ### Key Components
 
