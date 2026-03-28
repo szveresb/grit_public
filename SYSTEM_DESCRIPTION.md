@@ -103,6 +103,8 @@ Maps users to application roles. One user can have multiple roles.
 | `role` | `app_role` enum | See §2 |
 | `created_at` | timestamptz | Default `now()` |
 
+**Constraints:** `UNIQUE(user_id, role)` — prevents duplicate role entries.
+
 **RLS:** Users can view own roles. Users can ONLY self-insert the `affected_person` role (strict equality check). Admins can view/insert/delete all. No UPDATE. **Users cannot delete their own roles**, eliminating vulnerability bypasses.
 
 ---
