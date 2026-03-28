@@ -103,6 +103,8 @@ Maps users to application roles. One user can have multiple roles.
 | `role` | `app_role` enum | See §2 |
 | `created_at` | timestamptz | Default `now()` |
 
+**Constraints:** `UNIQUE(user_id, role)` — prevents duplicate role entries.
+
 **RLS:** Users can view own roles. Users can ONLY self-insert the `affected_person` role (strict equality check). Admins can view/insert/delete all. No UPDATE. **Users cannot delete their own roles**, eliminating vulnerability bypasses.
 
 ---
@@ -417,7 +419,7 @@ All routes are served under both `/` (Hungarian default) and `/en/` (English pre
 | `/library` | `Library` | No | Full library with search & category filter |
 | `/library/:id` | `Article` | No | Individual article detail page with bilingual content |
 | `/auth` | `Auth` (login/signup) | No | Compact centered auth card with reduced control heights and streamlined spacing; uses existing auth design tokens unchanged |
-| `/dashboard` | `Dashboard` | Yes | Quick Pulse widget + recent activity |
+| `/dashboard` | Redirect → `/journal` | — | Legacy redirect |
 | `/journal` | `CheckIn` | Yes | **Unified** — Quick Pulse + ObservationStepper + calendar feed + mood trends + pattern charts |
 | `/surveys` | `Surveys` | Yes | Tabbed view: questionnaire filler + score history with trend charts |
 | `/export` | `Export` | Yes | Personal data export (JSON, FHIR, therapist BNO summary) |
@@ -432,7 +434,9 @@ All routes are served under both `/` (Hungarian default) and `/en/` (English pre
 | `/cookies` | `Cookies` | No | Cookie policy |
 | `/gdpr` | `Gdpr` | No | GDPR / privacy policy |
 
-**Legacy redirects:** `/check-in` → `/journal`, `/self-checks` → `/surveys`, `/timeline` → `/journal`
+**Legacy redirects:** `/dashboard` → `/journal`, `/check-in` → `/journal`, `/self-checks` → `/surveys`, `/timeline` → `/journal`
+
+**Type generation note:** The `logic_rules` column on `questionnaire_questions` is deployed in the database but may not appear in the auto-generated `types.ts` until the next type sync. Code uses `as any` casts for reads and inserts involving this column until regeneration.
 
 ### Key Components
 

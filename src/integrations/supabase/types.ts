@@ -444,6 +444,7 @@ export type Database = {
           answer_scores: Json | null
           created_at: string
           id: string
+          logic_rules: Json | null
           options: Json | null
           options_localized: Json | null
           question_text: string
@@ -456,6 +457,7 @@ export type Database = {
           answer_scores?: Json | null
           created_at?: string
           id?: string
+          logic_rules?: Json | null
           options?: Json | null
           options_localized?: Json | null
           question_text: string
@@ -468,6 +470,7 @@ export type Database = {
           answer_scores?: Json | null
           created_at?: string
           id?: string
+          logic_rules?: Json | null
           options?: Json | null
           options_localized?: Json | null
           question_text?: string
