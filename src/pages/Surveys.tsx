@@ -3,7 +3,7 @@ import DashboardLayout from '@/components/DashboardLayout';
 import { useLanguage } from '@/hooks/useLanguage';
 import { useStance } from '@/hooks/useStance';
 import { useUserRole } from '@/hooks/useUserRole';
-import { Navigate } from 'react-router-dom';
+
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import ConsentGate from '@/components/consent/ConsentGate';
 import QuestionnaireFiller from '@/components/checkin/QuestionnaireFiller';
@@ -13,15 +13,10 @@ import StanceBanner from '@/components/premium/StanceBanner';
 const Surveys = () => {
   const { t, localePath } = useLanguage();
   const { activeSubject, subjectColor } = useStance();
-  const { hasAnyRole, hasRole } = useUserRole();
+  const { hasRole } = useUserRole();
   const [refreshKey, setRefreshKey] = useState(0);
 
-  const isEditor = hasAnyRole('admin', 'editor', 'guest_editor');
   const isObserver = hasRole('observer');
-
-  if (isEditor) {
-    return <Navigate to={localePath('/manage-questionnaires')} replace />;
-  }
 
   return (
     <DashboardLayout>
