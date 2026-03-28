@@ -170,7 +170,7 @@ const SelfChecks = () => {
       });
       // Remap logic_rules target IDs to the new cloned question IDs
       origQuestions.forEach((oq, idx) => {
-        const rules = oq.logic_rules as LogicRule[] | null;
+        const rules = (oq as any).logic_rules as LogicRule[] | null;
         if (rules && rules.length > 0) {
           qRows[idx].logic_rules = rules.map(r => ({
             ...r,

@@ -161,11 +161,11 @@ const QuestionnaireFiller = ({ onCompleted, readOnly }: { onCompleted?: () => vo
     setScoreResult(null);
     const { data } = await supabase
       .from('questionnaire_questions')
-      .select('id, question_text, question_type, options, sort_order, answer_scores, options_localized, logic_rules')
+      .select('id, question_text, question_type, options, sort_order, answer_scores, options_localized')
       .eq('questionnaire_id', qId)
       .order('sort_order');
     setQuestions(
-      (data ?? []).map((q) => ({ ...q, options: q.options as string[] | null, answer_scores: q.answer_scores as Record<string, number> | null, options_localized: q.options_localized as Record<string, string> | null, logic_rules: (q.logic_rules as LogicRule[] | null) ?? null }))
+      (data as any[] ?? []).map((q: any) => ({ ...q, options: q.options as string[] | null, answer_scores: q.answer_scores as Record<string, number> | null, options_localized: q.options_localized as Record<string, string> | null, logic_rules: (q.logic_rules as LogicRule[] | null) ?? null }))
     );
   };
 
