@@ -124,7 +124,7 @@ const SubjectWorkspaceSection = ({
       }
     >
       <Collapsible open={sectionOpen} onOpenChange={setSectionOpen}>
-        <section className={cn('space-y-4 max-w-md mx-auto w-full', subject.type === 'relative' ? 'theme-observer' : 'theme-self')}>
+        <section className={cn('space-y-4 w-full', subject.type === 'relative' ? 'theme-observer' : 'theme-self')}>
           <div
             className={cn(
               'flex min-h-[220px] w-full flex-col p-6 sm:p-8 text-center transition-colors surface-card',
