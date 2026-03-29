@@ -28,7 +28,12 @@ interface ScoreRange {
   description?: string;
 }
 
-type Question = Database['public']['Tables']['questionnaire_questions']['Row'];
+type Question = Omit<Database['public']['Tables']['questionnaire_questions']['Row'], 'options' | 'answer_scores' | 'options_localized' | 'logic_rules'> & {
+  options: string[] | null;
+  answer_scores: Record<string, number> | null;
+  options_localized: Record<string, string> | null;
+  logic_rules: LogicRule[] | null;
+};
 
 interface LastResponse {
   questionnaire_id: string;
