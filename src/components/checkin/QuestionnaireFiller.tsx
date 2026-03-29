@@ -15,7 +15,7 @@ import ScoreResults from './ScoreResults';
 import StanceBanner from '@/components/premium/StanceBanner';
 import { evaluateLogicRules, computeVisiblePath, getSkippedQuestionIds, hasBranchingLogic } from '@/lib/logic-engine';
 import type { QuestionWithLogic } from '@/lib/logic-engine';
-import type { Database, LogicRule } from '@/integrations/supabase/types';
+import type { Database } from '@/integrations/supabase/types';
 
 type Questionnaire = Database['public']['Tables']['questionnaires']['Row'] & {
   score_ranges: ScoreRange[] | null;
