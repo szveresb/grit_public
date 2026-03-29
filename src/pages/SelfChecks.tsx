@@ -14,7 +14,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
 import { friendlyDbError } from '@/lib/db-error';
 import { FPlus, FTrash, FPencil, FClose, FSave } from '@/components/icons/FreudIcons';
-import type { Database } from '@/integrations/supabase/types';
+import type { Database, Json } from '@/integrations/supabase/types';
 import type { LogicRule } from '@/lib/logic-engine';
 import { validateLogicRules } from '@/lib/logic-validation';
 import {
