@@ -14,7 +14,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { toast } from 'sonner';
 import { friendlyDbError } from '@/lib/db-error';
 import { FPlus, FTrash, FPencil, FClose, FSave } from '@/components/icons/FreudIcons';
-import type { LogicRule } from '@/lib/logic-engine';
+import type { Database, LogicRule } from '@/integrations/supabase/types';
 import { validateLogicRules } from '@/lib/logic-validation';
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
@@ -23,8 +23,12 @@ import {
 import ObservationStepper from '@/components/observations/ObservationStepper';
 import ObservationHistory from '@/components/observations/ObservationHistory';
 
-interface Questionnaire { id: string; title: string; description: string | null; is_published: boolean; created_at: string; repeat_interval: string | null; scoring_enabled: boolean; scoring_mode: string; score_ranges: ScoreRange[] | null; }
-interface Question { id: string; question_text: string; question_type: string; options: string[] | null; sort_order: number; answer_scores: Record<string, number> | null; options_localized: Record<string, string> | null; }
+type Questionnaire = Database['public']['Tables']['questionnaires']['Row'] & { score_ranges: ScoreRange[] | null };
+type Question = Database['public']['Tables']['questionnaire_questions']['Row'] & { 
+  options: string[] | null; 
+  answer_scores: Record<string, number> | null; 
+  options_localized: Record<string, string> | null; 
+};
 interface ScoreRange { min: number; max: number; label: string; description?: string; }
 
 const SelfChecks = () => {
@@ -61,7 +65,12 @@ const SelfChecks = () => {
   const loadQuestions = async (qId: string) => {
     setSelectedQ(qId); setAnswers({});
     const { data } = await supabase.from('questionnaire_questions').select('*').eq('questionnaire_id', qId).order('sort_order');
-    setQuestions((data as any[] ?? []).map(q => ({ ...q, options: q.options as string[] | null, answer_scores: q.answer_scores as Record<string, number> | null, options_localized: q.options_localized as Record<string, string> | null })));
+    setQuestions((data ?? []).map(q => ({ 
+      ...q, 
+      options: q.options as string[] | null, 
+      answer_scores: q.answer_scores as Record<string, number> | null, 
+      options_localized: q.options_localized as Record<string, string> | null 
+    })));
   };
 
   const openCreate = () => { setEditingId(null); setFormTitle(''); setFormDesc(''); setFormPublished(false); setFormRepeat(''); setFormScoringEnabled(false); setFormScoringMode('sum'); setFormScoreRanges([]); setFormQuestions([{ text: '', type: 'text', options: '', answerScores: {}, scaleMin: 1, scaleMax: 5, scaleLabels: {}, reverseScored: false, logicRules: [] }]); setShowForm(true); };
@@ -86,7 +95,7 @@ const SelfChecks = () => {
           if (scores[String(n)] !== (scaleMin + scaleMax) - n) { isReverse = false; break; }
         }
       }
-      return { id: qq.id, text: qq.question_text, type: qq.question_type, options: qq.question_type === 'multiple_choice' && opts ? opts.join(', ') : '', answerScores: scores, scaleMin, scaleMax, scaleLabels: (qq.options_localized as Record<string, string>) ?? {}, reverseScored: isReverse, logicRules: ((qq as any).logic_rules as LogicRule[]) ?? [] };
+      return { id: qq.id, text: qq.question_text, type: qq.question_type, options: qq.question_type === 'multiple_choice' && opts ? opts.join(', ') : '', answerScores: scores, scaleMin, scaleMax, scaleLabels: (qq.options_localized as Record<string, string>) ?? {}, reverseScored: isReverse, logicRules: qq.logic_rules ?? [] };
     }));
     setShowForm(true);
   };
@@ -95,7 +104,7 @@ const SelfChecks = () => {
     if (!user || !formTitle.trim()) return;
     setSaving(true);
     if (editingId) {
-      const { error } = await supabase.from('questionnaires').update({ title: formTitle, description: formDesc || null, is_published: formPublished, repeat_interval: formRepeat || null, scoring_enabled: formScoringEnabled, scoring_mode: formScoringMode, score_ranges: formScoreRanges.length ? formScoreRanges : null } as any).eq('id', editingId);
+      const { error } = await supabase.from('questionnaires').update({ title: formTitle, description: formDesc || null, is_published: formPublished, repeat_interval: formRepeat || null, scoring_enabled: formScoringEnabled, scoring_mode: formScoringMode, score_ranges: formScoreRanges.length ? formScoreRanges : null }).eq('id', editingId);
       if (error) { toast.error(friendlyDbError(error)); setSaving(false); return; }
       await supabase.from('questionnaire_questions').delete().eq('questionnaire_id', editingId);
       const qRows = formQuestions.filter(nq => nq.text.trim()).map((nq, i) => {
@@ -104,10 +113,10 @@ const SelfChecks = () => {
         else if (formScoringEnabled && nq.reverseScored && nq.type === 'scale') answerScores = nq.answerScores;
         return { questionnaire_id: editingId, question_text: nq.text, question_type: nq.type, options: nq.type === 'multiple_choice' ? nq.options.split(',').map(s => s.trim()).filter(Boolean) : nq.type === 'scale' ? [String(nq.scaleMin), String(nq.scaleMax)] : null, sort_order: i, answer_scores: answerScores, options_localized: nq.type === 'scale' && Object.keys(nq.scaleLabels).length > 0 ? nq.scaleLabels : null, logic_rules: nq.logicRules.length > 0 ? nq.logicRules : null };
       });
-      if (qRows.length) await supabase.from('questionnaire_questions').insert(qRows as any);
+      if (qRows.length) await supabase.from('questionnaire_questions').insert(qRows);
       toast.success(t.questionnaires_manage.questionnaireUpdated);
     } else {
-      const { data: q, error } = await supabase.from('questionnaires').insert({ title: formTitle, description: formDesc || null, created_by: user.id, is_published: formPublished, repeat_interval: formRepeat || null, scoring_enabled: formScoringEnabled, scoring_mode: formScoringMode, score_ranges: formScoreRanges.length ? formScoreRanges : null } as any).select('id').single();
+      const { data: q, error } = await supabase.from('questionnaires').insert({ title: formTitle, description: formDesc || null, created_by: user.id, is_published: formPublished, repeat_interval: formRepeat || null, scoring_enabled: formScoringEnabled, scoring_mode: formScoringMode, score_ranges: formScoreRanges.length ? formScoreRanges : null }).select('id').single();
       if (error || !q) { toast.error(error ? friendlyDbError(error) : 'Failed'); setSaving(false); return; }
       const qRows = formQuestions.filter(nq => nq.text.trim()).map((nq, i) => {
         let answerScores: Record<string, number> | null = null;
@@ -115,7 +124,7 @@ const SelfChecks = () => {
         else if (formScoringEnabled && nq.reverseScored && nq.type === 'scale') answerScores = nq.answerScores;
         return { questionnaire_id: q.id, question_text: nq.text, question_type: nq.type, options: nq.type === 'multiple_choice' ? nq.options.split(',').map(s => s.trim()).filter(Boolean) : nq.type === 'scale' ? [String(nq.scaleMin), String(nq.scaleMax)] : null, sort_order: i, answer_scores: answerScores, options_localized: nq.type === 'scale' && Object.keys(nq.scaleLabels).length > 0 ? nq.scaleLabels : null, logic_rules: nq.logicRules.length > 0 ? nq.logicRules : null };
       });
-      if (qRows.length) await supabase.from('questionnaire_questions').insert(qRows as any);
+      if (qRows.length) await supabase.from('questionnaire_questions').insert(qRows);
       toast.success(t.questionnaires_manage.questionnaireCreated);
     }
     setSaving(false); setShowForm(false); setEditingId(null); fetchQuestionnaires();
@@ -146,7 +155,7 @@ const SelfChecks = () => {
       scoring_enabled: q.scoring_enabled,
       scoring_mode: q.scoring_mode,
       score_ranges: q.score_ranges,
-    } as any).select('id').single();
+    }).select('id').single();
     if (error || !cloned) { toast.error(error ? friendlyDbError(error) : 'Failed'); return; }
     // Clone questions
     const { data: origQuestions } = await supabase.from('questionnaire_questions').select('*').eq('questionnaire_id', q.id).order('sort_order');
@@ -170,7 +179,7 @@ const SelfChecks = () => {
       });
       // Remap logic_rules target IDs to the new cloned question IDs
       origQuestions.forEach((oq, idx) => {
-        const rules = (oq as any).logic_rules as LogicRule[] | null;
+        const rules = oq.logic_rules;
         if (rules && rules.length > 0) {
           qRows[idx].logic_rules = rules.map(r => ({
             ...r,
@@ -178,7 +187,7 @@ const SelfChecks = () => {
           }));
         }
       });
-      await supabase.from('questionnaire_questions').insert(qRows as any);
+      await supabase.from('questionnaire_questions').insert(qRows);
     }
     toast.success(t.questionnaires_manage.questionnaireCloned);
     fetchQuestionnaires();

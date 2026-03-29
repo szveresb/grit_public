@@ -6,6 +6,17 @@ export type Json =
   | { [key: string]: Json | undefined }
   | Json[]
 
+export interface LogicCondition {
+  answer_equals: string;
+}
+
+export interface LogicRule {
+  condition: LogicCondition;
+  action: "jump_to" | "skip_to_end";
+  target_question_id?: string;
+}
+
+
 export type Database = {
   // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
@@ -441,12 +452,12 @@ export type Database = {
       }
       questionnaire_questions: {
         Row: {
-          answer_scores: Json | null
+          answer_scores: { [key: string]: number } | null
           created_at: string
           id: string
-          logic_rules: Json | null
-          options: Json | null
-          options_localized: Json | null
+          logic_rules: LogicRule[] | null
+          options: string[] | null
+          options_localized: { [key: string]: string } | null
           question_text: string
           question_text_localized: Json | null
           question_type: string
@@ -454,12 +465,12 @@ export type Database = {
           sort_order: number
         }
         Insert: {
-          answer_scores?: Json | null
+          answer_scores?: { [key: string]: number } | null
           created_at?: string
           id?: string
-          logic_rules?: Json | null
-          options?: Json | null
-          options_localized?: Json | null
+          logic_rules?: LogicRule[] | null
+          options?: string[] | null
+          options_localized?: { [key: string]: string } | null
           question_text: string
           question_text_localized?: Json | null
           question_type?: string
@@ -467,12 +478,12 @@ export type Database = {
           sort_order?: number
         }
         Update: {
-          answer_scores?: Json | null
+          answer_scores?: { [key: string]: number } | null
           created_at?: string
           id?: string
-          logic_rules?: Json | null
-          options?: Json | null
-          options_localized?: Json | null
+          logic_rules?: LogicRule[] | null
+          options?: string[] | null
+          options_localized?: { [key: string]: string } | null
           question_text?: string
           question_text_localized?: Json | null
           question_type?: string

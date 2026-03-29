@@ -14,17 +14,12 @@ import { getDateLocale } from '@/lib/date-locale';
 import ScoreResults from './ScoreResults';
 import StanceBanner from '@/components/premium/StanceBanner';
 import { evaluateLogicRules, computeVisiblePath, getSkippedQuestionIds, hasBranchingLogic } from '@/lib/logic-engine';
-import type { LogicRule, QuestionWithLogic } from '@/lib/logic-engine';
+import type { QuestionWithLogic } from '@/lib/logic-engine';
+import type { Database, LogicRule } from '@/integrations/supabase/types';
 
-interface Questionnaire {
-  id: string;
-  title: string;
-  description: string | null;
-  repeat_interval: string | null;
-  scoring_enabled: boolean;
-  scoring_mode: string;
+type Questionnaire = Database['public']['Tables']['questionnaires']['Row'] & {
   score_ranges: ScoreRange[] | null;
-}
+};
 
 interface ScoreRange {
   min: number;
@@ -33,16 +28,7 @@ interface ScoreRange {
   description?: string;
 }
 
-interface Question {
-  id: string;
-  question_text: string;
-  question_type: string;
-  options: string[] | null;
-  sort_order: number;
-  answer_scores: Record<string, number> | null;
-  options_localized: Record<string, string> | null;
-  logic_rules: LogicRule[] | null;
-}
+type Question = Database['public']['Tables']['questionnaire_questions']['Row'];
 
 interface LastResponse {
   questionnaire_id: string;
@@ -164,9 +150,7 @@ const QuestionnaireFiller = ({ onCompleted, readOnly }: { onCompleted?: () => vo
       .select('*')
       .eq('questionnaire_id', qId)
       .order('sort_order');
-    setQuestions(
-      (data as any[] ?? []).map((q: any) => ({ ...q, options: q.options as string[] | null, answer_scores: q.answer_scores as Record<string, number> | null, options_localized: q.options_localized as Record<string, string> | null, logic_rules: (q.logic_rules as LogicRule[] | null) ?? null }))
-    );
+    setQuestions((data ?? []) as Question[]);
   };
 
   const calculateScore = (questionnaire: Questionnaire): { totalScore: number; maxPossibleScore: number; questionScores: { questionText: string; answer: string; score: number }[] } => {
@@ -182,17 +166,18 @@ const QuestionnaireFiller = ({ onCompleted, readOnly }: { onCompleted?: () => vo
       let maxScore = 0;
 
       if (questionnaire.scoring_mode === 'weighted' && q.answer_scores) {
-        score = q.answer_scores[answer] ?? 0;
-        maxScore = Math.max(...Object.values(q.answer_scores));
+        const scores = q.answer_scores as Record<string, number>;
+        score = scores[answer] ?? 0;
+        maxScore = Math.max(...Object.values(scores));
       } else {
         // Sum mode: scale value directly, yes=1/no=0
         // If answer_scores exist (e.g. reverse scoring), use them
         if (q.question_type === 'scale') {
-          const opts = q.options as string[] | null;
-          const sMax = opts && opts.length >= 2 && opts[1] !== '' ? Number(opts[1]) : 5;
+          const sMax = q.options && q.options.length >= 2 && q.options[1] !== '' ? Number(q.options[1]) : 5;
           if (q.answer_scores && Object.keys(q.answer_scores).length > 0) {
-            score = q.answer_scores[answer] ?? 0;
-            maxScore = Math.max(...Object.values(q.answer_scores));
+            const scores = q.answer_scores as Record<string, number>;
+            score = scores[answer] ?? 0;
+            maxScore = Math.max(...Object.values(scores));
           } else {
             score = Number(answer) || 0;
             maxScore = sMax;
@@ -280,8 +265,8 @@ const QuestionnaireFiller = ({ onCompleted, readOnly }: { onCompleted?: () => vo
         .eq('id', resp.id)
         .single();
       
-      if (finalRes?.total_score !== null) {
-        setScoreResult(prev => prev ? { ...prev, totalScore: finalRes.total_score } : null);
+      if (finalRes && 'total_score' in finalRes && finalRes.total_score !== null) {
+        setScoreResult(prev => prev ? { ...prev, totalScore: finalRes.total_score as number } : null);
       }
     }
 
@@ -304,11 +289,10 @@ const QuestionnaireFiller = ({ onCompleted, readOnly }: { onCompleted?: () => vo
     const val = answers[q.id] ?? '';
     switch (q.question_type) {
       case 'scale': {
-        const opts = q.options as string[] | null;
-        const sMin = opts && opts.length >= 2 && opts[0] !== '' ? Number(opts[0]) : 1;
-        const sMax = opts && opts.length >= 2 && opts[1] !== '' ? Number(opts[1]) : 5;
+        const sMin = q.options && q.options.length >= 2 && q.options[0] !== '' ? Number(q.options[0]) : 1;
+        const sMax = q.options && q.options.length >= 2 && q.options[1] !== '' ? Number(q.options[1]) : 5;
         const points = Array.from({ length: sMax - sMin + 1 }, (_, i) => sMin + i);
-        const labels = (q.options_localized ?? {}) as Record<string, string>;
+        const labels = q.options_localized ?? {};
         return (
           <div className="flex flex-col gap-2">
             <div className="flex gap-2 flex-wrap">
@@ -402,15 +386,13 @@ const QuestionnaireFiller = ({ onCompleted, readOnly }: { onCompleted?: () => vo
   }
 
   // Filling a specific questionnaire
-  if (selectedQ) {
+    if (selectedQ) {
     const qTitle = questionnaires.find((q) => q.id === selectedQ)?.title;
-    const isBranching = hasBranchingLogic(questions as QuestionWithLogic[]);
+    const isBranching = hasBranchingLogic(questions as unknown as QuestionWithLogic[]);
 
     if (isBranching) {
       // Stepper mode: one question at a time
-      const questionsWithLogic: QuestionWithLogic[] = questions.map(q => ({
-        id: q.id, sort_order: q.sort_order, logic_rules: q.logic_rules,
-      }));
+      const questionsWithLogic = questions as unknown as QuestionWithLogic[]; 
       const visiblePath = computeVisiblePath(questionsWithLogic, answers);
       const currentQuestionId = visiblePath[visiblePath.length - 1];
       const currentQuestion = questions.find(q => q.id === currentQuestionId);
@@ -419,7 +401,7 @@ const QuestionnaireFiller = ({ onCompleted, readOnly }: { onCompleted?: () => vo
 
       // Check if logic says skip_to_end after the last answer
       const lastResult = currentQuestion && answers[currentQuestionId]
-        ? evaluateLogicRules(currentQuestion as QuestionWithLogic, answers[currentQuestionId])
+        ? evaluateLogicRules(currentQuestion as unknown as QuestionWithLogic, answers[currentQuestionId])
         : null;
       const reachedEnd = lastResult?.action === 'skip_to_end' || (isLastAnswered && !lastResult?.targetId && questions.indexOf(currentQuestion!) === questions.length - 1);
 
