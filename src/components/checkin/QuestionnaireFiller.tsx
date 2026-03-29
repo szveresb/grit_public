@@ -14,7 +14,7 @@ import { getDateLocale } from '@/lib/date-locale';
 import ScoreResults from './ScoreResults';
 import StanceBanner from '@/components/premium/StanceBanner';
 import { evaluateLogicRules, computeVisiblePath, getSkippedQuestionIds, hasBranchingLogic } from '@/lib/logic-engine';
-import type { QuestionWithLogic } from '@/lib/logic-engine';
+import type { QuestionWithLogic, LogicRule } from '@/lib/logic-engine';
 import type { Database } from '@/integrations/supabase/types';
 
 type Questionnaire = Database['public']['Tables']['questionnaires']['Row'] & {
