@@ -155,7 +155,7 @@ const QuestionnaireFiller = ({ onCompleted, readOnly }: { onCompleted?: () => vo
       .select('*')
       .eq('questionnaire_id', qId)
       .order('sort_order');
-    setQuestions((data ?? []) as Question[]);
+    setQuestions((data ?? []) as unknown as Question[]);
   };
 
   const calculateScore = (questionnaire: Questionnaire): { totalScore: number; maxPossibleScore: number; questionScores: { questionText: string; answer: string; score: number }[] } => {
