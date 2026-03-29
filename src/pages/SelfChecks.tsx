@@ -105,7 +105,7 @@ const SelfChecks = () => {
     if (!user || !formTitle.trim()) return;
     setSaving(true);
     if (editingId) {
-      const { error } = await supabase.from('questionnaires').update({ title: formTitle, description: formDesc || null, is_published: formPublished, repeat_interval: formRepeat || null, scoring_enabled: formScoringEnabled, scoring_mode: formScoringMode, score_ranges: formScoreRanges.length ? formScoreRanges : null }).eq('id', editingId);
+      const { error } = await supabase.from('questionnaires').update({ title: formTitle, description: formDesc || null, is_published: formPublished, repeat_interval: formRepeat || null, scoring_enabled: formScoringEnabled, scoring_mode: formScoringMode, score_ranges: formScoreRanges.length ? (formScoreRanges as unknown as Json[]) : null } as Record<string, unknown>).eq('id', editingId);
       if (error) { toast.error(friendlyDbError(error)); setSaving(false); return; }
       await supabase.from('questionnaire_questions').delete().eq('questionnaire_id', editingId);
       const qRows = formQuestions.filter(nq => nq.text.trim()).map((nq, i) => {
