@@ -14,8 +14,8 @@ import { getDateLocale } from '@/lib/date-locale';
 import ScoreResults from './ScoreResults';
 import StanceBanner from '@/components/premium/StanceBanner';
 import { evaluateLogicRules, computeVisiblePath, getSkippedQuestionIds, hasBranchingLogic } from '@/lib/logic-engine';
-import type { QuestionWithLogic } from '@/lib/logic-engine';
-import type { Database, LogicRule } from '@/integrations/supabase/types';
+import type { QuestionWithLogic, LogicRule } from '@/lib/logic-engine';
+import type { Database } from '@/integrations/supabase/types';
 
 type Questionnaire = Database['public']['Tables']['questionnaires']['Row'] & {
   score_ranges: ScoreRange[] | null;
@@ -28,7 +28,12 @@ interface ScoreRange {
   description?: string;
 }
 
-type Question = Database['public']['Tables']['questionnaire_questions']['Row'];
+type Question = Omit<Database['public']['Tables']['questionnaire_questions']['Row'], 'options' | 'answer_scores' | 'options_localized' | 'logic_rules'> & {
+  options: string[] | null;
+  answer_scores: Record<string, number> | null;
+  options_localized: Record<string, string> | null;
+  logic_rules: LogicRule[] | null;
+};
 
 interface LastResponse {
   questionnaire_id: string;
@@ -150,7 +155,7 @@ const QuestionnaireFiller = ({ onCompleted, readOnly }: { onCompleted?: () => vo
       .select('*')
       .eq('questionnaire_id', qId)
       .order('sort_order');
-    setQuestions((data ?? []) as Question[]);
+    setQuestions((data ?? []) as unknown as Question[]);
   };
 
   const calculateScore = (questionnaire: Questionnaire): { totalScore: number; maxPossibleScore: number; questionScores: { questionText: string; answer: string; score: number }[] } => {

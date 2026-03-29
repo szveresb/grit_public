@@ -96,21 +96,8 @@ export const ConsentProvider = ({ children }: { children: ReactNode }) => {
 
   useEffect(() => { fetchConsents(); }, [fetchConsents]);
 
-  // Listen for realtime changes
-  useEffect(() => {
-    if (!user) return;
-    const channel = supabase
-      .channel('consent-changes')
-      .on('postgres_changes', {
-        event: '*',
-        schema: 'public',
-        table: 'user_consents',
-        filter: `user_id=eq.${user.id}`,
-      }, () => { fetchConsents(); })
-      .subscribe();
-
-    return () => { supabase.removeChannel(channel); };
-  }, [user, fetchConsents]);
+  // Realtime removed — consent changes are refreshed via explicit refresh() calls
+  // and optimistic updates in ConsentOnboarding / ConsentDashboard.
 
   const hasConsent = useCallback((key: ConsentKey) => consents[key] === true, [consents]);
 
