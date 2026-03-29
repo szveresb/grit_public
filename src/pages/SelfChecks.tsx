@@ -180,15 +180,15 @@ const SelfChecks = () => {
       });
       // Remap logic_rules target IDs to the new cloned question IDs
       origQuestions.forEach((oq, idx) => {
-        const rules = oq.logic_rules;
+        const rules = oq.logic_rules as unknown as LogicRule[] | null;
         if (rules && rules.length > 0) {
           qRows[idx].logic_rules = rules.map(r => ({
             ...r,
             target_question_id: r.target_question_id ? (idMap.get(r.target_question_id) ?? r.target_question_id) : r.target_question_id,
-          }));
+          })) as unknown as LogicRule[] | null;
         }
       });
-      await supabase.from('questionnaire_questions').insert(qRows);
+      await supabase.from('questionnaire_questions').insert(qRows as unknown as Database['public']['Tables']['questionnaire_questions']['Insert'][]);
     }
     toast.success(t.questionnaires_manage.questionnaireCloned);
     fetchQuestionnaires();
