@@ -1,4 +1,3 @@
-import { useEffect, useState } from 'react';
 import DashboardLayout from '@/components/DashboardLayout';
 import { useLanguage } from '@/hooks/useLanguage';
 import { useAuth } from '@/hooks/useAuth';
@@ -11,15 +10,19 @@ import SubjectSelector from '@/components/observations/SubjectSelector';
 const Timeline = () => {
   const { t, lang } = useLanguage();
   const { user } = useAuth();
-  const { subjects, stance, setStance } = useStance();
-
-  const subjectType = stance?.type ?? 'self';
-  const subjectId = stance?.subjectId ?? null;
+  const {
+    subjectType,
+    selectedSubjectId,
+    setSubjectType,
+    setSelectedSubjectId,
+    setSelectedSubjectName,
+    subjects,
+  } = useStance();
 
   const { obsLogs, conceptMap, loading } = useCalendarFeedData({
     userId: user?.id,
     subjectType,
-    subjectId,
+    subjectId: selectedSubjectId,
     lang,
     t,
   });
@@ -39,9 +42,11 @@ const Timeline = () => {
         {/* Subject selector (if observer subjects exist) */}
         {subjects.length > 0 && (
           <SubjectSelector
-            subjects={subjects}
-            stance={stance}
-            setStance={setStance}
+            subjectType={subjectType}
+            onSubjectTypeChange={setSubjectType}
+            selectedSubjectId={selectedSubjectId}
+            onSubjectIdChange={setSelectedSubjectId}
+            onSubjectNameChange={setSelectedSubjectName}
           />
         )}
 
