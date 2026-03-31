@@ -3,6 +3,12 @@
 @import '@fontsource/quicksand/600.css';
 @import '@fontsource/quicksand/700.css';
 
+/* Prevent CLS from font swap by using optional display */
+@font-face {
+  font-family: 'Quicksand';
+  font-display: optional;
+}
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
