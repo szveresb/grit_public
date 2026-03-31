@@ -8,7 +8,7 @@ import { stripLangPrefix } from '@/hooks/useLanguage';
 import { useIsMobile } from '@/hooks/use-mobile';
 import {
   FHome, FDashboard, FHeartPulse, FClock, FDownload, FUser,
-  FLibrary, FUsers, FBarChart, FFileText, FInfo, FLock,
+  FLibrary, FUsers, FBarChart, FFileText, FInfo, FLock, FTimeline,
 } from '@/components/icons/FreudIcons';
 import {
   Sidebar, SidebarContent, SidebarGroup, SidebarGroupLabel, SidebarGroupContent,
