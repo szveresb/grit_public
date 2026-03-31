@@ -29,6 +29,7 @@ const SelfChecks = lazy(() => import("./pages/SelfChecks"));
 const Surveys = lazy(() => import("./pages/Surveys"));
 const ManageLanding = lazy(() => import("./pages/ManageLanding"));
 const ConsentOnboarding = lazy(() => import("./pages/ConsentOnboarding"));
+const Timeline = lazy(() => import("./pages/Timeline"));
 
 const queryClient = new QueryClient();
 
@@ -43,7 +44,7 @@ const AppRoutes = () => (
       <Route path="/check-in" element={<Navigate to="/journal" replace />} />
       <Route path="/self-checks" element={<Navigate to="/surveys" replace />} />
       <Route path="/surveys" element={<ProtectedRoute><Surveys /></ProtectedRoute>} />
-      <Route path="/timeline" element={<Navigate to="/journal" replace />} />
+      <Route path="/timeline" element={<ProtectedRoute><Timeline /></ProtectedRoute>} />
       <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
       <Route path="/export" element={<ProtectedRoute><Export /></ProtectedRoute>} />
       <Route path="/manage-library" element={<ProtectedRoute><ManageLibrary /></ProtectedRoute>} />
@@ -65,7 +66,7 @@ const AppRoutes = () => (
       <Route path="/en/check-in" element={<Navigate to="/en/journal" replace />} />
       <Route path="/en/self-checks" element={<Navigate to="/en/surveys" replace />} />
       <Route path="/en/surveys" element={<ProtectedRoute><Surveys /></ProtectedRoute>} />
-      <Route path="/en/timeline" element={<Navigate to="/en/journal" replace />} />
+      <Route path="/en/timeline" element={<ProtectedRoute><Timeline /></ProtectedRoute>} />
       <Route path="/en/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
       <Route path="/en/export" element={<ProtectedRoute><Export /></ProtectedRoute>} />
       <Route path="/en/manage-library" element={<ProtectedRoute><ManageLibrary /></ProtectedRoute>} />

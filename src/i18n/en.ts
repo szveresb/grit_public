@@ -312,6 +312,10 @@ export const en: Dictionary = {
     entries: 'entries',
     entry: 'entry',
     timelineSlider: 'Timeline slider',
+    pageTitle: 'Pattern Timeline',
+    pageSubtitle: 'Visual overview of your recurring observations',
+    noPatterns: 'No patterns detected yet. At least 3 occurrences within a week are needed.',
+    pulseDotLabel: '{count}× in W{week}',
   },
 
   moon: {
