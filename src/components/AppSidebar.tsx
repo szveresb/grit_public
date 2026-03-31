@@ -31,6 +31,7 @@ const AppSidebar = () => {
   const navItems = [
     { title: t.nav.home, url: '/', icon: FHome },
     { title: t.nav.checkIn, url: '/journal', icon: FHeartPulse },
+    { title: t.timeline.pageTitle, url: '/timeline', icon: FTimeline },
     { title: t.nav.surveys, url: '/surveys', icon: FFileText },
     { title: t.nav.dataExport, url: '/export', icon: FDownload },
     { title: t.nav.account, url: '/profile', icon: FUser },
