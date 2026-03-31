@@ -77,6 +77,17 @@ const Index = () => {
       </section>
 
       {/* Mood Preview / QuickPulse */}
+      {!user && !moodSectionLoaded && (
+        <section className="relative z-10 px-4 md:px-8 py-16 max-w-7xl mx-auto">
+          <div className="max-w-lg mx-auto text-center space-y-6">
+            <Skeleton className="h-6 w-48 mx-auto" />
+            <Skeleton className="h-4 w-64 mx-auto" />
+            <div className="flex justify-center gap-3">
+              {[0,1,2,3,4].map(i => <Skeleton key={i} className="w-14 h-14 rounded-2xl" />)}
+            </div>
+          </div>
+        </section>
+      )}
       {moodSection && !user && (
         <LandingMoodPreview
           title={(lang === 'en' && (moodSection as any).title_localized?.en) || moodSection.title}
