@@ -310,6 +310,10 @@ export const hu: Dictionary = {
     entries: 'bejegyzés',
     entry: 'bejegyzés',
     timelineSlider: 'Idővonal csúszka',
+    pageTitle: 'Mintázat-idővonal',
+    pageSubtitle: 'Ismétlődő megfigyeléseid vizuális áttekintése',
+    noPatterns: 'Még nincs felismert mintázat. Legalább 3 ismétlődés szükséges egy héten belül.',
+    pulseDotLabel: '{count}× a(z) {week}. héten',
   },
 
   moon: {

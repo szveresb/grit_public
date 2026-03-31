@@ -323,6 +323,10 @@ export interface Dictionary {
     entries: string;
     entry: string;
     timelineSlider: string;
+    pageTitle: string;
+    pageSubtitle: string;
+    noPatterns: string;
+    pulseDotLabel: string;
   };
 
   moon: {
