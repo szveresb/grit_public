@@ -1,3 +1,4 @@
+import { lazy, Suspense } from "react";
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -9,26 +10,25 @@ import { ConsentProvider } from "@/hooks/useConsent";
 import { StanceProvider } from "@/hooks/useStance";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import Index from "./pages/Index";
-import Auth from "./pages/Auth";
 
-import CheckIn from "./pages/CheckIn";
-
-import Profile from "./pages/Profile";
-import Export from "./pages/Export";
-import ManageLibrary from "./pages/ManageLibrary";
-import ManageUsers from "./pages/ManageUsers";
-import AnalystExport from "./pages/AnalystExport";
-import NotFound from "./pages/NotFound";
-import Terms from "./pages/Terms";
-import Cookies from "./pages/Cookies";
-import Gdpr from "./pages/Gdpr";
-import AboutLegal from "./pages/AboutLegal";
-import Library from "./pages/Library";
-import Article from "./pages/Article";
-import SelfChecks from "./pages/SelfChecks";
-import Surveys from "./pages/Surveys";
-import ManageLanding from "./pages/ManageLanding";
-import ConsentOnboarding from "./pages/ConsentOnboarding";
+const Auth = lazy(() => import("./pages/Auth"));
+const CheckIn = lazy(() => import("./pages/CheckIn"));
+const Profile = lazy(() => import("./pages/Profile"));
+const Export = lazy(() => import("./pages/Export"));
+const ManageLibrary = lazy(() => import("./pages/ManageLibrary"));
+const ManageUsers = lazy(() => import("./pages/ManageUsers"));
+const AnalystExport = lazy(() => import("./pages/AnalystExport"));
+const NotFound = lazy(() => import("./pages/NotFound"));
+const Terms = lazy(() => import("./pages/Terms"));
+const Cookies = lazy(() => import("./pages/Cookies"));
+const Gdpr = lazy(() => import("./pages/Gdpr"));
+const AboutLegal = lazy(() => import("./pages/AboutLegal"));
+const Library = lazy(() => import("./pages/Library"));
+const Article = lazy(() => import("./pages/Article"));
+const SelfChecks = lazy(() => import("./pages/SelfChecks"));
+const Surveys = lazy(() => import("./pages/Surveys"));
+const ManageLanding = lazy(() => import("./pages/ManageLanding"));
+const ConsentOnboarding = lazy(() => import("./pages/ConsentOnboarding"));
 
 const queryClient = new QueryClient();
 
