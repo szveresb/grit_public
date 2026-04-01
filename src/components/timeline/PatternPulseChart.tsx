@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react';
 import { getISOWeek, parseISO, startOfWeek, subWeeks, isAfter, format } from 'date-fns';
 import { getDateLocale } from '@/lib/date-locale';
 import { useLanguage } from '@/hooks/useLanguage';
-import { FTimeline, FChevronUp } from '@/components/icons/FreudIcons';
+import { FTimeline, FChevronUp, FArrowUp, FArrowDown, FArrowRight } from '@/components/icons/FreudIcons';
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface ObsLog {
@@ -77,6 +77,14 @@ const PatternPulseChart = ({ logs, conceptMap }: PatternPulseChartProps) => {
   }, [logs]);
 
   const locale = getDateLocale(lang);
+  
+  const getTrend = (cid: string) => {
+    const sum1 = weeks.slice(0, 6).reduce((acc, w) => acc + (w.counts[cid] || 0), 0);
+    const sum2 = weeks.slice(6, 12).reduce((acc, w) => acc + (w.counts[cid] || 0), 0);
+    if (sum2 > sum1) return { icon: <FArrowUp className="h-3 w-3 text-primary animate-pulse" />, label: 'increasing' };
+    if (sum2 < sum1) return { icon: <FArrowDown className="h-3 w-3 text-muted-foreground opacity-70" />, label: 'decreasing' };
+    return { icon: <FArrowRight className="h-3 w-3 text-muted-foreground opacity-50" />, label: 'stable' };
+  };
 
   if (flaggedConcepts.length === 0) {
     return (
@@ -102,10 +110,14 @@ const PatternPulseChart = ({ logs, conceptMap }: PatternPulseChartProps) => {
             transition={{ delay: ci * 0.08, duration: 0.3 }}
             className="surface-card p-5 space-y-4"
           >
-            {/* Concept header */}
-            <div className="flex items-center gap-2">
-              <FTimeline className="h-4 w-4 text-primary shrink-0" />
-              <span className="text-sm font-semibold text-foreground">{name}</span>
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <FTimeline className="h-4 w-4 text-primary shrink-0" />
+                <span className="text-sm font-semibold text-foreground">{name}</span>
+              </div>
+              <div className="flex items-center gap-1.5 px-2 py-1 rounded-full bg-accent/30 border border-border/40">
+                {getTrend(cid).icon}
+              </div>
             </div>
 
             {/* Week grid with pulse dots */}

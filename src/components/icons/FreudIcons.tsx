@@ -387,6 +387,25 @@ export const FArrowRight = icon(
   'FArrowRight'
 );
 
+/** Arrow Up */
+export const FArrowUp = icon(
+  <>
+    <path d="M12 19V5" />
+    <path d="M5 12l7-7 7 7" />
+  </>,
+  'FArrowUp'
+);
+
+/** Arrow Down */
+export const FArrowDown = icon(
+  <>
+    <path d="M12 5v14" />
+    <path d="M19 12l-7 7-7-7" />
+  </>,
+  'FArrowDown'
+);
+
+
 /** Chevron Left */
 export const FChevronLeft = icon(
   <path d="M15 18l-6-6 6-6" />,
