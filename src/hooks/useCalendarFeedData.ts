@@ -53,7 +53,6 @@ export const useCalendarFeedData = ({
   const [obsLogs, setObsLogs] = useState<ObsLog[]>([]);
   const [conceptMap, setConceptMap] = useState<Record<string, ConceptEntry>>({});
   const [nudges, setNudges] = useState<PatternNudge[]>([]);
-  const [daysSinceLastEntry, setDaysSinceLastEntry] = useState<number | null>(null);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -66,7 +65,6 @@ export const useCalendarFeedData = ({
         setObsLogs([]);
         setConceptMap({});
         setNudges([]);
-        setDaysSinceLastEntry(null);
         setLoading(false);
         return;
       }
@@ -77,7 +75,7 @@ export const useCalendarFeedData = ({
       setObsLogs([]);
       setConceptMap({});
       setNudges([]);
-      setDaysSinceLastEntry(null);
+
 
       const isObserver = subjectType === 'relative' && !!subjectId;
 
@@ -125,10 +123,6 @@ export const useCalendarFeedData = ({
         impactLevel: entry.impact_level,
       }));
 
-      if (!isObserver && journalData.length > 0) {
-        const sorted = [...journalData].sort((a: any, b: any) => b.entry_date.localeCompare(a.entry_date));
-        setDaysSinceLastEntry(differenceInDays(new Date(), parseISO(sorted[0].entry_date)));
-      }
 
       const questionnaireItems: TimelineItem[] = ((responseRes.data ?? []) as any[]).map((response: any) => ({
         id: response.id,
@@ -218,7 +212,6 @@ export const useCalendarFeedData = ({
     obsLogs,
     conceptMap,
     nudges,
-    daysSinceLastEntry,
     loading,
   };
 };

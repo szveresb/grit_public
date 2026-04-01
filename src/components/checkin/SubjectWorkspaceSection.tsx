@@ -4,6 +4,7 @@ import { useLanguage } from '@/hooks/useLanguage';
 import { useAuth } from '@/hooks/useAuth';
 import { useMoodTrendData } from '@/hooks/useMoodTrendData';
 import { useCalendarFeedData } from '@/hooks/useCalendarFeedData';
+import { useGlobalInactivity } from '@/hooks/useGlobalInactivity';
 import { ScopedStanceProvider } from '@/hooks/useStance';
 import QuickPulse from '@/components/checkin/QuickPulse';
 import ConsentGate from '@/components/consent/ConsentGate';
@@ -77,8 +78,8 @@ const SubjectWorkspaceSection = ({
     obsLogs,
     conceptMap,
     nudges,
-    daysSinceLastEntry,
     loading: calendarLoading,
+
   } = useCalendarFeedData({
     userId: user?.id,
     subjectType: subject.type,
@@ -87,6 +88,8 @@ const SubjectWorkspaceSection = ({
     t,
     refreshKey,
   });
+
+  const { daysSinceLastActivity: daysSinceGlobalActivity } = useGlobalInactivity(user?.id);
 
   useEffect(() => {
     if (!highlightedDate || !feedRef.current) return;
@@ -173,9 +176,9 @@ const SubjectWorkspaceSection = ({
               </div>
             </ConsentGate>
 
-            {isSelfContext && daysSinceLastEntry !== null && daysSinceLastEntry >= 14 && !recapDismissed && (
+            {isSelfContext && daysSinceGlobalActivity !== null && daysSinceGlobalActivity >= 14 && !recapDismissed && (
               <RecapBanner
-                days={daysSinceLastEntry}
+                days={daysSinceGlobalActivity}
                 onCatchUp={() => openEntryModal()}
                 onDismiss={() => setRecapDismissed(true)}
               />
