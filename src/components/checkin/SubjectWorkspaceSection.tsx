@@ -70,7 +70,9 @@ const SubjectWorkspaceSection = ({
     userId: user?.id,
     subjectType: subject.type,
     subjectId: subject.id,
+    refreshKey,
   });
+
 
   const {
     timelineItems,

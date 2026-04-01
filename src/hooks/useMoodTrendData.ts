@@ -10,9 +10,10 @@ interface UseMoodTrendDataParams {
   userId: string | null | undefined;
   subjectType: 'self' | 'relative';
   subjectId: string | null;
+  refreshKey?: number;
 }
 
-export const useMoodTrendData = ({ userId, subjectType, subjectId }: UseMoodTrendDataParams) => {
+export const useMoodTrendData = ({ userId, subjectType, subjectId, refreshKey }: UseMoodTrendDataParams) => {
   const [data, setData] = useState<MoodTrendPoint[]>([]);
   const [loading, setLoading] = useState(false);
 
@@ -56,7 +57,7 @@ export const useMoodTrendData = ({ userId, subjectType, subjectId }: UseMoodTren
     return () => {
       cancelled = true;
     };
-  }, [subjectId, subjectType, userId]);
+  }, [subjectId, subjectType, userId, refreshKey]);
 
   return { data, loading };
 };
