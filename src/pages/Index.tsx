@@ -11,7 +11,7 @@ import ArticleCard from '@/components/ArticleCard';
 import LandingMoodPreview from '@/components/LandingMoodPreview';
 import QuickPulse from '@/components/checkin/QuickPulse';
 
-import bambooBg from '@/assets/bamboo-bg.jpg';
+
 
 interface LibraryArticle {
   id: string;
