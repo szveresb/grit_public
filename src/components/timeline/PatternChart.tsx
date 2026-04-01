@@ -1,8 +1,10 @@
 import { useMemo, useState } from 'react';
 import { getISOWeek, parseISO, startOfWeek, subWeeks, isAfter, format } from 'date-fns';
+import { Link } from 'react-router-dom';
 import { getDateLocale } from '@/lib/date-locale';
 import { useLanguage } from '@/hooks/useLanguage';
-import { FTimeline, FChevronDown, FChevronUp } from '@/components/icons/FreudIcons';
+import { FTimeline, FChevronDown, FChevronUp, FArrowRight } from '@/components/icons/FreudIcons';
+import { Button } from '@/components/ui/button';
 
 interface ObsLog {
   concept_id: string;
@@ -28,8 +30,9 @@ interface WeekBucket {
 }
 
 const PatternChart = ({ logs, conceptMap }: PatternChartProps) => {
-  const { t, lang } = useLanguage();
+  const { t, lang, localePath } = useLanguage();
   const [expanded, setExpanded] = useState<string | null>(null); // "cid-weekIdx"
+
 
   const { weeks, flaggedConcepts, maxCount } = useMemo(() => {
     const now = new Date();
@@ -72,12 +75,21 @@ const PatternChart = ({ logs, conceptMap }: PatternChartProps) => {
 
   return (
     <div className="surface-card p-5 space-y-4">
-      <div className="flex items-center gap-2">
-        <FTimeline className="h-4 w-4 text-primary" />
-        <div>
-          <h2 className="text-sm font-semibold text-foreground">{t.timeline.patternChartTitle}</h2>
-          <p className="text-xs text-muted-foreground">{t.timeline.patternChartSubtitle}</p>
+      <div className="flex items-center justify-between gap-2">
+        <div className="flex items-center gap-2">
+          <FTimeline className="h-4 w-4 text-primary" />
+          <div>
+            <h2 className="text-sm font-semibold text-foreground">{t.timeline.patternChartTitle}</h2>
+            <p className="text-xs text-muted-foreground">{t.timeline.patternChartSubtitle}</p>
+          </div>
         </div>
+        <Button variant="ghost" size="sm" asChild className="text-primary hover:text-primary hover:bg-primary/10 gap-1 text-[10px] uppercase tracking-wider font-semibold h-7 px-2">
+          <Link to={localePath('/timeline')}>
+            {t.timeline.viewFullTimeline}
+            <FArrowRight className="h-3 w-3" />
+          </Link>
+        </Button>
+
       </div>
 
       <div className="space-y-3">

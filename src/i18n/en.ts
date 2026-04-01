@@ -316,7 +316,9 @@ export const en: Dictionary = {
     pageSubtitle: 'Visual overview of your recurring observations',
     noPatterns: 'No patterns detected yet. At least 3 occurrences within a week are needed.',
     pulseDotLabel: '{count}× in W{week}',
+    viewFullTimeline: 'View Timeline',
   },
+
 
   moon: {
     title: 'Moon Phases',

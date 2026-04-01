@@ -327,7 +327,9 @@ export interface Dictionary {
     pageSubtitle: string;
     noPatterns: string;
     pulseDotLabel: string;
+    viewFullTimeline: string;
   };
+
 
   moon: {
     title: string;

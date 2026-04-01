@@ -314,7 +314,9 @@ export const hu: Dictionary = {
     pageSubtitle: 'Ismétlődő megfigyeléseid vizuális áttekintése',
     noPatterns: 'Még nincs felismert mintázat. Legalább 3 ismétlődés szükséges egy héten belül.',
     pulseDotLabel: '{count}× a(z) {week}. héten',
+    viewFullTimeline: 'Idővonal megtekintése',
   },
+
 
   moon: {
     title: 'Holdfázisok',
