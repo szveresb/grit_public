@@ -42,16 +42,20 @@ const Index = () => {
 
     supabase.from('landing_sections').select('*').eq('section_key', 'mood_preview').eq('is_active', true).maybeSingle()
       .then(({ data }) => { if (data) setMoodSection(data as any); setMoodSectionLoaded(true); });
+
+    // Lazy-load background image after initial paint to avoid blocking LCP
+    import('@/assets/bamboo-bg.jpg').then((mod) => { setBgLoaded(true); (window as any).__bambooBg = mod.default; });
   }, []);
 
   const handleGatedClick = (path: string) => {
     navigate(user ? localePath(path) : localePath('/auth'));
   };
 
+  const bambooBgUrl = bgLoaded ? (window as any).__bambooBg : undefined;
 
   return (
     <div className="min-h-screen relative w-full overflow-x-hidden">
-      <div className="fixed inset-0 z-0 bg-cover bg-center" style={{ backgroundImage: `url(${bambooBg})`, opacity: 0.12 }} />
+      {bambooBgUrl && <div className="fixed inset-0 z-0 bg-cover bg-center" style={{ backgroundImage: `url(${bambooBgUrl})`, opacity: 0.12 }} />}
       <div className="fixed inset-0 z-0 bg-background/80" />
 
       <PublicHeader />
