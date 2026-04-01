@@ -34,6 +34,7 @@ const Index = () => {
   const [articlesLoading, setArticlesLoading] = useState(true);
   const [moodSection, setMoodSection] = useState<{ title: string; subtitle: string; cta_text: string; config: Record<string, any> } | null>(null);
   const [moodSectionLoaded, setMoodSectionLoaded] = useState(false);
+  const [bgLoaded, setBgLoaded] = useState(false);
 
   useEffect(() => {
     supabase.from('library_articles').select('id, title, title_localized, excerpt, excerpt_localized, source, category, url, featured, author').eq('published', true).order('featured', { ascending: false }).order('created_at', { ascending: false }).limit(6)
