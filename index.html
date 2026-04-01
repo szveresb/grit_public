@@ -22,10 +22,18 @@
   <link rel="preconnect" href="https://tyeziqmikaygktvznzwm.supabase.co" crossorigin>
   <link rel="dns-prefetch" href="https://tyeziqmikaygktvznzwm.supabase.co">
   <link rel="icon" type="image/x-icon" href="/favicon.ico">
+  <link rel="modulepreload" href="/src/main.tsx">
 </head>
 
   <body>
-    <div id="root"></div>
+    <!-- Inline LCP placeholder to reduce element render delay -->
+    <div id="root">
+      <div style="min-height:100vh;display:flex;align-items:center;justify-content:center">
+        <div style="max-width:42rem;margin:0 auto;text-align:center;padding:4rem 1rem 3rem">
+          <h1 style="font-size:1.5rem;font-weight:700;letter-spacing:-0.025em;line-height:1.25">Segítő útmutató kiélezett kapcsolati helyzetekhez családtagok és partnerek számára</h1>
+        </div>
+      </div>
+    </div>
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>

@@ -11,7 +11,7 @@ import ArticleCard from '@/components/ArticleCard';
 import LandingMoodPreview from '@/components/LandingMoodPreview';
 import QuickPulse from '@/components/checkin/QuickPulse';
 
-import bambooBg from '@/assets/bamboo-bg.jpg';
+
 
 interface LibraryArticle {
   id: string;
@@ -34,6 +34,7 @@ const Index = () => {
   const [articlesLoading, setArticlesLoading] = useState(true);
   const [moodSection, setMoodSection] = useState<{ title: string; subtitle: string; cta_text: string; config: Record<string, any> } | null>(null);
   const [moodSectionLoaded, setMoodSectionLoaded] = useState(false);
+  const [bgLoaded, setBgLoaded] = useState(false);
 
   useEffect(() => {
     supabase.from('library_articles').select('id, title, title_localized, excerpt, excerpt_localized, source, category, url, featured, author').eq('published', true).order('featured', { ascending: false }).order('created_at', { ascending: false }).limit(6)
@@ -41,23 +42,27 @@ const Index = () => {
 
     supabase.from('landing_sections').select('*').eq('section_key', 'mood_preview').eq('is_active', true).maybeSingle()
       .then(({ data }) => { if (data) setMoodSection(data as any); setMoodSectionLoaded(true); });
+
+    // Lazy-load background image after initial paint to avoid blocking LCP
+    import('@/assets/bamboo-bg.jpg').then((mod) => { setBgLoaded(true); (window as any).__bambooBg = mod.default; });
   }, []);
 
   const handleGatedClick = (path: string) => {
     navigate(user ? localePath(path) : localePath('/auth'));
   };
 
+  const bambooBgUrl = bgLoaded ? (window as any).__bambooBg : undefined;
 
   return (
     <div className="min-h-screen relative w-full overflow-x-hidden">
-      <div className="fixed inset-0 z-0 bg-cover bg-center" style={{ backgroundImage: `url(${bambooBg})`, opacity: 0.12 }} />
+      {bambooBgUrl && <div className="fixed inset-0 z-0 bg-cover bg-center" style={{ backgroundImage: `url(${bambooBgUrl})`, opacity: 0.12 }} />}
       <div className="fixed inset-0 z-0 bg-background/80" />
 
       <PublicHeader />
 
       {/* Hero */}
       <section className="relative z-10 px-4 md:px-8 pt-16 pb-12 max-w-7xl mx-auto text-center">
-        <div className="max-w-2xl mx-auto animate-fade-in">
+        <div className="max-w-2xl mx-auto">
           <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight text-foreground leading-tight">
             {t.landing.heroTitle}
           </h1>
