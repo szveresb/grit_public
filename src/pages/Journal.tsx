@@ -1,6 +1,7 @@
 import { useEffect, useState, useMemo, useCallback } from 'react';
 import { useGlobalInactivity } from '@/hooks/useGlobalInactivity';
 import { friendlyDbError } from '@/lib/db-error';
+import { RECAP_INACTIVITY_DAYS } from '@/lib/constants';
 import DashboardLayout from '@/components/DashboardLayout';
 import { useAuth } from '@/hooks/useAuth';
 import { useLanguage } from '@/hooks/useLanguage';

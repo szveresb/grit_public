@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { RECAP_INACTIVITY_DAYS } from '@/lib/constants';
 import { format, isFuture, startOfDay } from 'date-fns';
 import { useLanguage } from '@/hooks/useLanguage';
 import { useAuth } from '@/hooks/useAuth';
