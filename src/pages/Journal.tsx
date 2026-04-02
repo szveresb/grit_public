@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useMemo, useCallback } from 'react';
 import { useGlobalInactivity } from '@/hooks/useGlobalInactivity';
 import { friendlyDbError } from '@/lib/db-error';
 import DashboardLayout from '@/components/DashboardLayout';
