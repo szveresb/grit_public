@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { RECAP_INACTIVITY_DAYS } from '@/lib/constants';
 import { format, isFuture, startOfDay } from 'date-fns';
 import { useLanguage } from '@/hooks/useLanguage';
 import { useAuth } from '@/hooks/useAuth';
@@ -178,7 +179,7 @@ const SubjectWorkspaceSection = ({
               </div>
             </ConsentGate>
 
-            {isSelfContext && daysSinceGlobalActivity !== null && daysSinceGlobalActivity >= 14 && !recapDismissed && (
+            {isSelfContext && daysSinceGlobalActivity !== null && daysSinceGlobalActivity >= RECAP_INACTIVITY_DAYS && !recapDismissed && (
               <RecapBanner
                 days={daysSinceGlobalActivity}
                 onCatchUp={() => openEntryModal()}
