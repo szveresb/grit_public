@@ -257,7 +257,7 @@ const QuestionnaireFiller = ({ onCompleted, readOnly }: { onCompleted?: () => vo
       const skippedRows = skippedIds.map(qid => ({
         response_id: resp.id,
         question_id: qid,
-        answer: JSON.stringify('__SKIPPED__'),
+        answer: '__SKIPPED__' as unknown as Database['public']['Tables']['questionnaire_answers']['Insert']['answer'],
       }));
       await supabase.from('questionnaire_answers').insert(skippedRows);
     }
