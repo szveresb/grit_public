@@ -1,5 +1,5 @@
 import { useEffect, useState, useMemo, useCallback } from 'react';
-import { differenceInDays, parseISO } from 'date-fns';
+import { useGlobalInactivity } from '@/hooks/useGlobalInactivity';
 import { friendlyDbError } from '@/lib/db-error';
 import DashboardLayout from '@/components/DashboardLayout';
 import { useAuth } from '@/hooks/useAuth';
@@ -43,10 +43,7 @@ const Journal = () => {
   const [calendarSelectedDate, setCalendarSelectedDate] = useState<Date | null>(null);
   const [recapDismissed, setRecapDismissed] = useState(false);
 
-  const daysSinceLastEntry = useMemo(() => {
-    if (entries.length === 0) return null;
-    return differenceInDays(new Date(), parseISO(entries[0].entry_date));
-  }, [entries]);
+  const { daysSinceLastActivity: daysSinceLastEntry } = useGlobalInactivity(user?.id);
 
   const fetchEntries = useCallback(async () => {
     if (!user) return;
