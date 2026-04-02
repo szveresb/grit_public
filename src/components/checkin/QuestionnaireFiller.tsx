@@ -241,7 +241,7 @@ const QuestionnaireFiller = ({ onCompleted, readOnly }: { onCompleted?: () => vo
     const answerRows = Object.entries(answers).map(([question_id, answer]) => ({
       response_id: resp.id,
       question_id,
-      answer: JSON.stringify(answer),
+      answer: answer as unknown as Database['public']['Tables']['questionnaire_answers']['Insert']['answer'],
     }));
     if (answerRows.length) await supabase.from('questionnaire_answers').insert(answerRows);
 
