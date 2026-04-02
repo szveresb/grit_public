@@ -207,7 +207,7 @@ const Journal = () => {
 
         <PatternSummary summary={patternSummary} isAnalyzing={analyzingPatterns} onDismiss={() => setPatternSummary('')} />
 
-        {daysSinceLastEntry !== null && daysSinceLastEntry >= 14 && !recapDismissed && (
+        {daysSinceLastEntry !== null && daysSinceLastEntry >= RECAP_INACTIVITY_DAYS && !recapDismissed && (
           <RecapBanner days={daysSinceLastEntry} onCatchUp={openCreate} onDismiss={() => setRecapDismissed(true)} />
         )}
 

@@ -178,7 +178,7 @@ const SubjectWorkspaceSection = ({
               </div>
             </ConsentGate>
 
-            {isSelfContext && daysSinceGlobalActivity !== null && daysSinceGlobalActivity >= 14 && !recapDismissed && (
+            {isSelfContext && daysSinceGlobalActivity !== null && daysSinceGlobalActivity >= RECAP_INACTIVITY_DAYS && !recapDismissed && (
               <RecapBanner
                 days={daysSinceGlobalActivity}
                 onCatchUp={() => openEntryModal()}
