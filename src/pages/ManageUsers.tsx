@@ -18,11 +18,14 @@ import {
 interface UserWithRoles { user_id: string; display_name: string | null; roles: AppRole[]; }
 const ALL_ROLES: AppRole[] = [...ADMIN_ONLY_ROLES, ...SELF_SELECT_ROLES];
 
+export interface InviteCode { id: string; code: string; is_active: boolean; created_at: string; used_by: string | null }
+
 const ManageUsers = () => {
   const { user } = useAuth();
   const { t } = useLanguage();
   const { hasRole, loading: roleLoading } = useUserRole();
   const [users, setUsers] = useState<UserWithRoles[]>([]);
+  const [codes, setCodes] = useState<InviteCode[]>([]);
   const [loading, setLoading] = useState(true);
   const isAdmin = hasRole('admin');
 
@@ -32,6 +35,10 @@ const ManageUsers = () => {
     const roleMap = new Map<string, AppRole[]>();
     (allRoles ?? []).forEach(r => { const existing = roleMap.get(r.user_id) ?? []; existing.push(r.role as AppRole); roleMap.set(r.user_id, existing); });
     setUsers((profiles ?? []).map(p => ({ user_id: p.user_id, display_name: p.display_name, roles: roleMap.get(p.user_id) ?? [] })));
+
+    const { data: codesData } = await supabase.from('invite_codes').select('*').order('created_at', { ascending: false });
+    setCodes(codesData ?? []);
+
     setLoading(false);
   };
 
@@ -58,6 +65,35 @@ const ManageUsers = () => {
         <div>
           <h1 className="text-xl font-bold tracking-tight text-foreground">{t.manageUsers.title}</h1>
           <p className="mt-1 text-sm text-muted-foreground leading-relaxed">{t.manageUsers.subtitle}</p>
+        </div>
+
+        <div className="surface-card p-5 space-y-4 border-primary/20">
+          <div className="flex items-center justify-between">
+             <h2 className="text-sm font-semibold uppercase tracking-widest text-muted-foreground text-primary">Beta Invite Codes</h2>
+             <Button 
+                onClick={async () => {
+                  const newCode = 'BETA-' + Math.random().toString(36).substring(2, 8).toUpperCase();
+                  const { error } = await supabase.from('invite_codes').insert({ code: newCode, created_by: user!.id });
+                  if (error) toast.error(friendlyDbError(error));
+                  else { toast.success('Code generated!'); fetchUsers(); }
+                }}
+                size="sm" className="rounded-full h-8 text-[11px] font-bold"
+             >
+               <FPlus className="h-3 w-3 mr-1" />
+               Generate Code
+             </Button>
+          </div>
+          {codes.length === 0 ? (
+            <p className="text-xs text-muted-foreground italic">No codes generated yet.</p>
+          ) : (
+            <div className="flex flex-wrap gap-2">
+              {codes.map(c => (
+                <Badge key={c.id} variant={c.is_active ? "default" : "outline"} className={`rounded-md font-mono text-xs ${c.is_active ? '' : 'opacity-50'}`}>
+                  {c.code} {c.used_by && '(Used)'}
+                </Badge>
+              ))}
+            </div>
+          )}
         </div>
 
         <div className="space-y-3">

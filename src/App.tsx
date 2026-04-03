@@ -30,6 +30,7 @@ const Surveys = lazy(() => import("./pages/Surveys"));
 const ManageLanding = lazy(() => import("./pages/ManageLanding"));
 const ConsentOnboarding = lazy(() => import("./pages/ConsentOnboarding"));
 const Timeline = lazy(() => import("./pages/Timeline"));
+const BetaGate = lazy(() => import("./pages/BetaGate"));
 
 const queryClient = new QueryClient();
 
@@ -53,8 +54,9 @@ const AppRoutes = () => (
       <Route path="/analyst-export" element={<ProtectedRoute><AnalystExport /></ProtectedRoute>} />
       <Route path="/manage-landing" element={<ProtectedRoute><ManageLanding /></ProtectedRoute>} />
       <Route path="/consent" element={<ProtectedRoute skipConsentCheck><ConsentOnboarding /></ProtectedRoute>} />
-      <Route path="/library" element={<Library />} />
-      <Route path="/library/:id" element={<Article />} />
+      <Route path="/beta-gate" element={<BetaGate />} />
+      <Route path="/library" element={<ProtectedRoute><Library /></ProtectedRoute>} />
+      <Route path="/library/:id" element={<ProtectedRoute><Article /></ProtectedRoute>} />
       <Route path="/terms" element={<Terms />} />
       <Route path="/cookies" element={<Cookies />} />
       <Route path="/gdpr" element={<Gdpr />} />
@@ -75,8 +77,9 @@ const AppRoutes = () => (
       <Route path="/en/analyst-export" element={<ProtectedRoute><AnalystExport /></ProtectedRoute>} />
       <Route path="/en/manage-landing" element={<ProtectedRoute><ManageLanding /></ProtectedRoute>} />
       <Route path="/en/consent" element={<ProtectedRoute skipConsentCheck><ConsentOnboarding /></ProtectedRoute>} />
-      <Route path="/en/library" element={<Library />} />
-      <Route path="/en/library/:id" element={<Article />} />
+      <Route path="/en/beta-gate" element={<BetaGate />} />
+      <Route path="/en/library" element={<ProtectedRoute><Library /></ProtectedRoute>} />
+      <Route path="/en/library/:id" element={<ProtectedRoute><Article /></ProtectedRoute>} />
       <Route path="/en/terms" element={<Terms />} />
       <Route path="/en/cookies" element={<Cookies />} />
       <Route path="/en/gdpr" element={<Gdpr />} />
