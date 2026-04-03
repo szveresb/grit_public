@@ -1,4 +1,4 @@
-import { useMemo } from 'react';
+import { useMemo, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { FUser, FUsers, FScales } from '@/components/icons/FreudIcons';
 import { useLanguage } from '@/hooks/useLanguage';
@@ -22,6 +22,7 @@ const SubjectHubGrid = ({ onSelect, onToggleCompare, onStartParallel, selectedKe
   const { t } = useLanguage();
   const { user } = useAuth();
   const { subjects } = useStance();
+  const [openPopoverKey, setOpenPopoverKey] = useState<string | null>(null);
 
   const userName = user?.user_metadata?.display_name || t.subjects.selfCardTitle;
 
@@ -45,6 +46,17 @@ const SubjectHubGrid = ({ onSelect, onToggleCompare, onStartParallel, selectedKe
     })),
   ], [subjects, t.subjects.otherLabel, t.subjects.relationshipTypes, t.subjects.selfCardSubtitle, userName]);
 
+  const handleToggle = (key: string) => {
+    const isAlreadySelected = selectedKeys.includes(key);
+    onToggleCompare(key);
+    
+    if (!isAlreadySelected) {
+      setOpenPopoverKey(key);
+    } else {
+      setOpenPopoverKey(null);
+    }
+  };
+
   return (
     <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 animate-fade-in pb-12">
       {cards.map((card) => {
@@ -57,18 +69,23 @@ const SubjectHubGrid = ({ onSelect, onToggleCompare, onStartParallel, selectedKe
             className={cn(
               'relative group flex flex-col p-6 text-center transition-all duration-300 rounded-[2.5rem] border-2 h-full bg-card',
               isSelected 
-                ? 'border-primary shadow-md ring-1 ring-primary/20' 
+                ? 'border-primary shadow-md ring-1 ring-primary/20 bg-primary/5' 
                 : 'border-border/40 hover:border-primary/20 shadow-sm hover:shadow-md hover:-translate-y-1'
             )}
           >
             {/* Contextual Comparison Toggle (Corner Icon) */}
             <div className="absolute top-5 right-5 z-20">
-              <Popover open={isSelected ? undefined : false}>
+              <Popover 
+                open={openPopoverKey === card.key} 
+                onOpenChange={(open) => {
+                  if (!open) setOpenPopoverKey(null);
+                }}
+              >
                 <PopoverTrigger asChild>
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
-                      onToggleCompare(card.key);
+                      handleToggle(card.key);
                     }}
                     className={cn(
                       "h-10 w-10 rounded-2xl border-2 flex items-center justify-center transition-all duration-300 active:scale-90",
@@ -105,13 +122,19 @@ const SubjectHubGrid = ({ onSelect, onToggleCompare, onStartParallel, selectedKe
                          size="sm" 
                          className="w-full rounded-2xl font-bold py-5"
                          disabled={selectedKeys.length < 2}
-                         onClick={onStartParallel}
+                         onClick={(e) => {
+                           e.stopPropagation();
+                           onStartParallel();
+                         }}
                        >
                          {t.subjects.showCompare}
                        </Button>
                        <button 
                          className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground hover:text-destructive transition-colors py-1"
-                         onClick={() => onToggleCompare(card.key)}
+                         onClick={(e) => {
+                           e.stopPropagation();
+                           handleToggle(card.key);
+                         }}
                        >
                          {t.subjects.removeFromCompare}
                        </button>
