@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import { useLanguage } from '@/hooks/useLanguage';
@@ -15,6 +15,13 @@ const BetaGate = () => {
   const { refreshAccess } = useBetaAccess();
   const navigate = useNavigate();
 
+  useEffect(() => {
+    const pending = sessionStorage.getItem('pending_invite_code');
+    if (pending) {
+      setCode(pending);
+    }
+  }, []);
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!code.trim()) return;
@@ -29,6 +36,7 @@ const BetaGate = () => {
       
       if (data === true) {
         toast.success('Access granted!');
+        sessionStorage.removeItem('pending_invite_code');
         await refreshAccess();
         // Force navigate to protected route which will now pass the beta_access check
         navigate(localePath('/journal'));

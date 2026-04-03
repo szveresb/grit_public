@@ -17,6 +17,8 @@ const Index = () => {
   const navigate = useNavigate();
   
   const [email, setEmail] = useState('');
+  const [inviteCode, setInviteCode] = useState('');
+  const [isRedeeming, setIsRedeeming] = useState(false);
   const [submitting, setSubmitting] = useState(false);
   const [bgLoaded, setBgLoaded] = useState(false);
 
@@ -47,6 +49,29 @@ const Index = () => {
     setSubmitting(false);
   };
 
+  const handleRedeemSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!inviteCode.trim()) return;
+    setSubmitting(true);
+    
+    // Check if code is valid (anonymous check)
+    const { data: isValid, error } = await supabase.rpc('check_invite_code' as any, { 
+      invite_code: inviteCode.trim().toUpperCase() 
+    });
+    
+    if (error) {
+      toast.error('An error occurred. Please try again.');
+    } else if (isValid) {
+      // Store in session and head to auth
+      sessionStorage.setItem('pending_invite_code', inviteCode.trim().toUpperCase());
+      toast.success('Code verified! Log in to activate your access.');
+      navigate(localePath('/auth'));
+    } else {
+      toast.error('Invalid or already used invite code.');
+    }
+    setSubmitting(false);
+  };
+
   const bambooBgUrl = bgLoaded ? (window as any).__bambooBg : undefined;
 
   return (
@@ -70,25 +95,65 @@ const Index = () => {
           </p>
           
           {!user ? (
-            <div className="mt-8 max-w-sm mx-auto bg-card border border-border p-5 rounded-3xl shadow-sm">
-              <form onSubmit={handleWaitlistSubmit} className="space-y-3">
-                <Input 
-                  type="email" 
-                  required 
-                  placeholder={t.landing?.waitlistEmailPlaceholder || "Enter your email address"} 
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="rounded-full h-11 bg-accent/50 text-center"
-                />
-                <Button type="submit" className="w-full rounded-full h-11 font-semibold" disabled={submitting}>
-                  {submitting ? '...' : (t.landing?.joinWaitlist || 'Request Beta Access')}
-                </Button>
-              </form>
-              <div className="mt-4 pt-4 border-t border-border/50 text-xs text-muted-foreground">
-                <Link to={localePath('/auth')} className="hover:text-foreground font-medium underline underline-offset-2">
-                  {t.landing?.gatedLoginCta || 'I have an invite code'}
-                </Link>
-              </div>
+            <div className="mt-8 max-w-sm mx-auto bg-card border border-border p-5 rounded-3xl shadow-sm space-y-4">
+              {isRedeeming ? (
+                <form onSubmit={handleRedeemSubmit} className="space-y-3">
+                  <div className="space-y-1">
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-primary text-center mb-1">Enter Invitation Code</p>
+                    <Input 
+                      required 
+                      placeholder="XXXX-XXXX" 
+                      value={inviteCode}
+                      onChange={(e) => setInviteCode(e.target.value.toUpperCase())}
+                      className="rounded-full h-11 bg-accent/50 text-center font-mono tracking-widest uppercase"
+                      autoFocus
+                    />
+                  </div>
+                  <Button type="submit" className="w-full rounded-full h-11 font-semibold" disabled={submitting}>
+                    {submitting ? '...' : (t.landing?.joinWaitlist || 'Verify & Continue')}
+                  </Button>
+                  <button 
+                    type="button" 
+                    onClick={() => setIsRedeeming(false)}
+                    className="w-full text-[10px] text-muted-foreground hover:text-foreground uppercase tracking-widest font-bold pt-1"
+                  >
+                    Back to Waitlist
+                  </button>
+                </form>
+              ) : (
+                <>
+                  <form onSubmit={handleWaitlistSubmit} className="space-y-3">
+                    <div className="space-y-1">
+                      <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground text-center mb-1">New to Grit.hu?</p>
+                      <Input 
+                        type="email" 
+                        required 
+                        placeholder={t.landing?.waitlistEmailPlaceholder || "Enter your email address"} 
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                        className="rounded-full h-11 bg-accent/50 text-center"
+                      />
+                    </div>
+                    <Button type="submit" className="w-full rounded-full h-11 font-semibold" disabled={submitting}>
+                      {submitting ? '...' : (t.landing?.joinWaitlist || 'Join Waitlist')}
+                    </Button>
+                  </form>
+                  <div className="mt-4 pt-4 border-t border-border/50 flex flex-col gap-3 items-center">
+                    <button 
+                      onClick={() => setIsRedeeming(true)}
+                      className="text-xs text-muted-foreground hover:text-foreground font-medium underline underline-offset-2"
+                    >
+                      {t.landing?.gatedLoginCta || 'I have a code'}
+                    </button>
+                    <Link 
+                      to={localePath('/auth')}
+                      className="text-[10px] font-bold uppercase tracking-widest text-primary hover:opacity-80 transition-opacity"
+                    >
+                      Already a member? Sign In
+                    </Link>
+                  </div>
+                </>
+              )}
             </div>
           ) : (
             <div className="mt-8 flex justify-center pt-4">

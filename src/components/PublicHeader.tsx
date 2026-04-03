@@ -53,7 +53,7 @@ const PublicHeader = () => {
             </Button>
           ) : (
             <Button size="sm" className="rounded-full px-4" onClick={() => navigate(localePath('/auth'))}>
-              {t.getStarted}
+              {t.auth.signIn}
             </Button>
           )}
           <button
