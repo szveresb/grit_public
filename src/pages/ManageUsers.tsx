@@ -36,8 +36,8 @@ const ManageUsers = () => {
     (allRoles ?? []).forEach(r => { const existing = roleMap.get(r.user_id) ?? []; existing.push(r.role as AppRole); roleMap.set(r.user_id, existing); });
     setUsers((profiles ?? []).map(p => ({ user_id: p.user_id, display_name: p.display_name, roles: roleMap.get(p.user_id) ?? [] })));
 
-    const { data: codesData } = await supabase.from('invite_codes').select('*').order('created_at', { ascending: false });
-    setCodes(codesData ?? []);
+    const { data: codesData } = await supabase.from('invite_codes' as any).select('*').order('created_at', { ascending: false });
+    setCodes((codesData as InviteCode[] | null) ?? []);
 
     setLoading(false);
   };
