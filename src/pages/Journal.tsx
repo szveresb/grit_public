@@ -166,7 +166,7 @@ const Journal = () => {
 
   return (
     <DashboardLayout>
-      <div className="max-w-2xl space-y-6">
+      <div className="space-y-6">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
           <div>
             <h1 className="text-lg md:text-xl font-bold tracking-tight text-foreground">{t.journal.title}</h1>
