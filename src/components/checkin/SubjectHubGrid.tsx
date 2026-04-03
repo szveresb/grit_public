@@ -99,17 +99,17 @@ const SubjectHubGrid = ({ onSelect, onToggleCompare, onStartParallel, selectedKe
                   </button>
                 </PopoverTrigger>
                 <PopoverContent 
-                  className="w-64 p-5 rounded-[2rem] shadow-xl border-primary/20 animate-in fade-in zoom-in duration-200" 
+                  className="w-72 p-6 rounded-[2rem] shadow-xl border-primary/20 animate-in fade-in zoom-in duration-200" 
                   side="bottom"
                   align="end"
                   sideOffset={12}
                 >
-                  <div className="space-y-4 text-center">
+                  <div className="space-y-5 text-center">
                     <div className="space-y-1">
-                      <p className="text-[10px] font-bold uppercase tracking-widest text-primary">
+                      <p className="text-[10px] font-bold uppercase tracking-[0.2em] text-primary">
                         {t.subjects.addedToCompare}
                       </p>
-                      <p className="text-xs text-muted-foreground">
+                      <p className="text-xs text-muted-foreground/80">
                         {selectedKeys.length >= 2 
                           ? `${selectedKeys.length} ${t.analystExport?.title || "profil"}`
                           : t.subjects.registryHint
@@ -117,10 +117,10 @@ const SubjectHubGrid = ({ onSelect, onToggleCompare, onStartParallel, selectedKe
                       </p>
                     </div>
                     
-                    <div className="flex flex-col gap-2">
+                    <div className="flex flex-col gap-3">
                        <Button 
-                         size="sm" 
-                         className="w-full rounded-2xl font-bold py-5"
+                         size="default" 
+                         className="w-full rounded-full font-bold h-11"
                          disabled={selectedKeys.length < 2}
                          onClick={(e) => {
                            e.stopPropagation();
@@ -130,7 +130,7 @@ const SubjectHubGrid = ({ onSelect, onToggleCompare, onStartParallel, selectedKe
                          {t.subjects.showCompare}
                        </Button>
                        <button 
-                         className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground hover:text-destructive transition-colors py-1"
+                         className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground/70 hover:text-destructive transition-colors py-1"
                          onClick={(e) => {
                            e.stopPropagation();
                            handleToggle(card.key);
