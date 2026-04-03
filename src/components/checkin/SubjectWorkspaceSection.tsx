@@ -284,7 +284,7 @@ const SubjectWorkspaceSection = ({
                             <button 
                               onClick={() => handleDismissPattern(nudge.name)}
                               className="absolute top-3 right-3 p-1.5 rounded-full hover:bg-muted transition-colors opacity-0 group-hover:opacity-100 focus:opacity-100"
-                              aria-label={t.common.close || 'Close'}
+                              aria-label={t.ui?.close || 'Close'}
                             >
                               <FClose className="h-3.5 w-3.5 text-muted-foreground" />
                             </button>
@@ -296,7 +296,7 @@ const SubjectWorkspaceSection = ({
                                 {t.timeline.patternNudge.replace('{name}', nudge.name).replace('{count}', String(nudge.count))}
                               </p>
                               <p className="text-[10px] text-muted-foreground uppercase tracking-widest font-semibold">
-                                {t.timeline.patternDetected || 'Minta észlelve'}
+                                {t.timeline.patternDetected}
                               </p>
                             </div>
                           </div>

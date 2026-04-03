@@ -296,6 +296,7 @@ export const en: Dictionary = {
     journalLabel: 'Journal',
     questionnaireLabel: 'Questionnaire',
     patternNudge: 'You\'ve noticed "{name}" {count} times this week.',
+    patternDetected: 'Pattern detected',
     patternChartTitle: 'Pattern Frequency',
     patternChartSubtitle: 'Concepts appearing 3+ times in a week',
     weekLabel: 'W{n}',
