@@ -109,10 +109,10 @@ const CheckIn = () => {
 
   return (
     <DashboardLayout showSubjectRegistry={false} showContextToolPanel={false}>
-      <div className={cn(
-        "mx-auto w-full space-y-8 animate-fade-in transition-all duration-500",
-        viewMode === 'grid' ? 'max-w-4xl' : 'max-w-7xl'
-      )}>
+        <div className={cn(
+          "mx-auto w-full space-y-8 animate-fade-in transition-all duration-500",
+          viewMode !== 'grid' && 'max-w-7xl'
+        )}>
         
         {/* Header Section */}
         <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-6">
