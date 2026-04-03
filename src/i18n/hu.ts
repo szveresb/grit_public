@@ -297,7 +297,7 @@ export const hu: Dictionary = {
     patternDetected: 'Minta észlelve',
     patternChartTitle: 'Megfigyelési minták',
     patternChartSubtitle: 'A rögzített tünetek és események gyakorisága',
-    weekLabel: 'Hét',
+    weekLabel: '{n}. hét',
     timesPerWeek: 'alkalom / hét',
     moodTrendTitle: 'Hangulat alakulása',
     moodTrendSubtitle: 'Hogyan alakult a hangulatod az idő folyamán',

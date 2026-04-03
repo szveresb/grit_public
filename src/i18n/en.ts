@@ -299,7 +299,7 @@ export const en: Dictionary = {
     patternDetected: 'Pattern detected',
     patternChartTitle: 'Pattern Frequency',
     patternChartSubtitle: 'Concepts appearing 3+ times in a week',
-    weekLabel: 'W{n}',
+    weekLabel: 'Week {n}',
     timesPerWeek: '{count} times',
     moodTrendTitle: 'Mood Trend',
     moodTrendSubtitle: 'How your mood has been changing over time',
