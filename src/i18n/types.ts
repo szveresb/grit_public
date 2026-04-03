@@ -307,6 +307,7 @@ export interface Dictionary {
     journalLabel: string;
     questionnaireLabel: string;
     patternNudge: string;
+    patternDetected: string;
     patternChartTitle: string;
     patternChartSubtitle: string;
     weekLabel: string;

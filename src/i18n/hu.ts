@@ -294,6 +294,7 @@ export const hu: Dictionary = {
     journalLabel: 'Napló',
     questionnaireLabel: 'Kérdőív',
     patternNudge: 'Észrevettük, hogy a(z) "{name}" már {count} alkalommal fordult elő.',
+    patternDetected: 'Minta észlelve',
     patternChartTitle: 'Megfigyelési minták',
     patternChartSubtitle: 'A rögzített tünetek és események gyakorisága',
     weekLabel: 'Hét',
