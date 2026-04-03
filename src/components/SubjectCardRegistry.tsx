@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { FUser, FUsers } from '@/components/icons/FreudIcons';
 import { useLanguage } from '@/hooks/useLanguage';
 import { useStance } from '@/hooks/useStance';
+import { useAuth } from '@/hooks/useAuth';
 import { cn } from '@/lib/utils';
 
 interface SubjectCardItem {
@@ -17,15 +18,18 @@ interface SubjectCardItem {
 
 const SubjectCardRegistry = () => {
   const { t, localePath } = useLanguage();
+  const { user } = useAuth();
   const { activeSubject, subjects, subjectsLoading, setActiveSubjectContext } = useStance();
   const navigate = useNavigate();
+
+  const userName = user?.user_metadata?.display_name || t.subjects.selfCardTitle;
 
   const cards = useMemo<SubjectCardItem[]>(() => [
     {
       key: 'self',
       type: 'self',
       id: null,
-      name: t.subjects.selfCardTitle,
+      name: userName,
       subtitle: t.subjects.selfCardSubtitle,
     },
     ...subjects.map((subject) => ({
@@ -38,7 +42,7 @@ const SubjectCardRegistry = () => {
           subject.relationshipType as keyof typeof t.subjects.relationshipTypes
         ] ?? subject.relationshipType,
     })),
-  ], [subjects, t.subjects.otherLabel, t.subjects.relationshipTypes, t.subjects.selfCardSubtitle, t.subjects.selfCardTitle]);
+  ], [subjects, t.subjects.otherLabel, t.subjects.relationshipTypes, t.subjects.selfCardSubtitle, userName]);
 
   return (
     <section className="mb-8 md:mb-12">

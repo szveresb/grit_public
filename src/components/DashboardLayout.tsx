@@ -66,7 +66,7 @@ const DashboardShell = ({
                 <>
                   <Button variant="ghost" size="sm" className="rounded-full gap-1.5" onClick={() => navigate(localePath('/profile'))}>
                     <FUser className="h-4 w-4" />
-                    <span className="hidden sm:inline">{t.nav.account}</span>
+                    <span className="hidden sm:inline">{user.user_metadata?.display_name || user.email || t.nav.account}</span>
                   </Button>
                   <Button variant="ghost" size="sm" className="rounded-full gap-1.5 text-muted-foreground" onClick={async () => { await signOut(); navigate(localePath('/')); }}>
                     <FLogOut className="h-4 w-4" />
