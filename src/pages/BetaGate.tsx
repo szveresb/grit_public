@@ -28,7 +28,7 @@ const BetaGate = () => {
       if (error) throw error;
       
       if (data === true) {
-        toast.success(t.common?.success || 'Access granted!');
+        toast.success('Access granted!');
         await refreshAccess();
         // Force navigate to protected route which will now pass the beta_access check
         navigate(localePath('/journal'));
