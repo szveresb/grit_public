@@ -130,7 +130,7 @@ const SubjectWorkspaceSection = ({
       }
     >
       <Collapsible open={sectionOpen} onOpenChange={setSectionOpen} disabled={mode !== 'standalone'}>
-        <section className={cn('space-y-4 w-full animate-fade-in', subject.type === 'relative' ? 'theme-observer' : 'theme-self')}>
+        <section className={cn('space-y-8 w-full animate-fade-in', subject.type === 'relative' ? 'theme-observer' : 'theme-self')}>
           
           {/* Dashboard Hub Style Header */}
           <div className={cn(
@@ -174,14 +174,14 @@ const SubjectWorkspaceSection = ({
             )}
           </div>
 
-          <CollapsibleContent className="space-y-4" forceMount={mode !== 'standalone' ? true : undefined}>
+          <CollapsibleContent className="space-y-8" forceMount={mode !== 'standalone' ? true : undefined}>
             <div className={cn(
               "w-full",
-              !isParallel && "lg:grid lg:grid-cols-12 lg:gap-8 space-y-4 lg:space-y-0"
+              !isParallel && "lg:grid lg:grid-cols-12 lg:gap-10 space-y-8 lg:space-y-0"
             )}>
               
               {/* Main Column: Insights & Trends */}
-              <div className={cn("space-y-4", !isParallel ? "lg:col-span-8" : "w-full")}>
+              <div className={cn("space-y-8", !isParallel ? "lg:col-span-8" : "space-y-8 w-full")}>
                 
                 {isSelfContext && daysSinceGlobalActivity !== null && daysSinceGlobalActivity >= RECAP_INACTIVITY_DAYS && !recapDismissed && !isParallel && (
                   <RecapBanner
@@ -251,7 +251,7 @@ const SubjectWorkspaceSection = ({
               </div>
 
               {/* Sidebar Column: Actions & Tools */}
-              <div className={cn("space-y-4", !isParallel ? "lg:col-span-4" : "w-full")}>
+              <div className={cn("space-y-8", !isParallel ? "lg:col-span-4" : "space-y-8 w-full")}>
                 <ConsentGate consentKey="mood_tracking">
                   <div className={cn("surface-card animate-scale-in", isParallel ? "p-4" : "p-6")}>
                     <QuickPulse

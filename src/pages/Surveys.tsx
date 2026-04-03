@@ -20,7 +20,7 @@ const Surveys = () => {
 
   return (
     <DashboardLayout>
-      <div className="max-w-2xl mx-auto w-full space-y-6">
+      <div className="max-w-2xl mx-auto w-full space-y-8">
         <div>
           <h1 className="text-lg md:text-xl font-bold tracking-tight text-foreground">
             {t.nav.surveys}
@@ -43,8 +43,8 @@ const Surveys = () => {
               </TabsTrigger>
             </TabsList>
 
-            <TabsContent value="fill" className="mt-4">
-              <div className="surface-card p-6 space-y-4">
+            <TabsContent value="fill" className="mt-6">
+              <div className="surface-card p-6 space-y-8">
                 <StanceBanner
                   subjectType={activeSubject.type}
                   subjectName={activeSubject.type === 'relative' ? activeSubject.name : undefined}

@@ -60,7 +60,7 @@ const Article = () => {
       {/* Content */}
       <article className="relative z-10 px-4 md:px-8 py-12 max-w-3xl mx-auto">
         {loading ? (
-          <div className="space-y-6">
+          <div className="space-y-8">
             <Skeleton className="h-5 w-24 rounded-full" />
             <Skeleton className="h-8 w-3/4" />
             <Skeleton className="h-4 w-1/3" />
@@ -74,7 +74,7 @@ const Article = () => {
             </Button>
           </div>
         ) : (
-          <div className="space-y-6">
+          <div className="space-y-8">
             <Badge variant="secondary" className="rounded-full text-[10px] font-semibold uppercase tracking-wider">
               {article.category}
             </Badge>

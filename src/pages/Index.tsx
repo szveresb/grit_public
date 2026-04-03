@@ -61,7 +61,7 @@ const Index = () => {
       <PublicHeader />
 
       {/* Hero */}
-      <section className="relative z-10 px-4 md:px-8 pt-16 pb-12 max-w-7xl mx-auto text-center">
+      <section className="relative z-10 px-4 md:px-8 pt-24 pb-20 max-w-7xl mx-auto text-center">
         <div className="max-w-2xl mx-auto">
           <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight text-foreground leading-tight">
             {t.landing.heroTitle}
@@ -83,7 +83,7 @@ const Index = () => {
 
       {/* Mood Preview / QuickPulse */}
       {!user && !moodSectionLoaded && (
-        <section className="relative z-10 px-4 md:px-8 py-16 max-w-7xl mx-auto">
+        <section className="relative z-10 px-4 md:px-8 py-24 max-w-7xl mx-auto">
           <div className="max-w-lg mx-auto text-center space-y-6">
             <Skeleton className="h-6 w-48 mx-auto" />
             <Skeleton className="h-4 w-64 mx-auto" />
@@ -101,8 +101,9 @@ const Index = () => {
           moodLabels={lang === 'en' ? (moodSection.config?.mood_labels_en ?? []) : (moodSection.config?.mood_labels ?? [])}
         />
       )}
+      {/* User QuickPulse */}
       {user && (
-        <section className="relative z-10 px-4 md:px-8 py-16 max-w-7xl mx-auto">
+        <section className="relative z-10 px-4 md:px-8 py-24 max-w-7xl mx-auto">
           <div className="max-w-lg mx-auto">
             <div className="reference-surface rounded-3xl p-6">
               <QuickPulse onMoodSelected={() => navigate(localePath('/journal'))} />
@@ -112,8 +113,8 @@ const Index = () => {
       )}
 
 
-      <section id="library" className="relative z-10 px-4 md:px-8 py-16 max-w-7xl mx-auto">
-        <div className="flex items-center justify-between mb-8">
+      <section id="library" className="relative z-10 px-4 md:px-8 py-24 max-w-7xl mx-auto">
+        <div className="flex items-center justify-between mb-12">
           <div>
             <h2 className="text-lg md:text-xl font-bold tracking-tight text-foreground">{t.landing.libraryTitle}</h2>
             <p className="mt-1 text-sm text-muted-foreground">{t.landing.librarySubtitle}</p>
@@ -126,7 +127,7 @@ const Index = () => {
         </div>
 
         {articlesLoading ? (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             <div className="reference-surface rounded-3xl p-8 space-y-4">
               <Skeleton className="h-5 w-24 rounded-full" />
               <Skeleton className="h-6 w-3/4" />
@@ -134,7 +135,7 @@ const Index = () => {
               <Skeleton className="h-4 w-full" />
               <Skeleton className="h-4 w-2/3" />
             </div>
-            <div className="space-y-5">
+            <div className="space-y-8">
               {[1, 2].map(i => (
                 <div key={i} className="reference-surface rounded-3xl p-6 space-y-3">
                   <Skeleton className="h-5 w-20 rounded-full" />
@@ -147,7 +148,7 @@ const Index = () => {
         ) : articles.length === 0 ? (
           <p className="text-sm text-muted-foreground">{t.landing.noArticles}</p>
         ) : (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-5">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
             {/* Featured article */}
             <ArticleCard
               id={articles[0].id}
@@ -160,7 +161,7 @@ const Index = () => {
               featured
             />
             {/* Remaining articles */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
               {articles.slice(1).map((article) => (
                 <ArticleCard
                   key={article.id}

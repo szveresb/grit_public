@@ -148,7 +148,7 @@ const CheckIn = () => {
           />
         ) : (
           <div className={cn(
-            "grid gap-8 transition-all duration-500 ease-in-out",
+            "grid gap-10 transition-all duration-500 ease-in-out",
             viewMode === 'parallel' ? "grid-cols-1 xl:grid-cols-2" : "grid-cols-1 w-full"
           )}>
             {visibleWorkspaces.map((subject) => (

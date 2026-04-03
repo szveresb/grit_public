@@ -181,18 +181,18 @@ const Export = () => {
 
   return (
     <DashboardLayout>
-      <div className="max-w-lg mx-auto w-full space-y-6">
+      <div className="max-w-lg mx-auto w-full space-y-8">
         <div>
           <h1 className="text-lg md:text-xl font-bold tracking-tight text-foreground">{t.export.title}</h1>
           <p className="mt-1 text-sm text-muted-foreground leading-relaxed">{t.export.subtitle}</p>
         </div>
-        <div className="surface-card p-6 space-y-4">
+        <div className="surface-card p-6 space-y-6">
           <p className="text-sm text-muted-foreground leading-relaxed">{t.export.desc}</p>
           <Button onClick={handleExport} size="sm" className="rounded-2xl">
             <FDownload className="h-4 w-4 mr-1.5" /> {t.export.exportAll}
           </Button>
         </div>
-        <div className="surface-card p-6 space-y-4">
+        <div className="surface-card p-6 space-y-6">
           <h2 className="text-sm md:text-base font-semibold text-foreground">{t.export.therapistTitle}</h2>
           <p className="text-sm text-muted-foreground leading-relaxed">{t.export.therapistDesc}</p>
           <Button onClick={handleTherapistExport} size="sm" variant="secondary" className="rounded-2xl">
