@@ -193,7 +193,7 @@ const SubjectWorkspaceSection = ({
             )}>
               
               {/* Subject Content: Action -> Result -> Context */}
-              <div className={cn("flex flex-col gap-6 w-full", !isParallel && "lg:col-span-12")}>
+              <div className={cn("flex flex-col gap-6 w-full", !isParallel && "md:col-span-12")}>
                 
                 {/* 1. QuickPulse Entry (The Action) */}
                 <ConsentGate consentKey="mood_tracking">
