@@ -76,13 +76,13 @@ const Library = () => {
 
       {/* Content */}
       <section className="relative z-10 px-4 md:px-8 py-12 max-w-7xl mx-auto">
-        <div className="mb-10">
+        <div className="mb-8">
           <h1 className="text-xl md:text-2xl font-bold tracking-tight text-foreground">{t.landing.libraryTitle}</h1>
           <p className="mt-1 text-sm text-muted-foreground">{t.landing.librarySubtitle}</p>
         </div>
 
         {/* Filters */}
-        <div className="flex flex-col sm:flex-row gap-4 mb-10">
+        <div className="flex flex-col sm:flex-row gap-4 mb-8">
           <Input
             placeholder={t.manageLibrary.searchArticles}
             value={search}
@@ -112,7 +112,7 @@ const Library = () => {
 
         {/* Grid */}
         {loading ? (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             <div className="bg-card/70 backdrop-blur border border-border rounded-3xl p-8 space-y-4">
               <Skeleton className="h-5 w-24 rounded-full" />
               <Skeleton className="h-6 w-3/4" />
@@ -120,7 +120,7 @@ const Library = () => {
               <Skeleton className="h-4 w-full" />
               <Skeleton className="h-4 w-2/3" />
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
               {Array.from({ length: 4 }).map((_, i) => (
                 <div key={i} className="bg-card/70 backdrop-blur border border-border rounded-3xl p-6 space-y-3">
                   <Skeleton className="h-5 w-20 rounded-full" />
@@ -135,7 +135,7 @@ const Library = () => {
             {search.trim() ? t.manageLibrary.noMatch : t.landing.noArticles}
           </p>
         ) : (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {/* Featured article */}
             <ArticleCard
               id={filtered[0].id}
@@ -148,7 +148,7 @@ const Library = () => {
               featured
             />
             {/* Remaining articles */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
               {filtered.slice(1).map((article) => (
                 <ArticleCard
                   key={article.id}

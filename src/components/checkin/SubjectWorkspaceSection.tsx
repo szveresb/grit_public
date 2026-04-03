@@ -174,14 +174,14 @@ const SubjectWorkspaceSection = ({
             )}
           </div>
 
-          <CollapsibleContent className="space-y-8" forceMount={mode !== 'standalone' ? true : undefined}>
+          <CollapsibleContent className="space-y-6" forceMount={mode !== 'standalone' ? true : undefined}>
             <div className={cn(
               "w-full",
-              !isParallel && "lg:grid lg:grid-cols-12 lg:gap-10 space-y-8 lg:space-y-0"
+              !isParallel && "lg:grid lg:grid-cols-12 lg:gap-8 space-y-6 lg:space-y-0"
             )}>
               
-              {/* Main Column: Insights & Trends */}
-              <div className={cn("space-y-8", !isParallel ? "lg:col-span-8" : "space-y-8 w-full")}>
+              {/* Main Column: Insights & Clinical Tools */}
+              <div className={cn("flex flex-col gap-6", !isParallel ? "lg:col-span-8" : "w-full")}>
                 
                 {isSelfContext && daysSinceGlobalActivity !== null && daysSinceGlobalActivity >= RECAP_INACTIVITY_DAYS && !recapDismissed && !isParallel && (
                   <RecapBanner
@@ -225,14 +225,21 @@ const SubjectWorkspaceSection = ({
                   </div>
                 </ConsentGate>
 
-                <ConsentGate consentKey="pattern_detection">
-                  <div className="animate-fade-in">
-                    <PatternChart logs={obsLogs} conceptMap={conceptMap} compact={isParallel} />
-                  </div>
-                </ConsentGate>
+                {/* Observation Stepper: Moved to Main Focus Area */}
+                <Collapsible open={observationOpen} onOpenChange={setObservationOpen}>
+                  <CollapsibleTrigger className={cn("surface-card w-full flex items-center justify-between hover:border-primary/30 transition-colors", isParallel ? "p-4" : "p-5")}>
+                    <h2 className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+                      {t.checkIn.whatHappenedTitle}
+                    </h2>
+                    <FChevronDown className={cn('h-4 w-4 text-muted-foreground transition-transform', observationOpen && 'rotate-180')} />
+                  </CollapsibleTrigger>
+                  <CollapsibleContent className={cn("surface-card border-t-0 rounded-t-none -mt-3", isParallel ? "p-4" : "p-6")}>
+                    <ObservationStepper onLogged={refresh} />
+                  </CollapsibleContent>
+                </Collapsible>
 
                 {!isParallel && (
-                  <div ref={feedRef} className="surface-card p-5 animate-fade-in">
+                  <div className="surface-card p-5 animate-fade-in">
                     <h2 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-4">
                       {t.timeline.allActivity}
                     </h2>
@@ -250,8 +257,8 @@ const SubjectWorkspaceSection = ({
                 )}
               </div>
 
-              {/* Sidebar Column: Actions & Tools */}
-              <div className={cn("space-y-8", !isParallel ? "lg:col-span-4" : "space-y-8 w-full")}>
+              {/* Sidebar Column: Quick Tracking & Context */}
+              <div className={cn("flex flex-col gap-6", !isParallel ? "lg:col-span-4" : "w-full")}>
                 <ConsentGate consentKey="mood_tracking">
                   <div className={cn("surface-card animate-scale-in", isParallel ? "p-4" : "p-6")}>
                     <QuickPulse
@@ -263,17 +270,11 @@ const SubjectWorkspaceSection = ({
                   </div>
                 </ConsentGate>
 
-                <Collapsible open={observationOpen} onOpenChange={setObservationOpen}>
-                  <CollapsibleTrigger className={cn("surface-card w-full flex items-center justify-between hover:border-primary/30 transition-colors", isParallel ? "p-4" : "p-5")}>
-                    <h2 className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
-                      {t.checkIn.whatHappenedTitle}
-                    </h2>
-                    <FChevronDown className={cn('h-4 w-4 text-muted-foreground transition-transform', observationOpen && 'rotate-180')} />
-                  </CollapsibleTrigger>
-                  <CollapsibleContent className={cn("surface-card border-t-0 rounded-t-none -mt-3", isParallel ? "p-4" : "p-6")}>
-                    <ObservationStepper onLogged={refresh} />
-                  </CollapsibleContent>
-                </Collapsible>
+                <ConsentGate consentKey="pattern_detection">
+                  <div className="animate-fade-in">
+                    <PatternChart logs={obsLogs} conceptMap={conceptMap} compact={isParallel} />
+                  </div>
+                </ConsentGate>
 
                 {!isParallel && (
                   <div className="surface-card p-6 animate-fade-in">

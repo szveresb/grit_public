@@ -20,7 +20,7 @@ const Surveys = () => {
 
   return (
     <DashboardLayout>
-      <div className="max-w-2xl mx-auto w-full space-y-8">
+      <div className="max-w-2xl mx-auto w-full space-y-6">
         <div>
           <h1 className="text-lg md:text-xl font-bold tracking-tight text-foreground">
             {t.nav.surveys}
