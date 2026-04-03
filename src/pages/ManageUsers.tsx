@@ -37,7 +37,7 @@ const ManageUsers = () => {
     setUsers((profiles ?? []).map(p => ({ user_id: p.user_id, display_name: p.display_name, roles: roleMap.get(p.user_id) ?? [] })));
 
     const { data: codesData } = await supabase.from('invite_codes' as any).select('*').order('created_at', { ascending: false });
-    setCodes((codesData as InviteCode[] | null) ?? []);
+    setCodes((codesData as unknown as InviteCode[] | null) ?? []);
 
     setLoading(false);
   };
