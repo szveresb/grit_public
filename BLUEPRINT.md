@@ -24,4 +24,4 @@ Grit.hu is a sensemaking platform designed for individuals in high-conflict rela
 4.  [`src/pages/Surveys.tsx`](file:///c:/Users/veres.sz/Documents/GitHub/grit.hu/src/pages/Surveys.tsx) — Questionnaire hub with logic-aware respondent stepper.
 
 ## State of Play
-**Dynamic Pathing and Global Identity are fully live.** The questionnaire system supports conditional branching with data integrity (`__SKIPPED__` sentinels). The UI is now fully personalized, with the user's name/email appearing in place of all generic "Self" and "Account" labels. The project is currently focused on restoring AI-powered sensemaking features within the new unified workspace architecture.
+**Layout and spacing have been fully refined.** The dashboard and all main pages now follow a standardized **`space-y-6`** (24px) vertical rhythm, achieving a "calm and professional" density. The `SubjectWorkspaceSection` implements a strict **Action-Result vertical hierarchy** (QuickPulse Entry above the Mood Chart) in both Focus and Parallel modes, with a `col-span-12` fix for vertical focus. The system is now ready for restored AI-powered sensemaking features.

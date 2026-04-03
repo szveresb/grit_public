@@ -280,7 +280,16 @@ Each supported person receives a **deterministic color palette** derived from th
 
 #### `SubjectCardRegistry`
 
-A horizontally scrollable dashboard module management system for subjects (self + supported persons). The "Self" card is personalized with the user's name (e.g., "Szentiványi Marcell") instead of the generic "Saját profil". Clicking a card triggers a global stance switch via `useStance.setActiveSubjectContext()` and automatically navigates the user to `/journal`. The active card is visually distinguished with a primary-tinted background, explicitly highlighted borders, and a scaled-up hover state. 
+A horizontally scrollable dashboard module management system for subjects (self + supported persons). The "Self" card is personalized with the user's name (e.g., "Szentiványi Marcell") instead of the generic "Saját profil". Clicking a card triggers a global stance switch via `useStance.setActiveSubjectContext()` and automatically navigates the user to `/journal`. The active card is visually distinguished with a primary-tinted background, explicitly highlighted borders, and a scaled-up hover state.
+
+#### `SubjectWorkspaceSection`
+
+The primary stance-aware container for personal and supported-person documentation. To prioritize immediate interaction and feedback, the workspace enforces a strict **"Action -> Result" vertical hierarchy**:
+1. **QuickPulse Entry (Circles):** Positioned at the very top for high-frequency logging.
+2. **Mood Trend Chart:** Positioned directly below the entry, providing instant visual feedback for the user's current and past mood states.
+3. **Observation & Patterns:** Detailed clinical documentation (Stepper, Patterns) follows below in a responsive grid.
+
+In **Focus Mode** (single subject), the "Action-Result" block stretches to `col-span-12` (full width), while the clinical tools split into an 8/4 grid below. In **Parallel Mode** (comparison), each Subject workspace is a unified vertical stack using `flex-col gap-6` to ensure cards never touch, even in high-density views.
 
 ---
 
@@ -415,7 +424,7 @@ The app uses a custom icon library (`src/components/icons/FreudIcons.tsx`) inspi
 
 All routes are served under both `/` (Hungarian default) and `/en/` (English prefix). Language is auto-detected from URL prefix and persisted in `localStorage`. 
 
-**Layout Standardization:** The primary interactive pages (`/journal` and `/surveys`) share a consistent, centered layout using `max-w-2xl mx-auto w-full` containers to ensure visual symmetry and focus.
+**Layout Standardization:** The primary interactive pages (`/journal`, `/surveys`, `/library`, etc.) share a consistent, centered layout using **`space-y-6`** (24px) vertical spacing and `max-w-2xl mx-auto w-full` containers (for focused content) to ensure visual symmetry and a "calm and professional" rhythmic flow.
 
 | Route | Component | Auth Required | Notes |
 |---|---|---|---|
@@ -423,10 +432,10 @@ All routes are served under both `/` (Hungarian default) and `/en/` (English pre
 | `/library` | `Library` | No | Full library with search & category filter |
 | `/library/:id` | `Article` | No | Individual article detail page with bilingual content |
 | `/auth` | `Auth` (login/signup) | No | Compact centered auth card with reduced control heights and streamlined spacing |
-| `/journal` | `CheckIn` | Yes | **Unified Emotional Hub** — Primary workspace for Quick Pulse, ObservationStepper, calendar feed, mood trends, and pattern charts. Replaces the legacy separate Journal and Timeline pages. |
-| `/surveys` | `Surveys` | Yes | Tabbed view: questionnaire filler (with stepper mode) + score history with trend charts |
-| `/export` | `Export` | Yes | Personal data export (JSON, FHIR, therapist BNO summary) |
-| `/profile` | `Profile` | Yes | Identity management, role management, subject registry, and data export. |
+| `/journal` | `CheckIn` | Yes | **Unified Emotional Hub** — Primary workspace for Quick Pulse, ObservationStepper, calendar feed, mood trends, and pattern charts. Features a strict **Action-Result vertical flow** (Pulse above Trend Chart) at the top of every profile workspace. |
+| `/surveys` | `Surveys` | Yes | Questionnaire hub with logic-aware respondent stepper. Uses standardized `space-y-6` vertical rhythm. |
+| `/export` | `Export` | Yes | Personal data export with compact centered layout. |
+| `/profile` | `Profile` | Yes | Identity management, role management, subject registry, and data export. Optimized for clarity with reduced vertical gaps (`space-y-6`). |
 | `/manage-library` | `ManageLibrary` | Yes (editor+) | Article CRUD with bilingual fields |
 | `/manage-questionnaires` | `SelfChecks` | Yes (editor+) | Questionnaire management with logic jump editor, scoring, and cloning. |
 | `/manage-landing` | `ManageLanding` | Yes (editor+) | Landing page CMS |
@@ -450,13 +459,13 @@ All routes are served under both `/` (Hungarian default) and `/en/` (English pre
 - **`EmergencyExit`** — Quick-exit safety button (always visible); redirects to neutral site
 - **`LanguageToggle`** — HU/EN language switcher; visible on every page (public header + dashboard)
 - **`ArticleCard`** — Library card linking to individual article detail page
-- **`QuickPulse`** — 5 expressive Freud-style mood icons (faces with opacity-graded sage-green); one-tap writes to `mood_pulses` table and optionally opens journal form pre-filled. Accepts an explicit `subjectId` override so stacked self/support-person cards save in the correct subject context. Fetches managed labels/title from `landing_sections` (`mood_preview` config) so admin CMS changes are reflected everywhere.
-- **`FeedCalendar`** — Calendar-based chronological feed of journal entries, observation logs, mood pulses, and questionnaire completions. Features a **mood heatmap** where cells display color-coded backgrounds (emerald → red) derived from the daily average `impact_level` of journal entries. Displays moon phases and day-detail drill-downs. Selecting past dates triggers retrospective logging modals conditionally matching the active stance.
+- **`QuickPulse`** — 5 expressive Freud-style mood icons (faces with opacity-graded sage-green); one-tap writes to `mood_pulses` table. Strategically placed as the **first element at the top** of each subject workspace to encourage daily logging. Accepts an explicit `subjectId` override so stacked self/support-person cards save in the correct context.
+- **`FeedCalendar`** — Calendar-based chronological feed of journal entries, observation logs, mood pulses, and questionnaire completions. Features a **mood heatmap** where cells display color-coded backgrounds (emerald → red) derived from the daily average `impact_level` of journal entries. Displays moon phases and day-detail drill-downs. 
 - **`ObservationStepper`** — 3-step progressive disclosure with warm labels ("What's going on?" → "How heavy?" → "Anything to add?"). Supports retrospective `observationDate` overrides for backdated logs.
 - **`ObservationModal`** — Date-aware dialog wrapper for the `ObservationStepper`, launched from the `FeedCalendar` to allow explicit historical observation logging in supported-person contexts.
 - **`EntryModal`** — Journal entry creation/editing dialog with optional observation linking, triggered contextually from the timeline or calendar for self-reporting.
 - **`RecapBanner`** — Weekly recap prompt when user has sufficient activity
-- **`MoodTrendChart`** — Recharts area chart of mood pulse history; timeline `<Brush>` slider is gated behind premium (non-premium users see an upsell badge)
+- **`MoodTrendChart`** — Recharts area chart of mood pulse history; positioned immediately below the `QuickPulse` entry for real-time visual feedback. Timeline `<Brush>` slider is gated behind premium.
 - **`PatternChart`** — Bar chart of observation concept frequency (pattern nudges for 3+/week)
 - **`HorizontalTimeline`** — Horizontal scrollable timeline of recent activity
 - **`JournalForm` / `JournalEntryCard`** — Fully localized journal creation and display with progressive disclosure for clinical codes

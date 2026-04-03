@@ -232,19 +232,6 @@ const SubjectWorkspaceSection = ({
                       />
                     )}
 
-                    {nudges.length > 0 && (
-                      <div className="surface-card p-4 flex items-start gap-3 animate-slide-in">
-                        <FTrendingUp className="h-4 w-4 text-primary mt-0.5 shrink-0" />
-                        <div className="space-y-1">
-                          {nudges.map((nudge) => (
-                            <p key={nudge.name} className="text-sm text-foreground">
-                              {t.timeline.patternNudge.replace('{name}', nudge.name).replace('{count}', String(nudge.count))}
-                            </p>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-
                     <Collapsible open={observationOpen} onOpenChange={setObservationOpen}>
                       <CollapsibleTrigger className={cn("surface-card w-full flex items-center justify-between hover:border-primary/30 transition-colors", isParallel ? "p-4" : "p-5")}>
                         <h2 className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
@@ -278,6 +265,19 @@ const SubjectWorkspaceSection = ({
 
                   {/* Sidebar-style content in Focus mode */}
                   <div className={cn("flex flex-col gap-6", !isParallel ? "lg:col-span-4" : "w-full")}>
+                    {nudges.length > 0 && (
+                      <div className="surface-card p-4 flex items-start gap-3 animate-slide-in shadow-sm">
+                        <FTrendingUp className="h-4 w-4 text-primary mt-0.5 shrink-0" />
+                        <div className="space-y-1">
+                          {nudges.map((nudge) => (
+                            <p key={nudge.name} className="text-sm text-foreground">
+                              {t.timeline.patternNudge.replace('{name}', nudge.name).replace('{count}', String(nudge.count))}
+                            </p>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
                     <ConsentGate consentKey="pattern_detection">
                       <div className="animate-fade-in">
                         <PatternChart logs={obsLogs} conceptMap={conceptMap} compact={isParallel} />
