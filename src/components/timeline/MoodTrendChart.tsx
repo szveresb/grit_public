@@ -24,6 +24,7 @@ interface MoodTrendChartProps {
   isPremium?: boolean;
   onPremiumClick?: () => void;
   t: Dictionary;
+  compact?: boolean;
 }
 
 type RangePreset = '7d' | '30d' | 'all';
@@ -61,7 +62,7 @@ function aggregateByDay(data: MoodDataPoint[]): AggregatedPoint[] {
     .sort((a, b) => a.ts - b.ts);
 }
 
-const MoodTrendChart = ({ data, lang, isPremium = false, onPremiumClick, t }: MoodTrendChartProps) => {
+const MoodTrendChart = ({ data, lang, isPremium = false, onPremiumClick, t, compact = false }: MoodTrendChartProps) => {
   const aggregated = useMemo(() => aggregateByDay(data), [data]);
   const strokeColor = 'hsl(var(--primary))';
   const [preset, setPreset] = useState<RangePreset>('all');
@@ -139,7 +140,7 @@ const MoodTrendChart = ({ data, lang, isPremium = false, onPremiumClick, t }: Mo
         </div>
       </div>
 
-      <ChartContainer config={chartConfig} className="h-[240px] w-full">
+      <ChartContainer config={chartConfig} className={compact ? "h-[180px] w-full" : "h-[240px] w-full"}>
         <AreaChart
           key={preset}
           data={filtered}
@@ -204,7 +205,7 @@ const MoodTrendChart = ({ data, lang, isPremium = false, onPremiumClick, t }: Mo
       </ChartContainer>
 
       {/* Premium upsell for timeline slider */}
-      {filtered.length > 3 && !isPremium && (
+      {filtered.length > 3 && !isPremium && !compact && (
         <button
           onClick={onPremiumClick}
           className="w-full flex items-center justify-center gap-2 py-2 rounded-2xl border border-dashed border-amber-300 dark:border-amber-700 bg-amber-50/50 dark:bg-amber-900/10 text-xs text-amber-700 dark:text-amber-400 hover:bg-amber-50 dark:hover:bg-amber-900/20 transition-colors active:scale-[0.98]"

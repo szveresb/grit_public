@@ -20,6 +20,7 @@ interface ConceptMap {
 interface PatternChartProps {
   logs: ObsLog[];
   conceptMap: ConceptMap;
+  compact?: boolean;
 }
 
 interface WeekBucket {
@@ -29,7 +30,7 @@ interface WeekBucket {
   details: Record<string, { date: string; narrative?: string | null; intensity: number }[]>;
 }
 
-const PatternChart = ({ logs, conceptMap }: PatternChartProps) => {
+const PatternChart = ({ logs, conceptMap, compact = false }: PatternChartProps) => {
   const { t, lang, localePath } = useLanguage();
   const [expanded, setExpanded] = useState<string | null>(null); // "cid-weekIdx"
 
@@ -83,12 +84,14 @@ const PatternChart = ({ logs, conceptMap }: PatternChartProps) => {
             <p className="text-xs text-muted-foreground">{t.timeline.patternChartSubtitle}</p>
           </div>
         </div>
-        <Button variant="ghost" size="sm" asChild className="text-primary hover:text-primary hover:bg-primary/10 gap-1 text-[10px] uppercase tracking-wider font-semibold h-7 px-2">
-          <Link to={localePath('/timeline')}>
-            {t.timeline.viewFullTimeline}
-            <FArrowRight className="h-3 w-3" />
-          </Link>
-        </Button>
+        {!compact && (
+          <Button variant="ghost" size="sm" asChild className="text-primary hover:text-primary hover:bg-primary/10 gap-1 text-[10px] uppercase tracking-wider font-semibold h-7 px-2">
+            <Link to={localePath('/timeline')}>
+              {t.timeline.viewFullTimeline}
+              <FArrowRight className="h-3 w-3" />
+            </Link>
+          </Button>
+        )}
 
       </div>
 
