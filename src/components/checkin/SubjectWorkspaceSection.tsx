@@ -296,7 +296,7 @@ const SubjectWorkspaceSection = ({
                                 {t.timeline.patternNudge.replace('{name}', nudge.name).replace('{count}', String(nudge.count))}
                               </p>
                               <p className="text-[10px] text-muted-foreground uppercase tracking-widest font-semibold">
-                                {(t.timeline as any).patternDetected || 'Minta észlelve'}
+                                {t.timeline.patternDetected}
                               </p>
                             </div>
                           </div>
