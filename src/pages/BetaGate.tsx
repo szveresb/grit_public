@@ -21,19 +21,19 @@ const BetaGate = () => {
 
     setLoading(true);
     try {
-      const { data, error } = await supabase.rpc('redeem_invite_access', {
+      const { data, error } = await supabase.rpc('redeem_invite_access' as any, {
         invite_code: code.trim()
       });
 
       if (error) throw error;
       
       if (data === true) {
-        toast.success(t.common?.success || 'Access granted!');
+        toast.success('Access granted!');
         await refreshAccess();
         // Force navigate to protected route which will now pass the beta_access check
         navigate(localePath('/journal'));
       } else {
-        toast.error(t.common?.error || 'Invalid or already used invite code.');
+        toast.error('Invalid or already used invite code.');
       }
     } catch (err: any) {
       toast.error(err.message || 'An error occurred.');

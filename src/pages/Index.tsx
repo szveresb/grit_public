@@ -30,7 +30,7 @@ const Index = () => {
     if (!email) return;
     setSubmitting(true);
     
-    const { error } = await supabase.from('waitlist_emails').insert({ email });
+    const { error } = await supabase.from('waitlist_emails' as any).insert({ email } as any);
     
     if (error) {
       // 23505 is Postgres unique_violation
@@ -122,6 +122,8 @@ const Index = () => {
               title="Recognizing High-Conflict Dynamics"
               category="Foundation"
               excerpt="Understanding the predictable patterns in complex relationship systems without resorting to clinical diagnostic labels."
+              source={null}
+              url={null}
               featured
             />
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
@@ -130,12 +132,16 @@ const Index = () => {
                 title="The Anatomy of Projection"
                 category="Sensemaking"
                 excerpt="How externalizing emotional state impacts objective truth."
+                source={null}
+                url={null}
               />
               <ArticleCard
                 id="mock-3"
                 title="Establishing Neutral Boundaries"
                 category="Strategy"
                 excerpt="Tactical approaches to maintaining baseline stability in crisis."
+                source={null}
+                url={null}
               />
             </div>
           </div>
