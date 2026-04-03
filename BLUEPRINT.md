@@ -11,11 +11,14 @@ Grit.hu is a sensemaking platform designed for individuals in high-conflict rela
 - **Design:** Custom "Freud" icon set, "Clinical Core, Human Surface" philosophy.
 
 ## Current Task
-**AI Sensemaking Integration** — porting AI-powered pattern analysis and reflections from legacy pages into the new unified `CheckIn.tsx` workspace. Status:
-- [ ] Port `journal-patterns` Edge Function trigger to the `SubjectWorkspaceSection`
-- [ ] Port `journal-reflect` Edge Function to the upgraded `EntryReflectDialog`
-- [ ] Implement `readSSEStream` for real-time AI response "typing" effect
-- [x] Global Identity Personalization (Name/Email in Header, Sidebar, Cards)
+**Suspended:** AI Sensemaking Integration
+This task has been **paused** because the underlying SNOMED CT logic and clinical entity structure must be fully implemented first. AI pattern detection cannot reliably function without the explicit classification architecture to map unstructured reflections into standardized BNO-10 / SNOMED endpoints.
+
+*Suspended Sub-tasks:*
+- [ ] Implement foundational SNOMED CT concept structure (Prerequisite)
+- [ ] Port `journal-patterns` Edge Function trigger
+- [ ] Port `journal-reflect` Edge Function
+- [ ] Implement `readSSEStream` 
 
 ## Component Map
 1.  [`src/pages/CheckIn.tsx`](file:///c:/Users/veres.sz/Documents/GitHub/grit.hu/src/pages/CheckIn.tsx) — Unified Emotional Hub: Hub for journals, observations, trends, and charts. Replaces legacy Dashboard/Journal pages.
@@ -24,4 +27,6 @@ Grit.hu is a sensemaking platform designed for individuals in high-conflict rela
 4.  [`src/pages/Surveys.tsx`](file:///c:/Users/veres.sz/Documents/GitHub/grit.hu/src/pages/Surveys.tsx) — Questionnaire hub with logic-aware respondent stepper.
 
 ## State of Play
-**Layout and spacing have been fully refined.** The dashboard and all main pages now follow a standardized **`space-y-6`** (24px) vertical rhythm, achieving a "calm and professional" density. The `SubjectWorkspaceSection` implements a strict **Action-Result vertical hierarchy** (QuickPulse Entry above the Mood Chart) in both Focus and Parallel modes, with a `col-span-12` fix for vertical focus. The system is now ready for restored AI-powered sensemaking features.
+**Layout and spacing are fully refined.** The dashboard features a standardized **`space-y-6`** (24px) vertical rhythm and a strict **Action-Result vertical hierarchy** (QuickPulse Entry → Mood Chart → Tools → Nudges → Pattern Chart). Dismissible pattern nudges with 30-day lookbacks and memory persistence are live.
+
+**Next Priority:** The AI Sensemaking integration has been formally suspended. The project must pivot to implementing the foundational **SNOMED CT / BNO-10 clinical structure and logic** before the AI can be safely and accurately integrated to assign these codes to journal text.
