@@ -5,50 +5,46 @@ import { useLanguage } from '@/hooks/useLanguage';
 import { supabase } from '@/integrations/supabase/client';
 import { FLock, FArrowRight } from '@/components/icons/FreudIcons';
 import { Button } from '@/components/ui/button';
-import { Skeleton } from '@/components/ui/skeleton';
+import { Input } from '@/components/ui/input';
+import { toast } from 'sonner';
 import PublicHeader from '@/components/PublicHeader';
 import ArticleCard from '@/components/ArticleCard';
-import LandingMoodPreview from '@/components/LandingMoodPreview';
-import QuickPulse from '@/components/checkin/QuickPulse';
-
-
-
-interface LibraryArticle {
-  id: string;
-  title: string;
-  title_localized: Record<string, string> | null;
-  excerpt: string | null;
-  excerpt_localized: Record<string, string> | null;
-  source: string | null;
-  url: string | null;
-  category: string;
-  featured: boolean;
-  author: string;
-}
+import SystemPreview from '@/components/SystemPreview';
 
 const Index = () => {
   const { user } = useAuth();
   const { t, lang, localePath } = useLanguage();
   const navigate = useNavigate();
-  const [articles, setArticles] = useState<LibraryArticle[]>([]);
-  const [articlesLoading, setArticlesLoading] = useState(true);
-  const [moodSection, setMoodSection] = useState<{ title: string; subtitle: string; cta_text: string; config: Record<string, any> } | null>(null);
-  const [moodSectionLoaded, setMoodSectionLoaded] = useState(false);
+  
+  const [email, setEmail] = useState('');
+  const [submitting, setSubmitting] = useState(false);
   const [bgLoaded, setBgLoaded] = useState(false);
 
   useEffect(() => {
-    supabase.from('library_articles').select('id, title, title_localized, excerpt, excerpt_localized, source, category, url, featured, author').eq('published', true).order('featured', { ascending: false }).order('created_at', { ascending: false }).limit(6)
-      .then(({ data }) => { setArticles((data as LibraryArticle[]) ?? []); setArticlesLoading(false); });
-
-    supabase.from('landing_sections').select('*').eq('section_key', 'mood_preview').eq('is_active', true).maybeSingle()
-      .then(({ data }) => { if (data) setMoodSection(data as any); setMoodSectionLoaded(true); });
-
     // Lazy-load background image after initial paint to avoid blocking LCP
     import('@/assets/bamboo-bg.jpg').then((mod) => { setBgLoaded(true); (window as any).__bambooBg = mod.default; });
   }, []);
 
-  const handleGatedClick = (path: string) => {
-    navigate(user ? localePath(path) : localePath('/auth'));
+  const handleWaitlistSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!email) return;
+    setSubmitting(true);
+    
+    const { error } = await supabase.from('waitlist_emails').insert({ email });
+    
+    if (error) {
+      // 23505 is Postgres unique_violation
+      if (error.code === '23505') {
+        toast.success(t.landing?.waitlistSuccess || 'Thank you! You have been added to our beta access waitlist.');
+        setEmail('');
+      } else {
+        toast.error(t.landing?.waitlistError || 'Failed to join waitlist. Please try again.');
+      }
+    } else {
+      toast.success(t.landing?.waitlistSuccess || 'Thank you! You have been added to our beta access waitlist.');
+      setEmail('');
+    }
+    setSubmitting(false);
   };
 
   const bambooBgUrl = bgLoaded ? (window as any).__bambooBg : undefined;
@@ -61,125 +57,106 @@ const Index = () => {
       <PublicHeader />
 
       {/* Hero */}
-      <section className="relative z-10 px-4 md:px-8 pt-20 pb-16 max-w-7xl mx-auto text-center">
-        <div className="max-w-2xl mx-auto">
-          <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold tracking-tight text-foreground leading-tight">
-            {t.landing.heroTitle}
+      <section className="relative z-10 px-4 md:px-8 pt-24 pb-16 max-w-7xl mx-auto text-center">
+        <div className="max-w-2xl mx-auto space-y-6">
+          <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-accent text-accent-foreground text-xs font-semibold tracking-widest uppercase">
+            {t.landing?.betaAccess || 'Beta Access'}
+          </div>
+          <h1 className="text-3xl sm:text-4xl md:text-5xl font-bold tracking-tight text-foreground leading-tight text-balance">
+            {t.landing?.heroTitleBeta || t.landing.heroTitle}
           </h1>
-          <p className="mt-4 text-sm md:text-base text-muted-foreground leading-relaxed max-w-xl mx-auto">
+          <p className="text-sm md:text-base text-muted-foreground leading-relaxed max-w-xl mx-auto text-balance">
             {t.landing.heroSubtitle}
           </p>
-          <div className="mt-8 flex flex-wrap gap-3 justify-center">
-            <Button size="lg" className="rounded-2xl px-6" asChild>
-              <Link to={localePath('/library')}>{t.landing.browseLibrary}</Link>
-            </Button>
-            <Button size="lg" variant="outline" className="rounded-2xl px-6" onClick={() => handleGatedClick('/journal')}>
-              {t.landing.startJournal}
-              {!user && <FLock className="h-4 w-4 ml-1.5" />}
-            </Button>
-          </div>
+          
+          {!user ? (
+            <div className="mt-8 max-w-sm mx-auto bg-card border border-border p-5 rounded-3xl shadow-sm">
+              <form onSubmit={handleWaitlistSubmit} className="space-y-3">
+                <Input 
+                  type="email" 
+                  required 
+                  placeholder={t.landing?.waitlistEmailPlaceholder || "Enter your email address"} 
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  className="rounded-full h-11 bg-accent/50 text-center"
+                />
+                <Button type="submit" className="w-full rounded-full h-11 font-semibold" disabled={submitting}>
+                  {submitting ? '...' : (t.landing?.joinWaitlist || 'Request Beta Access')}
+                </Button>
+              </form>
+              <div className="mt-4 pt-4 border-t border-border/50 text-xs text-muted-foreground">
+                <Link to={localePath('/auth')} className="hover:text-foreground font-medium underline underline-offset-2">
+                  {t.landing?.gatedLoginCta || 'I have an invite code'}
+                </Link>
+              </div>
+            </div>
+          ) : (
+            <div className="mt-8 flex justify-center pt-4">
+              <Button size="lg" className="rounded-full px-8 h-12 text-md font-semibold" asChild>
+                <Link to={localePath('/journal')}>{t.landing.goToJournal}</Link>
+              </Button>
+            </div>
+          )}
         </div>
       </section>
 
-      {/* Mood Preview / QuickPulse */}
-      {!user && !moodSectionLoaded && (
-        <section className="relative z-10 px-4 md:px-8 py-16 max-w-7xl mx-auto">
-          <div className="max-w-lg mx-auto text-center space-y-6">
-            <Skeleton className="h-6 w-48 mx-auto" />
-            <Skeleton className="h-4 w-64 mx-auto" />
-            <div className="flex justify-center gap-3">
-              {[0,1,2,3,4].map(i => <Skeleton key={i} className="w-14 h-14 rounded-2xl" />)}
-            </div>
-          </div>
-        </section>
-      )}
-      {moodSection && !user && (
-        <LandingMoodPreview
-          title={(lang === 'en' && (moodSection as any).title_localized?.en) || moodSection.title}
-          subtitle={(lang === 'en' && (moodSection as any).subtitle_localized?.en) || moodSection.subtitle}
-          ctaText={(lang === 'en' && (moodSection as any).cta_text_localized?.en) || moodSection.cta_text}
-          moodLabels={lang === 'en' ? (moodSection.config?.mood_labels_en ?? []) : (moodSection.config?.mood_labels ?? [])}
-        />
-      )}
-      {/* User QuickPulse */}
-      {user && (
-        <section className="relative z-10 px-4 md:px-8 py-16 max-w-7xl mx-auto">
-          <div className="max-w-lg mx-auto">
-            <div className="reference-surface rounded-3xl p-6">
-              <QuickPulse onMoodSelected={() => navigate(localePath('/journal'))} />
-            </div>
-          </div>
-        </section>
-      )}
+      {/* Embedded System Previews (Inert) */}
+      <SystemPreview />
 
-
-      <section id="library" className="relative z-10 px-4 md:px-8 py-16 max-w-7xl mx-auto">
-        <div className="flex items-center justify-between mb-10">
-          <div>
-            <h2 className="text-lg md:text-xl font-bold tracking-tight text-foreground">{t.landing.libraryTitle}</h2>
-            <p className="mt-1 text-sm text-muted-foreground">{t.landing.librarySubtitle}</p>
-          </div>
-          <Button variant="ghost" size="sm" className="rounded-full text-sm font-medium text-muted-foreground hover:text-foreground" asChild>
-            <Link to={localePath('/library')}>
-              {t.landing.viewAll} <FArrowRight className="h-4 w-4 ml-1" />
-            </Link>
-          </Button>
+      {/* Gated Library Section (Inert Mockups) */}
+      <section className="relative z-10 px-4 md:px-8 py-16 max-w-7xl mx-auto space-y-6">
+        <div className="text-center mb-10">
+          <h2 className="text-2xl font-bold tracking-tight text-foreground">
+            {t.landing?.gatedSectionTitle || 'Private Library & Tools'}
+          </h2>
+          <p className="mt-2 text-sm text-muted-foreground max-w-lg mx-auto text-balance">
+            {t.landing?.gatedSectionDescription || 'Access is restricted to invited beta participants.'}
+          </p>
         </div>
 
-        {articlesLoading ? (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            <div className="reference-surface rounded-3xl p-8 space-y-4">
-              <Skeleton className="h-5 w-24 rounded-full" />
-              <Skeleton className="h-6 w-3/4" />
-              <Skeleton className="h-4 w-full" />
-              <Skeleton className="h-4 w-full" />
-              <Skeleton className="h-4 w-2/3" />
-            </div>
-            <div className="space-y-8">
-              {[1, 2].map(i => (
-                <div key={i} className="reference-surface rounded-3xl p-6 space-y-3">
-                  <Skeleton className="h-5 w-20 rounded-full" />
-                  <Skeleton className="h-4 w-full" />
-                  <Skeleton className="h-3 w-full" />
-                </div>
-              ))}
-            </div>
-          </div>
-        ) : articles.length === 0 ? (
-          <p className="text-sm text-muted-foreground">{t.landing.noArticles}</p>
-        ) : (
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-            {/* Featured article */}
+        <div className="relative rounded-[2.5rem] overflow-hidden border border-border bg-card/20 p-6 sm:p-8">
+          {/* Blurred Background Mockups */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 filter blur-[6px] opacity-60 pointer-events-none select-none">
             <ArticleCard
-              id={articles[0].id}
-              title={(lang === 'en' && articles[0].title_localized?.en) || articles[0].title}
-              excerpt={(lang === 'en' && articles[0].excerpt_localized?.en) || articles[0].excerpt}
-              category={articles[0].category}
-              source={articles[0].source}
-              url={articles[0].url}
-              author={articles[0].author}
+              id="mock-1"
+              title="Recognizing High-Conflict Dynamics"
+              category="Foundation"
+              excerpt="Understanding the predictable patterns in complex relationship systems without resorting to clinical diagnostic labels."
               featured
             />
-            {/* Remaining articles */}
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
-              {articles.slice(1).map((article) => (
-                <ArticleCard
-                  key={article.id}
-                  id={article.id}
-                  title={(lang === 'en' && article.title_localized?.en) || article.title}
-                  excerpt={(lang === 'en' && article.excerpt_localized?.en) || article.excerpt}
-                  category={article.category}
-                  source={article.source}
-                  url={article.url}
-                  author={article.author}
-                />
-              ))}
+              <ArticleCard
+                id="mock-2"
+                title="The Anatomy of Projection"
+                category="Sensemaking"
+                excerpt="How externalizing emotional state impacts objective truth."
+              />
+              <ArticleCard
+                id="mock-3"
+                title="Establishing Neutral Boundaries"
+                category="Strategy"
+                excerpt="Tactical approaches to maintaining baseline stability in crisis."
+              />
             </div>
           </div>
-        )}
+
+          {/* Locked Overlay */}
+          <div className="absolute inset-0 flex items-center justify-center bg-background/10 backdrop-blur-[2px]">
+            <div className="bg-card shadow-lg border border-primary/20 rounded-3xl p-8 max-w-md w-full text-center space-y-5 animate-in fade-in zoom-in-95 duration-500">
+              <div className="mx-auto w-12 h-12 bg-primary/10 rounded-full flex items-center justify-center text-primary mb-2">
+                <FLock className="w-6 h-6" />
+              </div>
+              <h3 className="font-bold text-lg tracking-tight">Beta Access Required</h3>
+              <p className="text-sm text-muted-foreground">
+                The full platform, including the dynamic research library and encrypted emotional anchoring tools, opens upon authentication.
+              </p>
+              <Button className="w-full rounded-full h-11 font-semibold" asChild>
+                <Link to={localePath('/auth')}>Log In</Link>
+              </Button>
+            </div>
+          </div>
+        </div>
       </section>
-
-
 
       {/* Footer */}
       <footer className="relative z-10 border-t border-border bg-card">

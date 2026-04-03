@@ -49,10 +49,21 @@ export interface Dictionary {
   landing: {
     heroTitle: string;
     heroSubtitle: string;
+    heroTitleBeta: string;
+    betaAccess: string;
+    joinWaitlist: string;
+    waitlistEmailPlaceholder: string;
+    waitlistSuccess: string;
+    waitlistError: string;
     browseLibrary: string;
     startJournal: string;
     libraryTitle: string;
     librarySubtitle: string;
+    gatedSectionTitle: string;
+    gatedSectionDescription: string;
+    gatedLoginCta: string;
+    systemPreviewTitle: string;
+    systemPreviewSubtitle: string;
     noArticles: string;
     journalPreviewTitle: string;
     journalPreviewSubtitle: string;
