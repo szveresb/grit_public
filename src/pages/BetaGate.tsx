@@ -12,8 +12,15 @@ const BetaGate = () => {
   const [code, setCode] = useState('');
   const [loading, setLoading] = useState(false);
   const { t, localePath } = useLanguage();
-  const { refreshAccess } = useBetaAccess();
+  const { hasAccess, loading: accessLoading, refreshAccess } = useBetaAccess();
   const navigate = useNavigate();
+
+  // Auto-redirect if user already has access (resolves deadlock on refresh)
+  useEffect(() => {
+    if (!accessLoading && hasAccess === true) {
+      navigate(localePath('/journal'));
+    }
+  }, [hasAccess, accessLoading, navigate, localePath]);
 
   useEffect(() => {
     const pending = sessionStorage.getItem('pending_invite_code');
