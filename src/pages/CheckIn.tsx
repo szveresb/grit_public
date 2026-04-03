@@ -9,9 +9,7 @@ import PremiumModal from '@/components/premium/PremiumModal';
 import SubjectWorkspaceSection from '@/components/checkin/SubjectWorkspaceSection';
 import SubjectHubGrid from '@/components/checkin/SubjectHubGrid';
 import { Button } from '@/components/ui/button';
-import { FClose, FSparkles } from '@/components/icons/FreudIcons';
-import { Switch } from '@/components/ui/switch';
-import { Label } from '@/components/ui/label';
+import { FClose } from '@/components/icons/FreudIcons';
 import { cn } from '@/lib/utils';
 
 type ViewMode = 'grid' | 'focus' | 'parallel';
@@ -28,7 +26,6 @@ const CheckIn = () => {
   // Layout Management State
   const [viewMode, setViewMode] = useState<ViewMode>('grid');
   const [selectedKeys, setSelectedKeys] = useState<string[]>([]);
-  const [isCompareMode, setIsCompareMode] = useState(false);
 
   useEffect(() => {
     const dateParam = searchParams.get('date');
@@ -92,13 +89,14 @@ const CheckIn = () => {
 
   const handleToggleCompare = (key: string) => {
     setSelectedKeys(prev => {
+      // If we are already in grid mode, we just toggle the key
       if (prev.includes(key)) return prev.filter(k => k !== key);
       return [...prev, key];
     });
   };
 
   const startParallelView = () => {
-    if (selectedKeys.length === 0) return;
+    if (selectedKeys.length < 2) return;
     setViewMode('parallel');
   };
 
@@ -118,7 +116,7 @@ const CheckIn = () => {
         
         {/* Header Section */}
         <div className="flex flex-col sm:flex-row sm:items-end justify-between gap-6">
-          <div className="space-y-1">
+          <div className="space-y-1 animation-slide-down">
             <h1 className="text-xl md:text-2xl font-bold tracking-tight text-foreground transition-all">
               {viewMode === 'grid' ? t.checkIn.title : t.nav.checkIn}
             </h1>
@@ -126,34 +124,6 @@ const CheckIn = () => {
               {viewMode === 'grid' ? t.checkIn.subtitle : t.subjects.registryHint}
             </p>
           </div>
-
-          {viewMode === 'grid' && (
-            <div className="flex items-center gap-4 p-4 rounded-[2rem] bg-context-surface border border-context-border/50 shadow-sm transition-all animate-fade-in hover:shadow-md">
-              <div className="flex items-center gap-3">
-                <Switch 
-                  id="compare-mode" 
-                  checked={isCompareMode} 
-                  onCheckedChange={(checked) => {
-                    setIsCompareMode(checked);
-                    if (!checked) setSelectedKeys([]);
-                  }}
-                />
-                <Label htmlFor="compare-mode" className="text-xs font-bold uppercase tracking-widest cursor-pointer whitespace-nowrap">
-                  {t.analyst_export?.title || "Összehasonlítás"}
-                </Label>
-              </div>
-              {isCompareMode && selectedKeys.length > 0 && (
-                <Button 
-                  size="sm" 
-                  className="rounded-full px-5 gap-2 animate-scale-in" 
-                  onClick={startParallelView}
-                >
-                  <FSparkles className="h-3 w-3" />
-                  <span className="text-xs font-bold">{t.submit} ({selectedKeys.length})</span>
-                </Button>
-              )}
-            </div>
-          )}
 
           {viewMode !== 'grid' && (
             <Button 
@@ -173,8 +143,8 @@ const CheckIn = () => {
           <SubjectHubGrid 
             onSelect={handleOpenFocus}
             onToggleCompare={handleToggleCompare}
+            onStartParallel={startParallelView}
             selectedKeys={selectedKeys}
-            isCompareMode={isCompareMode}
           />
         ) : (
           <div className={cn(

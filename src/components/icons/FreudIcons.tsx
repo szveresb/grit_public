@@ -491,3 +491,15 @@ export const FTimeline = icon(
   </>,
   'FTimeline'
 );
+
+/** Scales / Balance – for comparison */
+export const FScales = icon(
+  <>
+    <path d="m16 16 3-8 3 8c-.1 1-1 2-3 2s-2.9-1-3-2Z" />
+    <path d="m2 16 3-8 3 8c-.1 1-1 2-3 2s-2.9-1-3-2Z" />
+    <path d="M7 21h10" />
+    <path d="M12 3v18" />
+    <path d="M3 7h18" />
+  </>,
+  'FScales'
+);

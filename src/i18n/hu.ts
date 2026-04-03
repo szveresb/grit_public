@@ -609,7 +609,11 @@ export const hu: Dictionary = {
     thirdPartyQuestionnaireTitle: 'Harmadik személyű kérdőívek',
     thirdPartyQuestionnaireDesc: 'Tölts ki kérdőíveket {name} kontextusában anélkül, hogy azok a Saját profil nézetével keverednének.',
     goToJournal: 'Tovább a naplóhoz',
+    open: 'Megnyitás',
     select: 'Kiválasztás',
+    addedToCompare: 'Hozzáadva az összehasonlításhoz',
+    showCompare: 'Összehasonlítás megjelenítése',
+    removeFromCompare: 'Eltávolítás az összehasonlításból',
   },
 
   ui: {

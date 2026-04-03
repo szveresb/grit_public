@@ -589,7 +589,11 @@ export interface Dictionary {
     thirdPartyQuestionnaireTitle: string;
     thirdPartyQuestionnaireDesc: string;
     goToJournal: string;
+    open: string;
     select: string;
+    addedToCompare: string;
+    showCompare: string;
+    removeFromCompare: string;
   };
 
   // UI / Common

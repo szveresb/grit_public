@@ -610,7 +610,11 @@ export const en: Dictionary = {
     thirdPartyQuestionnaireTitle: 'Third-party questionnaires',
     thirdPartyQuestionnaireDesc: 'Fill questionnaires in the context of {name} without mixing them with your Self workspace.',
     goToJournal: 'Go to journal',
+    open: 'Open',
     select: 'Select',
+    addedToCompare: 'Added to comparison',
+    showCompare: 'Show comparison',
+    removeFromCompare: 'Remove from comparison',
   },
 
   ui: {
