@@ -11,23 +11,17 @@ Grit.hu is a sensemaking platform designed for individuals in high-conflict rela
 - **Design:** Custom "Freud" icon set, "Clinical Core, Human Surface" philosophy.
 
 ## Current Task
-**Dynamic Pathing via Conditional Logic** — implementing logic jumps in the questionnaire system. Status:
-- ✅ Data layer: `logic_rules` JSONB column + `__SKIPPED__` trigger guard (migration created, awaiting deployment)
-- ✅ Logic engine: `src/lib/logic-engine.ts` (runtime evaluation) + `src/lib/logic-validation.ts` (editor-time validation)
-- ✅ Editor UI: Per-question logic rule configuration with inline badges and forward-only target selection in `SelfChecks.tsx`
-- ✅ Respondent stepper: Auto-detected branching mode with one-question-at-a-time rendering, progress bar, and `__SKIPPED__` sentinel insertion in `QuestionnaireFiller.tsx`
-- ✅ Display: Skipped question badge in `ScoreResults.tsx`
-- ✅ i18n: 17 new bilingual keys for logic jump UI
-- ✅ Migration deployed via Lovable SQL Editor
+**AI Sensemaking Integration** — porting AI-powered pattern analysis and reflections from legacy pages into the new unified `CheckIn.tsx` workspace. Status:
+- [ ] Port `journal-patterns` Edge Function trigger to the `SubjectWorkspaceSection`
+- [ ] Port `journal-reflect` Edge Function to the upgraded `EntryReflectDialog`
+- [ ] Implement `readSSEStream` for real-time AI response "typing" effect
+- [x] Global Identity Personalization (Name/Email in Header, Sidebar, Cards)
 
 ## Component Map
-1.  [`src/pages/CheckIn.tsx`](file:///c:/Users/veres.sz/Documents/GitHub/grit.hu/src/pages/CheckIn.tsx) — Primary unified "Journal" page: Quick Pulse, ObservationStepper, calendar feed, mood trends, pattern charts.
-2.  [`src/pages/Surveys.tsx`](file:///c:/Users/veres.sz/Documents/GitHub/grit.hu/src/pages/Surveys.tsx) — Questionnaire filler + score history with trend charts.
-3.  [`SYSTEM_DESCRIPTION.md`](file:///c:/Users/veres.sz/Documents/GitHub/grit.hu/SYSTEM_DESCRIPTION.md) — Comprehensive architectural blueprint and source of truth for the entire system.
-4.  [`src/hooks/useStance.tsx`](file:///c:/Users/veres.sz/Documents/GitHub/grit.hu/src/hooks/useStance.tsx) — Global state for "Self" vs "Observer" (relative) perspectives.
-5.  [`src/components/checkin/FeedCalendar.tsx`](file:///c:/Users/veres.sz/Documents/GitHub/grit.hu/src/components/checkin/FeedCalendar.tsx) — Calendar grid with mood heatmap overlay, moon phases, and day-detail drill-downs.
-6.  [`src/lib/logic-engine.ts`](file:///c:/Users/veres.sz/Documents/GitHub/grit.hu/src/lib/logic-engine.ts) — Logic jump rule evaluation, path computation, skip detection.
-7.  [`src/lib/logic-validation.ts`](file:///c:/Users/veres.sz/Documents/GitHub/grit.hu/src/lib/logic-validation.ts) — Forward-only validation and reachability analysis.
+1.  [`src/pages/CheckIn.tsx`](file:///c:/Users/veres.sz/Documents/GitHub/grit.hu/src/pages/CheckIn.tsx) — Unified Emotional Hub: Hub for journals, observations, trends, and charts. Replaces legacy Dashboard/Journal pages.
+2.  [`src/components/checkin/SubjectWorkspaceSection.tsx`](file:///c:/Users/veres.sz/Documents/GitHub/grit.hu/src/components/checkin/SubjectWorkspaceSection.tsx) — The primary stance-aware container for personal and supported-person documentation.
+3.  [`SYSTEM_DESCRIPTION.md`](file:///c:/Users/veres.sz/Documents/GitHub/grit.hu/SYSTEM_DESCRIPTION.md) — Comprehensive architectural blueprint and source of truth.
+4.  [`src/pages/Surveys.tsx`](file:///c:/Users/veres.sz/Documents/GitHub/grit.hu/src/pages/Surveys.tsx) — Questionnaire hub with logic-aware respondent stepper.
 
 ## State of Play
-**Dynamic Pathing feature is fully deployed and live.** All frontend changes and database migration are in place. The system supports conditional question branching with forward-only jumps, auto-stepper mode, and `__SKIPPED__` data integrity.
+**Dynamic Pathing and Global Identity are fully live.** The questionnaire system supports conditional branching with data integrity (`__SKIPPED__` sentinels). The UI is now fully personalized, with the user's name/email appearing in place of all generic "Self" and "Account" labels. The project is currently focused on restoring AI-powered sensemaking features within the new unified workspace architecture.

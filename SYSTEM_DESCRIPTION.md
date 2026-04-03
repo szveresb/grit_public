@@ -31,7 +31,11 @@ Role checks use `has_role()` and `has_any_role()` — SECURITY DEFINER functions
 - Email verification required (no auto-confirm)
 - On signup, `handle_new_user()` trigger creates a `profiles` row automatically
 
-### 3.1 Consent Flow
+### 3.1 Global Identity Personalization
+
+The system prioritizes personal recognition over generic labels. Primary UI elements (Header Account button, App Sidebar menu, and Workspace Registry cards) dynamically inject the user's `display_name` (from metadata) or `email`. The generic Hungarian "Fiók" and "Saját profil" labels act as fallback states only for guest users or accounts without metadata.
+
+### 3.2 Consent Flow
 
 Seven granular consent categories (journal storage, mood tracking, free-text AI, pattern detection, questionnaire data, FHIR export, anonymized analytics) are presented as a card carousel during onboarding. The consent gate (`ConsentGate`) shows **only once** — on first registration or when new consent keys are added that the user hasn't addressed.
 
@@ -171,7 +175,9 @@ Curated research articles with bilingual support.
 
 **Editor features:** Questions can be duplicated (deep copy of all settings; logic rules cleared on duplicate). Scale questions support a "Reverse scoring" toggle that auto-populates `answer_scores` with inverted values using `score(n) = (min + max) - n`. Entire questionnaires can be **cloned** (deep copy of questionnaire + all questions + remapped logic rules) as unpublished drafts with a "(copy)" suffix.
 
-**Conditional Branching (Logic Jumps):** Each non-text question can define forward-only `logic_rules` — when a respondent selects a matching answer, the system jumps to a later question or skips to end. Questionnaires with any logic rules automatically render in **stepper mode** (one question at a time) instead of the default flat list. Skipped questions are recorded with a `"__SKIPPED__"` sentinel in the `answer` field for data integrity. The `validate_logic_rules` client-side utility enforces forward-only constraints, detects unreachable questions, and validates target references before save.
+**Conditional Branching (Logic Jumps):** Each non-text question can define forward-only `logic_rules` — when a respondent selects a matching answer, the system jumps to a later question or skips to end. Questionnaires with any logic rules automatically render in **stepper mode** (one question at a time) instead of the default flat list. This mode features a dynamic progress bar and breadcrumb-style question numbering to reduce cognitive load. 
+
+**Data Integrity (Skipped Questions):** To maintain statistical consistency in scoring, questions hidden by logic jumps are recorded with a `"__SKIPPED__"` sentinel string in the `answer` field. The `validate_logic_rules` utility enforces forward-only constraints and detects unreachable nodes.
 
 **Scoring:** Supports `sum` and `weighted` modes. Score ranges accept **zero and negative values** for both `min` and `max` bounds — enabling instruments with inverse or baseline-adjusted scoring.
 
@@ -274,9 +280,7 @@ Each supported person receives a **deterministic color palette** derived from th
 
 #### `SubjectCardRegistry`
 
-#### `SubjectCardRegistry`
-
-A horizontally scrollable dashboard module, explicitly located on the **Profile page**, that manages all subjects (self + supported persons). Clicking a card triggers a global stance switch via `useStance.setActiveSubjectContext()` and automatically navigates the user to `/journal`. The active card is visually distinguished with a primary-tinted background, explicitly highlighted borders, and a scaled-up hover state. Each subject card displays the person's name, relationship type, and deterministic color accent, replacing the previous rigid grid with a flexible centering layout to ensure aesthetic symmetry.
+A horizontally scrollable dashboard module management system for subjects (self + supported persons). The "Self" card is personalized with the user's name (e.g., "Szentiványi Marcell") instead of the generic "Saját profil". Clicking a card triggers a global stance switch via `useStance.setActiveSubjectContext()` and automatically navigates the user to `/journal`. The active card is visually distinguished with a primary-tinted background, explicitly highlighted borders, and a scaled-up hover state. 
 
 ---
 
@@ -418,14 +422,13 @@ All routes are served under both `/` (Hungarian default) and `/en/` (English pre
 | `/` | `Index` (landing) | No | Public — featured articles, CMS sections; authenticated users see live `QuickPulse` instead of static mood preview |
 | `/library` | `Library` | No | Full library with search & category filter |
 | `/library/:id` | `Article` | No | Individual article detail page with bilingual content |
-| `/auth` | `Auth` (login/signup) | No | Compact centered auth card with reduced control heights and streamlined spacing; uses existing auth design tokens unchanged |
-| `/dashboard` | Redirect → `/journal` | — | Legacy redirect |
-| `/journal` | `CheckIn` | Yes | **Unified** — Quick Pulse + ObservationStepper + calendar feed + mood trends + pattern charts |
-| `/surveys` | `Surveys` | Yes | Tabbed view: questionnaire filler + score history with trend charts |
+| `/auth` | `Auth` (login/signup) | No | Compact centered auth card with reduced control heights and streamlined spacing |
+| `/journal` | `CheckIn` | Yes | **Unified Emotional Hub** — Primary workspace for Quick Pulse, ObservationStepper, calendar feed, mood trends, and pattern charts. Replaces the legacy separate Journal and Timeline pages. |
+| `/surveys` | `Surveys` | Yes | Tabbed view: questionnaire filler (with stepper mode) + score history with trend charts |
 | `/export` | `Export` | Yes | Personal data export (JSON, FHIR, therapist BNO summary) |
-| `/profile` | `Profile` | Yes | Display name, role management, data export |
+| `/profile` | `Profile` | Yes | Identity management, role management, subject registry, and data export. |
 | `/manage-library` | `ManageLibrary` | Yes (editor+) | Article CRUD with bilingual fields |
-| `/manage-questionnaires` | `SelfChecks` | Yes (editor+) | Questionnaire management with scoring, reverse scoring, question duplication, drag-and-drop reordering, question numbering |
+| `/manage-questionnaires` | `SelfChecks` | Yes (editor+) | Questionnaire management with logic jump editor, scoring, and cloning. |
 | `/manage-landing` | `ManageLanding` | Yes (editor+) | Landing page CMS |
 | `/manage-users` | `ManageUsers` | Yes (admin) | User role assignment |
 | `/analyst-export` | `AnalystExport` | Yes (analyst) | Anonymized aggregate data download |
