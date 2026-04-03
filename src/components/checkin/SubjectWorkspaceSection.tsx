@@ -19,7 +19,7 @@ import type { EntryModalPrefill } from '@/components/checkin/EntryModal';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
-import { FChevronDown, FTrendingUp, FUser, FUsers } from '@/components/icons/FreudIcons';
+import { FChevronDown, FClose, FTrendingUp, FUser, FUsers } from '@/components/icons/FreudIcons';
 import RecapBanner from '@/components/checkin/RecapBanner';
 import MoodTrendChart from '@/components/timeline/MoodTrendChart';
 import PatternChart from '@/components/timeline/PatternChart';
@@ -64,6 +64,10 @@ const SubjectWorkspaceSection = ({
   const [reflectObsId, setReflectObsId] = useState<string | null>(null);
   const [recapDismissed, setRecapDismissed] = useState(false);
   const [sectionOpen, setSectionOpen] = useState(true);
+  const [dismissedPatterns, setDismissedPatterns] = useState<string[]>(() => {
+    const saved = localStorage.getItem(`grit_dismissed_patterns_${subject.id ?? 'self'}`);
+    return saved ? JSON.parse(saved) : [];
+  });
 
   const refresh = useCallback(() => setRefreshKey((key) => key + 1), []);
   const isSelfContext = subject.type === 'self';
@@ -120,6 +124,14 @@ const SubjectWorkspaceSection = ({
     setObservationModalDate(format(targetDate, 'yyyy-MM-dd'));
     setObservationModalOpen(true);
   };
+  
+  const handleDismissPattern = (name: string) => {
+    const updated = [...dismissedPatterns, name];
+    setDismissedPatterns(updated);
+    localStorage.setItem(`grit_dismissed_patterns_${subject.id ?? 'self'}`, JSON.stringify(updated));
+  };
+
+  const visibleNudges = nudges.filter(n => !dismissedPatterns.includes(n.name));
 
   return (
     <ScopedStanceProvider
@@ -265,16 +277,30 @@ const SubjectWorkspaceSection = ({
 
                   {/* Sidebar-style content in Focus mode */}
                   <div className={cn("flex flex-col gap-6", !isParallel ? "lg:col-span-4" : "w-full")}>
-                    {nudges.length > 0 && (
-                      <div className="surface-card p-4 flex items-start gap-3 animate-slide-in shadow-sm">
-                        <FTrendingUp className="h-4 w-4 text-primary mt-0.5 shrink-0" />
-                        <div className="space-y-1">
-                          {nudges.map((nudge) => (
-                            <p key={nudge.name} className="text-sm text-foreground">
-                              {t.timeline.patternNudge.replace('{name}', nudge.name).replace('{count}', String(nudge.count))}
-                            </p>
-                          ))}
-                        </div>
+                    {visibleNudges.length > 0 && (
+                      <div className="flex flex-col gap-3">
+                        {visibleNudges.map((nudge) => (
+                          <div key={nudge.name} className="surface-card p-5 pr-10 flex items-start gap-4 animate-slide-in shadow-sm relative group">
+                            <button 
+                              onClick={() => handleDismissPattern(nudge.name)}
+                              className="absolute top-3 right-3 p-1.5 rounded-full hover:bg-muted transition-colors opacity-0 group-hover:opacity-100 focus:opacity-100"
+                              aria-label={t.common.close || 'Close'}
+                            >
+                              <FClose className="h-3.5 w-3.5 text-muted-foreground" />
+                            </button>
+                            <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
+                              <FTrendingUp className="h-4 w-4 text-primary" />
+                            </div>
+                            <div className="space-y-1">
+                              <p className="text-sm font-medium text-foreground leading-snug">
+                                {t.timeline.patternNudge.replace('{name}', nudge.name).replace('{count}', String(nudge.count))}
+                              </p>
+                              <p className="text-[10px] text-muted-foreground uppercase tracking-widest font-semibold">
+                                {t.timeline.patternDetected || 'Minta észlelve'}
+                              </p>
+                            </div>
+                          </div>
+                        ))}
                       </div>
                     )}
 
