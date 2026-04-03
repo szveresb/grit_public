@@ -181,7 +181,7 @@ const Export = () => {
 
   return (
     <DashboardLayout>
-      <div className="max-w-lg mx-auto w-full space-y-8">
+      <div className="max-w-lg mx-auto w-full space-y-6">
         <div>
           <h1 className="text-lg md:text-xl font-bold tracking-tight text-foreground">{t.export.title}</h1>
           <p className="mt-1 text-sm text-muted-foreground leading-relaxed">{t.export.subtitle}</p>

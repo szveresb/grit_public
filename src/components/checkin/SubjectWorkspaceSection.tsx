@@ -180,30 +180,22 @@ const SubjectWorkspaceSection = ({
               !isParallel && "lg:grid lg:grid-cols-12 lg:gap-8 space-y-6 lg:space-y-0"
             )}>
               
-              {/* Main Column: Insights & Clinical Tools */}
-              <div className={cn("flex flex-col gap-6", !isParallel ? "lg:col-span-8" : "w-full")}>
+              {/* Subject Content: Action -> Result -> Context */}
+              <div className="flex flex-col gap-6 w-full">
                 
-                {isSelfContext && daysSinceGlobalActivity !== null && daysSinceGlobalActivity >= RECAP_INACTIVITY_DAYS && !recapDismissed && !isParallel && (
-                  <RecapBanner
-                    days={daysSinceGlobalActivity}
-                    onCatchUp={() => openEntryModal()}
-                    onDismiss={() => setRecapDismissed(true)}
-                  />
-                )}
-
-                {nudges.length > 0 && (
-                  <div className="surface-card p-4 flex items-start gap-3 animate-slide-in">
-                    <FTrendingUp className="h-4 w-4 text-primary mt-0.5 shrink-0" />
-                    <div className="space-y-1">
-                      {nudges.map((nudge) => (
-                        <p key={nudge.name} className="text-sm text-foreground">
-                          {t.timeline.patternNudge.replace('{name}', nudge.name).replace('{count}', String(nudge.count))}
-                        </p>
-                      ))}
-                    </div>
+                {/* 1. QuickPulse Entry (The Action) */}
+                <ConsentGate consentKey="mood_tracking">
+                  <div className={cn("surface-card animate-scale-in", isParallel ? "p-4" : "p-6")}>
+                    <QuickPulse
+                      key={subject.id ?? 'self'}
+                      subjectId={subject.type === 'relative' ? subject.id : null}
+                      onPulseSaved={refresh}
+                      compact={isParallel}
+                    />
                   </div>
-                )}
+                </ConsentGate>
 
+                {/* 2. Mood Trend Chart (The Result / 'Quick Pulse Chart') */}
                 <ConsentGate consentKey="mood_tracking">
                   <div className="animate-fade-in">
                     {moodLoading ? (
@@ -225,81 +217,99 @@ const SubjectWorkspaceSection = ({
                   </div>
                 </ConsentGate>
 
-                {/* Observation Stepper: Moved to Main Focus Area */}
-                <Collapsible open={observationOpen} onOpenChange={setObservationOpen}>
-                  <CollapsibleTrigger className={cn("surface-card w-full flex items-center justify-between hover:border-primary/30 transition-colors", isParallel ? "p-4" : "p-5")}>
-                    <h2 className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
-                      {t.checkIn.whatHappenedTitle}
-                    </h2>
-                    <FChevronDown className={cn('h-4 w-4 text-muted-foreground transition-transform', observationOpen && 'rotate-180')} />
-                  </CollapsibleTrigger>
-                  <CollapsibleContent className={cn("surface-card border-t-0 rounded-t-none -mt-3", isParallel ? "p-4" : "p-6")}>
-                    <ObservationStepper onLogged={refresh} />
-                  </CollapsibleContent>
-                </Collapsible>
-
-                {!isParallel && (
-                  <div className="surface-card p-5 animate-fade-in">
-                    <h2 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-4">
-                      {t.timeline.allActivity}
-                    </h2>
-                    {calendarLoading ? (
-                      <div className="space-y-3">
-                        <Skeleton className="h-4 w-36 rounded-full" />
-                        <Skeleton className="h-24 w-full rounded-3xl" />
-                      </div>
-                    ) : timelineItems.length === 0 ? (
-                      <p className="text-sm text-muted-foreground">{t.timeline.noActivity}</p>
-                    ) : (
-                      <HorizontalTimeline items={timelineItems} lang={lang} t={t} />
-                    )}
-                  </div>
-                )}
-              </div>
-
-              {/* Sidebar Column: Quick Tracking & Context */}
-              <div className={cn("flex flex-col gap-6", !isParallel ? "lg:col-span-4" : "w-full")}>
-                <ConsentGate consentKey="mood_tracking">
-                  <div className={cn("surface-card animate-scale-in", isParallel ? "p-4" : "p-6")}>
-                    <QuickPulse
-                      key={subject.id ?? 'self'}
-                      subjectId={subject.type === 'relative' ? subject.id : null}
-                      onPulseSaved={refresh}
-                      compact={isParallel}
-                    />
-                  </div>
-                </ConsentGate>
-
-                <ConsentGate consentKey="pattern_detection">
-                  <div className="animate-fade-in">
-                    <PatternChart logs={obsLogs} conceptMap={conceptMap} compact={isParallel} />
-                  </div>
-                </ConsentGate>
-
-                {!isParallel && (
-                  <div className="surface-card p-6 animate-fade-in">
-                    {calendarLoading ? (
-                      <div className="space-y-4">
-                        <div className="flex items-center justify-between">
-                          <Skeleton className="h-9 w-9 rounded-full" />
-                          <Skeleton className="h-4 w-28 rounded-full" />
-                          <Skeleton className="h-9 w-9 rounded-full" />
-                        </div>
-                        <Skeleton className="h-52 w-full rounded-3xl" />
-                      </div>
-                    ) : (
-                      <FeedCalendar
-                        items={calendarItems}
-                        currentMonth={calendarMonth}
-                        onMonthChange={setCalendarMonth}
-                        selectedDate={calendarSelectedDate}
-                        onSelectDate={setCalendarSelectedDate}
-                        onEntryClick={handleEntryClick}
-                        onCreateEntry={(date) => isSelfContext ? openEntryModal(date) : openObservationModal(date)}
+                {/* 3. Detailed Actions & Patterns */}
+                <div className={cn(
+                  "w-full grid gap-6 items-start",
+                  !isParallel ? "lg:grid-cols-12" : "grid-cols-1"
+                )}>
+                  {/* Left-leaning content in Focus mode */}
+                  <div className={cn("flex flex-col gap-6", !isParallel ? "lg:col-span-8" : "w-full")}>
+                    {isSelfContext && daysSinceGlobalActivity !== null && daysSinceGlobalActivity >= RECAP_INACTIVITY_DAYS && !recapDismissed && !isParallel && (
+                      <RecapBanner
+                        days={daysSinceGlobalActivity}
+                        onCatchUp={() => openEntryModal()}
+                        onDismiss={() => setRecapDismissed(true)}
                       />
                     )}
+
+                    {nudges.length > 0 && (
+                      <div className="surface-card p-4 flex items-start gap-3 animate-slide-in">
+                        <FTrendingUp className="h-4 w-4 text-primary mt-0.5 shrink-0" />
+                        <div className="space-y-1">
+                          {nudges.map((nudge) => (
+                            <p key={nudge.name} className="text-sm text-foreground">
+                              {t.timeline.patternNudge.replace('{name}', nudge.name).replace('{count}', String(nudge.count))}
+                            </p>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
+                    <Collapsible open={observationOpen} onOpenChange={setObservationOpen}>
+                      <CollapsibleTrigger className={cn("surface-card w-full flex items-center justify-between hover:border-primary/30 transition-colors", isParallel ? "p-4" : "p-5")}>
+                        <h2 className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+                          {t.checkIn.whatHappenedTitle}
+                        </h2>
+                        <FChevronDown className={cn('h-4 w-4 text-muted-foreground transition-transform', observationOpen && 'rotate-180')} />
+                      </CollapsibleTrigger>
+                      <CollapsibleContent className={cn("surface-card border-t-0 rounded-t-none -mt-3", isParallel ? "p-4" : "p-6")}>
+                        <ObservationStepper onLogged={refresh} />
+                      </CollapsibleContent>
+                    </Collapsible>
+
+                    {!isParallel && (
+                      <div className="surface-card p-5 animate-fade-in">
+                        <h2 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-4">
+                          {t.timeline.allActivity}
+                        </h2>
+                        {calendarLoading ? (
+                          <div className="space-y-3">
+                            <Skeleton className="h-4 w-36 rounded-full" />
+                            <Skeleton className="h-24 w-full rounded-3xl" />
+                          </div>
+                        ) : timelineItems.length === 0 ? (
+                          <p className="text-sm text-muted-foreground">{t.timeline.noActivity}</p>
+                        ) : (
+                          <HorizontalTimeline items={timelineItems} lang={lang} t={t} />
+                        )}
+                      </div>
+                    )}
                   </div>
-                )}
+
+                  {/* Sidebar-style content in Focus mode */}
+                  <div className={cn("flex flex-col gap-6", !isParallel ? "lg:col-span-4" : "w-full")}>
+                    <ConsentGate consentKey="pattern_detection">
+                      <div className="animate-fade-in">
+                        <PatternChart logs={obsLogs} conceptMap={conceptMap} compact={isParallel} />
+                      </div>
+                    </ConsentGate>
+
+                    {!isParallel && (
+                      <div className="surface-card p-6 animate-fade-in">
+                        {calendarLoading ? (
+                          <div className="space-y-4">
+                            <div className="flex items-center justify-between">
+                              <Skeleton className="h-9 w-9 rounded-full" />
+                              <Skeleton className="h-4 w-28 rounded-full" />
+                              <Skeleton className="h-9 w-9 rounded-full" />
+                            </div>
+                            <Skeleton className="h-52 w-full rounded-3xl" />
+                          </div>
+                        ) : (
+                          <FeedCalendar
+                            items={calendarItems}
+                            currentMonth={calendarMonth}
+                            onMonthChange={setCalendarMonth}
+                            selectedDate={calendarSelectedDate}
+                            onSelectDate={setCalendarSelectedDate}
+                            onEntryClick={handleEntryClick}
+                            onCreateEntry={(date) => isSelfContext ? openEntryModal(date) : openObservationModal(date)}
+                          />
+                        )}
+                      </div>
+                    )}
+                  </div>
+                </div>
               </div>
             </div>
           </CollapsibleContent>
