@@ -46,7 +46,7 @@ const SubjectCardRegistry = () => {
 
   return (
     <section className="mb-8 md:mb-12">
-      <div className="mb-6 flex items-center justify-between gap-3 max-w-md mx-auto lg:max-w-none">
+      <div className="mb-6 flex items-center justify-between gap-3 max-w-md mx-auto md:max-w-none">
         <div>
           <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
             {t.subjects.registryLabel}

@@ -47,10 +47,10 @@ const DashboardShell = ({
         <main className="flex-1 flex flex-col min-w-0">
           <header className="h-14 flex items-center border-b border-context-border/70 px-4 md:px-6 bg-context-surface gap-3">
             <SidebarTrigger />
-            <Link to={localePath('/')} className="lg:hidden text-sm font-bold tracking-tight text-foreground">
+            <Link to={localePath('/')} className="md:hidden text-sm font-bold tracking-tight text-foreground">
               Grit.hu
             </Link>
-            <nav className="hidden lg:flex items-center justify-center flex-1 gap-8">
+            <nav className="hidden md:flex items-center justify-center flex-1 gap-8">
               <a href={`${localePath('/')}#library`} className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">{t.nav.library}</a>
               <button onClick={() => handleGatedClick('/surveys')} className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1.5">
                 {t.nav.surveys}
@@ -60,7 +60,7 @@ const DashboardShell = ({
               </button>
               <a href={`${localePath('/')}#about`} className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">{t.nav.about}</a>
             </nav>
-            <div className="ml-auto lg:ml-4 flex items-center gap-2">
+            <div className="ml-auto md:ml-4 flex items-center gap-2">
               <LanguageToggle />
               {user && (
                 <>

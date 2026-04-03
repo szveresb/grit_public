@@ -143,12 +143,12 @@ const FeedCalendar = ({ items, currentMonth, onMonthChange, selectedDate, onSele
       </div>
 
       {/* Moon legend */}
-      <div className="flex items-center gap-4 pt-2 border-t border-border/50">
-        <span className="text-xs text-muted-foreground">{t.moon.title}:</span>
-        <span className="text-xs">🌑 {t.moon.phases.new}</span>
-        <span className="text-xs">🌓 {t.moon.phases.firstQ}</span>
-        <span className="text-xs">🌕 {t.moon.phases.full}</span>
-        <span className="text-xs">🌗 {t.moon.phases.lastQ}</span>
+      <div className="flex items-center gap-x-4 gap-y-2 flex-wrap pt-2 border-t border-border/50">
+        <span className="text-xs text-muted-foreground whitespace-nowrap">{t.moon.title}:</span>
+        <span className="text-xs whitespace-nowrap">🌑 {t.moon.phases.new}</span>
+        <span className="text-xs whitespace-nowrap">🌓 {t.moon.phases.firstQ}</span>
+        <span className="text-xs whitespace-nowrap">🌕 {t.moon.phases.full}</span>
+        <span className="text-xs whitespace-nowrap">🌗 {t.moon.phases.lastQ}</span>
       </div>
 
       {/* Selected day detail */}
