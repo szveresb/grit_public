@@ -132,12 +132,16 @@ const Index = () => {
                 title="The Anatomy of Projection"
                 category="Sensemaking"
                 excerpt="How externalizing emotional state impacts objective truth."
+                source={null}
+                url={null}
               />
               <ArticleCard
                 id="mock-3"
                 title="Establishing Neutral Boundaries"
                 category="Strategy"
                 excerpt="Tactical approaches to maintaining baseline stability in crisis."
+                source={null}
+                url={null}
               />
             </div>
           </div>

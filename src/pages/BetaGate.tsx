@@ -21,7 +21,7 @@ const BetaGate = () => {
 
     setLoading(true);
     try {
-      const { data, error } = await supabase.rpc('redeem_invite_access', {
+      const { data, error } = await supabase.rpc('redeem_invite_access' as any, {
         invite_code: code.trim()
       });
 

@@ -73,7 +73,7 @@ const ManageUsers = () => {
              <Button 
                 onClick={async () => {
                   const newCode = 'BETA-' + Math.random().toString(36).substring(2, 8).toUpperCase();
-                  const { error } = await supabase.from('invite_codes').insert({ code: newCode, created_by: user!.id });
+                  const { error } = await supabase.from('invite_codes' as any).insert({ code: newCode, created_by: user!.id } as any);
                   if (error) toast.error(friendlyDbError(error));
                   else { toast.success('Code generated!'); fetchUsers(); }
                 }}
