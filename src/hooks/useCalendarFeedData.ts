@@ -27,6 +27,7 @@ interface ConceptEntry {
 }
 
 interface PatternNudge {
+  id: string;
   name: string;
   count: number;
 }
@@ -166,11 +167,14 @@ export const useCalendarFeedData = ({
           };
         });
 
-        const weekStart = format(startOfWeek(new Date(), { weekStartsOn: 1 }), 'yyyy-MM-dd');
-        const weekEnd = format(endOfWeek(new Date(), { weekStartsOn: 1 }), 'yyyy-MM-dd');
-        const weekObs = observationData.filter((entry) => entry.logged_at >= weekStart && entry.logged_at <= weekEnd);
+        // Pattern Discovery Logic (Looking at the last 30 days)
+        const thirtyDaysAgo = new Date();
+        thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+        const sinceDate = format(thirtyDaysAgo, 'yyyy-MM-dd');
+        
+        const recentObs = observationData.filter((entry) => entry.logged_at >= sinceDate);
         const countByConceptId: Record<string, number> = {};
-        weekObs.forEach((entry) => {
+        recentObs.forEach((entry) => {
           countByConceptId[entry.concept_id] = (countByConceptId[entry.concept_id] || 0) + 1;
         });
 
@@ -179,7 +183,7 @@ export const useCalendarFeedData = ({
           if (count < 3) continue;
           const concept = nextConceptMap[conceptId];
           const name = concept ? (lang === 'en' ? concept.name_en : concept.name_hu) : '';
-          if (name) detectedNudges.push({ name, count });
+          if (name) detectedNudges.push({ id: conceptId, name, count });
         }
 
         setNudges(detectedNudges);

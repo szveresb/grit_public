@@ -131,7 +131,7 @@ const SubjectWorkspaceSection = ({
     localStorage.setItem(`grit_dismissed_patterns_${subject.id ?? 'self'}`, JSON.stringify(updated));
   };
 
-  const visibleNudges = nudges.filter(n => !dismissedPatterns.includes(n.name));
+  const visibleNudges = nudges.filter(n => !dismissedPatterns.includes(n.id));
 
   return (
     <ScopedStanceProvider
@@ -280,11 +280,11 @@ const SubjectWorkspaceSection = ({
                     {visibleNudges.length > 0 && (
                       <div className="flex flex-col gap-3">
                         {visibleNudges.map((nudge) => (
-                          <div key={nudge.name} className="surface-card p-5 pr-10 flex items-start gap-4 animate-slide-in shadow-sm relative group">
+                          <div key={nudge.id} className="surface-card p-5 pr-10 flex items-start gap-4 animate-slide-in shadow-sm relative group">
                             <button 
-                              onClick={() => handleDismissPattern(nudge.name)}
+                              onClick={() => handleDismissPattern(nudge.id)}
                               className="absolute top-3 right-3 p-1.5 rounded-full hover:bg-muted transition-colors opacity-0 group-hover:opacity-100 focus:opacity-100"
-                              aria-label={t.ui?.close || 'Close'}
+                              aria-label={t.ui?.close || t.common?.close || 'Close'}
                             >
                               <FClose className="h-3.5 w-3.5 text-muted-foreground" />
                             </button>
