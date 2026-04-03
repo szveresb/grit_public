@@ -9,7 +9,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
 import { friendlyDbError } from '@/lib/db-error';
-import { FArrowLeft, FHeart, FMessageCircle, FShield, FCheck, FUsers } from '@/components/icons/FreudIcons';
+import { FArrowLeft, FHeart, FMessageCircle, FShield, FCheck, FUsers, FHeartPulse } from '@/components/icons/FreudIcons';
 import StanceBanner from '@/components/premium/StanceBanner';
 import { cn } from '@/lib/utils';
 
@@ -34,6 +34,7 @@ const iconMap: Record<string, React.ReactNode> = {
   heart: <FHeart className="h-5 w-5" />,
   'message-circle': <FMessageCircle className="h-5 w-5" />,
   shield: <FShield className="h-5 w-5" />,
+  'heart-pulse': <FHeartPulse className="h-5 w-5" />,
 };
 
 const ObservationStepper = ({ onLogged, observationDate }: { onLogged?: () => void; observationDate?: string }) => {
