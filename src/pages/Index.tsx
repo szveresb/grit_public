@@ -30,7 +30,7 @@ const Index = () => {
     if (!email) return;
     setSubmitting(true);
     
-    const { error } = await supabase.from('waitlist_emails').insert({ email });
+    const { error } = await supabase.from('waitlist_emails' as any).insert({ email } as any);
     
     if (error) {
       // 23505 is Postgres unique_violation
