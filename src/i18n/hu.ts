@@ -596,7 +596,7 @@ export const hu: Dictionary = {
     registryCardHint: 'Az aktív kártya állítja be a globális naplózási kontextust.',
     selfCardTitle: 'Saját profil',
     selfCardSubtitle: 'A saját napló-, hangulat- és kérdőívadataid',
-    selfWorkspaceLabel: 'Saját profil',
+    selfWorkspaceLabel: 'Személyes munkatér',
     supportedWorkspaceLabel: 'Támogatott személy',
     activeBadge: 'Aktív',
     inactiveBadge: 'Készenlét',

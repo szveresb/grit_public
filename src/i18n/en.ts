@@ -597,7 +597,7 @@ export const en: Dictionary = {
     registryCardHint: 'The active card sets the global logging context.',
     selfCardTitle: 'Self',
     selfCardSubtitle: 'Your own journal, mood, and survey data',
-    selfWorkspaceLabel: 'Self profile',
+    selfWorkspaceLabel: 'Personal workspace',
     supportedWorkspaceLabel: 'Supported person',
     activeBadge: 'Active',
     inactiveBadge: 'Standby',

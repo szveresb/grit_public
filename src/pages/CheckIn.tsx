@@ -39,12 +39,14 @@ const CheckIn = () => {
       });
   }, [user]);
 
+  const userName = user?.user_metadata?.display_name || t.subjects.selfCardTitle;
+
   const workspaceCards = useMemo(() => [
     {
       key: 'self',
       type: 'self' as const,
       id: null,
-      name: t.subjects.selfCardTitle,
+      name: userName,
       subtitle: t.subjects.selfCardSubtitle,
     },
     ...subjects.map((subject) => ({
@@ -58,7 +60,7 @@ const CheckIn = () => {
         ] ?? subject.relationshipType,
       relationshipType: subject.relationshipType,
     })),
-  ], [subjects, t.subjects.otherLabel, t.subjects.relationshipTypes, t.subjects.selfCardSubtitle, t.subjects.selfCardTitle]);
+  ], [subjects, t.subjects.otherLabel, t.subjects.relationshipTypes, t.subjects.selfCardSubtitle, userName]);
 
   return (
     <DashboardLayout showSubjectRegistry={false} showContextToolPanel={false}>

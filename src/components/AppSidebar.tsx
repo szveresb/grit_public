@@ -27,6 +27,7 @@ const AppSidebar = () => {
   const isAdmin = hasRole('admin');
 
   const currentPath = stripLangPrefix(location.pathname);
+  const accountTitle = user?.user_metadata?.display_name || user?.email || t.nav.account;
 
   const navItems = [
     { title: t.nav.home, url: '/', icon: FHome },
@@ -34,7 +35,7 @@ const AppSidebar = () => {
     { title: t.timeline.pageTitle, url: '/timeline', icon: FTimeline },
     { title: t.nav.surveys, url: '/surveys', icon: FFileText },
     { title: t.nav.dataExport, url: '/export', icon: FDownload },
-    { title: t.nav.account, url: '/profile', icon: FUser },
+    { title: accountTitle, url: '/profile', icon: FUser },
   ];
 
   const topMenuItems = [
