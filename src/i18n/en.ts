@@ -91,6 +91,7 @@ export const en: Dictionary = {
     heroLabelBack: 'Back to Waitlist',
     heroLabelMember: 'Already a member?',
     heroLabelSignIn: 'Sign In',
+    verifyContinue: 'Verify & Continue',
   },
 
   article: {
