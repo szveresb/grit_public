@@ -189,7 +189,7 @@ const SubjectWorkspaceSection = ({
           <CollapsibleContent className="space-y-6" forceMount={mode !== 'standalone' ? true : undefined}>
             <div className={cn(
               "w-full",
-              !isParallel && "lg:grid lg:grid-cols-12 lg:gap-8 space-y-6 lg:space-y-0"
+              !isParallel && "md:grid md:grid-cols-12 md:gap-8 space-y-6 md:space-y-0"
             )}>
               
               {/* Subject Content: Action -> Result -> Context */}
@@ -232,10 +232,10 @@ const SubjectWorkspaceSection = ({
                 {/* 3. Detailed Actions & Patterns */}
                 <div className={cn(
                   "w-full grid gap-6 items-start",
-                  !isParallel ? "lg:grid-cols-12" : "grid-cols-1"
+                  !isParallel ? "md:grid-cols-12" : "grid-cols-1"
                 )}>
                   {/* Left-leaning content in Focus mode */}
-                  <div className={cn("flex flex-col gap-6", !isParallel ? "lg:col-span-8" : "w-full")}>
+                  <div className={cn("flex flex-col gap-6", !isParallel ? "md:col-span-8" : "w-full")}>
                     {isSelfContext && daysSinceGlobalActivity !== null && daysSinceGlobalActivity >= RECAP_INACTIVITY_DAYS && !recapDismissed && !isParallel && (
                       <RecapBanner
                         days={daysSinceGlobalActivity}
@@ -276,7 +276,7 @@ const SubjectWorkspaceSection = ({
                   </div>
 
                   {/* Sidebar-style content in Focus mode */}
-                  <div className={cn("flex flex-col gap-6", !isParallel ? "lg:col-span-4" : "w-full")}>
+                  <div className={cn("flex flex-col gap-6", !isParallel ? "md:col-span-4" : "w-full")}>
                     {visibleNudges.length > 0 && (
                       <div className="flex flex-col gap-3">
                         {visibleNudges.map((nudge) => (

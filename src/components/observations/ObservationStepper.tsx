@@ -11,6 +11,7 @@ import { toast } from 'sonner';
 import { friendlyDbError } from '@/lib/db-error';
 import { FArrowLeft, FHeart, FMessageCircle, FShield, FCheck, FUsers } from '@/components/icons/FreudIcons';
 import StanceBanner from '@/components/premium/StanceBanner';
+import { cn } from '@/lib/utils';
 
 interface Category {
   id: string;
@@ -116,15 +117,17 @@ const ObservationStepper = ({ onLogged, observationDate }: { onLogged?: () => vo
   return (
     <div className="space-y-5">
       {/* Step indicator */}
-      <div className="flex items-center gap-2 justify-center">
+      <div className="flex items-center justify-center w-full max-w-xs mx-auto px-2">
         {stepLabels.map((label, i) => (
-          <div key={i} className="flex items-center gap-2">
-            <div className={`h-7 w-7 rounded-full flex items-center justify-center text-xs font-semibold transition-all ${
+          <div key={i} className={cn("flex items-center", i < stepLabels.length - 1 && "flex-1")}>
+            <div className={`h-7 w-7 rounded-full flex items-center justify-center text-xs font-semibold transition-all shrink-0 ${
               i <= step ? 'bg-primary text-primary-foreground' : 'bg-muted text-muted-foreground'
             }`}>
               {i < step ? <FCheck className="h-3.5 w-3.5" /> : i + 1}
             </div>
-            {i < stepLabels.length - 1 && <div className={`w-6 h-0.5 ${i < step ? 'bg-primary' : 'bg-border'}`} />}
+            {i < stepLabels.length - 1 && (
+              <div className={`flex-1 h-0.5 mx-2 min-w-[0.5rem] max-w-[2rem] ${i < step ? 'bg-primary' : 'bg-border'}`} />
+            )}
           </div>
         ))}
       </div>

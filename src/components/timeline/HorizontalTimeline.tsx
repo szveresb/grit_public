@@ -99,11 +99,13 @@ const HorizontalTimeline = ({ items, lang, t }: Props) => {
   // Find the selected item for detail card
   const selectedItem = selectedId ? items.find(i => i.id === selectedId) : null;
 
-  // Only force a min-width if there are many groups; otherwise let flex fill the card
-  const needsScroll = groupedLTR.length > 12;
-  const trackStyle = needsScroll
-    ? { width: `${groupedLTR.length * DOT_GAP * scale}px`, minHeight: 80 }
-    : { width: '100%', minHeight: 80 };
+  // Force a stable width based on groups to prevent compression overlap
+  // Use max-content to prevent compression overlap without fragile JS width calculations
+  const trackStyle = { 
+    minWidth: '100%', 
+    width: 'max-content',
+    minHeight: 80 
+  };
 
   return (
     <div className="space-y-3">
@@ -140,7 +142,7 @@ const HorizontalTimeline = ({ items, lang, t }: Props) => {
           <div className="absolute left-0 right-0 top-[24px] h-px bg-border" />
 
           {/* Date groups */}
-          <div className="relative flex justify-between" style={{ paddingLeft: 12, paddingRight: 12 }}>
+          <div className="relative flex gap-x-8 px-4">
             {groupedLTR.map(([dateKey, dayItems], groupIdx) => {
               const isMonthBoundary = monthBoundaries.has(groupIdx);
               return (

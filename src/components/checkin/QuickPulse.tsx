@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useLanguage } from '@/hooks/useLanguage';
 import { useStance } from '@/hooks/useStance';
@@ -10,13 +10,7 @@ import {
   FMoodStruggling, FMoodUneasy, FMoodOkay, FMoodGood, FMoodStrong,
 } from '@/components/icons/FreudIcons';
 
-const moodIcons = [
-  <FMoodStruggling key="0" className="w-6 h-6" />,
-  <FMoodUneasy key="1" className="w-6 h-6" />,
-  <FMoodOkay key="2" className="w-6 h-6" />,
-  <FMoodGood key="3" className="w-6 h-6" />,
-  <FMoodStrong key="4" className="w-6 h-6" />,
-];
+const moodIcons = [FMoodStruggling, FMoodUneasy, FMoodOkay, FMoodGood, FMoodStrong];
 
 export interface MoodSelection {
   impact_level: number;
@@ -24,6 +18,7 @@ export interface MoodSelection {
 }
 
 interface QuickPulseProps {
+  key?: React.Key;
   onPulseSaved?: () => void;
   onMoodSelected?: (mood: MoodSelection) => void;
   compact?: boolean;
@@ -111,7 +106,7 @@ const QuickPulse = ({
       )}
 
       <div className="flex justify-center gap-2 sm:gap-3">
-        {moodIcons.map((icon, i) => {
+        {moodIcons.map((Icon, i) => {
           const opacityLevels = ['opacity-30', 'opacity-50', 'opacity-70', 'opacity-85', 'opacity-100'];
           return (
             <div key={i} className="flex flex-col items-center gap-1.5">
@@ -122,7 +117,9 @@ const QuickPulse = ({
                   saved ? 'opacity-50 pointer-events-none' : 'hover:border-primary/50'
                 } border-border bg-card/60 backdrop-blur`}
               >
-                <span className={`text-primary ${opacityLevels[i]}`}>{icon}</span>
+                <span className={`text-primary ${opacityLevels[i]}`}>
+                  <Icon className="w-6 h-6" />
+                </span>
               </button>
               <span className="text-[9px] sm:text-[10px] font-medium text-muted-foreground">{moodLabels[i]}</span>
             </div>
