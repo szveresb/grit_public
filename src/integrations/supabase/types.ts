@@ -745,6 +745,7 @@ export type Database = {
           user_count: number
         }[]
       }
+      check_invite_code: { Args: { invite_code: string }; Returns: boolean }
       has_any_role: {
         Args: {
           _roles: Database["public"]["Enums"]["app_role"][]
