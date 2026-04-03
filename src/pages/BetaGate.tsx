@@ -33,7 +33,7 @@ const BetaGate = () => {
         // Force navigate to protected route which will now pass the beta_access check
         navigate(localePath('/journal'));
       } else {
-        toast.error(t.common?.error || 'Invalid or already used invite code.');
+        toast.error('Invalid or already used invite code.');
       }
     } catch (err: any) {
       toast.error(err.message || 'An error occurred.');
