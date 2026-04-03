@@ -91,6 +91,7 @@ export const hu: Dictionary = {
     heroLabelBack: 'Vissza a várólistához',
     heroLabelMember: 'Már van fiókod?',
     heroLabelSignIn: 'Bejelentkezés',
+    verifyContinue: 'Ellenőrzés és tovább',
   },
 
   article: {
