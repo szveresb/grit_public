@@ -99,7 +99,9 @@ const Index = () => {
               {isRedeeming ? (
                 <form onSubmit={handleRedeemSubmit} className="space-y-3">
                   <div className="space-y-1">
-                    <p className="text-[10px] font-bold uppercase tracking-widest text-primary text-center mb-1">Enter Invitation Code</p>
+                    <p className="text-[10px] font-bold uppercase tracking-widest text-primary text-center mb-1">
+                      {t.landing.heroLabelCode}
+                    </p>
                     <Input 
                       required 
                       placeholder="XXXX-XXXX" 
@@ -110,21 +112,23 @@ const Index = () => {
                     />
                   </div>
                   <Button type="submit" className="w-full rounded-full h-11 font-semibold" disabled={submitting}>
-                    {submitting ? '...' : (t.landing?.joinWaitlist || 'Verify & Continue')}
+                    {submitting ? '...' : (t.landing.verifyContinue)}
                   </Button>
                   <button 
                     type="button" 
                     onClick={() => setIsRedeeming(false)}
                     className="w-full text-[10px] text-muted-foreground hover:text-foreground uppercase tracking-widest font-bold pt-1"
                   >
-                    Back to Waitlist
+                    {t.landing.heroLabelBack}
                   </button>
                 </form>
               ) : (
                 <>
                   <form onSubmit={handleWaitlistSubmit} className="space-y-3">
                     <div className="space-y-1">
-                      <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground text-center mb-1">New to Grit.hu?</p>
+                      <p className="text-[10px] font-bold uppercase tracking-widest text-muted-foreground text-center mb-1">
+                        {t.landing.heroLabelNew}
+                      </p>
                       <Input 
                         type="email" 
                         required 
@@ -143,14 +147,17 @@ const Index = () => {
                       onClick={() => setIsRedeeming(true)}
                       className="text-xs text-muted-foreground hover:text-foreground font-medium underline underline-offset-2"
                     >
-                      {t.landing?.gatedLoginCta || 'I have a code'}
+                      {t.landing.heroLabelInvite}
                     </button>
-                    <Link 
-                      to={localePath('/auth')}
-                      className="text-[10px] font-bold uppercase tracking-widest text-primary hover:opacity-80 transition-opacity"
-                    >
-                      Already a member? Sign In
-                    </Link>
+                    <div className="flex items-center gap-1.5 text-[10px] font-bold uppercase tracking-widest">
+                      <span className="text-muted-foreground">{t.landing.heroLabelMember}</span>
+                      <Link 
+                        to={localePath('/auth')}
+                        className="text-primary hover:opacity-80 transition-opacity"
+                      >
+                        {t.landing.heroLabelSignIn}
+                      </Link>
+                    </div>
                   </div>
                 </>
               )}
@@ -162,6 +169,31 @@ const Index = () => {
               </Button>
             </div>
           )}
+        </div>
+      </section>
+
+      {/* Features Section */}
+      <section className="relative z-10 px-4 md:px-8 py-16 max-w-4xl mx-auto">
+        <div className="text-center mb-12">
+          <h2 className="text-xl md:text-2xl font-bold tracking-tight text-foreground uppercase tracking-[0.2em] opacity-80">
+            {t.landing.featuresTitle}
+          </h2>
+        </div>
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-10">
+          {[t.landing.feature1, t.landing.feature2, t.landing.feature3, t.landing.feature4, t.landing.feature5].map((feature, idx) => (
+            <div key={idx} className="flex gap-4 group">
+              <div className="flex-shrink-0 w-10 h-10 rounded-2xl bg-accent/50 flex items-center justify-center text-primary group-hover:scale-110 transition-transform">
+                {idx === 0 && <FLock className="w-5 h-5" />}
+                {idx === 1 && <FLock className="w-5 h-5 scale-x-[-1]" />}
+                {idx === 2 && <FArrowRight className="w-5 h-5" />}
+                {idx === 3 && <FLock className="w-5 h-5" />}
+                {idx === 4 && <FArrowRight className="w-5 h-5" />}
+              </div>
+              <p className="text-sm md:text-base text-muted-foreground leading-relaxed pt-1.5 translate-y-[-2px]">
+                {feature}
+              </p>
+            </div>
+          ))}
         </div>
       </section>
 
@@ -184,9 +216,9 @@ const Index = () => {
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 filter blur-[6px] opacity-60 pointer-events-none select-none">
             <ArticleCard
               id="mock-1"
-              title="Recognizing High-Conflict Dynamics"
-              category="Foundation"
-              excerpt="Understanding the predictable patterns in complex relationship systems without resorting to clinical diagnostic labels."
+              title={lang === 'hu' ? 'A magas konfliktusú dinamikák felismerése' : 'Recognizing High-Conflict Dynamics'}
+              category={lang === 'hu' ? 'Alapok' : 'Foundation'}
+              excerpt={lang === 'hu' ? 'APredictálható mintázatok megértése összetett kapcsolati rendszerekben, klinikai diagnosztikai címkék nélkül.' : "Understanding the predictable patterns in complex relationship systems without resorting to clinical diagnostic labels."}
               source={null}
               url={null}
               featured
@@ -194,17 +226,17 @@ const Index = () => {
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
               <ArticleCard
                 id="mock-2"
-                title="The Anatomy of Projection"
-                category="Sensemaking"
-                excerpt="How externalizing emotional state impacts objective truth."
+                title={lang === 'hu' ? 'A projekció anatómiája' : 'The Anatomy of Projection'}
+                category={lang === 'hu' ? 'Értelmezés' : 'Sensemaking'}
+                excerpt={lang === 'hu' ? 'Hogyan befolyásolja az érzelmi állapot externalizálása az objektív valóságot.' : 'How externalizing emotional state impacts objective truth.'}
                 source={null}
                 url={null}
               />
               <ArticleCard
                 id="mock-3"
-                title="Establishing Neutral Boundaries"
-                category="Strategy"
-                excerpt="Tactical approaches to maintaining baseline stability in crisis."
+                title={lang === 'hu' ? 'Semleges határok felállítása' : 'Establishing Neutral Boundaries'}
+                category={lang === 'hu' ? 'Stratégia' : 'Strategy'}
+                excerpt={lang === 'hu' ? 'Taktikai megközelítések az alapszintű stabilitás fenntartásához válsághelyzetben.' : 'Tactical approaches to maintaining baseline stability in crisis.'}
                 source={null}
                 url={null}
               />

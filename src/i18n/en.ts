@@ -79,6 +79,18 @@ export const en: Dictionary = {
     gdpr: 'GDPR Compliance',
     viewAll: 'View all',
     viewSource: 'View source',
+    featuresTitle: 'Key Features',
+    feature1: 'Structured journal for recording observations',
+    feature2: 'Real-time charts of your observations',
+    feature3: 'Pattern recognition: identifying recurring patterns and triggers',
+    feature4: 'Secure operation: emergency exit, leak-free row-level security (RLS), data anonymization',
+    feature5: 'Summaries in Hungarian and English, for personal use or for sharing with health professionals',
+    heroLabelNew: 'New to Grit.hu?',
+    heroLabelInvite: 'I have an invite code',
+    heroLabelCode: 'Enter Invitation Code',
+    heroLabelBack: 'Back to Waitlist',
+    heroLabelMember: 'Already a member?',
+    heroLabelSignIn: 'Sign In',
   },
 
   article: {

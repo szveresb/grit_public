@@ -82,6 +82,18 @@ export interface Dictionary {
     gdpr: string;
     viewAll: string;
     viewSource: string;
+    featuresTitle: string;
+    feature1: string;
+    feature2: string;
+    feature3: string;
+    feature4: string;
+    feature5: string;
+    heroLabelNew: string;
+    heroLabelInvite: string;
+    heroLabelCode: string;
+    heroLabelBack: string;
+    heroLabelMember: string;
+    heroLabelSignIn: string;
   };
 
   // Article detail

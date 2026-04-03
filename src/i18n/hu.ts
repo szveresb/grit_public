@@ -79,6 +79,18 @@ export const hu: Dictionary = {
     gdpr: 'GDPR megfelelőség',
     viewAll: 'Összes megtekintése',
     viewSource: 'Forrás megtekintése',
+    featuresTitle: 'Fő funkciók',
+    feature1: 'Strukturált napló a megfigyelések rögzítésére',
+    feature2: 'Valós idejű grafikonok megfigyeléseidről',
+    feature3: 'Mintafelismerés: visszatérő mintázatok és kiváltó tényezők azonosítása',
+    feature4: 'Biztonságos működés: vészkilépés, szivárgásmentes sorszintű védelem (RLS), adat anonimizálás',
+    feature5: 'Összefoglalók magyar és angol nyelven, saját célra vagy egészségügyi szakemberekkel való megosztáshoz',
+    heroLabelNew: 'Új vagy a Grit.hu-n?',
+    heroLabelInvite: 'Van meghívó kódóm',
+    heroLabelCode: 'Add meg a meghívó kódót',
+    heroLabelBack: 'Vissza a várólistához',
+    heroLabelMember: 'Már van fiókod?',
+    heroLabelSignIn: 'Bejelentkezés',
   },
 
   article: {
