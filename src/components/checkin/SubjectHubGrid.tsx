@@ -94,7 +94,7 @@ const SubjectHubGrid = ({ onSelect, onToggleCompare, onStartParallel, selectedKe
                       </p>
                       <p className="text-xs text-muted-foreground">
                         {selectedKeys.length >= 2 
-                          ? `${selectedKeys.length} ${t.analyst_export?.title || "profil"}`
+                          ? `${selectedKeys.length} ${t.analystExport?.title || "profil"}`
                           : t.subjects.registryHint
                         }
                       </p>
