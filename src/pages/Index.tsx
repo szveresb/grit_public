@@ -122,6 +122,8 @@ const Index = () => {
               title="Recognizing High-Conflict Dynamics"
               category="Foundation"
               excerpt="Understanding the predictable patterns in complex relationship systems without resorting to clinical diagnostic labels."
+              source={null}
+              url={null}
               featured
             />
             <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
