@@ -41,6 +41,33 @@ export type Database = {
         }
         Relationships: []
       }
+      invite_codes: {
+        Row: {
+          code: string
+          created_at: string
+          created_by: string
+          id: string
+          is_active: boolean
+          used_by: string | null
+        }
+        Insert: {
+          code: string
+          created_at?: string
+          created_by: string
+          id?: string
+          is_active?: boolean
+          used_by?: string | null
+        }
+        Update: {
+          code?: string
+          created_at?: string
+          created_by?: string
+          id?: string
+          is_active?: boolean
+          used_by?: string | null
+        }
+        Relationships: []
+      }
       journal_entries: {
         Row: {
           created_at: string
@@ -375,6 +402,7 @@ export type Database = {
       }
       profiles: {
         Row: {
+          beta_access: boolean | null
           consent_completed: boolean
           created_at: string
           display_name: string | null
@@ -384,6 +412,7 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          beta_access?: boolean | null
           consent_completed?: boolean
           created_at?: string
           display_name?: string | null
@@ -393,6 +422,7 @@ export type Database = {
           user_id: string
         }
         Update: {
+          beta_access?: boolean | null
           consent_completed?: boolean
           created_at?: string
           display_name?: string | null
@@ -654,6 +684,24 @@ export type Database = {
         }
         Relationships: []
       }
+      waitlist_emails: {
+        Row: {
+          created_at: string
+          email: string
+          id: string
+        }
+        Insert: {
+          created_at?: string
+          email: string
+          id?: string
+        }
+        Update: {
+          created_at?: string
+          email?: string
+          id?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
@@ -711,6 +759,7 @@ export type Database = {
         }
         Returns: boolean
       }
+      redeem_invite_access: { Args: { invite_code: string }; Returns: boolean }
     }
     Enums: {
       app_role:
