@@ -36,7 +36,7 @@ const SystemPreview = () => {
 
       <div className="grid grid-cols-1 md:grid-cols-12 gap-8 items-start">
         <div className="md:col-span-5 w-full flex flex-col justify-center">
-          <div className="reference-surface rounded-3xl p-6 pointer-events-none opacity-90 transition-opacity hover:opacity-100">
+          <div className="reference-surface rounded-3xl px-4 py-6 pointer-events-none opacity-90 transition-opacity hover:opacity-100">
             {/* We intercept clicks to keep it inert by setting pointer-events-none, but it renders beautifully */}
             <QuickPulse 
               onMoodSelected={() => {}} 

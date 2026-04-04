@@ -105,7 +105,7 @@ const QuickPulse = ({
         </h2>
       )}
 
-      <div className="flex justify-center gap-2 sm:gap-3">
+      <div className="flex justify-center gap-1.5 sm:gap-2 md:gap-3 lg:gap-4 overflow-hidden">
         {moodIcons.map((Icon, i) => {
           const opacityLevels = ['opacity-30', 'opacity-50', 'opacity-70', 'opacity-85', 'opacity-100'];
           return (
@@ -113,7 +113,7 @@ const QuickPulse = ({
               <button
                 onClick={() => handleMoodTap(i)}
                 disabled={saving}
-                className={`flex items-center justify-center w-12 h-12 sm:w-14 sm:h-14 rounded-2xl border transition-all hover:scale-105 hover:shadow-md active:scale-95 ${
+                className={`flex items-center justify-center w-11 sm:w-12 md:w-14 h-11 sm:h-12 md:h-14 rounded-2xl border transition-all hover:scale-105 hover:shadow-md active:scale-95 ${
                   saved ? 'opacity-50 pointer-events-none' : 'hover:border-primary/50'
                 } border-border bg-card/60 backdrop-blur`}
               >
