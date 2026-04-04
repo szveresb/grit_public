@@ -66,6 +66,14 @@ const QuestionnaireFiller = ({ onCompleted, readOnly }: { onCompleted?: () => vo
   } | null>(null);
 
   const dateLocale = getDateLocale(lang);
+  const qName = (q: any) => {
+    if (lang === 'en') return (q.title_localized as any)?.en || q.title;
+    return (q.title_localized as any)?.hu || q.title;
+  };
+  const qDescription = (q: any) => {
+    if (lang === 'en') return (q.description_localized as any)?.en || q.description;
+    return (q.description_localized as any)?.hu || q.description;
+  };
 
   useEffect(() => {
     const load = async () => {
@@ -97,7 +105,7 @@ const QuestionnaireFiller = ({ onCompleted, readOnly }: { onCompleted?: () => vo
 
       const qQuery = supabase
         .from('questionnaires')
-        .select('id, title, description, repeat_interval, scoring_enabled, scoring_mode, score_ranges')
+        .select('id, title, title_localized, description, description_localized, repeat_interval, scoring_enabled, scoring_mode, score_ranges')
         .order('created_at', { ascending: false });
 
       const [qRes, rRes] = await Promise.all([
@@ -422,7 +430,7 @@ const QuestionnaireFiller = ({ onCompleted, readOnly }: { onCompleted?: () => vo
               </span>
             </div>
             {qDesc && (
-              <p className="text-xs text-muted-foreground leading-relaxed">{qDesc}</p>
+              <p className="text-sm text-muted-foreground leading-relaxed italic">{qDesc}</p>
             )}
           </div>
 
@@ -474,7 +482,7 @@ const QuestionnaireFiller = ({ onCompleted, readOnly }: { onCompleted?: () => vo
         <div className="space-y-1.5">
           <h3 className="text-sm font-semibold text-foreground">{qTitle}</h3>
           {qDesc && (
-            <p className="text-xs text-muted-foreground leading-relaxed">{qDesc}</p>
+            <p className="text-sm text-muted-foreground leading-relaxed border-l-2 border-primary/20 pl-3 italic">{qDesc}</p>
           )}
         </div>
         {questions.map((q, i) => (
@@ -528,15 +536,15 @@ const QuestionnaireFiller = ({ onCompleted, readOnly }: { onCompleted?: () => vo
               <FClipboardCheck className="h-5 w-5 text-muted-foreground shrink-0 mt-0.5" />
               <div className="flex-1 min-w-0">
                 <div className="flex flex-wrap items-center gap-2 mb-1.5">
-                  <span className="text-base font-semibold leading-tight">{q.title}</span>
+                  <span className="text-base font-semibold leading-tight">{qName(q)}</span>
                   {q.repeat_interval && (
                     <span className="text-[10px] px-2 py-0.5 rounded-full border border-border text-muted-foreground">
                       {repeatLabel}
                     </span>
                   )}
                 </div>
-                {q.description && (
-                  <p className="text-sm text-muted-foreground leading-snug line-clamp-4">{q.description}</p>
+                {qDescription(q) && (
+                  <p className="text-sm text-muted-foreground leading-snug line-clamp-4">{qDescription(q)}</p>
                 )}
                 
                 <div className="flex flex-col gap-1.5 mt-3">
