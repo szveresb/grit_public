@@ -391,6 +391,7 @@ const QuestionnaireFiller = ({ onCompleted, readOnly }: { onCompleted?: () => vo
   }
 
   // Filling a specific questionnaire
+  if (selectedQ) {
     const q = questionnaires.find((q) => q.id === selectedQ);
     const qTitle = q?.title;
     const qDesc = q?.description;
