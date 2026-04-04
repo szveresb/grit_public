@@ -94,6 +94,7 @@ export interface Dictionary {
     heroLabelBack: string;
     heroLabelMember: string;
     heroLabelSignIn: string;
+    verifyContinue: string;
   };
 
   // Article detail
