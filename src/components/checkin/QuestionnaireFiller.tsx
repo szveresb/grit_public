@@ -391,8 +391,9 @@ const QuestionnaireFiller = ({ onCompleted, readOnly }: { onCompleted?: () => vo
   }
 
   // Filling a specific questionnaire
-    if (selectedQ) {
-    const qTitle = questionnaires.find((q) => q.id === selectedQ)?.title;
+    const q = questionnaires.find((q) => q.id === selectedQ);
+    const qTitle = q?.title;
+    const qDesc = q?.description;
     const isBranching = hasBranchingLogic(questions as unknown as QuestionWithLogic[]);
 
     if (isBranching) {
@@ -412,11 +413,16 @@ const QuestionnaireFiller = ({ onCompleted, readOnly }: { onCompleted?: () => vo
 
       return (
         <div className="space-y-5 animate-fade-in">
-          <div className="flex items-center justify-between">
-            <h3 className="text-sm font-semibold text-foreground">{qTitle}</h3>
-            <span className="text-[10px] text-muted-foreground">
-              {t.questionnaires_manage.questionN.replace('{n}', String(answeredCount + (isLastAnswered ? 0 : 1)))} / ~{questions.length}
-            </span>
+          <div className="space-y-1.5">
+            <div className="flex items-center justify-between">
+              <h3 className="text-sm font-semibold text-foreground">{qTitle}</h3>
+              <span className="text-[10px] text-muted-foreground">
+                {t.questionnaires_manage.questionN.replace('{n}', String(answeredCount + (isLastAnswered ? 0 : 1)))} / ~{questions.length}
+              </span>
+            </div>
+            {qDesc && (
+              <p className="text-xs text-muted-foreground leading-relaxed">{qDesc}</p>
+            )}
           </div>
 
           {/* Progress bar */}
@@ -464,7 +470,12 @@ const QuestionnaireFiller = ({ onCompleted, readOnly }: { onCompleted?: () => vo
     // Flat list mode (no branching)
     return (
       <div className="space-y-5 animate-fade-in">
-        <h3 className="text-sm font-semibold text-foreground">{qTitle}</h3>
+        <div className="space-y-1.5">
+          <h3 className="text-sm font-semibold text-foreground">{qTitle}</h3>
+          {qDesc && (
+            <p className="text-xs text-muted-foreground leading-relaxed">{qDesc}</p>
+          )}
+        </div>
         {questions.map((q, i) => (
           <div key={q.id} className="space-y-2">
             <Label className="text-sm font-medium">
@@ -524,7 +535,7 @@ const QuestionnaireFiller = ({ onCompleted, readOnly }: { onCompleted?: () => vo
                   )}
                 </div>
                 {q.description && (
-                  <p className="text-sm text-muted-foreground leading-snug line-clamp-2">{q.description}</p>
+                  <p className="text-sm text-muted-foreground leading-snug line-clamp-4">{q.description}</p>
                 )}
                 
                 <div className="flex flex-col gap-1.5 mt-3">
