@@ -2,7 +2,7 @@
 
 ## 1. Overview
 
-Grit.hu is a sensemaking information portal for individuals affected by high-conflict relational dynamics. It combines a **public library** of curated research with **private self-report tools** for structured observation, journaling, and questionnaire-based self-checks.
+Grit.hu is a sensemaking information portal for individuals affected by high-conflict relational dynamics. It combines a **public library** of curated research with **private self-report tools** for structured observation, journaling, and questionnaire-based self-checks. The platform is currently in a **Closed Beta** phase.
 
 **Tech Stack:** React 18 + Vite + TypeScript + Tailwind CSS, backed by Lovable Cloud (Supabase) for authentication, database, and edge functions.
 
@@ -44,6 +44,15 @@ Consent state is **cached in `localStorage`** (`grit_consent_v1` key, scoped per
 `profiles.consent_completed` is the authoritative flag — set to `true` once the user has addressed all `CONSENT_KEYS`. The flag is re-evaluated against the current key set, so adding a new key will re-trigger onboarding for that key only.
 
 **Registration Routing:** The `Auth` component implements purely reactive programmatic navigation relying on a hydrated `user` object. This eliminates synchronous routing race conditions, structurally guaranteeing that newly registered users are flawlessly evaluated by the `ProtectedRoute` gate and forcefully redirected to the initial `/consent` onboarding.
+
+### 3.3 Closed Beta Access
+
+During the private testing phase, the application is protected by a **Closed Beta Gate**.
+
+- **`beta_access` check**: A `BOOLEAN` flag on the `profiles` table determines if a user can bypass the gate.
+- **`BetaGate` component**: Authenticated users without `beta_access` are redirected to `/beta-gate`, where they must enter a valid **Invite Code**.
+- **Redemption logic**: The `redeem_invite_access` PostgreSQL function (RPC) validates codes against the `invite_codes` table, grants access to the user's profile, and marks the code as used.
+- **Deadlock prevention**: The `BetaGate` component implements an auto-redirect hook; once `beta_access` is detected (via async resolve or manual redemption), the user is immediately pushed to the dashboard to avoid entrapment after page refreshes.
 
 #### Consent Tables
 
@@ -87,6 +96,7 @@ Stores user display information. Created automatically on signup.
 | `id` | uuid (PK) | Auto-generated |
 | `user_id` | uuid (UNIQUE) | References auth user |
 | `display_name` | text | Nullable, set from email or metadata |
+| `beta_access` | boolean | Default `false`; gates access to protected routes |
 | `consent_completed` | boolean | Default `false`; set `true` after all consent keys addressed |
 | `premium` | boolean | Default `true`; gates premium features (timeline brush, etc.) |
 | `created_at` | timestamptz | Default `now()` |
@@ -314,6 +324,7 @@ A SNOMED CT-inspired three-level hierarchy for logging interpersonal patterns.
 - Érzelmi állapot / Emotional State
 - Kommunikációs minták / Communication Patterns
 - Határok / Boundaries
+- Testi jelzések / Physical Signs (BNO-10/SNOMED CT mapped: Heart racing, stomach knot, etc.)
 
 #### `observation_concepts` — Specific observations
 
@@ -416,7 +427,7 @@ The app uses a custom icon library (`src/components/icons/FreudIcons.tsx`) inspi
 
 - **Navigation:** `FHome`, `FDashboard`, `FHeartPulse` (check-in/journal), `FClock`, `FDownload`, `FUser`, `FLibrary`, `FUsers`, `FBarChart`, `FFileText`, `FInfo`, `FLock`, `FCalendar`, `FList`, `FTimeline`
 - **Actions:** `FSave`, `FClose`, `FPlus`, `FEdit`, `FTrash`, `FChevronDown/Up/Left/Right`, `FExternalLink`, `FArrowLeft/Right`, `FSearch`, `FCheck`
-- **Domain:** `FShield`, `FShieldAlert` (boundaries), `FSparkles` (patterns), `FBrain` (mind), `FEye` (observation), `FTrendingUp` (trends), `FBookOpen` (journal), `FClipboardCheck` (task/survey)
+- **Domain:** `FShield`, `FShieldAlert` (boundaries), `FSparkles` (patterns), `FBrain` (mind), `FEye` (observation), `FTrendingUp` (trends), `FBookOpen` (journal), `FClipboardCheck` (task/survey), `FHeartPulse` (physical signals)
 - **Mood (QuickPulse):** `FMoodStruggling` → `FMoodUneasy` → `FMoodOkay` → `FMoodGood` → `FMoodStrong` — circular faces with expressive features, using opacity-graded sage-green (30% to 100%) to represent emotional intensity.
 - **Roles:** `FUserCheck`, `FUserSearch`, `FShieldCheck`, `FPenTool`, `FUserPen`
 
@@ -424,13 +435,16 @@ The app uses a custom icon library (`src/components/icons/FreudIcons.tsx`) inspi
 
 All routes are served under both `/` (Hungarian default) and `/en/` (English prefix). Language is auto-detected from URL prefix and persisted in `localStorage`. 
 
-**Layout Standardization:** The primary interactive pages (`/journal`, `/surveys`, `/library`, etc.) share a consistent, centered layout using **`space-y-6`** (24px) vertical spacing and `max-w-2xl mx-auto w-full` containers (for focused content) to ensure visual symmetry and a "calm and professional" rhythmic flow.
+**Layout Standardization:** The primary interactive pages (`/journal`, `/surveys`, `/library`, etc.) share a consistent, centered layout using **`space-y-6`** (24px) vertical spacing and `max-w-2xl mx-auto w-full` containers (for focused content).
+
+**Fluid Grid Strategy:** The dashboard and workspace management cards transition from mobile vertical stacks to side-by-side grids at the **`md` (768px)** breakpoint. This threshold is synchronized across the workspace action block (`QuickPulse` + `Chart`), the header navigation, and the `SubjectCardRegistry` to ensure all UI elements transition as a single, cohesive unit.
 
 | Route | Component | Auth Required | Notes |
 |---|---|---|---|
 | `/` | `Index` (landing) | No | Public — featured articles, CMS sections; authenticated users see live `QuickPulse` instead of static mood preview |
 | `/library` | `Library` | No | Full library with search & category filter |
 | `/library/:id` | `Article` | No | Individual article detail page with bilingual content |
+| `/beta-gate` | `BetaGate` | Yes | Closed Beta invite code entry. Implements auto-dismissal for authorized sessions. |
 | `/auth` | `Auth` (login/signup) | No | Compact centered auth card with reduced control heights and streamlined spacing |
 | `/journal` | `CheckIn` | Yes | **Unified Emotional Hub** — Primary workspace for Quick Pulse, ObservationStepper, calendar feed, mood trends, and pattern charts. Features a strict **Action-Result vertical flow** (Pulse above Trend Chart) at the top of every profile workspace. |
 | `/surveys` | `Surveys` | Yes | Questionnaire hub with logic-aware respondent stepper. Uses standardized `space-y-6` vertical rhythm. |
