@@ -16,7 +16,6 @@ const Surveys = () => {
   const { hasRole } = useUserRole();
   const [refreshKey, setRefreshKey] = useState(0);
 
-  const isObserver = hasRole('observer');
 
   return (
     <DashboardLayout>
@@ -50,7 +49,7 @@ const Surveys = () => {
                   subjectName={activeSubject.type === 'relative' ? activeSubject.name : undefined}
                   subjectColor={subjectColor}
                 />
-                <QuestionnaireFiller key={`fill-${activeSubject.key}`} onCompleted={() => setRefreshKey(k => k + 1)} readOnly={isObserver} />
+                <QuestionnaireFiller key={`fill-${activeSubject.key}`} onCompleted={() => setRefreshKey(k => k + 1)} />
               </div>
             </TabsContent>
 

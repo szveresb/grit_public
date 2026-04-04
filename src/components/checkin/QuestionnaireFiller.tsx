@@ -1,8 +1,9 @@
-import { useEffect, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useLanguage } from '@/hooks/useLanguage';
 import { useStance } from '@/hooks/useStance';
+import { useUserRole } from '@/hooks/useUserRole';
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
@@ -47,10 +48,16 @@ const INTERVAL_DAYS: Record<string, number> = {
   monthly: 30,
 };
 
-const QuestionnaireFiller = ({ onCompleted, readOnly }: { onCompleted?: () => void; readOnly?: boolean }) => {
+interface QuestionnaireFillerProps {
+  onCompleted?: () => void;
+  readOnly?: boolean;
+}
+
+const QuestionnaireFiller: React.FC<QuestionnaireFillerProps> = ({ onCompleted, readOnly }) => {
   const { user } = useAuth();
   const { t, lang } = useLanguage();
   const { activeSubject, subjectColor } = useStance();
+  const { hasAnyRole } = useUserRole();
   const [questionnaires, setQuestionnaires] = useState<Questionnaire[]>([]);
   const [lastResponses, setLastResponses] = useState<LastResponse[]>([]);
   const [selectedQ, setSelectedQ] = useState<string | null>(null);
@@ -108,8 +115,10 @@ const QuestionnaireFiller = ({ onCompleted, readOnly }: { onCompleted?: () => vo
         .select('id, title, title_localized, description, description_localized, repeat_interval, scoring_enabled, scoring_mode, score_ranges')
         .order('created_at', { ascending: false });
 
+      const isAdminOrEditor = hasAnyRole('admin', 'editor');
+
       const [qRes, rRes] = await Promise.all([
-        readOnly ? qQuery : qQuery.eq('is_published', true),
+        (readOnly || isAdminOrEditor) ? qQuery : qQuery.eq('is_published', true),
         responseQuery,
       ]);
       setQuestionnaires((qRes.data ?? []) as unknown as Questionnaire[]);
@@ -446,13 +455,9 @@ const QuestionnaireFiller = ({ onCompleted, readOnly }: { onCompleted?: () => vo
             <div className="space-y-4">
               <p className="text-sm text-muted-foreground">{t.questionnaires_manage.completionSummary.replace('{count}', String(answeredCount))}</p>
               <div className="flex gap-2 items-center">
-                {readOnly ? (
-                  <p className="text-xs text-muted-foreground mr-2 italic">{t.disclaimer?.userReported || ''}</p>
-                ) : (
-                  <Button size="sm" className="rounded-2xl" onClick={handleSubmit} disabled={submitting}>
-                    {submitting ? t.questionnaires_manage.submitting : t.submit}
-                  </Button>
-                )}
+                <Button size="sm" className="rounded-2xl" onClick={handleSubmit} disabled={submitting}>
+                  {submitting ? t.questionnaires_manage.submitting : t.submit}
+                </Button>
                 <Button size="sm" variant="outline" className="rounded-2xl" onClick={() => setSelectedQ(null)}>
                   {t.cancel}
                 </Button>
@@ -494,13 +499,9 @@ const QuestionnaireFiller = ({ onCompleted, readOnly }: { onCompleted?: () => vo
           </div>
         ))}
         <div className="flex gap-2 items-center">
-          {readOnly ? (
-            <p className="text-xs text-muted-foreground mr-2 italic">{t.disclaimer?.userReported || "Nézet csak olvasható."}</p>
-          ) : (
-            <Button size="sm" className="rounded-2xl" onClick={handleSubmit} disabled={submitting}>
-              {submitting ? t.questionnaires_manage.submitting : t.submit}
-            </Button>
-          )}
+          <Button size="sm" className="rounded-2xl" onClick={handleSubmit} disabled={submitting}>
+            {submitting ? t.questionnaires_manage.submitting : t.submit}
+          </Button>
           <Button size="sm" variant="outline" className="rounded-2xl" onClick={() => setSelectedQ(null)}>
             {t.cancel}
           </Button>
