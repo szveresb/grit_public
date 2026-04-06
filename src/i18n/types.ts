@@ -205,6 +205,9 @@ export interface Dictionary {
     title: string;
     subtitle: string;
     quickPulseTitle: string;
+    quickPulseTitleSelf: string;
+    quickPulseTitleSupported: string;
+    quickPulseTitleSupportedFallback: string;
     whatHappenedTitle: string;
     yourStoryTitle: string;
     moodStruggling: string;

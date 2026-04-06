@@ -33,7 +33,7 @@ const QuickPulse = ({
 }: QuickPulseProps) => {
   const { user } = useAuth();
   const { t, lang } = useLanguage();
-  const { subjectType, selectedSubjectId } = useStance();
+  const { activeSubject, subjectType, selectedSubjectId } = useStance();
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
   const [managedTitle, setManagedTitle] = useState<string | null>(null);
@@ -62,7 +62,15 @@ const QuickPulse = ({
     t.checkIn.moodStrong,
   ];
   const moodLabels = managedLabels ?? fallbackLabels;
-  const pulseTitle = managedTitle ?? t.checkIn.quickPulseTitle;
+  const supportedName = activeSubject.type === 'relative' ? activeSubject.name.trim() : '';
+  const profilePulseTitle = activeSubject.type === 'relative'
+    ? (
+        supportedName
+          ? t.checkIn.quickPulseTitleSupported.replace('{name}', supportedName)
+          : t.checkIn.quickPulseTitleSupportedFallback
+      )
+    : t.checkIn.quickPulseTitleSelf;
+  const pulseTitle = user ? profilePulseTitle : (managedTitle ?? t.checkIn.quickPulseTitle);
 
   const handleMoodTap = async (index: number) => {
     if (!user || saving) return;
