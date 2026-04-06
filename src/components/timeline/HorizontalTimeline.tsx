@@ -19,7 +19,6 @@ interface Props {
   t: any;
 }
 
-const DOT_GAP = 56; // px per entry group (used only when content overflows)
 const MIN_SCALE = 1;
 const MAX_SCALE = 3;
 
@@ -99,11 +98,12 @@ const HorizontalTimeline = ({ items, lang, t }: Props) => {
   // Find the selected item for detail card
   const selectedItem = selectedId ? items.find(i => i.id === selectedId) : null;
 
-  // Force a stable width based on groups to prevent compression overlap
-  // Use max-content to prevent compression overlap without fragile JS width calculations
+  // Let short timelines fill the card on mobile, but still allow horizontal scroll
+  // once the number of date groups would become too dense.
+  const trackWidthRem = Math.max(groupedLTR.length * 2.75, 18);
   const trackStyle = { 
     minWidth: '100%', 
-    width: 'max-content',
+    width: `${trackWidthRem}rem`,
     minHeight: 80 
   };
 
@@ -142,11 +142,11 @@ const HorizontalTimeline = ({ items, lang, t }: Props) => {
           <div className="absolute left-0 right-0 top-[24px] h-px bg-border" />
 
           {/* Date groups */}
-          <div className="relative flex gap-x-8 gap-y-4 flex-wrap px-4 pb-2">
+          <div className="relative flex gap-x-4 gap-y-4 px-2 pb-2 sm:gap-x-6 sm:px-4 md:gap-x-8">
             {groupedLTR.map(([dateKey, dayItems], groupIdx) => {
               const isMonthBoundary = monthBoundaries.has(groupIdx);
               return (
-                <div key={dateKey} className="relative flex flex-col items-center" style={{ minWidth: 24 }}>
+                <div key={dateKey} className="relative flex min-w-0 flex-col items-center" style={{ minWidth: 24 }}>
                   {/* Month separator */}
                   {isMonthBoundary && (
                     <div className="absolute -left-3 top-0 bottom-0 w-px bg-primary/20" />
@@ -162,8 +162,8 @@ const HorizontalTimeline = ({ items, lang, t }: Props) => {
                           onClick={() => setSelectedId(isSelected ? null : item.id)}
                           className={`relative flex items-center justify-center rounded-full transition-all duration-200
                             ${isSelected
-                              ? 'h-7 w-7 ' + dotBg(item.type) + ' ring-2 ring-primary/30 shadow-md scale-110'
-                              : 'h-5 w-5 ' + dotBg(item.type) + ' hover:scale-125 hover:shadow-sm'
+                              ? 'h-6 w-6 sm:h-7 sm:w-7 ' + dotBg(item.type) + ' ring-2 ring-primary/30 shadow-md scale-110'
+                              : 'h-[18px] w-[18px] sm:h-5 sm:w-5 ' + dotBg(item.type) + ' hover:scale-125 hover:shadow-sm'
                             }`}
                           title={item.title}
                         >
@@ -178,7 +178,7 @@ const HorizontalTimeline = ({ items, lang, t }: Props) => {
                   </div>
 
                   {/* Date label below */}
-                  <span className="mt-2 text-[9px] text-muted-foreground whitespace-nowrap leading-none">
+                  <span className="mt-2 text-[8px] text-muted-foreground whitespace-nowrap leading-none sm:text-[9px]">
                     {format(parseISO(dateKey), 'MMM d', { locale })}
                   </span>
                 </div>

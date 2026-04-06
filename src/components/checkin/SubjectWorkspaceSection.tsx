@@ -193,7 +193,7 @@ const SubjectWorkspaceSection = ({
             )}>
               
               {/* Subject Content: Action -> Result -> Context */}
-              <div className={cn("flex flex-col gap-6 w-full", !isParallel && "md:col-span-12")}>
+              <div className={cn("flex min-w-0 flex-col gap-6 w-full", !isParallel && "md:col-span-12")}>
                 
                 {/* 1. QuickPulse Entry (The Action) */}
                 <ConsentGate consentKey="mood_tracking">
@@ -235,7 +235,7 @@ const SubjectWorkspaceSection = ({
                   !isParallel ? "md:grid-cols-12" : "grid-cols-1"
                 )}>
                   {/* Left-leaning content in Focus mode */}
-                  <div className={cn("flex flex-col gap-6", !isParallel ? "md:col-span-8" : "w-full")}>
+                  <div className={cn("flex min-w-0 flex-col gap-6", !isParallel ? "md:col-span-8" : "w-full")}>
                     {isSelfContext && daysSinceGlobalActivity !== null && daysSinceGlobalActivity >= RECAP_INACTIVITY_DAYS && !recapDismissed && !isParallel && (
                       <RecapBanner
                         days={daysSinceGlobalActivity}
@@ -257,7 +257,7 @@ const SubjectWorkspaceSection = ({
                     </Collapsible>
 
                     {!isParallel && (
-                      <div className="surface-card p-5 animate-fade-in">
+                      <div className="surface-card p-4 sm:p-5 animate-fade-in min-w-0">
                         <h2 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-4">
                           {t.timeline.allActivity}
                         </h2>
@@ -276,7 +276,7 @@ const SubjectWorkspaceSection = ({
                   </div>
 
                   {/* Sidebar-style content in Focus mode */}
-                  <div className={cn("flex flex-col gap-6", !isParallel ? "md:col-span-4" : "w-full")}>
+                  <div className={cn("flex min-w-0 flex-col gap-6", !isParallel ? "md:col-span-4" : "w-full")}>
                     {visibleNudges.length > 0 && (
                       <div className="flex flex-col gap-3">
                         {visibleNudges.map((nudge) => (
@@ -311,7 +311,7 @@ const SubjectWorkspaceSection = ({
                     </ConsentGate>
 
                     {!isParallel && (
-                      <div className="surface-card p-6 animate-fade-in">
+                      <div className="surface-card p-4 sm:p-6 animate-fade-in min-w-0">
                         {calendarLoading ? (
                           <div className="space-y-4">
                             <div className="flex items-center justify-between">
