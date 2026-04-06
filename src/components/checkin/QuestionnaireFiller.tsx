@@ -9,17 +9,20 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { toast } from 'sonner';
-import { FClipboardCheck, FArrowRight, FClock } from '@/components/icons/FreudIcons';
+import { FArrowLeft, FArrowRight } from '@/components/icons/FreudIcons';
 import { formatDistanceToNow, differenceInHours } from 'date-fns';
 import { getDateLocale } from '@/lib/date-locale';
 import ScoreResults from './ScoreResults';
-import StanceBanner from '@/components/premium/StanceBanner';
+import ScoreHistory from './ScoreHistory';
+import QuestionnaireCard from './QuestionnaireCard';
 import { evaluateLogicRules, computeVisiblePath, getSkippedQuestionIds, hasBranchingLogic } from '@/lib/logic-engine';
 import type { QuestionWithLogic, LogicRule } from '@/lib/logic-engine';
 import type { Database } from '@/integrations/supabase/types';
 
 type Questionnaire = Database['public']['Tables']['questionnaires']['Row'] & {
   score_ranges: ScoreRange[] | null;
+  title_localized: Record<string, string> | null;
+  description_localized: Record<string, string> | null;
 };
 
 interface ScoreRange {
@@ -29,7 +32,10 @@ interface ScoreRange {
   description?: string;
 }
 
-type Question = Omit<Database['public']['Tables']['questionnaire_questions']['Row'], 'options' | 'answer_scores' | 'options_localized' | 'logic_rules'> & {
+type Question = Omit<
+  Database['public']['Tables']['questionnaire_questions']['Row'],
+  'options' | 'answer_scores' | 'options_localized' | 'logic_rules'
+> & {
   options: string[] | null;
   answer_scores: Record<string, number> | null;
   options_localized: Record<string, string> | null;
@@ -48,6 +54,8 @@ const INTERVAL_DAYS: Record<string, number> = {
   monthly: 30,
 };
 
+const DESCRIPTION_TOGGLE_THRESHOLD = 180;
+
 interface QuestionnaireFillerProps {
   onCompleted?: () => void;
   readOnly?: boolean;
@@ -56,11 +64,13 @@ interface QuestionnaireFillerProps {
 const QuestionnaireFiller: React.FC<QuestionnaireFillerProps> = ({ onCompleted, readOnly }) => {
   const { user } = useAuth();
   const { t, lang } = useLanguage();
-  const { activeSubject, subjectColor } = useStance();
+  const { activeSubject } = useStance();
   const { hasAnyRole } = useUserRole();
   const [questionnaires, setQuestionnaires] = useState<Questionnaire[]>([]);
   const [lastResponses, setLastResponses] = useState<LastResponse[]>([]);
   const [selectedQ, setSelectedQ] = useState<string | null>(null);
+  const [historyQuestionnaireId, setHistoryQuestionnaireId] = useState<string | null>(null);
+  const [expandedDescriptions, setExpandedDescriptions] = useState<Set<string>>(new Set());
   const [questions, setQuestions] = useState<Question[]>([]);
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState(false);
@@ -73,182 +83,215 @@ const QuestionnaireFiller: React.FC<QuestionnaireFillerProps> = ({ onCompleted, 
   } | null>(null);
 
   const dateLocale = getDateLocale(lang);
-  const qName = (q: any) => {
-    if (lang === 'en') return (q.title_localized as any)?.en || q.title;
-    return (q.title_localized as any)?.hu || q.title;
+  const isAdminOrEditor = hasAnyRole('admin', 'editor');
+
+  const qName = (questionnaire: Questionnaire | undefined | null) => {
+    if (!questionnaire) return '';
+    if (lang === 'en') return questionnaire.title_localized?.en ?? questionnaire.title;
+    return questionnaire.title_localized?.hu ?? questionnaire.title;
   };
-  const qDescription = (q: any) => {
-    if (lang === 'en') return (q.description_localized as any)?.en || q.description;
-    return (q.description_localized as any)?.hu || q.description;
+
+  const qDescription = (questionnaire: Questionnaire | undefined | null) => {
+    if (!questionnaire) return null;
+    if (lang === 'en') return questionnaire.description_localized?.en ?? questionnaire.description;
+    return questionnaire.description_localized?.hu ?? questionnaire.description;
   };
 
   useEffect(() => {
     const load = async () => {
       setLoading(true);
       setSelectedQ(null);
+      setHistoryQuestionnaireId(null);
       setQuestions([]);
       setAnswers({});
       setScoreResult(null);
+      setExpandedDescriptions(new Set());
 
-      let responseQuery: any = user
-        ? supabase
-            .from('questionnaire_responses')
-            .select('questionnaire_id, completed_at')
-            .eq('user_id', user.id)
-        : Promise.resolve({ data: [] });
+      const responsePromise = user
+        ? (() => {
+            let query = supabase
+              .from('questionnaire_responses')
+              .select('questionnaire_id, completed_at')
+              .eq('user_id', user.id);
 
-      if (user) {
-        if (activeSubject.type === 'relative') {
-          responseQuery = responseQuery
-            .eq('subject_type', 'relative')
-            .eq('subject_id', activeSubject.id);
-        } else {
-          responseQuery = responseQuery
-            .is('subject_id', null)
-            .or('subject_type.eq.self,subject_type.is.null');
-        }
-        responseQuery = responseQuery.order('completed_at', { ascending: false });
-      }
+            if (activeSubject.type === 'relative') {
+              query = query
+                .eq('subject_type', 'relative')
+                .eq('subject_id', activeSubject.id);
+            } else {
+              query = query
+                .is('subject_id', null)
+                .or('subject_type.eq.self,subject_type.is.null');
+            }
 
-      const qQuery = supabase
+            return query.order('completed_at', { ascending: false });
+          })()
+        : Promise.resolve({ data: [] as LastResponse[] });
+
+      const questionnaireQuery = supabase
         .from('questionnaires')
-        .select('id, title, title_localized, description, description_localized, repeat_interval, scoring_enabled, scoring_mode, score_ranges')
+        .select('id, title, title_localized, description, description_localized, repeat_interval, scoring_enabled, scoring_mode, score_ranges, is_published, created_at, updated_at, created_by, snomed_code')
         .order('created_at', { ascending: false });
 
-      const isAdminOrEditor = hasAnyRole('admin', 'editor');
-
-      const [qRes, rRes] = await Promise.all([
-        (readOnly || isAdminOrEditor) ? qQuery : qQuery.eq('is_published', true),
-        responseQuery,
+      const [questionnaireResult, responseResult] = await Promise.all([
+        readOnly || isAdminOrEditor ? questionnaireQuery : questionnaireQuery.eq('is_published', true),
+        responsePromise,
       ]);
-      setQuestionnaires((qRes.data ?? []) as unknown as Questionnaire[]);
-      // Keep only the latest response per questionnaire
+
+      setQuestionnaires((questionnaireResult.data ?? []) as unknown as Questionnaire[]);
+
       const seen = new Set<string>();
-      const latest: LastResponse[] = [];
-      for (const r of (rRes.data ?? []) as LastResponse[]) {
-        if (!seen.has(r.questionnaire_id)) {
-          seen.add(r.questionnaire_id);
-          latest.push(r);
+      const latestResponses: LastResponse[] = [];
+      for (const response of (responseResult.data ?? []) as LastResponse[]) {
+        if (!seen.has(response.questionnaire_id)) {
+          seen.add(response.questionnaire_id);
+          latestResponses.push(response);
         }
       }
-      setLastResponses(latest);
+
+      setLastResponses(latestResponses);
       setLoading(false);
     };
+
     load();
-  }, [activeSubject.id, activeSubject.type, user, readOnly]);
+  }, [activeSubject.id, activeSubject.type, isAdminOrEditor, readOnly, user]);
 
-  const getLastCompletion = (qId: string) =>
-    lastResponses.find((r) => r.questionnaire_id === qId);
+  const getLastCompletion = (questionnaireId: string) =>
+    lastResponses.find((response) => response.questionnaire_id === questionnaireId);
 
-  const isAvailable = (q: Questionnaire): boolean => {
-    const last = getLastCompletion(q.id);
-    if (!last) return true; // never filled
-    if (!q.repeat_interval) return false; // one-time, already done
-    if (q.repeat_interval === 'anytime') return true;
-    const intervalDays = INTERVAL_DAYS[q.repeat_interval];
+  const isAvailable = (questionnaire: Questionnaire): boolean => {
+    const lastCompletion = getLastCompletion(questionnaire.id);
+    if (!lastCompletion) return true;
+    if (!questionnaire.repeat_interval) return false;
+    if (questionnaire.repeat_interval === 'anytime') return true;
+
+    const intervalDays = INTERVAL_DAYS[questionnaire.repeat_interval];
     if (!intervalDays) return true;
-    const daysSince = differenceInHours(new Date(), new Date(last.completed_at)) / 24;
+
+    const daysSince = differenceInHours(new Date(), new Date(lastCompletion.completed_at)) / 24;
     return daysSince >= intervalDays;
   };
 
   const getRepeatLabel = (interval: string | null): string => {
     if (!interval) return t.questionnaires_manage.repeatOnce;
-    const map: Record<string, string> = {
+    const labelMap: Record<string, string> = {
       daily: t.questionnaires_manage.repeatDaily,
       weekly: t.questionnaires_manage.repeatWeekly,
       biweekly: t.questionnaires_manage.repeatBiweekly,
       monthly: t.questionnaires_manage.repeatMonthly,
       anytime: t.questionnaires_manage.repeatAnytime,
     };
-    return map[interval] ?? interval;
+
+    return labelMap[interval] ?? interval;
   };
 
-  const loadQuestions = async (qId: string) => {
-    setSelectedQ(qId);
+  const toggleDescription = (questionnaireId: string) => {
+    setExpandedDescriptions((previous) => {
+      const next = new Set(previous);
+      if (next.has(questionnaireId)) {
+        next.delete(questionnaireId);
+      } else {
+        next.add(questionnaireId);
+      }
+      return next;
+    });
+  };
+
+  const loadQuestions = async (questionnaireId: string) => {
+    setSelectedQ(questionnaireId);
+    setHistoryQuestionnaireId(null);
     setAnswers({});
     setScoreResult(null);
+
     const { data } = await supabase
       .from('questionnaire_questions')
       .select('*')
-      .eq('questionnaire_id', qId)
+      .eq('questionnaire_id', questionnaireId)
       .order('sort_order');
+
     setQuestions((data ?? []) as unknown as Question[]);
   };
 
-  const calculateScore = (questionnaire: Questionnaire): { totalScore: number; maxPossibleScore: number; questionScores: { questionText: string; answer: string; score: number }[] } => {
-    const qScores: { questionText: string; answer: string; score: number }[] = [];
-    let total = 0;
-    let maxTotal = 0;
+  const openHistoryPanel = (questionnaireId: string) => {
+    setSelectedQ(null);
+    setScoreResult(null);
+    setHistoryQuestionnaireId(questionnaireId);
+  };
 
-    for (const q of questions) {
-      const answer = answers[q.id];
-      if (!answer || q.question_type === 'text') continue;
+  const calculateScore = (questionnaire: Questionnaire) => {
+    const questionScores: { questionText: string; answer: string; score: number }[] = [];
+    let totalScore = 0;
+    let maxPossibleScore = 0;
+
+    for (const question of questions) {
+      const answer = answers[question.id];
+      if (!answer || question.question_type === 'text') continue;
 
       let score = 0;
       let maxScore = 0;
 
-      if (questionnaire.scoring_mode === 'weighted' && q.answer_scores) {
-        const scores = q.answer_scores as Record<string, number>;
+      if (questionnaire.scoring_mode === 'weighted' && question.answer_scores) {
+        const scores = question.answer_scores as Record<string, number>;
         score = scores[answer] ?? 0;
         maxScore = Math.max(...Object.values(scores));
-      } else {
-        // Sum mode: scale value directly, yes=1/no=0
-        // If answer_scores exist (e.g. reverse scoring), use them
-        if (q.question_type === 'scale') {
-          const sMax = q.options && q.options.length >= 2 && q.options[1] !== '' ? Number(q.options[1]) : 5;
-          if (q.answer_scores && Object.keys(q.answer_scores).length > 0) {
-            const scores = q.answer_scores as Record<string, number>;
-            score = scores[answer] ?? 0;
-            maxScore = Math.max(...Object.values(scores));
-          } else {
-            score = Number(answer) || 0;
-            maxScore = sMax;
-          }
-        } else if (q.question_type === 'yes_no') {
-          score = answer === 'yes' ? 1 : 0;
-          maxScore = 1;
-        } else if (q.question_type === 'multiple_choice') {
-          // In sum mode, multiple choice gets index+1
-          const idx = (q.options ?? []).indexOf(answer);
-          score = idx + 1;
-          maxScore = (q.options ?? []).length;
+      } else if (question.question_type === 'scale') {
+        const scaleMax =
+          question.options && question.options.length >= 2 && question.options[1] !== ''
+            ? Number(question.options[1])
+            : 5;
+
+        if (question.answer_scores && Object.keys(question.answer_scores).length > 0) {
+          const scores = question.answer_scores as Record<string, number>;
+          score = scores[answer] ?? 0;
+          maxScore = Math.max(...Object.values(scores));
+        } else {
+          score = Number(answer) || 0;
+          maxScore = scaleMax;
         }
+      } else if (question.question_type === 'yes_no') {
+        score = answer === 'yes' ? 1 : 0;
+        maxScore = 1;
+      } else if (question.question_type === 'multiple_choice') {
+        const optionIndex = (question.options ?? []).indexOf(answer);
+        score = optionIndex + 1;
+        maxScore = (question.options ?? []).length;
       }
 
-      total += score;
-      maxTotal += maxScore;
-      qScores.push({ questionText: q.question_text, answer, score });
+      totalScore += score;
+      maxPossibleScore += maxScore;
+      questionScores.push({
+        questionText: question.question_text,
+        answer,
+        score,
+      });
     }
 
-    return { totalScore: total, maxPossibleScore: maxTotal, questionScores: qScores };
+    return { totalScore, maxPossibleScore, questionScores };
   };
 
   const handleSubmit = async () => {
     if (!user || !selectedQ) return;
 
     if (!navigator.onLine) {
-      toast.info(t.pwa?.syncPending || "Sync Pending – will upload when connection restores", {
-        description: "You are currently offline.",
+      toast.info(t.pwa?.syncPending || 'Sync Pending – will upload when connection restores', {
+        description: 'You are currently offline.',
       });
       return;
     }
 
     setSubmitting(true);
 
-    const questionnaire = questionnaires.find(q => q.id === selectedQ);
+    const questionnaire = questionnaires.find((candidate) => candidate.id === selectedQ);
 
-    // Calculate score if scoring is enabled
-    let totalScore: number | null = null;
     if (questionnaire?.scoring_enabled) {
-      const result = calculateScore(questionnaire);
-      totalScore = result.totalScore;
+      const score = calculateScore(questionnaire);
       setScoreResult({
-        ...result,
-        scoreRanges: (questionnaire.score_ranges as ScoreRange[]) ?? [],
+        ...score,
+        scoreRanges: questionnaire.score_ranges ?? [],
       });
     }
 
-    const { data: resp, error } = await supabase
+    const { data: response, error } = await supabase
       .from('questionnaire_responses')
       .insert({
         user_id: user.id,
@@ -258,93 +301,108 @@ const QuestionnaireFiller: React.FC<QuestionnaireFillerProps> = ({ onCompleted, 
       })
       .select('id')
       .single();
-    if (error || !resp) {
+
+    if (error || !response) {
       toast.error(t.error.submit);
       setSubmitting(false);
       return;
     }
-    const answerRows = Object.entries(answers).map(([question_id, answer]) => ({
-      response_id: resp.id,
-      question_id,
+
+    const answerRows = Object.entries(answers).map(([questionId, answer]) => ({
+      response_id: response.id,
+      question_id: questionId,
       answer: answer as unknown as Database['public']['Tables']['questionnaire_answers']['Insert']['answer'],
     }));
-    if (answerRows.length) await supabase.from('questionnaire_answers').insert(answerRows);
 
-    // Insert __SKIPPED__ sentinel rows for questions hidden by logic jumps
-    const questionsWithLogic: QuestionWithLogic[] = questions.map(q => ({
-      id: q.id,
-      sort_order: q.sort_order,
-      logic_rules: q.logic_rules,
+    if (answerRows.length > 0) {
+      await supabase.from('questionnaire_answers').insert(answerRows);
+    }
+
+    const questionsWithLogic: QuestionWithLogic[] = questions.map((question) => ({
+      id: question.id,
+      sort_order: question.sort_order,
+      logic_rules: question.logic_rules,
     }));
     const visiblePath = computeVisiblePath(questionsWithLogic, answers);
-    const skippedIds = getSkippedQuestionIds(questionsWithLogic, visiblePath);
-    if (skippedIds.length > 0) {
-      const skippedRows = skippedIds.map(qid => ({
-        response_id: resp.id,
-        question_id: qid,
+    const skippedQuestionIds = getSkippedQuestionIds(questionsWithLogic, visiblePath);
+
+    if (skippedQuestionIds.length > 0) {
+      const skippedRows = skippedQuestionIds.map((questionId) => ({
+        response_id: response.id,
+        question_id: questionId,
         answer: '__SKIPPED__' as unknown as Database['public']['Tables']['questionnaire_answers']['Insert']['answer'],
       }));
       await supabase.from('questionnaire_answers').insert(skippedRows);
     }
 
-    // Fetch the authoritative total_score computed securely via Postgres triggers
     if (questionnaire?.scoring_enabled) {
-      const { data: finalRes } = await supabase
+      const { data: finalResponse } = await supabase
         .from('questionnaire_responses')
         .select('total_score')
-        .eq('id', resp.id)
+        .eq('id', response.id)
         .single();
-      
-      if (finalRes && 'total_score' in finalRes && finalRes.total_score !== null) {
-        setScoreResult(prev => prev ? { ...prev, totalScore: finalRes.total_score as number } : null);
+
+      if (finalResponse?.total_score !== null) {
+        setScoreResult((previous) =>
+          previous ? { ...previous, totalScore: finalResponse.total_score as number } : null
+        );
       }
     }
 
     toast.success(t.questionnaires_manage.completed);
-    setLastResponses((prev) => [
+    setLastResponses((previous) => [
       { questionnaire_id: selectedQ, completed_at: new Date().toISOString() },
-      ...prev.filter((r) => r.questionnaire_id !== selectedQ),
+      ...previous.filter((entry) => entry.questionnaire_id !== selectedQ),
     ]);
 
-    // If scoring enabled, keep showing results; otherwise reset
     if (!questionnaire?.scoring_enabled) {
       setSelectedQ(null);
       setAnswers({});
+      setHistoryQuestionnaireId(selectedQ);
     }
+
     setSubmitting(false);
     onCompleted?.();
   };
 
-  const renderInput = (q: Question) => {
-    const val = answers[q.id] ?? '';
-    switch (q.question_type) {
+  const renderInput = (question: Question) => {
+    const value = answers[question.id] ?? '';
+
+    switch (question.question_type) {
       case 'scale': {
-        const sMin = q.options && q.options.length >= 2 && q.options[0] !== '' ? Number(q.options[0]) : 1;
-        const sMax = q.options && q.options.length >= 2 && q.options[1] !== '' ? Number(q.options[1]) : 5;
-        const points = Array.from({ length: sMax - sMin + 1 }, (_, i) => sMin + i);
-        const labels = q.options_localized ?? {};
+        const scaleMin =
+          question.options && question.options.length >= 2 && question.options[0] !== ''
+            ? Number(question.options[0])
+            : 1;
+        const scaleMax =
+          question.options && question.options.length >= 2 && question.options[1] !== ''
+            ? Number(question.options[1])
+            : 5;
+        const points = Array.from({ length: scaleMax - scaleMin + 1 }, (_, index) => scaleMin + index);
+        const labels = question.options_localized ?? {};
+
         return (
           <div className="flex flex-col gap-2">
-            <div className="flex gap-2 flex-wrap">
-              {points.map((n) => (
+            <div className="flex flex-wrap gap-2">
+              {points.map((point) => (
                 <button
-                  key={n}
+                  key={point}
                   type="button"
-                  onClick={() => setAnswers((a) => ({ ...a, [q.id]: String(n) }))}
+                  onClick={() => setAnswers((previous) => ({ ...previous, [question.id]: String(point) }))}
                   className={`h-10 w-10 rounded-full border text-sm font-semibold transition-all ${
-                    val === String(n)
-                      ? 'bg-primary text-primary-foreground border-primary shadow-md'
+                    value === String(point)
+                      ? 'border-primary bg-primary text-primary-foreground shadow-md'
                       : 'border-border text-muted-foreground hover:border-primary/50'
                   }`}
                 >
-                  {n}
+                  {point}
                 </button>
               ))}
             </div>
             {Object.keys(labels).length > 0 && (
-              <div className="flex justify-between text-[10px] text-muted-foreground px-1">
-                {labels[String(sMin)] && <span>{sMin} = {labels[String(sMin)]}</span>}
-                {labels[String(sMax)] && <span>{sMax} = {labels[String(sMax)]}</span>}
+              <div className="flex justify-between px-1 text-[10px] text-muted-foreground">
+                {labels[String(scaleMin)] && <span>{scaleMin} = {labels[String(scaleMin)]}</span>}
+                {labels[String(scaleMax)] && <span>{scaleMax} = {labels[String(scaleMax)]}</span>}
               </div>
             )}
           </div>
@@ -352,31 +410,31 @@ const QuestionnaireFiller: React.FC<QuestionnaireFillerProps> = ({ onCompleted, 
       }
       case 'yes_no':
         return (
-          <RadioGroup value={val} onValueChange={(v) => setAnswers((a) => ({ ...a, [q.id]: v }))}>
+          <RadioGroup value={value} onValueChange={(next) => setAnswers((previous) => ({ ...previous, [question.id]: next }))}>
             <div className="flex gap-4">
               <div className="flex items-center gap-2">
-                <RadioGroupItem value="yes" id={`${q.id}-yes`} />
-                <Label htmlFor={`${q.id}-yes`}>{t.yes}</Label>
+                <RadioGroupItem value="yes" id={`${question.id}-yes`} />
+                <Label htmlFor={`${question.id}-yes`}>{t.yes}</Label>
               </div>
               <div className="flex items-center gap-2">
-                <RadioGroupItem value="no" id={`${q.id}-no`} />
-                <Label htmlFor={`${q.id}-no`}>{t.no}</Label>
+                <RadioGroupItem value="no" id={`${question.id}-no`} />
+                <Label htmlFor={`${question.id}-no`}>{t.no}</Label>
               </div>
             </div>
           </RadioGroup>
         );
       case 'multiple_choice':
         return (
-          <RadioGroup value={val} onValueChange={(v) => setAnswers((a) => ({ ...a, [q.id]: v }))}>
+          <RadioGroup value={value} onValueChange={(next) => setAnswers((previous) => ({ ...previous, [question.id]: next }))}>
             <div className="space-y-2">
-              {(q.options ?? []).map((opt) => (
+              {(question.options ?? []).map((option) => (
                 <div
-                  key={opt}
-                  className="flex items-center gap-2 border border-border rounded-2xl p-3 hover:bg-accent/30 transition-colors"
+                  key={option}
+                  className="flex items-center gap-2 rounded-2xl border border-border p-3 transition-colors hover:bg-accent/30"
                 >
-                  <RadioGroupItem value={opt} id={`${q.id}-${opt}`} />
-                  <Label htmlFor={`${q.id}-${opt}`} className="text-sm cursor-pointer">
-                    {opt}
+                  <RadioGroupItem value={option} id={`${question.id}-${option}`} />
+                  <Label htmlFor={`${question.id}-${option}`} className="cursor-pointer text-sm">
+                    {option}
                   </Label>
                 </div>
               ))}
@@ -386,8 +444,8 @@ const QuestionnaireFiller: React.FC<QuestionnaireFillerProps> = ({ onCompleted, 
       default:
         return (
           <Textarea
-            value={val}
-            onChange={(e) => setAnswers((a) => ({ ...a, [q.id]: e.target.value }))}
+            value={value}
+            onChange={(event) => setAnswers((previous) => ({ ...previous, [question.id]: event.target.value }))}
             rows={2}
             className="rounded-2xl"
           />
@@ -398,7 +456,6 @@ const QuestionnaireFiller: React.FC<QuestionnaireFillerProps> = ({ onCompleted, 
   if (loading) return <p className="text-sm text-muted-foreground">{t.loading}</p>;
   if (questionnaires.length === 0) return <p className="text-sm text-muted-foreground">{t.questionnaires_manage.noAvailable}</p>;
 
-  // Show score results after submission
   if (selectedQ && scoreResult) {
     return (
       <ScoreResults
@@ -407,6 +464,7 @@ const QuestionnaireFiller: React.FC<QuestionnaireFillerProps> = ({ onCompleted, 
         questionScores={scoreResult.questionScores}
         scoreRanges={scoreResult.scoreRanges}
         onClose={() => {
+          setHistoryQuestionnaireId(selectedQ);
           setSelectedQ(null);
           setAnswers({});
           setScoreResult(null);
@@ -415,54 +473,68 @@ const QuestionnaireFiller: React.FC<QuestionnaireFillerProps> = ({ onCompleted, 
     );
   }
 
-  // Filling a specific questionnaire
   if (selectedQ) {
-    const q = questionnaires.find((q) => q.id === selectedQ);
-    const qTitle = q?.title;
-    const qDesc = q?.description;
-    const isBranching = hasBranchingLogic(questions as unknown as QuestionWithLogic[]);
+    const questionnaire = questionnaires.find((candidate) => candidate.id === selectedQ);
+    const hasBranching = hasBranchingLogic(questions as unknown as QuestionWithLogic[]);
 
-    if (isBranching) {
-      // Stepper mode: one question at a time
-      const questionsWithLogic = questions as unknown as QuestionWithLogic[]; 
+    if (hasBranching) {
+      const questionsWithLogic = questions as unknown as QuestionWithLogic[];
       const visiblePath = computeVisiblePath(questionsWithLogic, answers);
       const currentQuestionId = visiblePath[visiblePath.length - 1];
-      const currentQuestion = questions.find(q => q.id === currentQuestionId);
-      const answeredCount = visiblePath.filter(id => answers[id] !== undefined).length;
-      const isLastAnswered = currentQuestion && answers[currentQuestionId] !== undefined;
-
-      // Check if logic says skip_to_end after the last answer
-      const lastResult = currentQuestion && answers[currentQuestionId]
-        ? evaluateLogicRules(currentQuestion as unknown as QuestionWithLogic, answers[currentQuestionId])
-        : null;
-      const reachedEnd = lastResult?.action === 'skip_to_end' || (isLastAnswered && !lastResult?.targetId && questions.indexOf(currentQuestion!) === questions.length - 1);
+      const currentQuestion = questions.find((question) => question.id === currentQuestionId);
+      const answeredCount = visiblePath.filter((questionId) => answers[questionId] !== undefined).length;
+      const isLastAnswered = currentQuestion ? answers[currentQuestionId] !== undefined : false;
+      const lastResult =
+        currentQuestion && answers[currentQuestionId]
+          ? evaluateLogicRules(currentQuestion as unknown as QuestionWithLogic, answers[currentQuestionId])
+          : null;
+      const reachedEnd =
+        lastResult?.action === 'skip_to_end' ||
+        (isLastAnswered && !lastResult?.targetId && currentQuestion ? questions.indexOf(currentQuestion) === questions.length - 1 : false);
 
       return (
         <div className="space-y-5 animate-fade-in">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <Button variant="outline" size="sm" className="rounded-2xl" onClick={() => setSelectedQ(null)}>
+              <FArrowLeft className="mr-1 h-4 w-4" />
+              {t.observations.back}
+            </Button>
+            <button
+              type="button"
+              onClick={() => openHistoryPanel(selectedQ)}
+              className="text-xs font-medium text-primary underline underline-offset-2"
+            >
+              {t.questionnaires_manage.viewQuestionnaireHistory}
+            </button>
+          </div>
+
           <div className="space-y-1.5">
-            <div className="flex items-center justify-between">
-              <h3 className="text-sm font-semibold text-foreground">{qName(q)}</h3>
+            <div className="flex items-center justify-between gap-2">
+              <h3 className="text-sm font-semibold text-foreground">{qName(questionnaire)}</h3>
               <span className="text-[10px] text-muted-foreground">
                 {t.questionnaires_manage.questionN.replace('{n}', String(answeredCount + (isLastAnswered ? 0 : 1)))} / ~{questions.length}
               </span>
             </div>
-            {qDescription(q) && (
-              <p className="text-sm text-muted-foreground leading-relaxed italic">{qDescription(q)}</p>
+            {qDescription(questionnaire) && (
+              <p className="text-sm italic leading-relaxed text-muted-foreground">
+                {qDescription(questionnaire)}
+              </p>
             )}
           </div>
 
-          {/* Progress bar */}
-          <div className="h-1 bg-border/50 rounded-full overflow-hidden">
+          <div className="h-1 overflow-hidden rounded-full bg-border/50">
             <div
-              className="h-full bg-primary rounded-full transition-all duration-500 ease-out"
+              className="h-full rounded-full bg-primary transition-all duration-500 ease-out"
               style={{ width: `${Math.min(100, (answeredCount / questions.length) * 100)}%` }}
             />
           </div>
 
           {reachedEnd ? (
             <div className="space-y-4">
-              <p className="text-sm text-muted-foreground">{t.questionnaires_manage.completionSummary.replace('{count}', String(answeredCount))}</p>
-              <div className="flex gap-2 items-center">
+              <p className="text-sm text-muted-foreground">
+                {t.questionnaires_manage.completionSummary.replace('{count}', String(answeredCount))}
+              </p>
+              <div className="flex items-center gap-2">
                 <Button size="sm" className="rounded-2xl" onClick={handleSubmit} disabled={submitting}>
                   {submitting ? t.questionnaires_manage.submitting : t.submit}
                 </Button>
@@ -479,34 +551,45 @@ const QuestionnaireFiller: React.FC<QuestionnaireFillerProps> = ({ onCompleted, 
               {renderInput(currentQuestion)}
             </div>
           ) : null}
-
-          <div className="flex gap-2 items-center">
-            <Button size="sm" variant="outline" className="rounded-2xl" onClick={() => setSelectedQ(null)}>
-              {t.cancel}
-            </Button>
-          </div>
         </div>
       );
     }
 
-    // Flat list mode (no branching)
     return (
       <div className="space-y-5 animate-fade-in">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <Button variant="outline" size="sm" className="rounded-2xl" onClick={() => setSelectedQ(null)}>
+            <FArrowLeft className="mr-1 h-4 w-4" />
+            {t.observations.back}
+          </Button>
+          <button
+            type="button"
+            onClick={() => openHistoryPanel(selectedQ)}
+            className="text-xs font-medium text-primary underline underline-offset-2"
+          >
+            {t.questionnaires_manage.viewQuestionnaireHistory}
+          </button>
+        </div>
+
         <div className="space-y-1.5">
-          <h3 className="text-sm font-semibold text-foreground">{qName(q)}</h3>
-          {qDescription(q) && (
-            <p className="text-sm text-muted-foreground leading-relaxed border-l-2 border-primary/20 pl-3 italic">{qDescription(q)}</p>
+          <h3 className="text-sm font-semibold text-foreground">{qName(questionnaire)}</h3>
+          {qDescription(questionnaire) && (
+            <p className="border-l-2 border-primary/20 pl-3 text-sm italic leading-relaxed text-muted-foreground">
+              {qDescription(questionnaire)}
+            </p>
           )}
         </div>
-        {questions.map((q, i) => (
-          <div key={q.id} className="space-y-2">
+
+        {questions.map((question, index) => (
+          <div key={question.id} className="space-y-2">
             <Label className="text-sm font-medium">
-              {i + 1}. {q.question_text}
+              {index + 1}. {question.question_text}
             </Label>
-            {renderInput(q)}
+            {renderInput(question)}
           </div>
         ))}
-        <div className="flex gap-2 items-center">
+
+        <div className="flex items-center gap-2">
           <Button size="sm" className="rounded-2xl" onClick={handleSubmit} disabled={submitting}>
             {submitting ? t.questionnaires_manage.submitting : t.submit}
           </Button>
@@ -518,74 +601,85 @@ const QuestionnaireFiller: React.FC<QuestionnaireFillerProps> = ({ onCompleted, 
     );
   }
 
-  // List available questionnaires
-  return (
-    <div className="space-y-3">
-      <StanceBanner
-        subjectType={activeSubject.type}
-        subjectName={activeSubject.type === 'relative' ? activeSubject.name : undefined}
-        subjectColor={subjectColor}
-        compact
-      />
-      {questionnaires.map((q) => {
-        const last = getLastCompletion(q.id);
-        const available = isAvailable(q);
-        const repeatLabel = getRepeatLabel(q.repeat_interval);
+  const historyQuestionnaire = questionnaires.find((questionnaire) => questionnaire.id === historyQuestionnaireId);
 
-        return (
-          <div
-            key={q.id}
-            className={`flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 p-5 rounded-3xl border border-border/50 max-w-md mx-auto w-full transition-colors ${
-              available
-                ? 'bg-card/60 shadow-sm'
-                : 'opacity-70 bg-card/40 grayscale-[20%]'
-            }`}
-          >
-            <div className="flex items-start gap-3 flex-1 min-w-0 w-full">
-              <FClipboardCheck className="h-5 w-5 text-muted-foreground shrink-0 mt-0.5" />
-              <div className="flex-1 min-w-0">
-                <div className="flex flex-wrap items-center gap-2 mb-1.5">
-                  <span className="text-base font-semibold leading-tight">{qName(q)}</span>
-                  {q.repeat_interval && (
-                    <span className="text-[10px] px-2 py-0.5 rounded-full border border-border text-muted-foreground">
-                      {repeatLabel}
-                    </span>
-                  )}
-                </div>
-                {qDescription(q) && (
-                  <p className="text-sm text-muted-foreground leading-snug line-clamp-4">{qDescription(q)}</p>
-                )}
-                
-                <div className="flex flex-col gap-1.5 mt-3">
-                  {last && (
-                    <div className="flex items-center gap-1.5">
-                      <FClock className="h-3.5 w-3.5 text-muted-foreground" />
-                      <span className="text-xs text-muted-foreground">
-                        {t.questionnaires_manage.lastCompleted}: {formatDistanceToNow(new Date(last.completed_at), { addSuffix: true, locale: dateLocale })}
-                      </span>
-                    </div>
-                  )}
-                  {!available && (
-                    <span className="text-xs font-semibold text-muted-foreground tracking-wide mt-1">
-                      ✓ {t.questionnaires_manage.alreadyCompleted}
-                    </span>
-                  )}
-                </div>
-              </div>
+  return (
+    <div className="space-y-6">
+      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
+        {questionnaires.map((questionnaire) => {
+          const lastCompletion = getLastCompletion(questionnaire.id);
+          const available = isAvailable(questionnaire);
+          const description = qDescription(questionnaire);
+
+          return (
+            <QuestionnaireCard
+              key={questionnaire.id}
+              title={qName(questionnaire)}
+              description={description}
+              repeatLabel={getRepeatLabel(questionnaire.repeat_interval)}
+              lastCompletedLabel={
+                lastCompletion
+                  ? `${t.questionnaires_manage.lastCompleted}: ${formatDistanceToNow(new Date(lastCompletion.completed_at), {
+                      addSuffix: true,
+                      locale: dateLocale,
+                    })}`
+                  : undefined
+              }
+              available={available}
+              descriptionExpanded={expandedDescriptions.has(questionnaire.id)}
+              canToggleDescription={(description?.length ?? 0) > DESCRIPTION_TOGGLE_THRESHOLD}
+              onToggleDescription={() => toggleDescription(questionnaire.id)}
+              onStart={() => loadQuestions(questionnaire.id)}
+              onOpenHistory={() => openHistoryPanel(questionnaire.id)}
+              startLabel={t.questionnaires_manage.startQuestionnaire}
+              historyLabel={t.questionnaires_manage.viewQuestionnaireHistory}
+              availableNowLabel={t.questionnaires_manage.availableNow}
+              expandLabel={t.questionnaires_manage.expandDescription}
+              collapseLabel={t.questionnaires_manage.collapseDescription}
+              completedLabel={t.questionnaires_manage.alreadyCompleted}
+            />
+          );
+        })}
+      </div>
+
+      {historyQuestionnaire && (
+        <section className="surface-card space-y-5 p-5 sm:p-6">
+          <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
+            <div className="min-w-0 space-y-2">
+              <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+                {t.questionnaires_manage.detailPanelTitle}
+              </p>
+              <h3 className="text-base font-semibold text-foreground">
+                {qName(historyQuestionnaire)}
+              </h3>
+              {qDescription(historyQuestionnaire) && (
+                <p className="max-w-2xl text-sm leading-relaxed text-muted-foreground">
+                  {qDescription(historyQuestionnaire)}
+                </p>
+              )}
             </div>
-            
-            <div className="w-full sm:w-auto shrink-0 flex justify-end mt-2 sm:mt-0">
+
+            <div className="flex flex-col gap-2 sm:flex-row">
+              <Button onClick={() => loadQuestions(historyQuestionnaire.id)} className="rounded-2xl">
+                {t.questionnaires_manage.startQuestionnaire}
+                <FArrowRight className="ml-1 h-4 w-4" />
+              </Button>
               <Button
-                onClick={() => loadQuestions(q.id)}
-                disabled={!available}
-                className="w-auto px-6 min-w-[140px] rounded-2xl"
+                variant="outline"
+                onClick={() => setHistoryQuestionnaireId(null)}
+                className="rounded-2xl"
               >
-                {t.nav.questionnaires || t.submit}
+                {t.observations.back}
               </Button>
             </div>
           </div>
-        );
-      })}
+
+          <ScoreHistory
+            questionnaireId={historyQuestionnaire.id}
+            emptyMessage={t.questionnaires_manage.noHistoryForQuestionnaire}
+          />
+        </section>
+      )}
     </div>
   );
 };

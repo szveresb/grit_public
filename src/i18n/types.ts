@@ -237,6 +237,7 @@ export interface Dictionary {
     title: string;
     subtitle: string;
     noAvailable: string;
+    noHistoryForQuestionnaire: string;
     completed: string;
     deleteConfirmTitle: string;
     deleteConfirmDesc: string;
@@ -262,6 +263,12 @@ export interface Dictionary {
     availableNow: string;
     nextAvailable: string;
     alreadyCompleted: string;
+    startQuestionnaire: string;
+    viewQuestionnaireHistory: string;
+    expandDescription: string;
+    collapseDescription: string;
+    supportedSelectionEmpty: string;
+    detailPanelTitle: string;
     questionnaireJournalTitle: string;
     // Scoring
     scoringEnabled: string;
