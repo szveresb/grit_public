@@ -223,7 +223,7 @@ const Index = () => {
               url={null}
               featured
             />
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-8">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-8">
               <ArticleCard
                 id="mock-2"
                 title={lang === 'hu' ? 'A projekció anatómiája' : 'The Anatomy of Projection'}
@@ -265,7 +265,7 @@ const Index = () => {
       <footer className="relative z-10 border-t border-border bg-card">
         <div className="max-w-7xl mx-auto px-4 md:px-8 py-6 flex flex-col sm:flex-row items-center justify-between gap-4">
           <span className="text-xs text-muted-foreground">{t.landing.footerRights.replace('{year}', String(new Date().getFullYear()))}</span>
-          <div className="flex items-center gap-6">
+          <div className="flex items-center flex-wrap justify-center gap-x-6 gap-y-2">
             <Link to={localePath('/about-legal')} className="text-xs text-muted-foreground hover:text-foreground transition-colors">{t.nav.about} Grit.hu</Link>
             <Link to={localePath('/terms')} className="text-xs text-muted-foreground hover:text-foreground transition-colors">{t.landing.terms}</Link>
             <Link to={localePath('/cookies')} className="text-xs text-muted-foreground hover:text-foreground transition-colors">{t.landing.cookies}</Link>

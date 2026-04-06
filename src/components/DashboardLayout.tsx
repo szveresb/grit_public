@@ -45,7 +45,7 @@ const DashboardShell = ({
       <div className={`min-h-screen flex w-full relative z-10 overflow-x-hidden ${themeClass}`}>
         <AppSidebar />
         <main className="flex-1 flex flex-col min-w-0">
-          <header className="h-14 flex items-center border-b border-context-border/70 px-4 md:px-6 bg-context-surface gap-3">
+          <header className="h-14 flex items-center border-b border-context-border/70 px-3 sm:px-4 md:px-6 bg-context-surface gap-2 sm:gap-3 overflow-x-auto">
             <SidebarTrigger />
             <Link to={localePath('/')} className="md:hidden text-sm font-bold tracking-tight text-foreground">
               Grit.hu
@@ -60,7 +60,7 @@ const DashboardShell = ({
               </button>
               <a href={`${localePath('/')}#about`} className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">{t.nav.about}</a>
             </nav>
-            <div className="ml-auto md:ml-4 flex items-center gap-2">
+            <div className="ml-auto md:ml-4 flex items-center gap-1 sm:gap-2 shrink-0">
               <LanguageToggle />
               {user && (
                 <>

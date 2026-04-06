@@ -29,7 +29,7 @@ const Timeline = () => {
 
   return (
     <DashboardLayout>
-      <div className="max-w-2xl mx-auto px-4 py-6 space-y-6">
+      <div className="max-w-2xl mx-auto space-y-6">
         {/* Header */}
         <div className="flex items-start gap-3">
           <FTimeline className="h-6 w-6 text-primary mt-0.5 shrink-0" />
