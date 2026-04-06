@@ -42,7 +42,7 @@ export default defineConfig(({ mode }) => ({
             },
           },
           {
-            urlPattern: ({ url }: { url: URL }) => url.origin === location.origin && url.pathname.startsWith("/rest/v1/"),
+            urlPattern: /\/rest\/v1\//,
             handler: "NetworkFirst",
             options: {
               cacheName: "api-cache",
