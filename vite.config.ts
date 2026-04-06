@@ -13,6 +13,9 @@ export default defineConfig(({ mode }) => ({
       overlay: false,
     },
   },
+  optimizeDeps: {
+    include: ['react', 'react-dom', 'react-router-dom', 'workbox-window'],
+  },
   plugins: [
     react(),
     mode === "development" && componentTagger(),
