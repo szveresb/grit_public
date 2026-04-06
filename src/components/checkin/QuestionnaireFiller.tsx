@@ -47,6 +47,13 @@ interface LastResponse {
   completed_at: string;
 }
 
+type CardPanelState =
+  | {
+      questionnaireId: string;
+      mode: 'description' | 'history';
+    }
+  | null;
+
 const INTERVAL_DAYS: Record<string, number> = {
   daily: 1,
   weekly: 7,
@@ -69,8 +76,7 @@ const QuestionnaireFiller: React.FC<QuestionnaireFillerProps> = ({ onCompleted, 
   const [questionnaires, setQuestionnaires] = useState<Questionnaire[]>([]);
   const [lastResponses, setLastResponses] = useState<LastResponse[]>([]);
   const [selectedQ, setSelectedQ] = useState<string | null>(null);
-  const [openHistoryCards, setOpenHistoryCards] = useState<Set<string>>(new Set());
-  const [expandedDescriptions, setExpandedDescriptions] = useState<Set<string>>(new Set());
+  const [activePanel, setActivePanel] = useState<CardPanelState>(null);
   const [questions, setQuestions] = useState<Question[]>([]);
   const [answers, setAnswers] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState(false);
@@ -101,11 +107,10 @@ const QuestionnaireFiller: React.FC<QuestionnaireFillerProps> = ({ onCompleted, 
     const load = async () => {
       setLoading(true);
       setSelectedQ(null);
-      setOpenHistoryCards(new Set());
+      setActivePanel(null);
       setQuestions([]);
       setAnswers({});
       setScoreResult(null);
-      setExpandedDescriptions(new Set());
 
       const responsePromise = user
         ? (() => {
@@ -185,21 +190,9 @@ const QuestionnaireFiller: React.FC<QuestionnaireFillerProps> = ({ onCompleted, 
     return labelMap[interval] ?? interval;
   };
 
-  const toggleDescription = (questionnaireId: string) => {
-    setExpandedDescriptions((previous) => {
-      const next = new Set(previous);
-      if (next.has(questionnaireId)) {
-        next.delete(questionnaireId);
-      } else {
-        next.add(questionnaireId);
-      }
-      return next;
-    });
-  };
-
   const loadQuestions = async (questionnaireId: string) => {
+    setActivePanel(null);
     setSelectedQ(questionnaireId);
-    setOpenHistoryCards(new Set());
     setAnswers({});
     setScoreResult(null);
 
@@ -210,18 +203,6 @@ const QuestionnaireFiller: React.FC<QuestionnaireFillerProps> = ({ onCompleted, 
       .order('sort_order');
 
     setQuestions((data ?? []) as unknown as Question[]);
-  };
-
-  const toggleHistoryCard = (questionnaireId: string) => {
-    setOpenHistoryCards((previous) => {
-      const next = new Set(previous);
-      if (next.has(questionnaireId)) {
-        next.delete(questionnaireId);
-      } else {
-        next.add(questionnaireId);
-      }
-      return next;
-    });
   };
 
   const calculateScore = (questionnaire: Questionnaire) => {
@@ -362,9 +343,10 @@ const QuestionnaireFiller: React.FC<QuestionnaireFillerProps> = ({ onCompleted, 
     ]);
 
     if (!questionnaire?.scoring_enabled) {
+      const completedQuestionnaireId = selectedQ;
       setSelectedQ(null);
       setAnswers({});
-      setOpenHistoryCards(new Set([selectedQ]));
+      setActivePanel({ questionnaireId: completedQuestionnaireId, mode: 'history' });
     }
 
     setSubmitting(false);
@@ -470,10 +452,13 @@ const QuestionnaireFiller: React.FC<QuestionnaireFillerProps> = ({ onCompleted, 
         questionScores={scoreResult.questionScores}
         scoreRanges={scoreResult.scoreRanges}
         onClose={() => {
-          setOpenHistoryCards(new Set([selectedQ]));
+          const completedQuestionnaireId = selectedQ;
           setSelectedQ(null);
           setAnswers({});
           setScoreResult(null);
+          if (completedQuestionnaireId) {
+            setActivePanel({ questionnaireId: completedQuestionnaireId, mode: 'history' });
+          }
         }}
       />
     );
@@ -508,8 +493,11 @@ const QuestionnaireFiller: React.FC<QuestionnaireFillerProps> = ({ onCompleted, 
             <button
               type="button"
               onClick={() => {
+                const activeQuestionnaireId = selectedQ;
                 setSelectedQ(null);
-                setOpenHistoryCards(new Set([selectedQ]));
+                if (activeQuestionnaireId) {
+                  setActivePanel({ questionnaireId: activeQuestionnaireId, mode: 'history' });
+                }
               }}
               className="text-xs font-medium text-primary underline underline-offset-2"
             >
@@ -574,8 +562,11 @@ const QuestionnaireFiller: React.FC<QuestionnaireFillerProps> = ({ onCompleted, 
           <button
             type="button"
             onClick={() => {
+              const activeQuestionnaireId = selectedQ;
               setSelectedQ(null);
-              setOpenHistoryCards(new Set([selectedQ]));
+              if (activeQuestionnaireId) {
+                setActivePanel({ questionnaireId: activeQuestionnaireId, mode: 'history' });
+              }
             }}
             className="text-xs font-medium text-primary underline underline-offset-2"
           >
@@ -620,7 +611,8 @@ const QuestionnaireFiller: React.FC<QuestionnaireFillerProps> = ({ onCompleted, 
           const lastCompletion = getLastCompletion(questionnaire.id);
           const available = isAvailable(questionnaire);
           const description = qDescription(questionnaire);
-          const historyOpen = openHistoryCards.has(questionnaire.id);
+          const cardPanelMode =
+            activePanel?.questionnaireId === questionnaire.id ? activePanel.mode : null;
 
           return (
             <QuestionnaireCard
@@ -637,26 +629,27 @@ const QuestionnaireFiller: React.FC<QuestionnaireFillerProps> = ({ onCompleted, 
                   : undefined
               }
               available={available}
-              descriptionExpanded={expandedDescriptions.has(questionnaire.id)}
-              canToggleDescription={(description?.length ?? 0) > DESCRIPTION_TOGGLE_THRESHOLD}
-              onToggleDescription={() => toggleDescription(questionnaire.id)}
+              canReadMore={(description?.length ?? 0) > DESCRIPTION_TOGGLE_THRESHOLD}
               onStart={() => loadQuestions(questionnaire.id)}
-              onToggleHistory={() => toggleHistoryCard(questionnaire.id)}
-              historyOpen={historyOpen}
               startLabel={t.questionnaires_manage.startQuestionnaire}
               historyLabel={t.questionnaires_manage.viewQuestionnaireHistory}
-              hideHistoryLabel={t.questionnaires_manage.hideQuestionnaireHistory}
               availableNowLabel={t.questionnaires_manage.availableNow}
               expandLabel={t.questionnaires_manage.expandDescription}
-              collapseLabel={t.questionnaires_manage.collapseDescription}
               completedLabel={t.questionnaires_manage.alreadyCompleted}
-            >
-              <ScoreHistory
-                questionnaireId={questionnaire.id}
-                emptyMessage={t.questionnaires_manage.noHistoryForQuestionnaire}
-                compact
-              />
-            </QuestionnaireCard>
+              closeLabel={t.ui.close}
+              detailPanelTitle={t.questionnaires_manage.detailPanelTitle}
+              activePanel={cardPanelMode}
+              onPanelChange={(mode) =>
+                setActivePanel(mode ? { questionnaireId: questionnaire.id, mode } : null)
+              }
+              historyContent={
+                <ScoreHistory
+                  questionnaireId={questionnaire.id}
+                  emptyMessage={t.questionnaires_manage.noHistoryForQuestionnaire}
+                  compact
+                />
+              }
+            />
           );
         })}
       </div>
