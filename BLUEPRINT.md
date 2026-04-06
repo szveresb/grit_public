@@ -27,6 +27,9 @@ This task has been **paused** because the underlying SNOMED CT logic and clinica
 4.  [`src/pages/Surveys.tsx`](file:///c:/Users/veres.sz/Documents/GitHub/grit.hu/src/pages/Surveys.tsx) — Questionnaire hub with logic-aware respondent stepper.
 
 ## State of Play
-**Layout and spacing are fully refined.** The dashboard features a standardized **`space-y-6`** (24px) vertical rhythm and a strict **Action-Result vertical hierarchy** (QuickPulse Entry → Mood Chart → Tools → Nudges → Pattern Chart). Dismissible pattern nudges with 30-day lookbacks and memory persistence are live.
+**Layout and spacing are fully refined.** Dashboard features a standardized **`space-y-6`** rhythm and a strict **Action-Result vertical hierarchy**. Dismissible pattern nudges with 30-day lookbacks and memory persistence are live.
 
-**Next Priority:** The AI Sensemaking integration has been formally suspended. The project must pivot to implementing the foundational **SNOMED CT / BNO-10 clinical structure and logic** before the AI can be safely and accurately integrated to assign these codes to journal text.
+**PWA & Branding finalized.** The platform is now a Progressive Web App with a "Safety First" discreet identity (Short name: "G", minimalist monogram icons). Service worker caching is operational with an emergency exit bypass.
+
+## Next Priority
+The project pivot to the **Clinical Entity Architecture (SNOMED CT / BNO-10)** is now the primary focus. AI Sensemaking remains suspended until this foundational structural mapping is implemented.
