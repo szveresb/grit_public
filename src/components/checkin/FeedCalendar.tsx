@@ -88,7 +88,7 @@ const FeedCalendar = ({ items, currentMonth, onMonthChange, selectedDate, onSele
       </div>
 
       {/* Calendar grid */}
-      <div className="grid grid-cols-7 gap-1">
+      <div className="grid grid-cols-7 gap-0.5 sm:gap-1">
         {t.timeline.dayNames.map(d => (
           <div key={d} className="text-center text-xs font-semibold text-muted-foreground py-1.5">{d}</div>
         ))}
@@ -112,11 +112,11 @@ const FeedCalendar = ({ items, currentMonth, onMonthChange, selectedDate, onSele
                   <button
                     onClick={() => !future && onSelectDate(isSelected ? null : day)}
                     disabled={future}
-                    className={`relative flex flex-col items-center justify-center p-1.5 text-center rounded-2xl transition-all min-h-[3.2rem] border
+                    className={`relative flex flex-col items-center justify-center p-1 sm:p-1.5 text-center rounded-xl sm:rounded-2xl transition-all min-h-[2.8rem] sm:min-h-[3.2rem] border
                       ${future ? 'opacity-30 cursor-not-allowed border-transparent' : isSelected ? 'bg-primary text-primary-foreground shadow-md border-primary' : today ? 'bg-accent border-transparent' : `${heatmapClass || 'hover:bg-accent/50 border-transparent'}`}
                     `}
                   >
-                    <span className="text-sm leading-none">{format(day, 'd')}</span>
+                    <span className="text-xs sm:text-sm leading-none">{format(day, 'd')}</span>
                     <span className={`text-[0.55rem] leading-none mt-0.5 ${isKeyPhase ? 'opacity-90' : 'opacity-40'}`}>
                       {moon.emoji}
                     </span>

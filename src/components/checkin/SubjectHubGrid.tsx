@@ -58,7 +58,7 @@ const SubjectHubGrid = ({ onSelect, onToggleCompare, onStartParallel, selectedKe
   };
 
   return (
-    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 animate-fade-in pb-12">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 animate-fade-in pb-12">
       {cards.map((card) => {
         const isSelected = selectedKeys.includes(card.key);
         const isRelative = card.type === 'relative';
@@ -67,7 +67,7 @@ const SubjectHubGrid = ({ onSelect, onToggleCompare, onStartParallel, selectedKe
           <div
             key={card.key}
             className={cn(
-              'relative group flex flex-col p-6 text-center transition-all duration-300 rounded-[2.5rem] border-2 h-full bg-card',
+              'relative group flex flex-col p-5 sm:p-6 text-center transition-all duration-300 rounded-[2rem] sm:rounded-[2.5rem] border-2 h-full bg-card',
               isSelected 
                 ? 'border-primary shadow-md ring-1 ring-primary/20 bg-primary/5' 
                 : 'border-border/40 hover:border-primary/20 shadow-sm hover:shadow-md hover:-translate-y-1'
