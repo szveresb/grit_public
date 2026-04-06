@@ -69,6 +69,15 @@ const QuickPulse = ({
     const level = index + 1;
     const label = moodLabels[index];
 
+    if (!navigator.onLine) {
+      toast.info(t.pwa?.syncPending || "Sync Pending – will upload when connection restores", {
+        description: "You are currently offline.",
+      });
+      setSaved(true);
+      setTimeout(() => setSaved(false), 3000);
+      return;
+    }
+
     setSaving(true);
     const insertPayload: Record<string, unknown> = {
       user_id: user.id,

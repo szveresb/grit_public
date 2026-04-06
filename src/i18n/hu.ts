@@ -782,4 +782,7 @@ export const hu: Dictionary = {
     subjectRemoved: 'Személy eltávolítva',
     subjectUpdated: 'Személy frissítve',
   },
+  pwa: {
+    syncPending: 'Várakozó szinkronizáció – a kapcsolat helyreálltakor feltöltésre kerül',
+  },
 };

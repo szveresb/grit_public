@@ -225,6 +225,14 @@ const QuestionnaireFiller: React.FC<QuestionnaireFillerProps> = ({ onCompleted, 
 
   const handleSubmit = async () => {
     if (!user || !selectedQ) return;
+
+    if (!navigator.onLine) {
+      toast.info(t.pwa?.syncPending || "Sync Pending – will upload when connection restores", {
+        description: "You are currently offline.",
+      });
+      return;
+    }
+
     setSubmitting(true);
 
     const questionnaire = questionnaires.find(q => q.id === selectedQ);
@@ -433,13 +441,13 @@ const QuestionnaireFiller: React.FC<QuestionnaireFillerProps> = ({ onCompleted, 
         <div className="space-y-5 animate-fade-in">
           <div className="space-y-1.5">
             <div className="flex items-center justify-between">
-              <h3 className="text-sm font-semibold text-foreground">{qTitle}</h3>
+              <h3 className="text-sm font-semibold text-foreground">{qName(q)}</h3>
               <span className="text-[10px] text-muted-foreground">
                 {t.questionnaires_manage.questionN.replace('{n}', String(answeredCount + (isLastAnswered ? 0 : 1)))} / ~{questions.length}
               </span>
             </div>
-            {qDesc && (
-              <p className="text-sm text-muted-foreground leading-relaxed italic">{qDesc}</p>
+            {qDescription(q) && (
+              <p className="text-sm text-muted-foreground leading-relaxed italic">{qDescription(q)}</p>
             )}
           </div>
 
@@ -485,9 +493,9 @@ const QuestionnaireFiller: React.FC<QuestionnaireFillerProps> = ({ onCompleted, 
     return (
       <div className="space-y-5 animate-fade-in">
         <div className="space-y-1.5">
-          <h3 className="text-sm font-semibold text-foreground">{qTitle}</h3>
-          {qDesc && (
-            <p className="text-sm text-muted-foreground leading-relaxed border-l-2 border-primary/20 pl-3 italic">{qDesc}</p>
+          <h3 className="text-sm font-semibold text-foreground">{qName(q)}</h3>
+          {qDescription(q) && (
+            <p className="text-sm text-muted-foreground leading-relaxed border-l-2 border-primary/20 pl-3 italic">{qDescription(q)}</p>
           )}
         </div>
         {questions.map((q, i) => (

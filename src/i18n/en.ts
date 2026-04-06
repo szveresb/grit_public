@@ -783,4 +783,7 @@ export const en: Dictionary = {
     subjectRemoved: 'Person removed',
     subjectUpdated: 'Person updated',
   },
+  pwa: {
+    syncPending: 'Sync Pending – will upload when connection restores',
+  },
 };

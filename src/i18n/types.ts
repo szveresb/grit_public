@@ -750,4 +750,9 @@ export interface Dictionary {
     subjectRemoved: string;
     subjectUpdated: string;
   };
+
+  // PWA
+  pwa: {
+    syncPending: string;
+  };
 }

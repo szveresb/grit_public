@@ -155,8 +155,8 @@ Curated research articles with bilingual support.
 | Column | Type | Notes |
 |---|---|---|
 | `id` | uuid (PK) | |
-| `title` / `title_localized` | text / jsonb | Bilingual |
-| `description` / `description_localized` | text / jsonb | Bilingual |
+| `title` / `title_localized` | text / jsonb | Bilingual; visible in selection and filling views |
+| `description` / `description_localized` | text / jsonb | Bilingual; visible in selection and filling views |
 | `is_published` | boolean | Default `false` |
 | `scoring_enabled` | boolean | Default `false`; enables score calculation |
 | `scoring_mode` | text | `'sum'` (default) or `'weighted'`; determines scoring method |
@@ -204,6 +204,7 @@ Curated research articles with bilingual support.
 | `completed_at` | timestamptz | Default `now()` |
 
 **RLS:** Users manage own responses only. 
+**Submission Availability:** Submitting questionnaire results is now globally available to all authenticated roles (including `observer` and `affected_person`). Role-based submission locks have been removed.
 **Stance Isolation:** Both availability interval-checking and historical score retrieval query responses strictly by `subject_type` and `subject_id`, guaranteeing that self and supported-person completions naturally track independent cadences even for the same user.
 
 #### `questionnaire_answers`
@@ -437,7 +438,7 @@ All routes are served under both `/` (Hungarian default) and `/en/` (English pre
 
 **Layout Standardization:** The primary interactive pages (`/journal`, `/surveys`, `/library`, etc.) share a consistent, centered layout using **`space-y-6`** (24px) vertical spacing and `max-w-2xl mx-auto w-full` containers (for focused content).
 
-**Fluid Grid Strategy:** The dashboard and workspace management cards transition from mobile vertical stacks to side-by-side grids at the **`md` (768px)** breakpoint. This threshold is synchronized across the workspace action block (`QuickPulse` + `Chart`), the header navigation, and the `SubjectCardRegistry` to ensure all UI elements transition as a single, cohesive unit.
+**Fluid Grid Strategy:** The dashboard and workspace management cards transition from mobile vertical stacks to side-by-side grids at the **`md` (768px)** breakpoint. This threshold is synchronized across the workspace action block (`QuickPulse` + `Chart`), the header navigation, and the `SubjectCardRegistry` to ensure all UI elements transition as a single, cohesive unit. This includes fluid sizing for `QuickPulse` icons (`w-11` to `w-14`) and gaps (`gap-1.5` to `gap-4`) to prevent overflow on landing-page showcases.
 
 | Route | Component | Auth Required | Notes |
 |---|---|---|---|
@@ -524,3 +525,25 @@ Full bilingual support (Hungarian primary, English secondary) via `src/i18n/` wi
 - **FHIR export** — Personal export includes observation logs as FHIR Observation resources with dual SNOMED/BNO coding; analyst export supports `?format=fhir` for a FHIR Bundle of aggregated data
 - **Therapist export** — BNO-grouped summary export designed for sharing with Hungarian therapists, including observation counts, average intensity, and date ranges per BNO code
 - **Non-diagnostic disclaimer** — All exports carry a mandatory bilingual watermark clarifying data is not a clinical assessment
+
+---
+
+## 9. PWA & Offline Strategy
+
+Grit.hu is a Progressive Web App (PWA) using `vite-plugin-pwa` for offline reliability and discreet usage.
+
+### 9.1 Safety First (Visionary Stance)
+For users in high-conflict dynamics, the PWA is designed to be discreet.
+- **Manifest Short Name**: Set to a single character (`short_name: "G"`) to avoid drawing attention on a device's home screen.
+- **Icons**: Uses a minimalist, abstract "G" monogram icon instead of medical or high-conflict imagery, ensuring it remains discreet on the home screen.
+
+### 9.2 Caching Strategy
+The service worker uses a dual caching model via Workbox:
+- **Static Assets (Cache-First)**: Scripts, styles, and images are cached for 30 days to ensure core UI availability even during network drops.
+- **Supabase API (Network-First)**: Database calls (REST API) always prioritize the live network to prevent "stale" or duplicate submissions of sensitive reflections.
+
+### 9.3 Emergency Exit Faktor
+The **Emergency Exit** button (see §8.5) is explicitly excluded from service worker caching (`navigateFallbackDenylist`). This ensures that clicking "Exit" always triggers an immediate, clean redirect to the target neutral site (e.g., Google) without interference from offline fallbacks or cached page states.
+
+### 9.4 Offline Handling
+When a network connection is unavailable (`navigator.onLine === false`), the UI allows entries to be "typed" or "logged" locally. A clear **"Sync Pending"** visual cue (toast notification) is provided to the user rather than silently caching submissions, ensuring the user is aware of the current connectivity status of their sensitive data.
