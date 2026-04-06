@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useLanguage } from '@/hooks/useLanguage';
@@ -87,6 +87,8 @@ const QuestionnaireFiller: React.FC<QuestionnaireFillerProps> = ({ onCompleted, 
     questionScores: { questionText: string; answer: string; score: number }[];
     scoreRanges: ScoreRange[];
   } | null>(null);
+  const subjectScopeKey = `${activeSubject.type}:${activeSubject.id ?? 'self'}`;
+  const previousSubjectScopeRef = useRef(subjectScopeKey);
 
   const dateLocale = getDateLocale(lang);
   const isAdminOrEditor = hasAnyRole('admin', 'editor');
@@ -104,13 +106,19 @@ const QuestionnaireFiller: React.FC<QuestionnaireFillerProps> = ({ onCompleted, 
   };
 
   useEffect(() => {
+    if (previousSubjectScopeRef.current === subjectScopeKey) return;
+
+    previousSubjectScopeRef.current = subjectScopeKey;
+    setSelectedQ(null);
+    setActivePanel(null);
+    setQuestions([]);
+    setAnswers({});
+    setScoreResult(null);
+  }, [subjectScopeKey]);
+
+  useEffect(() => {
     const load = async () => {
       setLoading(true);
-      setSelectedQ(null);
-      setActivePanel(null);
-      setQuestions([]);
-      setAnswers({});
-      setScoreResult(null);
 
       const responsePromise = user
         ? (() => {
@@ -159,7 +167,7 @@ const QuestionnaireFiller: React.FC<QuestionnaireFillerProps> = ({ onCompleted, 
     };
 
     load();
-  }, [activeSubject.id, activeSubject.type, isAdminOrEditor, readOnly, user]);
+  }, [activeSubject.id, activeSubject.type, isAdminOrEditor, readOnly, user?.id]);
 
   const getLastCompletion = (questionnaireId: string) =>
     lastResponses.find((response) => response.questionnaire_id === questionnaireId);
