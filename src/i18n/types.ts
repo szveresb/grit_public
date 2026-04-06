@@ -267,6 +267,7 @@ export interface Dictionary {
     viewQuestionnaireHistory: string;
     expandDescription: string;
     collapseDescription: string;
+    hideQuestionnaireHistory: string;
     supportedSelectionEmpty: string;
     detailPanelTitle: string;
     questionnaireJournalTitle: string;

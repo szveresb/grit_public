@@ -1,5 +1,6 @@
 import { Button } from '@/components/ui/button';
-import { FClipboardCheck, FClock } from '@/components/icons/FreudIcons';
+import { Collapsible, CollapsibleContent } from '@/components/ui/collapsible';
+import { FChevronDown, FClipboardCheck, FClock } from '@/components/icons/FreudIcons';
 
 interface QuestionnaireCardProps {
   title: string;
@@ -11,13 +12,16 @@ interface QuestionnaireCardProps {
   canToggleDescription: boolean;
   onToggleDescription: () => void;
   onStart: () => void;
-  onOpenHistory: () => void;
+  onToggleHistory: () => void;
+  historyOpen: boolean;
   startLabel: string;
   historyLabel: string;
+  hideHistoryLabel: string;
   availableNowLabel: string;
   expandLabel: string;
   collapseLabel: string;
   completedLabel: string;
+  children?: React.ReactNode;
 }
 
 const QuestionnaireCard = ({
@@ -30,23 +34,27 @@ const QuestionnaireCard = ({
   canToggleDescription,
   onToggleDescription,
   onStart,
-  onOpenHistory,
+  onToggleHistory,
+  historyOpen,
   startLabel,
   historyLabel,
+  hideHistoryLabel,
   availableNowLabel,
   expandLabel,
   collapseLabel,
   completedLabel,
+  children,
 }: QuestionnaireCardProps) => {
   return (
-    <article
+    <Collapsible open={historyOpen} onOpenChange={onToggleHistory}>
+      <article
       className={`flex h-full min-w-0 flex-col rounded-[2rem] border p-5 shadow-sm transition-colors ${
         available
           ? 'border-border/60 bg-card/80'
           : 'border-border/50 bg-card/50 opacity-75'
-      }`}
-    >
-      <div className="flex items-start gap-3">
+      } ${historyOpen ? 'relative z-10 shadow-lg ring-1 ring-primary/15' : ''}`}
+      >
+      <div className="flex items-start gap-3 overflow-visible">
         <div className="mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-primary/10 text-primary">
           <FClipboardCheck className="h-4 w-4" />
         </div>
@@ -113,13 +121,21 @@ const QuestionnaireCard = ({
         <Button
           type="button"
           variant="outline"
-          onClick={onOpenHistory}
+          onClick={onToggleHistory}
           className="w-full rounded-2xl sm:w-auto"
         >
-          {historyLabel}
+          <span>{historyOpen ? hideHistoryLabel : historyLabel}</span>
+          <FChevronDown className={`ml-2 h-4 w-4 transition-transform ${historyOpen ? 'rotate-180' : ''}`} />
         </Button>
       </div>
+
+      <CollapsibleContent className="pt-4">
+        <div className="rounded-[1.5rem] border border-border/60 bg-background/75 p-4">
+          {children}
+        </div>
+      </CollapsibleContent>
     </article>
+    </Collapsible>
   );
 };
 

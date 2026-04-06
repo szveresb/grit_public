@@ -9,7 +9,7 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { toast } from 'sonner';
-import { FArrowLeft, FArrowRight } from '@/components/icons/FreudIcons';
+import { FArrowLeft } from '@/components/icons/FreudIcons';
 import { formatDistanceToNow, differenceInHours } from 'date-fns';
 import { getDateLocale } from '@/lib/date-locale';
 import ScoreResults from './ScoreResults';
@@ -69,7 +69,7 @@ const QuestionnaireFiller: React.FC<QuestionnaireFillerProps> = ({ onCompleted, 
   const [questionnaires, setQuestionnaires] = useState<Questionnaire[]>([]);
   const [lastResponses, setLastResponses] = useState<LastResponse[]>([]);
   const [selectedQ, setSelectedQ] = useState<string | null>(null);
-  const [historyQuestionnaireId, setHistoryQuestionnaireId] = useState<string | null>(null);
+  const [openHistoryCards, setOpenHistoryCards] = useState<Set<string>>(new Set());
   const [expandedDescriptions, setExpandedDescriptions] = useState<Set<string>>(new Set());
   const [questions, setQuestions] = useState<Question[]>([]);
   const [answers, setAnswers] = useState<Record<string, string>>({});
@@ -101,7 +101,7 @@ const QuestionnaireFiller: React.FC<QuestionnaireFillerProps> = ({ onCompleted, 
     const load = async () => {
       setLoading(true);
       setSelectedQ(null);
-      setHistoryQuestionnaireId(null);
+      setOpenHistoryCards(new Set());
       setQuestions([]);
       setAnswers({});
       setScoreResult(null);
@@ -199,7 +199,7 @@ const QuestionnaireFiller: React.FC<QuestionnaireFillerProps> = ({ onCompleted, 
 
   const loadQuestions = async (questionnaireId: string) => {
     setSelectedQ(questionnaireId);
-    setHistoryQuestionnaireId(null);
+    setOpenHistoryCards(new Set());
     setAnswers({});
     setScoreResult(null);
 
@@ -212,10 +212,16 @@ const QuestionnaireFiller: React.FC<QuestionnaireFillerProps> = ({ onCompleted, 
     setQuestions((data ?? []) as unknown as Question[]);
   };
 
-  const openHistoryPanel = (questionnaireId: string) => {
-    setSelectedQ(null);
-    setScoreResult(null);
-    setHistoryQuestionnaireId(questionnaireId);
+  const toggleHistoryCard = (questionnaireId: string) => {
+    setOpenHistoryCards((previous) => {
+      const next = new Set(previous);
+      if (next.has(questionnaireId)) {
+        next.delete(questionnaireId);
+      } else {
+        next.add(questionnaireId);
+      }
+      return next;
+    });
   };
 
   const calculateScore = (questionnaire: Questionnaire) => {
@@ -358,7 +364,7 @@ const QuestionnaireFiller: React.FC<QuestionnaireFillerProps> = ({ onCompleted, 
     if (!questionnaire?.scoring_enabled) {
       setSelectedQ(null);
       setAnswers({});
-      setHistoryQuestionnaireId(selectedQ);
+      setOpenHistoryCards(new Set([selectedQ]));
     }
 
     setSubmitting(false);
@@ -464,7 +470,7 @@ const QuestionnaireFiller: React.FC<QuestionnaireFillerProps> = ({ onCompleted, 
         questionScores={scoreResult.questionScores}
         scoreRanges={scoreResult.scoreRanges}
         onClose={() => {
-          setHistoryQuestionnaireId(selectedQ);
+          setOpenHistoryCards(new Set([selectedQ]));
           setSelectedQ(null);
           setAnswers({});
           setScoreResult(null);
@@ -495,13 +501,16 @@ const QuestionnaireFiller: React.FC<QuestionnaireFillerProps> = ({ onCompleted, 
       return (
         <div className="space-y-5 animate-fade-in">
           <div className="flex flex-wrap items-center justify-between gap-3">
-            <Button variant="outline" size="sm" className="rounded-2xl" onClick={() => setSelectedQ(null)}>
+              <Button variant="outline" size="sm" className="rounded-2xl" onClick={() => setSelectedQ(null)}>
               <FArrowLeft className="mr-1 h-4 w-4" />
               {t.observations.back}
             </Button>
             <button
               type="button"
-              onClick={() => openHistoryPanel(selectedQ)}
+              onClick={() => {
+                setSelectedQ(null);
+                setOpenHistoryCards(new Set([selectedQ]));
+              }}
               className="text-xs font-medium text-primary underline underline-offset-2"
             >
               {t.questionnaires_manage.viewQuestionnaireHistory}
@@ -564,7 +573,10 @@ const QuestionnaireFiller: React.FC<QuestionnaireFillerProps> = ({ onCompleted, 
           </Button>
           <button
             type="button"
-            onClick={() => openHistoryPanel(selectedQ)}
+            onClick={() => {
+              setSelectedQ(null);
+              setOpenHistoryCards(new Set([selectedQ]));
+            }}
             className="text-xs font-medium text-primary underline underline-offset-2"
           >
             {t.questionnaires_manage.viewQuestionnaireHistory}
@@ -601,8 +613,6 @@ const QuestionnaireFiller: React.FC<QuestionnaireFillerProps> = ({ onCompleted, 
     );
   }
 
-  const historyQuestionnaire = questionnaires.find((questionnaire) => questionnaire.id === historyQuestionnaireId);
-
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
@@ -610,6 +620,7 @@ const QuestionnaireFiller: React.FC<QuestionnaireFillerProps> = ({ onCompleted, 
           const lastCompletion = getLastCompletion(questionnaire.id);
           const available = isAvailable(questionnaire);
           const description = qDescription(questionnaire);
+          const historyOpen = openHistoryCards.has(questionnaire.id);
 
           return (
             <QuestionnaireCard
@@ -630,56 +641,25 @@ const QuestionnaireFiller: React.FC<QuestionnaireFillerProps> = ({ onCompleted, 
               canToggleDescription={(description?.length ?? 0) > DESCRIPTION_TOGGLE_THRESHOLD}
               onToggleDescription={() => toggleDescription(questionnaire.id)}
               onStart={() => loadQuestions(questionnaire.id)}
-              onOpenHistory={() => openHistoryPanel(questionnaire.id)}
+              onToggleHistory={() => toggleHistoryCard(questionnaire.id)}
+              historyOpen={historyOpen}
               startLabel={t.questionnaires_manage.startQuestionnaire}
               historyLabel={t.questionnaires_manage.viewQuestionnaireHistory}
+              hideHistoryLabel={t.questionnaires_manage.hideQuestionnaireHistory}
               availableNowLabel={t.questionnaires_manage.availableNow}
               expandLabel={t.questionnaires_manage.expandDescription}
               collapseLabel={t.questionnaires_manage.collapseDescription}
               completedLabel={t.questionnaires_manage.alreadyCompleted}
-            />
+            >
+              <ScoreHistory
+                questionnaireId={questionnaire.id}
+                emptyMessage={t.questionnaires_manage.noHistoryForQuestionnaire}
+                compact
+              />
+            </QuestionnaireCard>
           );
         })}
       </div>
-
-      {historyQuestionnaire && (
-        <section className="surface-card space-y-5 p-5 sm:p-6">
-          <div className="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
-            <div className="min-w-0 space-y-2">
-              <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
-                {t.questionnaires_manage.detailPanelTitle}
-              </p>
-              <h3 className="text-base font-semibold text-foreground">
-                {qName(historyQuestionnaire)}
-              </h3>
-              {qDescription(historyQuestionnaire) && (
-                <p className="max-w-2xl text-sm leading-relaxed text-muted-foreground">
-                  {qDescription(historyQuestionnaire)}
-                </p>
-              )}
-            </div>
-
-            <div className="flex flex-col gap-2 sm:flex-row">
-              <Button onClick={() => loadQuestions(historyQuestionnaire.id)} className="rounded-2xl">
-                {t.questionnaires_manage.startQuestionnaire}
-                <FArrowRight className="ml-1 h-4 w-4" />
-              </Button>
-              <Button
-                variant="outline"
-                onClick={() => setHistoryQuestionnaireId(null)}
-                className="rounded-2xl"
-              >
-                {t.observations.back}
-              </Button>
-            </div>
-          </div>
-
-          <ScoreHistory
-            questionnaireId={historyQuestionnaire.id}
-            emptyMessage={t.questionnaires_manage.noHistoryForQuestionnaire}
-          />
-        </section>
-      )}
     </div>
   );
 };

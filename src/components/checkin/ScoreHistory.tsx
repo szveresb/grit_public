@@ -53,6 +53,7 @@ interface ScoreHistoryProps {
   subjectType?: 'self' | 'relative';
   subjectId?: string | null;
   emptyMessage?: string;
+  compact?: boolean;
 }
 
 const ScoreHistory = ({
@@ -60,6 +61,7 @@ const ScoreHistory = ({
   subjectType,
   subjectId,
   emptyMessage,
+  compact = false,
 }: ScoreHistoryProps) => {
   const { user } = useAuth();
   const { t, lang } = useLanguage();
@@ -250,7 +252,7 @@ const ScoreHistory = ({
   }
 
   return (
-    <div className="space-y-6">
+    <div className={compact ? 'space-y-4' : 'space-y-6'}>
       {groups.map((group) => {
         const chartData = group.entries.map((entry) => ({
           date: format(new Date(entry.completed_at), 'MM/dd', { locale: dateLocale }),
@@ -267,10 +269,32 @@ const ScoreHistory = ({
             : 0;
 
         return (
-          <div key={group.questionnaire_id} className="rounded-[1.75rem] border border-border/60 p-4 space-y-4">
-            <div className="flex items-center justify-between gap-3">
-              <h4 className="text-sm font-semibold text-foreground">{group.title}</h4>
-              {group.scoringEnabled && (
+          <div key={group.questionnaire_id} className={`rounded-[1.5rem] border border-border/60 ${compact ? 'p-3 space-y-3' : 'p-4 space-y-4'}`}>
+            {!compact && (
+              <div className="flex items-center justify-between gap-3">
+                <h4 className="text-sm font-semibold text-foreground">{group.title}</h4>
+                {group.scoringEnabled && (
+                  <div className="flex items-center gap-2">
+                    <span className="text-lg font-bold text-foreground">{latest.total_score}</span>
+                    {trend !== 0 && (
+                      <span
+                        className={`rounded-full px-1.5 py-0.5 text-xs font-medium ${
+                          trend > 0 ? 'bg-primary/10 text-primary' : 'bg-muted text-muted-foreground'
+                        }`}
+                      >
+                        {trend > 0 ? '+' : ''}
+                        {trend}
+                      </span>
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
+            {compact && group.scoringEnabled && (
+              <div className="flex items-center justify-between gap-2">
+                <p className="text-xs font-semibold uppercase tracking-wide text-muted-foreground">
+                  {t.questionnaires_manage.detailPanelTitle}
+                </p>
                 <div className="flex items-center gap-2">
                   <span className="text-lg font-bold text-foreground">{latest.total_score}</span>
                   {trend !== 0 && (
@@ -284,8 +308,8 @@ const ScoreHistory = ({
                     </span>
                   )}
                 </div>
-              )}
-            </div>
+              </div>
+            )}
 
             {group.scoringEnabled && group.maxPossibleScore > 0 && (
               <div className="space-y-1.5">
