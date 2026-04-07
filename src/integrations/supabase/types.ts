@@ -665,62 +665,51 @@ export type Database = {
       }
       user_feedback: {
         Row: {
-          context_json: Json
+          context_json: Json | null
           created_at: string
           id: string
           kind: string
-          locale: string
+          locale: string | null
           message: string | null
-          page_path: string
-          status: string
+          page_path: string | null
           subject_id: string | null
-          subject_type: Database["public"]["Enums"]["subject_type"]
+          subject_type: string | null
           summary: string
           urgency: string | null
           user_id: string
-          viewport: string
+          viewport: string | null
         }
         Insert: {
-          context_json?: Json
+          context_json?: Json | null
           created_at?: string
           id?: string
           kind: string
-          locale: string
+          locale?: string | null
           message?: string | null
-          page_path: string
-          status?: string
+          page_path?: string | null
           subject_id?: string | null
-          subject_type?: Database["public"]["Enums"]["subject_type"]
+          subject_type?: string | null
           summary: string
           urgency?: string | null
           user_id: string
-          viewport: string
+          viewport?: string | null
         }
         Update: {
-          context_json?: Json
+          context_json?: Json | null
           created_at?: string
           id?: string
           kind?: string
-          locale?: string
+          locale?: string | null
           message?: string | null
-          page_path?: string
-          status?: string
+          page_path?: string | null
           subject_id?: string | null
-          subject_type?: Database["public"]["Enums"]["subject_type"]
+          subject_type?: string | null
           summary?: string
           urgency?: string | null
           user_id?: string
-          viewport?: string
+          viewport?: string | null
         }
-        Relationships: [
-          {
-            foreignKeyName: "user_feedback_subject_id_fkey"
-            columns: ["subject_id"]
-            isOneToOne: false
-            referencedRelation: "subjects"
-            referencedColumns: ["id"]
-          },
-        ]
+        Relationships: []
       }
       user_roles: {
         Row: {
