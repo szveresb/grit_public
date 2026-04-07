@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { useLocation } from 'react-router-dom';
 import { useAuth } from '@/hooks/useAuth';
 import { useLanguage, stripLangPrefix } from '@/hooks/useLanguage';
@@ -46,6 +46,8 @@ const FeedbackSheet = ({ open, onOpenChange }: FeedbackSheetProps) => {
   const [urgency, setUrgency] = useState<FeedbackUrgency>('medium');
   const [submitting, setSubmitting] = useState(false);
   const [submitted, setSubmitted] = useState(false);
+  const formRef = useRef<HTMLDivElement | null>(null);
+  const summaryInputRef = useRef<HTMLInputElement | null>(null);
 
   useEffect(() => {
     if (open) return;
@@ -56,6 +58,17 @@ const FeedbackSheet = ({ open, onOpenChange }: FeedbackSheetProps) => {
     setSubmitting(false);
     setSubmitted(false);
   }, [open]);
+
+  useEffect(() => {
+    if (!open || !kind || submitted) return;
+
+    const frameId = window.requestAnimationFrame(() => {
+      formRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      summaryInputRef.current?.focus();
+    });
+
+    return () => window.cancelAnimationFrame(frameId);
+  }, [kind, open, submitted]);
 
   const pageLabel = useMemo(() => {
     if (currentPath === '/journal') return t.nav.checkIn;
@@ -244,12 +257,13 @@ const FeedbackSheet = ({ open, onOpenChange }: FeedbackSheetProps) => {
       </div>
 
       {kind && (
-        <div className="space-y-4 animate-fade-in">
+        <div ref={formRef} className="space-y-4 animate-fade-in">
           <div className="space-y-2">
             <label className="text-xs font-semibold uppercase tracking-[0.18em] text-muted-foreground">
               {summaryLabel}
             </label>
             <Input
+              ref={summaryInputRef}
               value={summary}
               onChange={(event) => setSummary(event.target.value)}
               placeholder={summaryLabel}
