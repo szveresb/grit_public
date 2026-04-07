@@ -1,4 +1,4 @@
-import { createContext, useCallback, useContext, useEffect, useState, ReactNode } from 'react';
+import { createContext, useCallback, useContext, useEffect, useRef, useState, ReactNode } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import type { User, Session } from '@supabase/supabase-js';
 
@@ -21,10 +21,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
   const [session, setSession] = useState<Session | null>(null);
   const [displayName, setDisplayName] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
+  const displayNameRequestRef = useRef(0);
 
   const fetchDisplayName = useCallback(async (targetUser: User | null) => {
+    const requestId = ++displayNameRequestRef.current;
+
     if (!targetUser) {
-      setDisplayName(null);
+      if (requestId === displayNameRequestRef.current) {
+        setDisplayName(null);
+      }
       return;
     }
 
@@ -38,6 +43,10 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       .select('display_name')
       .eq('user_id', targetUser.id)
       .maybeSingle();
+
+    if (requestId !== displayNameRequestRef.current) {
+      return;
+    }
 
     if (error) {
       setDisplayName(fallbackName);

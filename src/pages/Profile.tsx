@@ -15,7 +15,7 @@ import ConsentDashboard from '@/components/consent/ConsentDashboard';
 import ManagedRelatives from '@/components/premium/ManagedRelatives';
 
 const Profile = () => {
-  const { user, signOut, setDisplayName: setAuthDisplayName } = useAuth();
+  const { user, signOut, setDisplayName: setAuthDisplayName, refreshDisplayName } = useAuth();
   const { t } = useLanguage();
   const { roles, setRole, loading: roleLoading } = useUserRole();
   const selfSelectRole = roles.find(r => SELF_SELECT_ROLES.includes(r)) ?? null;
@@ -26,7 +26,7 @@ const Profile = () => {
   useEffect(() => {
     if (!user) return;
     supabase.from('profiles').select('display_name').eq('user_id', user.id).maybeSingle()
-      .then(({ data }) => { if (data?.display_name) setDisplayName(data.display_name); });
+      .then(({ data }) => { setDisplayName(data?.display_name ?? ''); });
   }, [user]);
 
   const handleSave = async () => {
@@ -46,8 +46,21 @@ const Profile = () => {
       return;
     }
 
+    const { error: authError } = await supabase.auth.updateUser({
+      data: {
+        display_name: nextDisplayName,
+      },
+    });
+
+    if (authError) {
+      toast.error(t.error.submit);
+      setSaving(false);
+      return;
+    }
+
     setDisplayName(trimmedDisplayName);
     setAuthDisplayName(nextDisplayName || user.email || null);
+    await refreshDisplayName();
     toast.success(t.profile.profileUpdated);
     setSaving(false);
   };
