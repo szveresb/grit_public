@@ -5,7 +5,7 @@ on:
 jobs:
   publish:
     runs-on: ubuntu-latest
-    # This addresses the deprecation warning by opting into the newer runner early
+    # Explicitly opting into Node.js 24 to align with 2026 runner standards
     env:
       FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
     steps:
