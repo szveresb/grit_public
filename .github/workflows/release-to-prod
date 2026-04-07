@@ -1,0 +1,37 @@
+name: Release Beta to Production
+on:
+  workflow_dispatch: # Allows you to manually trigger the "Release" button
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Beta Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Push to Production Repo
+        env:
+          # Ensure this secret is added to your grit.hu-beta repository settings
+          PUBLIC_REPO_TOKEN: ${{ secrets.PROD_REPO_TOKEN }}
+          # Update this to your production repo path
+          TARGET_REPO: "szveresb/grit.hu" 
+        run: |
+          set -euo pipefail
+          
+          # Setup Auth
+          ASKPASS_FILE="$(mktemp)"
+          printf '#!/bin/sh\nprintf "%%s\\n" "$PUBLIC_REPO_TOKEN"' > "${ASKPASS_FILE}"
+          chmod +x "${ASKPASS_FILE}"
+          export GIT_ASKPASS="${ASKPASS_FILE}"
+
+          # Push the current Beta HEAD directly to the Production 'main' branch
+          # --force ensures production matches beta exactly (overwrites differences)
+          git -c credential.username=x-access-token push --force \
+            "https://github.com/${TARGET_REPO}.git" \
+            "HEAD:refs/heads/main"
+          
+          echo "Successfully promoted Beta to Production: ${TARGET_REPO}"
+          rm -f "${ASKPASS_FILE}"
