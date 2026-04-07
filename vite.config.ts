@@ -55,7 +55,7 @@ export default defineConfig(({ mode }) => ({
             },
           },
         ],
-        navigateFallbackDenylist: [/\/emergency-exit/],
+        navigateFallbackDenylist: [/\/emergency-exit/, /^\/~oauth/],
       },
       devOptions: { enabled: true },
     }),
