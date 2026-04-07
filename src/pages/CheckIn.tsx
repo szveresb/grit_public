@@ -17,7 +17,7 @@ type ViewMode = 'grid' | 'focus' | 'parallel';
 const CheckIn = () => {
   const { t } = useLanguage();
   const { subjects, setActiveSubjectContext } = useStance();
-  const { user } = useAuth();
+  const { user, displayName } = useAuth();
   const [searchParams, setSearchParams] = useSearchParams();
   const [highlightDate, setHighlightDate] = useState<string | null>(null);
   const [isPremium, setIsPremium] = useState(false);
@@ -49,7 +49,7 @@ const CheckIn = () => {
       });
   }, [user]);
 
-  const userName = user?.user_metadata?.display_name || t.subjects.selfCardTitle;
+  const userName = displayName || t.subjects.selfCardTitle;
 
   const allWorkspaces = useMemo(() => [
     {

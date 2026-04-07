@@ -15,7 +15,7 @@ import ConsentDashboard from '@/components/consent/ConsentDashboard';
 import ManagedRelatives from '@/components/premium/ManagedRelatives';
 
 const Profile = () => {
-  const { user, signOut } = useAuth();
+  const { user, signOut, setDisplayName: setAuthDisplayName } = useAuth();
   const { t } = useLanguage();
   const { roles, setRole, loading: roleLoading } = useUserRole();
   const selfSelectRole = roles.find(r => SELF_SELECT_ROLES.includes(r)) ?? null;
@@ -32,8 +32,24 @@ const Profile = () => {
   const handleSave = async () => {
     if (!user) return;
     setSaving(true);
-    await supabase.from('profiles').update({ display_name: displayName }).eq('user_id', user.id);
-    toast.success(t.profile.profileUpdated); setSaving(false);
+    const trimmedDisplayName = displayName.trim();
+    const nextDisplayName = trimmedDisplayName || null;
+
+    const { error } = await supabase
+      .from('profiles')
+      .update({ display_name: nextDisplayName })
+      .eq('user_id', user.id);
+
+    if (error) {
+      toast.error(t.error.submit);
+      setSaving(false);
+      return;
+    }
+
+    setDisplayName(trimmedDisplayName);
+    setAuthDisplayName(nextDisplayName || user.email || null);
+    toast.success(t.profile.profileUpdated);
+    setSaving(false);
   };
 
   const handleRoleChange = async (newRole: string) => {

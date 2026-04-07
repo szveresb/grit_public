@@ -21,7 +21,7 @@ interface AppSidebarProps {
 
 const AppSidebar = ({ onOpenFeedback }: AppSidebarProps) => {
   const location = useLocation();
-  const { user } = useAuth();
+  const { user, displayName } = useAuth();
   const { t, localePath } = useLanguage();
   const isMobile = useIsMobile();
   const { hasAnyRole, hasRole } = useUserRole();
@@ -31,7 +31,7 @@ const AppSidebar = ({ onOpenFeedback }: AppSidebarProps) => {
   const isAdmin = hasRole('admin');
 
   const currentPath = stripLangPrefix(location.pathname);
-  const accountTitle = user?.user_metadata?.display_name || user?.email || t.nav.account;
+  const accountTitle = displayName || user?.email || t.nav.account;
 
   const navItems = [
     { title: t.nav.home, url: '/', icon: FHome },

@@ -18,11 +18,11 @@ interface SubjectCardItem {
 
 const SubjectCardRegistry = () => {
   const { t, localePath } = useLanguage();
-  const { user } = useAuth();
+  const { displayName } = useAuth();
   const { activeSubject, subjects, subjectsLoading, setActiveSubjectContext } = useStance();
   const navigate = useNavigate();
 
-  const userName = user?.user_metadata?.display_name || t.subjects.selfCardTitle;
+  const userName = displayName || t.subjects.selfCardTitle;
 
   const cards = useMemo<SubjectCardItem[]>(() => [
     {

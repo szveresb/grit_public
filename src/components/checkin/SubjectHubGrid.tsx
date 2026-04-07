@@ -20,11 +20,11 @@ interface SubjectHubGridProps {
 
 const SubjectHubGrid = ({ onSelect, onToggleCompare, onStartParallel, selectedKeys }: SubjectHubGridProps) => {
   const { t } = useLanguage();
-  const { user } = useAuth();
+  const { displayName } = useAuth();
   const { subjects } = useStance();
   const [openPopoverKey, setOpenPopoverKey] = useState<string | null>(null);
 
-  const userName = user?.user_metadata?.display_name || t.subjects.selfCardTitle;
+  const userName = displayName || t.subjects.selfCardTitle;
 
   const cards = useMemo(() => [
     {
