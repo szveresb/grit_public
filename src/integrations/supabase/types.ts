@@ -663,6 +663,54 @@ export type Database = {
         }
         Relationships: []
       }
+      user_feedback: {
+        Row: {
+          context_json: Json | null
+          created_at: string
+          id: string
+          kind: string
+          locale: string | null
+          message: string | null
+          page_path: string | null
+          subject_id: string | null
+          subject_type: string | null
+          summary: string
+          urgency: string | null
+          user_id: string
+          viewport: string | null
+        }
+        Insert: {
+          context_json?: Json | null
+          created_at?: string
+          id?: string
+          kind: string
+          locale?: string | null
+          message?: string | null
+          page_path?: string | null
+          subject_id?: string | null
+          subject_type?: string | null
+          summary: string
+          urgency?: string | null
+          user_id: string
+          viewport?: string | null
+        }
+        Update: {
+          context_json?: Json | null
+          created_at?: string
+          id?: string
+          kind?: string
+          locale?: string | null
+          message?: string | null
+          page_path?: string | null
+          subject_id?: string | null
+          subject_type?: string | null
+          summary?: string
+          urgency?: string | null
+          user_id?: string
+          viewport?: string | null
+        }
+        Relationships: []
+      }
       user_roles: {
         Row: {
           created_at: string
