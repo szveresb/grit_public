@@ -23,7 +23,7 @@ export default defineConfig(({ mode }) => ({
       registerType: "autoUpdate",
       manifest: {
         name: "Grit.hu",
-        short_name: "G",
+        short_name: "Grit",
         description: "Sensemaking & wellbeing platform",
         start_url: "/",
         display: "standalone",
