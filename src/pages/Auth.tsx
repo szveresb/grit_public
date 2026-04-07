@@ -24,7 +24,7 @@ const Auth = () => {
   const { t, localePath } = useLanguage();
   const navigate = useNavigate();
 
-  const getOAuthRedirectUri = () => `${window.location.origin}${localePath('/auth/callback')}`;
+  const getOAuthRedirectUri = () => `${window.location.origin}${localePath('/journal')}`;
 
   useEffect(() => {
     if (user && !authLoading) {
