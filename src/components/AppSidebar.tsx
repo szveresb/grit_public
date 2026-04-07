@@ -8,14 +8,18 @@ import { stripLangPrefix } from '@/hooks/useLanguage';
 import { useIsMobile } from '@/hooks/use-mobile';
 import {
   FHome, FDashboard, FHeartPulse, FClock, FDownload, FUser,
-  FLibrary, FUsers, FBarChart, FFileText, FInfo, FLock, FTimeline,
+  FLibrary, FUsers, FBarChart, FFileText, FInfo, FLock, FTimeline, FMessageCircle,
 } from '@/components/icons/FreudIcons';
 import {
   Sidebar, SidebarContent, SidebarGroup, SidebarGroupLabel, SidebarGroupContent,
   SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarHeader,
 } from '@/components/ui/sidebar';
 
-const AppSidebar = () => {
+interface AppSidebarProps {
+  onOpenFeedback: () => void;
+}
+
+const AppSidebar = ({ onOpenFeedback }: AppSidebarProps) => {
   const location = useLocation();
   const { user } = useAuth();
   const { t, localePath } = useLanguage();
@@ -164,6 +168,26 @@ const AppSidebar = () => {
             </SidebarGroupContent>
           </SidebarGroup>
         )}
+
+        <SidebarGroup className="mt-auto">
+          <SidebarGroupLabel className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
+            {t.nav.explore}
+          </SidebarGroupLabel>
+          <SidebarGroupContent>
+            <SidebarMenu>
+              <SidebarMenuItem>
+                <SidebarMenuButton
+                  tooltip={t.nav.feedback}
+                  onClick={onOpenFeedback}
+                  className="hover:bg-accent rounded-xl"
+                >
+                  <FMessageCircle className="h-4 w-4" />
+                  <span>{t.nav.feedback}</span>
+                </SidebarMenuButton>
+              </SidebarMenuItem>
+            </SidebarMenu>
+          </SidebarGroupContent>
+        </SidebarGroup>
       </SidebarContent>
     </Sidebar>
   );

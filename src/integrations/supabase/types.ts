@@ -663,6 +663,65 @@ export type Database = {
         }
         Relationships: []
       }
+      user_feedback: {
+        Row: {
+          context_json: Json
+          created_at: string
+          id: string
+          kind: string
+          locale: string
+          message: string | null
+          page_path: string
+          status: string
+          subject_id: string | null
+          subject_type: Database["public"]["Enums"]["subject_type"]
+          summary: string
+          urgency: string | null
+          user_id: string
+          viewport: string
+        }
+        Insert: {
+          context_json?: Json
+          created_at?: string
+          id?: string
+          kind: string
+          locale: string
+          message?: string | null
+          page_path: string
+          status?: string
+          subject_id?: string | null
+          subject_type?: Database["public"]["Enums"]["subject_type"]
+          summary: string
+          urgency?: string | null
+          user_id: string
+          viewport: string
+        }
+        Update: {
+          context_json?: Json
+          created_at?: string
+          id?: string
+          kind?: string
+          locale?: string
+          message?: string | null
+          page_path?: string
+          status?: string
+          subject_id?: string | null
+          subject_type?: Database["public"]["Enums"]["subject_type"]
+          summary?: string
+          urgency?: string | null
+          user_id?: string
+          viewport?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "user_feedback_subject_id_fkey"
+            columns: ["subject_id"]
+            isOneToOne: false
+            referencedRelation: "subjects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_roles: {
         Row: {
           created_at: string

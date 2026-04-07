@@ -43,6 +43,7 @@ export interface Dictionary {
     checkIn: string;
     surveys: string;
     manageLanding: string;
+    feedback: string;
   };
 
   // Index / Landing
@@ -641,6 +642,50 @@ export interface Dictionary {
     toggleSidebar: string;
     breadcrumb: string;
     premiumBadge: string;
+  };
+
+  feedback: {
+    title: string;
+    subtitle: string;
+    prompt: string;
+    contextLabel: string;
+    contextHint: string;
+    kindBug: string;
+    kindBugDesc: string;
+    kindUnclear: string;
+    kindUnclearDesc: string;
+    kindIdea: string;
+    kindIdeaDesc: string;
+    kindPraise: string;
+    kindPraiseDesc: string;
+    kindQuestion: string;
+    kindQuestionDesc: string;
+    summaryDefault: string;
+    summaryBug: string;
+    summaryUnclear: string;
+    summaryIdea: string;
+    summaryPraise: string;
+    summaryQuestion: string;
+    detailsDefault: string;
+    detailsBug: string;
+    detailsUnclear: string;
+    detailsIdea: string;
+    detailsPraise: string;
+    detailsQuestion: string;
+    urgencyLabel: string;
+    urgencyLow: string;
+    urgencyMedium: string;
+    urgencyHigh: string;
+    viewportMobile: string;
+    viewportTablet: string;
+    viewportDesktop: string;
+    send: string;
+    sendQuestion: string;
+    sending: string;
+    submitError: string;
+    successTitle: string;
+    successBody: string;
+    sendAnother: string;
   };
 
   // Legal

@@ -6,11 +6,13 @@ import EmergencyExit from '@/components/EmergencyExit';
 import LanguageToggle from '@/components/LanguageToggle';
 import ContextAwareToolPanel from '@/components/ContextAwareToolPanel';
 import SubjectCardRegistry from '@/components/SubjectCardRegistry';
+import FeedbackSheet from '@/components/FeedbackSheet';
 import { useAuth } from '@/hooks/useAuth';
 import { useLanguage } from '@/hooks/useLanguage';
 import { Button } from '@/components/ui/button';
 import { FLogOut, FUser } from '@/components/icons/FreudIcons';
 import bambooBg from '@/assets/bamboo-bg.jpg';
+import { useState } from 'react';
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
@@ -27,6 +29,7 @@ const DashboardShell = ({
   const { user, signOut } = useAuth();
   const { t, localePath } = useLanguage();
   const navigate = useNavigate();
+  const [feedbackOpen, setFeedbackOpen] = useState(false);
   const themeClass = activeSubject.type === 'relative' ? 'theme-observer' : 'theme-self';
 
   const handleGatedClick = (path: string) => {
@@ -43,7 +46,7 @@ const DashboardShell = ({
       <div className="fixed inset-0 z-0 bg-background/85" />
 
       <div className={`min-h-screen flex w-full relative z-10 overflow-x-hidden ${themeClass}`}>
-        <AppSidebar />
+        <AppSidebar onOpenFeedback={() => setFeedbackOpen(true)} />
         <main className="flex-1 flex flex-col min-w-0">
           <header className="h-14 flex items-center border-b border-context-border/70 px-3 sm:px-4 md:px-6 bg-context-surface gap-2 sm:gap-3 overflow-x-auto">
             <SidebarTrigger />
@@ -84,6 +87,7 @@ const DashboardShell = ({
             </div>
           </div>
         </main>
+        <FeedbackSheet open={feedbackOpen} onOpenChange={setFeedbackOpen} />
       </div>
     </SidebarProvider>
   );
