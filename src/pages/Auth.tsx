@@ -24,6 +24,8 @@ const Auth = () => {
   const { t, localePath } = useLanguage();
   const navigate = useNavigate();
 
+  const getOAuthRedirectUri = () => `${window.location.origin}${localePath('/auth/callback')}`;
+
   useEffect(() => {
     if (user && !authLoading) {
       navigate(localePath('/journal'));
@@ -65,7 +67,7 @@ const Auth = () => {
 
   const handleGoogleSignIn = async () => {
     setGoogleLoading(true);
-    const { error } = await lovable.auth.signInWithOAuth('google', { redirect_uri: window.location.origin });
+    const { error } = await lovable.auth.signInWithOAuth('google', { redirect_uri: getOAuthRedirectUri() });
     if (error) {
       toast.error(error.message);
       setGoogleLoading(false);
@@ -74,7 +76,7 @@ const Auth = () => {
 
   const handleAppleSignIn = async () => {
     setAppleLoading(true);
-    const { error } = await lovable.auth.signInWithOAuth('apple', { redirect_uri: window.location.origin });
+    const { error } = await lovable.auth.signInWithOAuth('apple', { redirect_uri: getOAuthRedirectUri() });
     if (error) {
       toast.error(error.message);
       setAppleLoading(false);

@@ -12,6 +12,7 @@ import ProtectedRoute from "@/components/ProtectedRoute";
 import Index from "./pages/Index";
 
 const Auth = lazy(() => import("./pages/Auth"));
+const AuthCallback = lazy(() => import("./pages/AuthCallback"));
 const CheckIn = lazy(() => import("./pages/CheckIn"));
 const Profile = lazy(() => import("./pages/Profile"));
 const Export = lazy(() => import("./pages/Export"));
@@ -40,6 +41,7 @@ const AppRoutes = () => (
     <Routes>
       <Route path="/" element={<Index />} />
       <Route path="/auth" element={<Auth />} />
+      <Route path="/auth/callback" element={<AuthCallback />} />
       <Route path="/dashboard" element={<Navigate to="/journal" replace />} />
       <Route path="/journal" element={<ProtectedRoute><CheckIn /></ProtectedRoute>} />
       <Route path="/check-in" element={<Navigate to="/journal" replace />} />
@@ -63,6 +65,7 @@ const AppRoutes = () => (
       <Route path="/about-legal" element={<AboutLegal />} />
       <Route path="/en" element={<Index />} />
       <Route path="/en/auth" element={<Auth />} />
+      <Route path="/en/auth/callback" element={<AuthCallback />} />
       <Route path="/en/dashboard" element={<Navigate to="/en/journal" replace />} />
       <Route path="/en/journal" element={<ProtectedRoute><CheckIn /></ProtectedRoute>} />
       <Route path="/en/check-in" element={<Navigate to="/en/journal" replace />} />

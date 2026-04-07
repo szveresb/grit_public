@@ -31,5 +31,7 @@ This task has been **paused** because the underlying SNOMED CT logic and clinica
 
 **PWA & Branding finalized.** The platform is now a Progressive Web App with a "Safety First" discreet identity (Short name: "G", minimalist monogram icons). Service worker caching is operational with an emergency exit bypass.
 
+**OAuth callback routing hardened.** Social sign-in now returns through explicit `auth/callback` routes for both HU and EN flows instead of relying on the site root, reducing production-only 404 risk during the Google/Apple return leg.
+
 ## Next Priority
 The project pivot to the **Clinical Entity Architecture (SNOMED CT / BNO-10)** is now the primary focus. AI Sensemaking remains suspended until this foundational structural mapping is implemented.
