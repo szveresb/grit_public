@@ -352,6 +352,16 @@ export const hu: Dictionary = {
     noPatterns: 'Még nincs felismert mintázat. Legalább 3 ismétlődés szükséges egy héten belül.',
     pulseDotLabel: '{count}× a(z) {week}. héten',
     viewFullTimeline: 'Idővonal megtekintése',
+    individualMode: 'Mintázatok',
+    correlationMode: 'Összefüggések',
+    correlationTitle: 'Dual-Perspective elemzés',
+    correlationSubtitle: 'A saját közérzeted és a megfigyelt kapcsolati mintázatok összefüggései.',
+    regulationLabel: 'Érzelmi szabályozás',
+    regulationDesc: 'A kék vonal a saját napi átlagos hangulatodat jelzi. A visszaesések fokozott stresszt vagy nehézséget mutathatnak.',
+    environmentLabel: 'Kapcsolati intenzitás',
+    environmentDesc: 'A piros terület a másokról rögzített megfigyelések súlyosságát jelzi. A kiugrások konfliktusos mintázatokra utalhatnak.',
+    observationCountSingle: 'megfigyelés',
+    observationCountPlural: 'megfigyelés',
   },
 
 

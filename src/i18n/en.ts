@@ -354,6 +354,16 @@ export const en: Dictionary = {
     noPatterns: 'No patterns detected yet. At least 3 occurrences within a week are needed.',
     pulseDotLabel: '{count}× in W{week}',
     viewFullTimeline: 'View Timeline',
+    individualMode: 'Patterns',
+    correlationMode: 'Correlation',
+    correlationTitle: 'Dual Perspective Analysis',
+    correlationSubtitle: 'Correlating your well-being with observed interpersonal patterns.',
+    regulationLabel: 'Emotional Regulation',
+    regulationDesc: 'The blue line represents your daily average mood level. Drops may indicate periods of higher perceived stress or struggle.',
+    environmentLabel: 'Interpersonal Intensity',
+    environmentDesc: 'The red area represents the intensity of observations logged for others. Spikes suggest more frequent or severe conflict patterns.',
+    observationCountSingle: 'observation',
+    observationCountPlural: 'observations',
   },
 
 
