@@ -1,8 +1,18 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-import type { Database } from '@/integrations/supabase/types';
 
-export type QuestionnaireTrend = Database['public']['Tables']['questionnaire_score_trends']['Row'];
+export interface QuestionnaireTrend {
+  id: string;
+  user_id: string;
+  questionnaire_id: string;
+  subject_type: 'self' | 'relative';
+  subject_id: string | null;
+  latest_response_id: string;
+  latest_score: number;
+  previous_score: number | null;
+  trend_delta: number;
+  last_updated_at: string;
+}
 
 interface UseQuestionnaireTrendsParams {
   userId: string | null | undefined;
@@ -40,7 +50,7 @@ export const useQuestionnaireTrends = ({
       setLoading(true);
       
       let query = supabase
-        .from('questionnaire_score_trends')
+        .from('questionnaire_score_trends' as any)
         .select('*')
         .eq('user_id', userId)
         .eq('subject_type', subjectType);
@@ -62,7 +72,7 @@ export const useQuestionnaireTrends = ({
         console.error('Error fetching questionnaire trends:', error);
         setTrends([]);
       } else {
-        setTrends(data || []);
+        setTrends((data as QuestionnaireTrend[]) || []);
       }
       setLoading(false);
     };
