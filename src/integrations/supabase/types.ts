@@ -564,6 +564,67 @@ export type Database = {
           },
         ]
       }
+      questionnaire_score_trends: {
+        Row: {
+          id: string
+          user_id: string
+          questionnaire_id: string
+          subject_type: Database["public"]["Enums"]["subject_type"]
+          subject_id: string | null
+          latest_response_id: string
+          latest_score: number
+          previous_score: number | null
+          trend_delta: number
+          last_updated_at: string
+        }
+        Insert: {
+          id?: string
+          user_id: string
+          questionnaire_id: string
+          subject_type?: Database["public"]["Enums"]["subject_type"]
+          subject_id?: string | null
+          latest_response_id: string
+          latest_score?: number
+          previous_score?: number | null
+          trend_delta?: number
+          last_updated_at?: string
+        }
+        Update: {
+          id?: string
+          user_id?: string
+          questionnaire_id?: string
+          subject_type?: Database["public"]["Enums"]["subject_type"]
+          subject_id?: string | null
+          latest_response_id?: string
+          latest_score?: number
+          previous_score?: number | null
+          trend_delta?: number
+          last_updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "questionnaire_score_trends_questionnaire_id_fkey"
+            columns: ["questionnaire_id"]
+            isOneToOne: false
+            referencedRelation: "questionnaires"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "questionnaire_score_trends_latest_response_id_fkey"
+            columns: ["latest_response_id"]
+            isOneToOne: false
+            referencedRelation: "questionnaire_responses"
+            referencedColumns: ["id"]
+          },
+          {
+            foreignKeyName: "questionnaire_score_trends_subject_id_fkey"
+            columns: ["subject_id"]
+            isOneToOne: false
+            referencedRelation: "subjects"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       questionnaires: {
         Row: {
           created_at: string

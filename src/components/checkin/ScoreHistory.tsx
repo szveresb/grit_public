@@ -6,9 +6,10 @@ import { useStance } from '@/hooks/useStance';
 import { format } from 'date-fns';
 import { getDateLocale } from '@/lib/date-locale';
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
-import { FClock, FChevronDown } from '@/components/icons/FreudIcons';
+import { FClock, FChevronDown, FTrendingUp } from '@/components/icons/FreudIcons';
 import { Progress } from '@/components/ui/progress';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { useQuestionnaireTrends } from '@/hooks/useQuestionnaireTrends';
 
 interface ScoreEntry {
   id: string;
@@ -259,9 +260,16 @@ const ScoreHistory = ({
           score: entry.total_score,
         }));
 
+        const { trends } = useQuestionnaireTrends({
+          userId: user?.id,
+          subjectType: effectiveSubjectType,
+          subjectId: effectiveSubjectId,
+          questionnaireId: group.questionnaire_id,
+        });
+
+        const latestTrend = trends[0];
         const latest = group.entries[group.entries.length - 1];
-        const previous = group.entries.length >= 2 ? group.entries[group.entries.length - 2] : null;
-        const trend = previous ? latest.total_score - previous.total_score : 0;
+        const trend = latestTrend ? latestTrend.trend_delta : 0;
         const latestRange = getMatchedRange(latest.total_score, group.scoreRanges);
         const percentage =
           group.scoringEnabled && group.maxPossibleScore > 0
@@ -278,10 +286,11 @@ const ScoreHistory = ({
                     <span className="text-lg font-bold text-foreground">{latest.total_score}</span>
                     {trend !== 0 && (
                       <span
-                        className={`rounded-full px-1.5 py-0.5 text-xs font-medium ${
-                          trend > 0 ? 'bg-primary/10 text-primary' : 'bg-muted text-muted-foreground'
+                        className={`rounded-full px-1.5 py-0.5 text-xs font-medium flex items-center gap-1 ${
+                          trend > 0 ? 'bg-primary/10 text-primary' : trend < 0 ? 'bg-destructive/10 text-destructive' : 'bg-muted text-muted-foreground'
                         }`}
                       >
+                        {trend !== 0 && <FTrendingUp className={`h-3 w-3 ${trend < 0 ? 'rotate-180' : ''}`} />}
                         {trend > 0 ? '+' : ''}
                         {trend}
                       </span>
