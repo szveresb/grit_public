@@ -365,6 +365,16 @@ export interface Dictionary {
     noPatterns: string;
     pulseDotLabel: string;
     viewFullTimeline: string;
+    individualMode: string;
+    correlationMode: string;
+    correlationTitle: string;
+    correlationSubtitle: string;
+    regulationLabel: string;
+    regulationDesc: string;
+    environmentLabel: string;
+    environmentDesc: string;
+    observationCountSingle: string;
+    observationCountPlural: string;
   };
 
 
