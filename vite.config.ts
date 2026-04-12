@@ -23,12 +23,13 @@ export default defineConfig(({ mode }) => ({
       registerType: "autoUpdate",
       manifest: {
         name: "Grit.hu",
-        short_name: "G",
+        short_name: "Grit",
         description: "Sensemaking & wellbeing platform",
         categories: ["life management"],
         start_url: "/",
         scope: "/",
-        display: "standalone",
+        display: "fullscreen",
+        display_override: ["fullscreen", "standalone"],
         background_color: "#ffffff",
         theme_color: "#0d9488",
         icons: [
@@ -36,13 +37,11 @@ export default defineConfig(({ mode }) => ({
             src: "/icons/icon-192.png",
             sizes: "192x192",
             type: "image/png",
-            purpose: "any maskable"
           },
           {
             src: "/icons/icon-512.png",
             sizes: "512x512",
             type: "image/png",
-            purpose: "any maskable"
           },
         ],
         screenshots: [
