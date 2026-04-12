@@ -72,7 +72,7 @@ export const useQuestionnaireTrends = ({
         console.error('Error fetching questionnaire trends:', error);
         setTrends([]);
       } else {
-        setTrends((data as QuestionnaireTrend[]) || []);
+        setTrends((data as unknown as QuestionnaireTrend[]) || []);
       }
       setLoading(false);
     };
