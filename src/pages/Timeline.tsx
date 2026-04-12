@@ -6,9 +6,9 @@ import { useStance } from '@/hooks/useStance';
 import { useCalendarFeedData } from '@/hooks/useCalendarFeedData';
 import { useDualPerspectiveData } from '@/hooks/useDualPerspectiveData';
 import PatternPulseChart from '@/components/timeline/PatternPulseChart';
-import CorrelationChart from '@/components/timeline/CorrelationChart';
 import { FTimeline, FSparkles, FList } from '@/components/icons/FreudIcons';
 import SubjectSelector from '@/components/observations/SubjectSelector';
+import ErrorBoundary from '@/components/ErrorBoundary';
 
 const Timeline = () => {
   const { t, lang } = useLanguage();
@@ -94,21 +94,23 @@ const Timeline = () => {
         )}
 
         {/* Dynamic Visualization Content */}
-        {loading ? (
-          <div className="surface-card p-12 flex flex-col items-center justify-center text-center space-y-4 animate-pulse">
-            <div className="h-10 w-10 rounded-full border-4 border-primary/20 border-t-primary animate-spin" />
-            <p className="text-sm font-medium text-muted-foreground">{t.loading}</p>
-          </div>
-        ) : showCorrelation ? (
-          <CorrelationChart 
-            data={correlationData} 
-            lang={lang} 
-            t={t} 
-            relativeName={selectedSubjectName || t.subjects.otherLabel} 
-          />
-        ) : (
-          <PatternPulseChart logs={obsLogs} conceptMap={conceptMap} />
-        )}
+        <ErrorBoundary name="TimelineViz">
+          {loading ? (
+            <div className="surface-card p-12 flex flex-col items-center justify-center text-center space-y-4 animate-pulse">
+              <div className="h-10 w-10 rounded-full border-4 border-primary/20 border-t-primary animate-spin" />
+              <p className="text-sm font-medium text-muted-foreground">{t.loading}</p>
+            </div>
+          ) : showCorrelation ? (
+            <CorrelationChart 
+              data={correlationData} 
+              lang={lang} 
+              t={t} 
+              relativeName={selectedSubjectName || t.subjects.otherLabel} 
+            />
+          ) : (
+            <PatternPulseChart logs={obsLogs} conceptMap={conceptMap} />
+          )}
+        </ErrorBoundary>
       </div>
     </DashboardLayout>
   );

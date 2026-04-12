@@ -51,6 +51,7 @@ const ProtectedRoute = ({ children, skipConsentCheck }: ProtectedRouteProps) => 
   }
 
   // 6. Consent not completed → onboarding
+  // We ONLY redirect to onboarding if skipConsentCheck is false AND consent is not completed.
   if (!skipConsentCheck && !consentCompleted) {
     return <Navigate to={isEn ? '/en/consent' : '/consent'} replace />;
   }

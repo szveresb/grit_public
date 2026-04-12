@@ -20,6 +20,11 @@ export const en: Dictionary = {
   draft: 'Draft',
   published: 'Published',
   featured: 'Featured',
+  errors: {
+    componentCrashTitle: 'Something went wrong',
+    componentCrashDesc: 'An unexpected error occurred while rendering this section. Our team has been notified.',
+    retry: 'Try Again',
+  },
 
   nav: {
     home: 'Home',

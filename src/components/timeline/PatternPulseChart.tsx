@@ -1,9 +1,7 @@
-import { useMemo, useState } from 'react';
-import { getISOWeek, parseISO, startOfWeek, subWeeks, isAfter, format } from 'date-fns';
-import { getDateLocale } from '@/lib/date-locale';
-import { useLanguage } from '@/hooks/useLanguage';
 import { FTimeline, FChevronUp, FArrowUp, FArrowDown, FArrowRight } from '@/components/icons/FreudIcons';
 import { motion, AnimatePresence } from 'framer-motion';
+import { safeFormat } from '@/lib/date-safe';
+import { useLanguage } from '@/hooks/useLanguage';
 
 interface ObsLog {
   concept_id: string;
@@ -50,7 +48,7 @@ const PatternPulseChart = ({ logs, conceptMap }: PatternPulseChartProps) => {
 
     for (const log of logs) {
       const d = parseISO(log.logged_at);
-      if (!isAfter(d, cutoff) && format(d, 'yyyy-MM-dd') !== format(cutoff, 'yyyy-MM-dd')) continue;
+      if (!isAfter(d, cutoff) && safeFormat(d, 'yyyy-MM-dd') !== safeFormat(cutoff, 'yyyy-MM-dd')) continue;
       const wn = getISOWeek(d);
       const bucket = buckets.find(b => b.weekNum === wn);
       if (bucket) {
@@ -206,7 +204,7 @@ const PatternPulseChart = ({ logs, conceptMap }: PatternPulseChartProps) => {
                       {details.sort((a, b) => a.date.localeCompare(b.date)).map((d, di) => (
                         <div key={di} className="flex items-start gap-2 text-xs">
                           <span className="text-muted-foreground shrink-0 tabular-nums">
-                            {format(parseISO(d.date), 'MMM d', { locale })}
+                            {safeFormat(d.date, 'MMM d', lang)}
                           </span>
                           <span className="text-muted-foreground shrink-0">({d.intensity}/5)</span>
                           {d.narrative && <span className="text-foreground italic">{d.narrative}</span>}

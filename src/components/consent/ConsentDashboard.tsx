@@ -8,8 +8,8 @@ import ConsentCard from './ConsentCard';
 import ConsentHistoryDialog from './ConsentHistoryDialog';
 import { toast } from 'sonner';
 import { FShield, FClock } from '@/components/icons/FreudIcons';
-import { format } from 'date-fns';
-import { getDateLocale } from '@/lib/date-locale';
+import { safeFormat } from '@/lib/date-safe';
+import ErrorBoundary from '@/components/ErrorBoundary';
 
 const ConsentDashboard = () => {
   const { user } = useAuth();
@@ -30,10 +30,8 @@ const ConsentDashboard = () => {
 
   if (!loaded) return null;
 
-  const locale = getDateLocale(lang);
-
   return (
-    <>
+    <ErrorBoundary name="ConsentDashboard">
       <div className="space-y-4">
         <div className="flex items-center gap-2">
           <FShield className="h-4 w-4 text-primary" />
@@ -58,7 +56,7 @@ const ConsentDashboard = () => {
           {lastUpdated && (
             <span className="text-xs text-muted-foreground flex items-center gap-1.5">
               <FClock className="h-3 w-3" />
-              {t.consent.lastUpdated.replace('{date}', format(new Date(lastUpdated), 'PPP', { locale }))}
+              {t.consent.lastUpdated.replace('{date}', safeFormat(lastUpdated, 'PPP', lang))}
             </span>
           )}
           <button
@@ -71,7 +69,7 @@ const ConsentDashboard = () => {
       </div>
 
       <ConsentHistoryDialog open={historyOpen} onClose={() => setHistoryOpen(false)} />
-    </>
+    </ErrorBoundary>
   );
 };
 

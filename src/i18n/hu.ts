@@ -20,6 +20,11 @@ export const hu: Dictionary = {
   draft: 'Vázlat',
   published: 'Publikált',
   featured: 'Kiemelt',
+  errors: {
+    componentCrashTitle: 'Váratlan hiba történt',
+    componentCrashDesc: 'Hiba lépett fel a felület megjelenítése közben. Csapatunkat értesítettük a problémáról.',
+    retry: 'Próbáld újra',
+  },
 
   nav: {
     home: 'Kezdőlap',

@@ -5,9 +5,9 @@ import ActionGrid from '@/components/ActionGrid';
 import { useAuth } from '@/hooks/useAuth';
 import { useLanguage } from '@/hooks/useLanguage';
 import { supabase } from '@/integrations/supabase/client';
-import { format, parseISO } from 'date-fns';
-import { getDateLocale } from '@/lib/date-locale';
 import { FBookOpen, FClipboardCheck } from '@/components/icons/FreudIcons';
+import { safeFormat } from '@/lib/date-safe';
+import ErrorBoundary from '@/components/ErrorBoundary';
 
 interface RecentItem {
   id: string;
@@ -52,7 +52,8 @@ const Dashboard = () => {
 
   return (
     <DashboardLayout>
-      <div className="max-w-4xl mx-auto w-full space-y-8">
+      <ErrorBoundary name="Dashboard">
+        <div className="max-w-4xl mx-auto w-full space-y-8">
         <div>
           <h1 className="text-lg md:text-xl font-bold tracking-tight text-foreground">
             {displayName ? t.dash.welcomeUser.replace('{name}', displayName) : t.dash.welcomeBack}
@@ -79,14 +80,14 @@ const Dashboard = () => {
                   {item.type === 'journal' ? <FBookOpen className="h-3.5 w-3.5 text-primary shrink-0" /> : <FClipboardCheck className="h-3.5 w-3.5 text-muted-foreground shrink-0" />}
                   <span className="text-sm flex-1 truncate">{item.title}</span>
                   {item.detail && <span className="text-xs text-muted-foreground hidden sm:inline">{item.detail}</span>}
-                  <span className="text-xs text-muted-foreground shrink-0">{format(parseISO(item.date), 'MMM d', { locale: getDateLocale(lang) })}</span>
+                  <span className="text-xs text-muted-foreground shrink-0">{safeFormat(item.date, 'MMM d', lang)}</span>
                 </button>
               ))}
             </div>
            )}
           <p className="text-[10px] text-muted-foreground/60 italic mt-3">{t.disclaimer.userReported}</p>
         </div>
-      </div>
+      </ErrorBoundary>
     </DashboardLayout>
   );
 };
