@@ -841,5 +841,9 @@ export const en: Dictionary = {
   },
   pwa: {
     syncPending: 'Sync Pending – will upload when connection restores',
+    offlineReady: 'App ready to work offline',
+    newVersion: 'New version available!',
+    reload: 'Reload',
+    online: 'Back online',
   },
 };

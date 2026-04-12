@@ -810,5 +810,9 @@ export interface Dictionary {
   // PWA
   pwa: {
     syncPending: string;
+    offlineReady: string;
+    newVersion: string;
+    reload: string;
+    online: string;
   };
 }

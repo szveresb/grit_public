@@ -840,5 +840,9 @@ export const hu: Dictionary = {
   },
   pwa: {
     syncPending: 'Várakozó szinkronizáció – a kapcsolat helyreálltakor feltöltésre kerül',
+    offlineReady: 'Alkalmazás készen áll az offline munkára',
+    newVersion: 'Új verzió érhető el!',
+    reload: 'Újratöltés',
+    online: 'Újra online',
   },
 };

@@ -10,6 +10,8 @@ import { ConsentProvider } from "@/hooks/useConsent";
 import { StanceProvider } from "@/hooks/useStance";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import Index from "./pages/Index";
+import ReloadPrompt from "@/components/ReloadPrompt";
+import OfflineStatus from "@/components/OfflineStatus";
 
 const Auth = lazy(() => import("./pages/Auth"));
 const CheckIn = lazy(() => import("./pages/CheckIn"));
@@ -98,6 +100,8 @@ const App = () => (
           <Sonner />
           <BrowserRouter>
             <LanguageProvider>
+              <ReloadPrompt />
+              <OfflineStatus />
               <StanceProvider>
                 <AppRoutes />
               </StanceProvider>
