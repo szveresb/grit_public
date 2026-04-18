@@ -49,63 +49,86 @@ serve(async (req) => {
       });
     }
 
-    const { entries, observations } = await req.json();
+    const { entries: rawEntries, observations: rawObservations } = await req.json();
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
 
-    if ((!entries || !Array.isArray(entries) || entries.length < 2) && (!observations || !Array.isArray(observations) || observations.length === 0)) {
+    // Cap collection sizes to bound prompt size and AI costs
+    const MAX_ENTRIES = 30;
+    const MAX_OBSERVATIONS = 60;
+    const entries = Array.isArray(rawEntries) ? rawEntries.slice(0, MAX_ENTRIES) : [];
+    const observations = Array.isArray(rawObservations) ? rawObservations.slice(0, MAX_OBSERVATIONS) : [];
+
+    if (entries.length < 2 && observations.length === 0) {
       return new Response(JSON.stringify({ error: "At least 2 journal entries or some observations are needed for pattern analysis." }), {
         status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
 
+    // Per-field character caps
+    const cap = (v: unknown, n: number) =>
+      typeof v === "string" ? v.slice(0, n) : undefined;
+
     // Build a structured summary of all entries
-    const entrySummaries = (entries ?? []).map((e: any, i: number) => {
+    const entrySummaries = entries.map((e: any, i: number) => {
       const parts: string[] = [];
-      parts.push(`Entry ${i + 1} — ${e.entry_date}`);
-      if (e.title) parts.push(`  Title: ${e.title}`);
-      if (e.event_description) parts.push(`  What happened: ${e.event_description}`);
-      if (e.impact_level) parts.push(`  Impact: ${e.impact_level}/5`);
-      if (e.emotional_state) parts.push(`  Feeling: ${e.emotional_state}`);
-      if (e.self_anchor) parts.push(`  Self-anchor: ${e.self_anchor}`);
-      if (e.free_text) parts.push(`  Notes: ${e.free_text}`);
+      parts.push(`Entry ${i + 1} — ${cap(e.entry_date, 32) ?? ''}`);
+      const title = cap(e.title, 200);
+      const event = cap(e.event_description, 800);
+      const emo = cap(e.emotional_state, 200);
+      const anchor = cap(e.self_anchor, 400);
+      const notes = cap(e.free_text, 800);
+      if (title) parts.push(`  Title: ${title}`);
+      if (event) parts.push(`  What happened: ${event}`);
+      if (typeof e.impact_level === "number") parts.push(`  Impact: ${e.impact_level}/5`);
+      if (emo) parts.push(`  Feeling: ${emo}`);
+      if (anchor) parts.push(`  Self-anchor: ${anchor}`);
+      if (notes) parts.push(`  Notes: ${notes}`);
       return parts.join('\n');
     }).join('\n\n');
 
     // Build observation summaries grouped by perspective
     let observationSummary = '';
-    if (observations && observations.length > 0) {
+    if (observations.length > 0) {
       const selfObs = observations.filter((o: any) => o.subject_type === 'self' || !o.subject_type);
       const relativeObs = observations.filter((o: any) => o.subject_type === 'relative');
-      
+
+      const renderObs = (o: any, i: number, includeSubject = false) => {
+        const parts = [`Observation ${i + 1} — ${cap(o.logged_at, 32) ?? ''}`];
+        if (includeSubject) {
+          const subj = cap(o.subject_name, 100);
+          if (subj) parts.push(`  About: ${subj}`);
+        }
+        const concept = cap(o.concept_name, 200);
+        const ctx = cap(o.context_modifier, 200);
+        const narr = cap(o.user_narrative, 600);
+        if (concept) parts.push(`  What: ${concept}`);
+        if (typeof o.intensity === "number") parts.push(`  Intensity: ${o.intensity}/5`);
+        if (ctx) parts.push(`  Context: ${ctx}`);
+        if (narr) parts.push(`  Notes: ${narr}`);
+        return parts.join('\n');
+      };
+
       if (selfObs.length > 0) {
         observationSummary += '\n\n--- Self-observations ---\n';
-        observationSummary += selfObs.map((o: any, i: number) => {
-          const parts = [`Observation ${i + 1} — ${o.logged_at}`];
-          if (o.concept_name) parts.push(`  What: ${o.concept_name}`);
-          parts.push(`  Intensity: ${o.intensity}/5`);
-          if (o.context_modifier) parts.push(`  Context: ${o.context_modifier}`);
-          if (o.user_narrative) parts.push(`  Notes: ${o.user_narrative}`);
-          return parts.join('\n');
-        }).join('\n\n');
+        observationSummary += selfObs.map((o: any, i: number) => renderObs(o, i, false)).join('\n\n');
       }
 
       if (relativeObs.length > 0) {
         observationSummary += '\n\n--- Observations about others ---\n';
-        observationSummary += relativeObs.map((o: any, i: number) => {
-          const parts = [`Observation ${i + 1} — ${o.logged_at}`];
-          if (o.subject_name) parts.push(`  About: ${o.subject_name}`);
-          if (o.concept_name) parts.push(`  What: ${o.concept_name}`);
-          parts.push(`  Intensity: ${o.intensity}/5`);
-          if (o.context_modifier) parts.push(`  Context: ${o.context_modifier}`);
-          if (o.user_narrative) parts.push(`  Notes: ${o.user_narrative}`);
-          return parts.join('\n');
-        }).join('\n\n');
+        observationSummary += relativeObs.map((o: any, i: number) => renderObs(o, i, true)).join('\n\n');
       }
     }
 
-    const entryCount = (entries ?? []).length;
-    const userMessage = `Please analyze the patterns across these ${entryCount} journal entries${observations?.length ? ` and ${observations.length} observations` : ''} (oldest to newest):\n\n${entrySummaries}${observationSummary}`;
+    const entryCount = entries.length;
+    const userMessage = `Please analyze the patterns across these ${entryCount} journal entries${observations.length ? ` and ${observations.length} observations` : ''} (oldest to newest):\n\n${entrySummaries}${observationSummary}`;
+
+    // Hard ceiling on assembled prompt
+    if (userMessage.length > 60000) {
+      return new Response(JSON.stringify({ error: "Payload too large for analysis. Please reduce the number of entries." }), {
+        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",
