@@ -21,6 +21,11 @@ export interface Dictionary {
   draft: string;
   published: string;
   featured: string;
+  errors: {
+    componentCrashTitle: string;
+    componentCrashDesc: string;
+    retry: string;
+  };
 
   // Nav
   nav: {

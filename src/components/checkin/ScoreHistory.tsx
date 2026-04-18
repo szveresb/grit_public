@@ -5,6 +5,7 @@ import { useLanguage } from '@/hooks/useLanguage';
 import { useStance } from '@/hooks/useStance';
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
 import { safeFormat } from '@/lib/date-safe';
+import { getDateLocale } from '@/lib/date-locale';
 import ErrorBoundary from '@/components/ErrorBoundary';
 import { FClock, FChevronDown, FTrendingUp } from '@/components/icons/FreudIcons';
 import { Progress } from '@/components/ui/progress';

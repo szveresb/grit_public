@@ -1,5 +1,8 @@
+import { useState, useRef, useMemo, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { FBookOpen, FClipboardCheck, FEye, FChevronRight } from '@/components/icons/FreudIcons';
 import { safeFormat } from '@/lib/date-safe';
+import { getDateLocale } from '@/lib/date-locale';
 import { useLanguage } from '@/hooks/useLanguage';
 
 interface TimelineItem {
