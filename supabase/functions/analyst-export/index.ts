@@ -116,19 +116,52 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Fetch aggregates filtered by consented users only
-    // We use the existing RPC functions but note they aggregate ALL data.
-    // For proper consent filtering, we query raw tables filtered by consented user IDs.
-    const [journalAgg, questionnaireAgg, roleDist, observationAgg] = await Promise.all([
+    // Fetch aggregates filtered by consented users only.
+    // All four sources are filtered by consentedUserIds for compliance with anonymized_analytics consent.
+    const [journalAgg, questionnaireAnswersRaw, roleRowsRaw, observationAgg] = await Promise.all([
       admin.from("journal_entries")
         .select("entry_date, impact_level, emotional_state")
         .in("user_id", consentedUserIds),
-      admin.rpc("analyst_questionnaire_aggregates").select("*"),
-      admin.rpc("analyst_role_distribution").select("*"),
+      admin.from("questionnaire_responses")
+        .select("id, questionnaire_id, questionnaires(title), questionnaire_answers(question_id, answer, questionnaire_questions(question_text))")
+        .in("user_id", consentedUserIds),
+      admin.from("user_roles")
+        .select("role")
+        .in("user_id", consentedUserIds),
       admin.from("observation_logs")
         .select("concept_id, intensity, observation_concepts(concept_code, name_en)")
         .in("user_id", consentedUserIds),
     ]);
+
+    // Aggregate questionnaire answers by (questionnaire_title, question_text) - consented users only
+    const qMap: Record<string, { questionnaire_title: string; question_text: string; response_ids: Set<string>; answers: any[] }> = {};
+    for (const resp of questionnaireAnswersRaw.data ?? []) {
+      const qTitle = (resp as any).questionnaires?.title ?? '';
+      const answers = (resp as any).questionnaire_answers ?? [];
+      for (const ans of answers) {
+        const qText = ans.questionnaire_questions?.question_text ?? '';
+        const key = `${qTitle}|||${qText}`;
+        if (!qMap[key]) qMap[key] = { questionnaire_title: qTitle, question_text: qText, response_ids: new Set(), answers: [] };
+        qMap[key].response_ids.add((resp as any).id);
+        qMap[key].answers.push(ans.answer);
+      }
+    }
+    const questionnaireAggResult = Object.values(qMap).map(v => ({
+      questionnaire_title: v.questionnaire_title,
+      question_text: v.question_text,
+      response_count: v.response_ids.size,
+      answer_distribution: v.answers,
+    }));
+
+    // Aggregate role distribution - consented users only
+    const roleCounts: Record<string, number> = {};
+    for (const r of roleRowsRaw.data ?? []) {
+      const role = (r as any).role;
+      roleCounts[role] = (roleCounts[role] ?? 0) + 1;
+    }
+    const roleDistResult = Object.entries(roleCounts)
+      .map(([role, user_count]) => ({ role, user_count }))
+      .sort((a, b) => b.user_count - a.user_count);
 
     // Aggregate journal entries by date (only consented users)
     const journalByDate: Record<string, { count: number; impacts: number[]; emotions: string[] }> = {};
@@ -190,8 +223,8 @@ Deno.serve(async (req) => {
       active_user_count: Math.floor((activeUserCount ?? 0) / 10) * 10,
       consented_user_count: consentedUserIds.length,
       journal_aggregates: journalAggResult,
-      questionnaire_aggregates: questionnaireAgg.data ?? [],
-      role_distribution: roleDist.data ?? [],
+      questionnaire_aggregates: questionnaireAggResult,
+      role_distribution: roleDistResult,
       observation_aggregates: obsAggResult,
     };
 
