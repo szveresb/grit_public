@@ -1,90 +1,62 @@
 
+The user wants to: (1) collect beta signup requests publicly, and (2) send invite codes by email to people on the waitlist.
 
-## Granular Consent Mechanism — "Sovereign Consent"
+**Current state:**
+- `waitlist_emails` table exists (anon insert allowed) — good for signups
+- `invite_codes` table exists (admin-only) — good for codes
+- `redeem_invite_access` RPC is wired into `BetaGate.tsx`
+- `ManageUsers.tsx` has "Generate Code" but no way to send/share it
+- No public signup form, no email infrastructure yet
 
-### Overview
+## Plan
 
-A card-based consent carousel that activates after first login, educating users on data handling while collecting granular consent. Revisitable from the Profile page as a "Privacy & AI Control" section with toggleable data categories.
+### 1. Public beta signup form
+Add a "Request Beta Access" section on the landing (`src/pages/Index.tsx`) via a new `BetaSignupForm.tsx` component. Captures email + optional name → inserts into `waitlist_emails`. Confirmation toast. HU/EN strings.
 
-### Database
+Schema tweak (migration): add `name`, `locale`, `status` (`pending`/`invited`), `invited_at` columns to `waitlist_emails`.
 
-**New table: `user_consents`**
-- `id` uuid PK
-- `user_id` uuid NOT NULL (references auth.users)
-- `consent_key` text NOT NULL (e.g. `journal_storage`, `observation_storage`, `mood_tracking`, `free_text_ai`, `pattern_detection`, `fhir_export`, `anonymized_analytics`)
-- `granted` boolean NOT NULL DEFAULT false
-- `updated_at` timestamptz DEFAULT now()
-- UNIQUE(`user_id`, `consent_key`)
-- RLS: users can only read/write own rows (`auth.uid() = user_id`)
+### 2. Admin: review signups + send codes
+Extend `ManageUsers.tsx` with a "Beta Signups" section:
+- List entries (email, name, date, status)
+- Per-row "Generate & Send Code" → creates `invite_codes` row, calls `send-transactional-email`, updates signup to `invited`
 
-**New column on `profiles`:**
-- `consent_completed` boolean DEFAULT false — tracks whether the user has completed the initial consent flow
+### 3. Email infrastructure (Lovable Cloud)
+Set up sender domain `notify.grit.hu` (you add 2 NS records at registrar), provision queue + dispatcher + suppression + unsubscribe.
 
-### Consent Categories (7 cards)
+### 4. Branded invite-code template
+Create `beta-invite-code.tsx` — bilingual (uses signup's stored locale, default HU), Grit.hu styling (white body, primary color CTA, warm clinical-but-human tone). Shows the code and a "Redeem now" button linking to `/beta-gate?code=…`.
 
-1. **Journal & Observations** — storing personal entries and observation logs
-2. **Mood Tracking** — QuickPulse data collection
-3. **Free Text Processing** — AI analysis of narrative fields
-4. **Pattern Detection** — AI-powered trend identification across date ranges
-5. **Questionnaire Data** — storing survey responses and scores
-6. **FHIR Export** — mapping data to clinical codes for portability
-7. **Anonymized Analytics** — contributing to aggregate (k-anonymous) statistics
+### 5. Unsubscribe page
+`/unsubscribe` route + page (HU/EN), required for compliance.
 
-Each card shows: icon, human-surface title, 2-sentence plain explanation, toggle switch, and a "Learn more" expandable section.
+### Files
 
-### Components
+**New:**
+- Migration: add columns to `waitlist_emails`
+- `src/components/BetaSignupForm.tsx`
+- `src/pages/Unsubscribe.tsx` + route in `src/App.tsx`
+- `supabase/functions/_shared/transactional-email-templates/beta-invite-code.tsx`
+- (scaffold-generated) `send-transactional-email`, `handle-email-unsubscribe`, `handle-email-suppression`, `process-email-queue`, `registry.ts`
 
-1. **`src/components/consent/ConsentCarousel.tsx`** — Embla carousel with 7 consent cards + summary card. Each card is a rounded-3xl soft-UI card with a Switch toggle. Final card shows a summary of all choices with a "Confirm & Continue" button. Saves all consents to `user_consents` and sets `profiles.consent_completed = true`.
+**Modified:**
+- `src/pages/Index.tsx` — embed signup form
+- `src/pages/ManageUsers.tsx` — Beta Signups section + send action
+- `src/i18n/en.ts` + `src/i18n/hu.ts`
 
-2. **`src/components/consent/ConsentCard.tsx`** — Individual card: icon, title, description, toggle, optional "Learn more" collapsible.
+### Out of scope
+- Receiving mail at `hello@grit.hu` (needs external provider on root MX — independent of this work)
+- Auth email branding (separate request)
 
-3. **`src/components/consent/ConsentSummary.tsx`** — Summary card showing all 7 toggles with their current state, used both as the final carousel slide and in the Profile page.
+### Two quick decisions
 
-4. **`src/components/consent/ConsentDashboard.tsx`** — Profile-embeddable version with "Advanced Settings" progressive disclosure (category-specific date ranges and sub-toggles for Pattern Detection).
+**Approval flow:**
+1. **Manual review, one-click send (recommended)** — signups go to admin, you click "Send code" per person
+2. **Automatic on signup** — code generated and emailed instantly, no gatekeeping
+3. **Bulk approve** — select multiple in admin, send at once
 
-### Integration Points
+**Sender address:**
+1. **`notify@notify.grit.hu`** (default Lovable subdomain)
+2. **`noreply@grit.hu`** (sends through subdomain, but From: shows root — more polished)
+3. **Custom subdomain** (e.g. `beta.grit.hu`)
 
-**ProtectedRoute** — After auth check, if `consent_completed` is false, redirect to `/consent` (or `/en/consent`).
-
-**Auth.tsx** — No changes needed; the redirect happens in ProtectedRoute after successful login.
-
-**App.tsx** — Add `/consent` and `/en/consent` routes pointing to a new `ConsentOnboarding` page (protected but exempt from consent check).
-
-**Profile.tsx** — Add a new card section "Privacy & AI Control" with the `ConsentDashboard` component, allowing users to review and update their consents at any time.
-
-**RecapBanner** — After completing consent, show a one-time banner on the journal page confirming privacy settings are active.
-
-### New Page
-
-**`src/pages/ConsentOnboarding.tsx`** — Full-screen page (no sidebar) with the ConsentCarousel centered. Bamboo background, same aesthetic as Auth page. On completion, navigates to `/journal`.
-
-### i18n
-
-Add `consent` section to Dictionary with keys for each card title, description, learn-more text, summary heading, confirm button, and profile section labels. Both `hu.ts` and `en.ts`.
-
-### Flow
-
-```text
-Sign Up → Email Verify → First Login
-  → ProtectedRoute checks profiles.consent_completed
-  → false → redirect to /consent
-  → ConsentCarousel (7 cards + summary)
-  → "Confirm" → upsert user_consents rows + set consent_completed
-  → Navigate to /journal with RecapBanner
-
-Profile → Privacy & AI Control section
-  → ConsentDashboard with toggles
-  → Changes saved immediately via upsert
-  → "Advanced Settings" expands date-range/category filters for Pattern Detection
-```
-
-### Implementation Steps
-
-1. Database migration: create `user_consents` table with RLS; add `consent_completed` to `profiles`
-2. Create consent components (ConsentCard, ConsentCarousel, ConsentSummary, ConsentDashboard)
-3. Create ConsentOnboarding page
-4. Update ProtectedRoute to check consent status
-5. Add consent routes to App.tsx
-6. Add ConsentDashboard to Profile page
-7. Add all i18n keys (hu + en)
-
+Reply with your picks (e.g. "1 and 2") and I'll proceed.
