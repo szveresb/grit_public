@@ -737,18 +737,41 @@ export type Database = {
           created_at: string
           email: string
           id: string
+          invite_code_id: string | null
+          invited_at: string | null
+          locale: string
+          name: string | null
+          status: string
         }
         Insert: {
           created_at?: string
           email: string
           id?: string
+          invite_code_id?: string | null
+          invited_at?: string | null
+          locale?: string
+          name?: string | null
+          status?: string
         }
         Update: {
           created_at?: string
           email?: string
           id?: string
+          invite_code_id?: string | null
+          invited_at?: string | null
+          locale?: string
+          name?: string | null
+          status?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "waitlist_emails_invite_code_id_fkey"
+            columns: ["invite_code_id"]
+            isOneToOne: false
+            referencedRelation: "invite_codes"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {
