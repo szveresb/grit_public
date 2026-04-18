@@ -446,6 +446,7 @@ const ScoreHistory = ({
                   );
                 })}
             </div>
+            </div>
           </ErrorBoundary>
         );
       })}
