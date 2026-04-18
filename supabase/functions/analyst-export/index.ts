@@ -223,8 +223,8 @@ Deno.serve(async (req) => {
       active_user_count: Math.floor((activeUserCount ?? 0) / 10) * 10,
       consented_user_count: consentedUserIds.length,
       journal_aggregates: journalAggResult,
-      questionnaire_aggregates: questionnaireAgg.data ?? [],
-      role_distribution: roleDist.data ?? [],
+      questionnaire_aggregates: questionnaireAggResult,
+      role_distribution: roleDistResult,
       observation_aggregates: obsAggResult,
     };
 
