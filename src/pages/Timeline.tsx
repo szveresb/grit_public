@@ -6,6 +6,7 @@ import { useStance } from '@/hooks/useStance';
 import { useCalendarFeedData } from '@/hooks/useCalendarFeedData';
 import { useDualPerspectiveData } from '@/hooks/useDualPerspectiveData';
 import PatternPulseChart from '@/components/timeline/PatternPulseChart';
+import CorrelationChart from '@/components/timeline/CorrelationChart';
 import { FTimeline, FSparkles, FList } from '@/components/icons/FreudIcons';
 import SubjectSelector from '@/components/observations/SubjectSelector';
 import ErrorBoundary from '@/components/ErrorBoundary';

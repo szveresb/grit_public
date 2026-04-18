@@ -1,6 +1,9 @@
+import { useState, useMemo } from 'react';
+import { startOfWeek, subWeeks, getISOWeek, parseISO, isAfter } from 'date-fns';
 import { FTimeline, FChevronUp, FArrowUp, FArrowDown, FArrowRight } from '@/components/icons/FreudIcons';
 import { motion, AnimatePresence } from 'framer-motion';
 import { safeFormat } from '@/lib/date-safe';
+import { getDateLocale } from '@/lib/date-locale';
 import { useLanguage } from '@/hooks/useLanguage';
 
 interface ObsLog {

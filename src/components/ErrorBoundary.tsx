@@ -1,7 +1,7 @@
 import React, { Component, ErrorInfo, ReactNode } from 'react';
 import { useLanguage } from '@/hooks/useLanguage';
 import { Button } from '@/components/ui/button';
-import { FShieldAlert, FRotateCw } from '@/components/icons/FreudIcons';
+import { FShieldAlert, FLoader } from '@/components/icons/FreudIcons';
 
 interface Props {
   children: ReactNode;
@@ -67,7 +67,7 @@ class ErrorBoundaryInternal extends Component<Props & { t: any }, State> {
               variant="outline"
               className="rounded-full w-full"
             >
-              <FRotateCw className="w-4 h-4 mr-2" />
+              <FLoader className="w-4 h-4 mr-2" />
               {t?.errors?.retry || 'Try Again'}
             </Button>
           </div>
