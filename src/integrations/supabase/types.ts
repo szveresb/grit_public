@@ -14,6 +14,69 @@ export type Database = {
   }
   public: {
     Tables: {
+      analyst_export_audit: {
+        Row: {
+          active_user_count: number
+          analyst_email: string | null
+          analyst_user_id: string
+          consent_key_applied: string
+          consented_user_count: number
+          created_at: string
+          export_format: string
+          id: string
+          journal_aggregate_count: number
+          k_anonymity_threshold: number
+          notes: string | null
+          observation_aggregate_count: number
+          outcome: string
+          questionnaire_aggregate_count: number
+          request_ip: string | null
+          role_distribution_count: number
+          threshold_met: boolean
+          user_agent: string | null
+        }
+        Insert: {
+          active_user_count?: number
+          analyst_email?: string | null
+          analyst_user_id: string
+          consent_key_applied?: string
+          consented_user_count?: number
+          created_at?: string
+          export_format?: string
+          id?: string
+          journal_aggregate_count?: number
+          k_anonymity_threshold?: number
+          notes?: string | null
+          observation_aggregate_count?: number
+          outcome: string
+          questionnaire_aggregate_count?: number
+          request_ip?: string | null
+          role_distribution_count?: number
+          threshold_met?: boolean
+          user_agent?: string | null
+        }
+        Update: {
+          active_user_count?: number
+          analyst_email?: string | null
+          analyst_user_id?: string
+          consent_key_applied?: string
+          consented_user_count?: number
+          created_at?: string
+          export_format?: string
+          id?: string
+          journal_aggregate_count?: number
+          k_anonymity_threshold?: number
+          notes?: string | null
+          observation_aggregate_count?: number
+          outcome?: string
+          questionnaire_aggregate_count?: number
+          request_ip?: string | null
+          role_distribution_count?: number
+          threshold_met?: boolean
+          user_agent?: string | null
+        }
+        Relationships: []
+      }
       consent_history_logs: {
         Row: {
           changed_at: string
