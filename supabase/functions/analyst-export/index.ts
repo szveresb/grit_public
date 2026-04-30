@@ -35,30 +35,58 @@ Deno.serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  const K_ANONYMITY_THRESHOLD = 20;
+  const CONSENT_KEY = "anonymized_analytics";
+  const requestIp = req.headers.get("x-forwarded-for") ?? req.headers.get("cf-connecting-ip") ?? null;
+  const userAgent = req.headers.get("user-agent") ?? null;
+
+  const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+  const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+  const admin = createClient(supabaseUrl, serviceRoleKey);
+
+  const writeAudit = async (row: Record<string, unknown>) => {
+    try {
+      await admin.from("analyst_export_audit").insert({
+        consent_key_applied: CONSENT_KEY,
+        k_anonymity_threshold: K_ANONYMITY_THRESHOLD,
+        request_ip: requestIp,
+        user_agent: userAgent,
+        ...row,
+      });
+    } catch (e) {
+      console.error("audit insert failed:", e);
+    }
+  };
+
   try {
     const authHeader = req.headers.get("Authorization");
     if (!authHeader) {
+      await writeAudit({
+        analyst_user_id: "00000000-0000-0000-0000-000000000000",
+        outcome: "denied_unauthorized",
+        threshold_met: false,
+      });
       return new Response(JSON.stringify({ error: "Unauthorized" }), {
         status: 401,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
-
-    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-    const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 
     const userClient = createClient(supabaseUrl, Deno.env.get("SUPABASE_PUBLISHABLE_KEY")!, {
       global: { headers: { Authorization: authHeader } },
     });
     const { data: { user }, error: userError } = await userClient.auth.getUser();
     if (userError || !user) {
+      await writeAudit({
+        analyst_user_id: "00000000-0000-0000-0000-000000000000",
+        outcome: "denied_invalid_token",
+        threshold_met: false,
+      });
       return new Response(JSON.stringify({ error: "Unauthorized" }), {
         status: 401,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
-
-    const admin = createClient(supabaseUrl, serviceRoleKey);
 
     const { data: roleData } = await admin
       .from("user_roles")
@@ -67,6 +95,12 @@ Deno.serve(async (req) => {
       .in("role", ["analyst", "admin"]);
 
     if (!roleData || roleData.length === 0) {
+      await writeAudit({
+        analyst_user_id: user.id,
+        analyst_email: user.email ?? null,
+        outcome: "denied_forbidden_role",
+        threshold_met: false,
+      });
       return new Response(JSON.stringify({ error: "Forbidden: analyst or admin role required" }), {
         status: 403,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -77,7 +111,18 @@ Deno.serve(async (req) => {
       .from("profiles")
       .select("id", { count: "exact", head: true });
 
-    if ((activeUserCount ?? 0) < 20) {
+    const url = new URL(req.url);
+    const format = url.searchParams.get("format") === "fhir" ? "fhir" : "json";
+
+    if ((activeUserCount ?? 0) < K_ANONYMITY_THRESHOLD) {
+      await writeAudit({
+        analyst_user_id: user.id,
+        analyst_email: user.email ?? null,
+        export_format: format,
+        active_user_count: activeUserCount ?? 0,
+        threshold_met: false,
+        outcome: "denied_threshold_not_met",
+      });
       return new Response(
         JSON.stringify({
           error: "Threshold not met",
@@ -91,7 +136,7 @@ Deno.serve(async (req) => {
     const { data: consentedUsers } = await admin
       .from("user_consents")
       .select("user_id")
-      .eq("consent_key", "anonymized_analytics")
+      .eq("consent_key", CONSENT_KEY)
       .eq("granted", true);
 
     const consentedUserIds = (consentedUsers ?? []).map((c: any) => c.user_id);
@@ -99,6 +144,15 @@ Deno.serve(async (req) => {
     // If no users consented, return empty data
     if (consentedUserIds.length === 0) {
       const now = new Date().toISOString();
+      await writeAudit({
+        analyst_user_id: user.id,
+        analyst_email: user.email ?? null,
+        export_format: format,
+        active_user_count: activeUserCount ?? 0,
+        consented_user_count: 0,
+        threshold_met: true,
+        outcome: "success_empty_no_consent",
+      });
       return new Response(JSON.stringify({
         disclaimer: {
           en: "Non-Diagnostic Data: This report contains raw user observations mapped to standard medical terminology. It does not constitute a clinical assessment.",
@@ -200,14 +254,26 @@ Deno.serve(async (req) => {
       }))
       .sort((a, b) => b.log_count - a.log_count);
 
-    const url = new URL(req.url);
-    const format = url.searchParams.get("format");
     const now = new Date().toISOString();
 
     const disclaimer = {
       en: "Non-Diagnostic Data: This report contains raw user observations mapped to standard medical terminology. It does not constitute a clinical assessment.",
       hu: "Nem diagnosztikai adat: A jelentés felhasználó által rögzített megfigyeléseket tartalmaz, szabványos orvosi terminológiára leképezve. Nem minősül klinikai értékelésnek.",
     };
+
+    await writeAudit({
+      analyst_user_id: user.id,
+      analyst_email: user.email ?? null,
+      export_format: format,
+      active_user_count: activeUserCount ?? 0,
+      consented_user_count: consentedUserIds.length,
+      threshold_met: true,
+      outcome: format === "fhir" ? "success_fhir" : "success_json",
+      journal_aggregate_count: journalAggResult.length,
+      questionnaire_aggregate_count: questionnaireAggResult.length,
+      observation_aggregate_count: obsAggResult.length,
+      role_distribution_count: roleDistResult.length,
+    });
 
     if (format === "fhir") {
       const bundle = buildFhirBundle(obsAggResult, now);
@@ -233,6 +299,12 @@ Deno.serve(async (req) => {
     });
   } catch (err) {
     console.error("analyst-export error:", err);
+    await writeAudit({
+      analyst_user_id: "00000000-0000-0000-0000-000000000000",
+      outcome: "error_internal",
+      threshold_met: false,
+      notes: String((err as Error)?.message ?? err).slice(0, 500),
+    });
     return new Response(JSON.stringify({ error: "Internal server error" }), {
       status: 500,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
