@@ -31,6 +31,14 @@ const Terms = () => {
 
           <h2 className="text-base font-semibold text-foreground">{content.s6Title}</h2>
           <p>{content.s6Desc}</p>
+
+          <h2 className="text-base font-semibold text-foreground">{content.s7Title}</h2>
+          <p>{content.s7Desc}</p>
+          <ul className="list-disc pl-5 space-y-1">
+            {content.s7Items.map((item, i) => (
+              <li key={i}>{item}</li>
+            ))}
+          </ul>
         </section>
       </main>
     </div>

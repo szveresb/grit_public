@@ -766,6 +766,16 @@ export const hu: Dictionary = {
       liabilityUserTitle: 'A felhasználó felel:',
       liabilityUserItems: ['az általa rögzített adatok pontosságáért', 'a szükséges orvosi tanács igénybevételéért'],
       liabilityNote: 'Az egészségügyi szakember tartozik kizárólagos felelősséggel a klinikai értelmezésért és döntéshozatalért.',
+      secondaryUseTitle: 'Tiltott másodlagos felhasználások (EHDS-megfelelő)',
+      secondaryUseDesc: 'Az Európai Egészségügyi Adattér (EHDS) Rendelettel összhangban a Grit.hu által előállított anonimizált aggregátumok soha nem használhatók fel olyan döntésekhez, amelyek befolyásolják egy személy biztosításhoz, munkavállaláshoz, hitelhez vagy más alapvető szolgáltatáshoz való hozzáférését. Még akkor is, ha a k-anonimitási küszöb (legalább 20 aktív, hozzájáruló felhasználó) teljesül, az alábbi másodlagos felhasználások kategorikusan tilosak:',
+      secondaryUseItems: [
+        'Adatok megosztása vagy értékesítése biztosítótársaságok, viszontbiztosítók vagy biztosítási alkuszok részére kockázatértékelés, díjszámítás vagy kárrendezés céljából.',
+        'Adatok megosztása vagy értékesítése jelenlegi vagy leendő munkáltatók, fejvadászok vagy munkahelyi értékelő szolgáltatók részére.',
+        'Adatok megosztása hitelinformációs irodákkal, hitelezőkkel vagy bármely olyan szereplővel, aki hitelképességi, fizetőképességi vagy szociális pontozást végez.',
+        'Adatok megosztása reklámhálózatokkal, adatkereskedőkkel vagy bármely harmadik féllel viselkedésalapú célzás vagy marketing céljából.',
+        'Bármely olyan felhasználás, amely lehetővé tehetné egy egyéni felhasználó újraazonosítását, ellentétben a GDPR 4. cikk (5) bekezdésével és az EHDS 33. cikkével.',
+      ],
+      secondaryUseNote: 'Ezek a tilalmak kötelező érvényűek bármely jövőbeni üzleti modelltől, partnerségtől vagy felvásárlástól függetlenül. A jogszerű másodlagos felhasználás a közérdekű kutatásra, statisztikai és egészségpolitikai célokra korlátozódik, amelyeket az EHDS Rendelet IV. fejezete kifejezetten engedélyez, és kizárólag akkreditált szervezetek végezhetik az illetékes Egészségügyi Adathozzáférési Szerv felügyelete alatt.',
       contact: 'A szabályozási besorolással és a rendszer felépítésével kapcsolatos kérdésekben forduljon a Grit.hu üzemeltetőjéhez.',
     },
     cookies: {
@@ -812,6 +822,15 @@ export const hu: Dictionary = {
       s6Desc: 'Adatait addig őrizzük, amíg fiókja aktív. A fiók törlésével minden személyes adat véglegesen eltávolításra kerül a rendszerből.',
       s7Title: '7. Kapcsolat és panasz',
       s7Desc: 'Adatvédelmi kérdéseivel és panaszaival fordulhat hozzánk, vagy a Nemzeti Adatvédelmi és Információszabadság Hatósághoz (NAIH).',
+      s8Title: '8. Tiltott másodlagos felhasználások (EHDS)',
+      s8Desc: 'Még anonimizált, aggregált adatok esetén is, az üzemeltető az Európai Egészségügyi Adattér (EHDS) Rendelettel összhangban kategorikusan tiltja az alábbi másodlagos felhasználásokat:',
+      s8Items: [
+        'Adatok átadása vagy értékesítése biztosítótársaságoknak, viszontbiztosítóknak vagy biztosítási közvetítőknek.',
+        'Adatok átadása vagy értékesítése jelenlegi vagy leendő munkáltatóknak, fejvadászoknak vagy munkahelyi értékelő szolgáltatóknak.',
+        'Adatok átadása hitelinformációs irodáknak, hitelezőknek vagy hitelképességi, illetve szociális pontozást végző szereplőknek.',
+        'Adatok átadása reklámhálózatoknak, adatkereskedőknek vagy bármely harmadik félnek viselkedésalapú célzás céljából.',
+        'Bármely olyan adatkezelés, amely lehetővé tehetné egy egyéni felhasználó újraazonosítását (GDPR 4. cikk (5), EHDS 33. cikk).',
+      ],
     },
     terms: {
       title: 'Felhasználási feltételek',
@@ -828,6 +847,15 @@ export const hu: Dictionary = {
       s5Desc: 'A Szolgáltatás „ahogy van” alapon érhető el. Nem vállalunk felelősséget a Szolgáltatás használatából eredő közvetlen vagy közvetett károkért, adatvesztésért vagy a Szolgáltatás ideiglenes elérhetetlenségéért.',
       s6Title: '6. Módosítások',
       s6Desc: 'Fenntartjuk a jogot a jelen feltételek bármikori módosítására. A módosításokról a Szolgáltatáson keresztül tájékoztatjuk felhasználóinkat.',
+      s7Title: '7. Tiltott másodlagos felhasználások (EHDS-megfelelő)',
+      s7Desc: 'Az Európai Egészségügyi Adattér (EHDS) Rendelettel összhangban az üzemeltető visszavonhatatlanul vállalja, hogy a Szolgáltatás által előállított anonimizált aggregátumokat soha nem osztja meg, értékesíti, licenceli vagy egyéb módon nem teszi elérhetővé az alábbi célokra, bármely jövőbeni üzleti modelltől, partnerségtől vagy tulajdonosváltástól függetlenül:',
+      s7Items: [
+        'Biztosítási kockázatértékelés, díjszámítás, kárrendezés vagy kockázati profilalkotás biztosítók, viszontbiztosítók vagy alkuszok által.',
+        'Felvételi döntés, teljesítményértékelés, háttérellenőrzés vagy bármely munkavállalással kapcsolatos döntés jelenlegi vagy leendő munkáltatók, fejvadászok vagy munkahelyi értékelő szolgáltatók által.',
+        'Hitelpontozás, hitelezési döntések, fizetőképesség-vizsgálat vagy szociális pontozás.',
+        'Reklám, viselkedésalapú célzás, profilalkotás vagy adatkereskedőknek történő értékesítés.',
+        'Bármely olyan adatkezelés, amely lehetővé tehetné egy egyéni felhasználó újraazonosítását.',
+      ],
     },
   },
 

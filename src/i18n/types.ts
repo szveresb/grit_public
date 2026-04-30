@@ -739,6 +739,10 @@ export interface Dictionary {
       liabilityUserTitle: string;
       liabilityUserItems: string[];
       liabilityNote: string;
+      secondaryUseTitle: string;
+      secondaryUseDesc: string;
+      secondaryUseItems: string[];
+      secondaryUseNote: string;
       contact: string;
     };
     cookies: {
@@ -779,6 +783,9 @@ export interface Dictionary {
       s6Desc: string;
       s7Title: string;
       s7Desc: string;
+      s8Title: string;
+      s8Desc: string;
+      s8Items: string[];
     };
     terms: {
       title: string;
@@ -795,6 +802,9 @@ export interface Dictionary {
       s5Desc: string;
       s6Title: string;
       s6Desc: string;
+      s7Title: string;
+      s7Desc: string;
+      s7Items: string[];
     };
   };
 
