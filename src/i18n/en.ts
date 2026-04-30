@@ -767,6 +767,16 @@ export const en: Dictionary = {
       liabilityUserTitle: 'The user is responsible for:',
       liabilityUserItems: ['The accuracy of the data they record', 'Seeking necessary medical advice'],
       liabilityNote: 'Healthcare professionals bear exclusive responsibility for clinical interpretation and decision-making.',
+      secondaryUseTitle: 'Prohibited Secondary Uses (EHDS-aligned)',
+      secondaryUseDesc: 'In line with the European Health Data Space (EHDS) Regulation, anonymised aggregates produced by Grit.hu may never be repurposed for decisions that affect a person\'s access to insurance, employment, credit, or other essential services. Even when the k-anonymity threshold (≥ 20 active, consenting users) is met, the following secondary uses are categorically prohibited:',
+      secondaryUseItems: [
+        'Sharing or selling data to insurance companies, reinsurers, or insurance brokers for underwriting, premium calculation, or claims assessment.',
+        'Sharing or selling data to current or prospective employers, recruiters, or workplace assessment vendors.',
+        'Sharing data with credit bureaus, lenders, or any actor performing creditworthiness, solvency, or social scoring.',
+        'Sharing data with advertising networks, data brokers, or any third party for behavioural targeting or marketing.',
+        'Any use that could enable re-identification of an individual user, contrary to GDPR Article 4(5) and EHDS Article 33.',
+      ],
+      secondaryUseNote: 'These prohibitions are binding regardless of any future business model, partnership, or acquisition. Lawful secondary uses are limited to public interest research, statistics, and healthcare policy purposes explicitly permitted under Chapter IV of the EHDS Regulation, and only when conducted by accredited bodies under the control of the competent Health Data Access Body.',
       contact: 'For questions regarding regulatory classification or system architecture, please contact the operator of Grit.hu.',
     },
     cookies: {
