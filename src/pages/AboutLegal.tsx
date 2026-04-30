@@ -100,6 +100,15 @@ const AboutLegal = () => {
         </ul>
         <p>{content.liabilityNote}</p>
 
+        <h2 className="text-lg font-bold text-foreground pt-4">{content.secondaryUseTitle}</h2>
+        <p>{content.secondaryUseDesc}</p>
+        <ul className="list-disc pl-5 space-y-1">
+          {content.secondaryUseItems.map((item, i) => (
+            <li key={i}>{item}</li>
+          ))}
+        </ul>
+        <p>{content.secondaryUseNote}</p>
+
         <p className="pt-4 text-xs text-muted-foreground">{content.contact}</p>
       </main>
     </div>

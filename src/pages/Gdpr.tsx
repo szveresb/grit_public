@@ -46,6 +46,14 @@ const Gdpr = () => {
 
           <h2 className="text-base font-semibold text-foreground">{content.s7Title}</h2>
           <p>{content.s7Desc}</p>
+
+          <h2 className="text-base font-semibold text-foreground">{content.s8Title}</h2>
+          <p>{content.s8Desc}</p>
+          <ul className="list-disc pl-5 space-y-1">
+            {content.s8Items.map((item, i) => (
+              <li key={i}>{item}</li>
+            ))}
+          </ul>
         </section>
       </main>
     </div>
