@@ -823,6 +823,15 @@ export const en: Dictionary = {
       s6Desc: 'We keep your data as long as your account is active. Upon account deletion, all personal data is permanently removed from the system.',
       s7Title: '7. Contact and Complaints',
       s7Desc: 'For data protection questions or complaints, you can contact us or your local Data Protection Authority.',
+      s8Title: '8. Prohibited Secondary Uses (EHDS)',
+      s8Desc: 'Even where data is anonymised and aggregated, the operator categorically prohibits the following secondary uses, in line with the European Health Data Space (EHDS) Regulation:',
+      s8Items: [
+        'Disclosure or sale to insurance companies, reinsurers, or insurance intermediaries.',
+        'Disclosure or sale to current or prospective employers, recruiters, or workplace assessment vendors.',
+        'Disclosure to credit bureaus, lenders, or actors performing creditworthiness or social scoring.',
+        'Disclosure to advertising networks, data brokers, or any third party for behavioural targeting.',
+        'Any processing that could enable re-identification of an individual user (GDPR Art. 4(5), EHDS Art. 33).',
+      ],
     },
     terms: {
       title: 'Terms of Use',
@@ -839,6 +848,15 @@ export const en: Dictionary = {
       s5Desc: 'The Service is provided "as is". We are not liable for any direct or indirect damages, data loss, or temporary unavailability arising from the use of the Service.',
       s6Title: '6. Modifications',
       s6Desc: 'We reserve the right to modify these terms at any time. Users will be notified of changes through the Service.',
+      s7Title: '7. Prohibited Secondary Uses (EHDS-aligned)',
+      s7Desc: 'In line with the European Health Data Space (EHDS) Regulation, the operator commits — irrevocably — that anonymised aggregates produced by the Service will never be shared, sold, licensed, or otherwise made available for the following purposes, regardless of any future business model, partnership, or change of control:',
+      s7Items: [
+        'Insurance underwriting, premium calculation, claims assessment, or risk profiling by insurers, reinsurers, or brokers.',
+        'Hiring, performance evaluation, background screening, or any employment-related decision by current or prospective employers, recruiters, or workplace assessment vendors.',
+        'Credit scoring, lending decisions, solvency assessment, or social scoring.',
+        'Advertising, behavioural targeting, profiling, or sale to data brokers.',
+        'Any processing that could enable re-identification of an individual user.',
+      ],
     },
   },
 
