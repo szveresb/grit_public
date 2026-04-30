@@ -779,6 +779,9 @@ export interface Dictionary {
       s6Desc: string;
       s7Title: string;
       s7Desc: string;
+      s8Title: string;
+      s8Desc: string;
+      s8Items: string[];
     };
     terms: {
       title: string;
