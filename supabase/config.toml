@@ -13,3 +13,5 @@ project_id = "dgymkgeulpaavnqavnrw"
     verify_jwt = true
   [functions.send-transactional-email]
     verify_jwt = true
+  [functions.submit-beta-application]
+    verify_jwt = false
