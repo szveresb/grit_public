@@ -114,6 +114,42 @@ const ManageUsers = () => {
           )}
         </div>
 
+        <div className="surface-card p-5 space-y-4 border-primary/20">
+          <h2 className="text-sm font-semibold uppercase tracking-widest text-primary">Beta Signups</h2>
+          {waitlist.length === 0 ? (
+            <p className="text-xs text-muted-foreground italic">No applications yet.</p>
+          ) : (
+            <div className="space-y-2">
+              {waitlist.map(w => (
+                <div key={w.id} className="flex items-center justify-between gap-3 py-2 border-b border-border/40 last:border-0">
+                  <div className="min-w-0 flex-1">
+                    <div className="flex items-center gap-2">
+                      <span className="text-sm font-medium text-foreground truncate">{w.email}</span>
+                      <Badge variant="outline" className="rounded-full text-[10px] uppercase">{w.locale}</Badge>
+                      {w.status === 'invited' && (
+                        <Badge className="rounded-full text-[10px] uppercase bg-primary/15 text-primary border-0">Invited</Badge>
+                      )}
+                    </div>
+                    <p className="text-[11px] text-muted-foreground mt-0.5">
+                      {new Date(w.created_at).toLocaleDateString()}
+                      {w.name && ` · ${w.name}`}
+                    </p>
+                  </div>
+                  <Button
+                    size="sm"
+                    variant={w.status === 'invited' ? 'outline' : 'default'}
+                    className="rounded-full h-8 text-[11px] font-bold whitespace-nowrap"
+                    disabled={sendingId === w.id}
+                    onClick={() => sendInvite(w.id)}
+                  >
+                    {sendingId === w.id ? '…' : (w.status === 'invited' ? 'Resend' : 'Send invite')}
+                  </Button>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
         <div className="space-y-3">
           {loading ? (
             <p className="text-sm text-muted-foreground">{t.manageUsers.loadingUsers}</p>
