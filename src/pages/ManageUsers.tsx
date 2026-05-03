@@ -61,6 +61,13 @@ const ManageUsers = () => {
   };
 
   useEffect(() => { if (user && isAdmin) fetchUsers(); }, [user, isAdmin]);
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const hash = window.location.hash.replace('#', '');
+    if (!hash || loading) return;
+    const el = document.getElementById(hash);
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, [loading]);
 
   if (roleLoading) return <DashboardLayout><p className="text-sm text-muted-foreground">{t.loading}</p></DashboardLayout>;
   if (!isAdmin) return <Navigate to="/journal" replace />;
@@ -114,7 +121,7 @@ const ManageUsers = () => {
           )}
         </div>
 
-        <div className="surface-card p-5 space-y-4 border-primary/20">
+        <div id="beta-signups" className="surface-card p-5 space-y-4 border-primary/20 scroll-mt-24">
           <h2 className="text-sm font-semibold uppercase tracking-widest text-primary">Beta Signups</h2>
           {waitlist.length === 0 ? (
             <p className="text-xs text-muted-foreground italic">No applications yet.</p>

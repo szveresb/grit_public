@@ -1,4 +1,5 @@
 import * as React from 'react';
+import { useEffect, useState } from 'react';
 import { useLocation, Link } from 'react-router-dom';
 import { NavLink } from '@/components/NavLink';
 import { useUserRole } from '@/hooks/useUserRole';
@@ -6,6 +7,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useLanguage } from '@/hooks/useLanguage';
 import { stripLangPrefix } from '@/hooks/useLanguage';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { supabase } from '@/integrations/supabase/client';
 import {
   FHome, FDashboard, FHeartPulse, FClock, FDownload, FUser,
   FLibrary, FUsers, FBarChart, FFileText, FInfo, FLock, FTimeline, FMessageCircle,
@@ -52,10 +54,25 @@ const AppSidebar = ({ onOpenFeedback }: AppSidebarProps) => {
 
   const canManageLanding = hasAnyRole('admin', 'editor');
 
-  const editorItems = [
+  const [pendingSignups, setPendingSignups] = useState<number>(0);
+  useEffect(() => {
+    if (!isAdmin) { setPendingSignups(0); return; }
+    let cancelled = false;
+    (async () => {
+      const { count } = await supabase
+        .from('waitlist_emails' as any)
+        .select('id', { count: 'exact', head: true })
+        .eq('status', 'pending');
+      if (!cancelled) setPendingSignups(count ?? 0);
+    })();
+    return () => { cancelled = true; };
+  }, [isAdmin]);
+
+  const editorItems: Array<{ title: string; url: string; icon: typeof FUsers; badge?: number }> = [
     ...(canManageLibrary ? [{ title: t.nav.manageLibrary, url: '/manage-library', icon: FLibrary }] : []),
     ...(canManageQuestionnaires ? [{ title: t.nav.manageQuestionnaires, url: '/manage-questionnaires', icon: FFileText }] : []),
     ...(canManageLanding ? [{ title: t.nav.manageLanding, url: '/manage-landing', icon: FHome }] : []),
+    ...(isAdmin ? [{ title: t.nav.betaSignups, url: '/manage-users#beta-signups', icon: FHeartPulse, badge: pendingSignups }] : []),
     ...(isAdmin ? [{ title: t.nav.manageUsers, url: '/manage-users', icon: FUsers }] : []),
     ...(canAnalyse ? [{ title: t.nav.analystExport, url: '/analyst-export', icon: FBarChart }] : []),
   ];
@@ -145,25 +162,33 @@ const AppSidebar = ({ onOpenFeedback }: AppSidebarProps) => {
             </SidebarGroupLabel>
             <SidebarGroupContent>
               <SidebarMenu>
-                {editorItems.map((item) => (
-                  <SidebarMenuItem key={item.url}>
-                    <SidebarMenuButton
-                      asChild
-                      isActive={currentPath === item.url}
-                      tooltip={item.title}
-                    >
-                      <NavLink
-                        to={localePath(item.url)}
-                        end
-                        className="hover:bg-accent rounded-xl"
-                        activeClassName="bg-accent text-foreground font-semibold rounded-xl"
+                {editorItems.map((item) => {
+                  const [pathOnly] = item.url.split('#');
+                  return (
+                    <SidebarMenuItem key={item.url}>
+                      <SidebarMenuButton
+                        asChild
+                        isActive={currentPath === pathOnly}
+                        tooltip={item.title}
                       >
-                        <item.icon className="h-4 w-4" />
-                        <span>{item.title}</span>
-                      </NavLink>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                ))}
+                        <NavLink
+                          to={localePath(item.url)}
+                          end
+                          className="hover:bg-accent rounded-xl"
+                          activeClassName="bg-accent text-foreground font-semibold rounded-xl"
+                        >
+                          <item.icon className="h-4 w-4" />
+                          <span className="flex-1">{item.title}</span>
+                          {item.badge && item.badge > 0 ? (
+                            <span className="ml-auto inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1.5 text-[10px] font-bold text-primary-foreground">
+                              {item.badge}
+                            </span>
+                          ) : null}
+                        </NavLink>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  );
+                })}
               </SidebarMenu>
             </SidebarGroupContent>
           </SidebarGroup>
