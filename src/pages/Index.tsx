@@ -31,17 +31,13 @@ const Index = () => {
     e.preventDefault();
     if (!email) return;
     setSubmitting(true);
-    
-    const { error } = await supabase.from('waitlist_emails' as any).insert({ email } as any);
-    
+
+    const { error } = await supabase.functions.invoke('submit-beta-application', {
+      body: { email, locale: lang },
+    });
+
     if (error) {
-      // 23505 is Postgres unique_violation
-      if (error.code === '23505') {
-        toast.success(t.landing?.waitlistSuccess || 'Thank you! You have been added to our beta access waitlist.');
-        setEmail('');
-      } else {
-        toast.error(t.landing?.waitlistError || 'Failed to join waitlist. Please try again.');
-      }
+      toast.error(t.landing?.waitlistError || 'Failed to join waitlist. Please try again.');
     } else {
       toast.success(t.landing?.waitlistSuccess || 'Thank you! You have been added to our beta access waitlist.');
       setEmail('');
