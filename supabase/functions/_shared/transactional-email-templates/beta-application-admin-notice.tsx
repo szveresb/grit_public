@@ -5,7 +5,7 @@ import {
 import type { TemplateEntry } from './registry.ts'
 
 const SITE_NAME = 'Grit.hu'
-const ADMIN_EMAIL = 'hello@grit.hu'
+const ADMIN_EMAIL = 'szveresb@gmail.com'
 const ADMIN_URL = 'https://grit.hu/manage-users'
 
 interface Props { applicantEmail?: string; applicantName?: string; locale?: string; createdAt?: string }
