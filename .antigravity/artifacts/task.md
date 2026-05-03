@@ -1,13 +1,15 @@
 # State of Play: Active Tasks
 
-- `[x]` **PWA & Branding (Finalized)**
-    - `[x]` Service worker registration and caching strategy.
-    - `[x]` Discreet "G" monogram icon generation and deployment.
-    - `[x]` Offline sync cues in `QuickPulse` & `QuestionnaireFiller`.
-- `[/]` **Clinical Entity Architecture (Current Phase)**
-    - `[ ]` SQL: Create `public.clinical_entities` (Code, System, Description).
-    - `[ ]` SQL: Update `observation_concepts` to link with clinical entities.
-    - `[ ]` Admin: Export view for waitlist emails.
-- `[ ]` **AI Sensemaking (Suspended)**
-    - `[ ]` Port `journal-patterns` Edge Function.
-    - `[ ]` Port `journal-reflect` Edge Function.
+- [x] **Phase 1: Assets & Metadata**
+    - [x] Capture Desktop screenshot for manifest using browser subagent.
+    - [x] Capture Mobile screenshot for manifest using browser subagent.
+    - [x] Update `vite.config.ts` with full manifest (short_name: "G", categories, maskable icons, screenshots).
+    - [x] Update `index.html` with theme-color and apple-specific meta tags.
+- [x] **Phase 2: Safety & Components**
+    - [x] Upgrade `EmergencyExit.tsx` with cache-clearing logic.
+    - [x] Create `ReloadPrompt.tsx` using `virtual:pwa-register`.
+    - [x] Create `OfflineStatus.tsx` for "Sync Pending" notifications.
+- [x] **Phase 3: Integration & Polish**
+    - [x] Integrate PWA components into `App.tsx`.
+    - [x] Verify PWA manifest validity and service worker registration.
+    - [x] Finalize with a walkthrough.

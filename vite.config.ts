@@ -25,17 +25,60 @@ export default defineConfig(({ mode }) => ({
         name: "Grit.hu",
         short_name: "Grit",
         description: "Sensemaking & wellbeing platform",
+        categories: ["life management"],
         start_url: "/",
-        display: "standalone",
+        scope: "/",
+        display: "fullscreen",
+        display_override: ["fullscreen", "standalone"],
         background_color: "#ffffff",
         theme_color: "#0d9488",
         icons: [
-          { src: "/icons/icon-192.png", sizes: "192x192", type: "image/png" },
-          { src: "/icons/icon-512.png", sizes: "512x512", type: "image/png" },
+          {
+            src: "/icons/icon-192.png",
+            sizes: "192x192",
+            type: "image/png",
+          },
+          {
+            src: "/icons/icon-512.png",
+            sizes: "512x512",
+            type: "image/png",
+          },
         ],
+        screenshots: [
+          {
+            src: "/screenshots/desktop.png",
+            sizes: "1920x1080",
+            type: "image/png",
+            form_factor: "wide",
+            label: "Grit.hu Dashboard"
+          },
+          {
+            src: "/screenshots/mobile.png",
+            sizes: "390x844",
+            type: "image/png",
+            form_factor: "narrow",
+            label: "Grit.hu Mobile"
+          }
+        ]
       },
       workbox: {
         runtimeCaching: [
+          {
+            urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,
+            handler: "CacheFirst",
+            options: {
+              cacheName: "google-fonts-stylesheets",
+              expiration: { maxEntries: 10, maxAgeSeconds: 60 * 60 * 24 * 365 },
+            },
+          },
+          {
+            urlPattern: /^https:\/\/fonts\.gstatic\.com\/.*/i,
+            handler: "CacheFirst",
+            options: {
+              cacheName: "google-fonts-webfonts",
+              expiration: { maxEntries: 20, maxAgeSeconds: 60 * 60 * 24 * 365 },
+            },
+          },
           {
             urlPattern: ({ request }: { request: Request }) => request.destination === "script" || request.destination === "style" || request.destination === "image",
             handler: "CacheFirst",
@@ -55,7 +98,7 @@ export default defineConfig(({ mode }) => ({
             },
           },
         ],
-        navigateFallbackDenylist: [/\/emergency-exit/, /^\/~oauth/],
+        navigateFallbackDenylist: [/\/emergency-exit/, /^\/~oauth/, /\/supabase\//],
       },
       devOptions: { enabled: true },
     }),

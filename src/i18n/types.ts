@@ -21,6 +21,11 @@ export interface Dictionary {
   draft: string;
   published: string;
   featured: string;
+  errors: {
+    componentCrashTitle: string;
+    componentCrashDesc: string;
+    retry: string;
+  };
 
   // Nav
   nav: {
@@ -366,6 +371,16 @@ export interface Dictionary {
     noPatterns: string;
     pulseDotLabel: string;
     viewFullTimeline: string;
+    individualMode: string;
+    correlationMode: string;
+    correlationTitle: string;
+    correlationSubtitle: string;
+    regulationLabel: string;
+    regulationDesc: string;
+    environmentLabel: string;
+    environmentDesc: string;
+    observationCountSingle: string;
+    observationCountPlural: string;
   };
 
 
@@ -725,6 +740,10 @@ export interface Dictionary {
       liabilityUserTitle: string;
       liabilityUserItems: string[];
       liabilityNote: string;
+      secondaryUseTitle: string;
+      secondaryUseDesc: string;
+      secondaryUseItems: string[];
+      secondaryUseNote: string;
       contact: string;
     };
     cookies: {
@@ -765,6 +784,9 @@ export interface Dictionary {
       s6Desc: string;
       s7Title: string;
       s7Desc: string;
+      s8Title: string;
+      s8Desc: string;
+      s8Items: string[];
     };
     terms: {
       title: string;
@@ -781,6 +803,9 @@ export interface Dictionary {
       s5Desc: string;
       s6Title: string;
       s6Desc: string;
+      s7Title: string;
+      s7Desc: string;
+      s7Items: string[];
     };
   };
 
@@ -811,5 +836,9 @@ export interface Dictionary {
   // PWA
   pwa: {
     syncPending: string;
+    offlineReady: string;
+    newVersion: string;
+    reload: string;
+    online: string;
   };
 }

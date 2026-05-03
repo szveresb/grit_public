@@ -10,6 +10,9 @@ import { ConsentProvider } from "@/hooks/useConsent";
 import { StanceProvider } from "@/hooks/useStance";
 import ProtectedRoute from "@/components/ProtectedRoute";
 import Index from "./pages/Index";
+import ReloadPrompt from "@/components/ReloadPrompt";
+import OfflineStatus from "@/components/OfflineStatus";
+import ErrorBoundary from "@/components/ErrorBoundary";
 
 const Auth = lazy(() => import("./pages/Auth"));
 const AuthCallback = lazy(() => import("./pages/AuthCallback"));
@@ -37,7 +40,14 @@ const queryClient = new QueryClient();
 
 /** All app routes — rendered once for HU (root) and once for EN (/en prefix) */
 const AppRoutes = () => (
-  <Suspense fallback={<div className="min-h-screen bg-background" />}>
+  <Suspense fallback={
+    <div className="min-h-screen flex items-center justify-center bg-background">
+      <div className="flex flex-col items-center gap-4 -translate-y-8">
+        <div className="w-8 h-8 rounded-full border-b-2 border-primary animate-spin" />
+        <p className="text-xs font-semibold uppercase tracking-widest text-muted-foreground animate-pulse">Loading Application...</p>
+      </div>
+    </div>
+  }>
     <Routes>
       <Route path="/" element={<Index />} />
       <Route path="/auth" element={<Auth />} />
@@ -48,8 +58,8 @@ const AppRoutes = () => (
       <Route path="/self-checks" element={<Navigate to="/surveys" replace />} />
       <Route path="/surveys" element={<ProtectedRoute><Surveys /></ProtectedRoute>} />
       <Route path="/timeline" element={<ProtectedRoute><Timeline /></ProtectedRoute>} />
-      <Route path="/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
-      <Route path="/export" element={<ProtectedRoute><Export /></ProtectedRoute>} />
+      <Route path="/profile" element={<ProtectedRoute skipConsentCheck><Profile /></ProtectedRoute>} />
+      <Route path="/export" element={<ProtectedRoute skipConsentCheck><Export /></ProtectedRoute>} />
       <Route path="/manage-library" element={<ProtectedRoute><ManageLibrary /></ProtectedRoute>} />
       <Route path="/manage-users" element={<ProtectedRoute><ManageUsers /></ProtectedRoute>} />
       <Route path="/manage-questionnaires" element={<ProtectedRoute><SelfChecks /></ProtectedRoute>} />
@@ -59,10 +69,10 @@ const AppRoutes = () => (
       <Route path="/beta-gate" element={<BetaGate />} />
       <Route path="/library" element={<ProtectedRoute><Library /></ProtectedRoute>} />
       <Route path="/library/:id" element={<ProtectedRoute><Article /></ProtectedRoute>} />
-      <Route path="/terms" element={<Terms />} />
-      <Route path="/cookies" element={<Cookies />} />
-      <Route path="/gdpr" element={<Gdpr />} />
-      <Route path="/about-legal" element={<AboutLegal />} />
+      <Route path="/terms" element={<ProtectedRoute skipConsentCheck><Terms /></ProtectedRoute>} />
+      <Route path="/cookies" element={<ProtectedRoute skipConsentCheck><Cookies /></ProtectedRoute>} />
+      <Route path="/gdpr" element={<ProtectedRoute skipConsentCheck><Gdpr /></ProtectedRoute>} />
+      <Route path="/about-legal" element={<ProtectedRoute skipConsentCheck><AboutLegal /></ProtectedRoute>} />
       <Route path="/en" element={<Index />} />
       <Route path="/en/auth" element={<Auth />} />
       <Route path="/en/auth/callback" element={<AuthCallback />} />
@@ -72,8 +82,8 @@ const AppRoutes = () => (
       <Route path="/en/self-checks" element={<Navigate to="/en/surveys" replace />} />
       <Route path="/en/surveys" element={<ProtectedRoute><Surveys /></ProtectedRoute>} />
       <Route path="/en/timeline" element={<ProtectedRoute><Timeline /></ProtectedRoute>} />
-      <Route path="/en/profile" element={<ProtectedRoute><Profile /></ProtectedRoute>} />
-      <Route path="/en/export" element={<ProtectedRoute><Export /></ProtectedRoute>} />
+      <Route path="/en/profile" element={<ProtectedRoute skipConsentCheck><Profile /></ProtectedRoute>} />
+      <Route path="/en/export" element={<ProtectedRoute skipConsentCheck><Export /></ProtectedRoute>} />
       <Route path="/en/manage-library" element={<ProtectedRoute><ManageLibrary /></ProtectedRoute>} />
       <Route path="/en/manage-users" element={<ProtectedRoute><ManageUsers /></ProtectedRoute>} />
       <Route path="/en/manage-questionnaires" element={<ProtectedRoute><SelfChecks /></ProtectedRoute>} />
@@ -83,10 +93,10 @@ const AppRoutes = () => (
       <Route path="/en/beta-gate" element={<BetaGate />} />
       <Route path="/en/library" element={<ProtectedRoute><Library /></ProtectedRoute>} />
       <Route path="/en/library/:id" element={<ProtectedRoute><Article /></ProtectedRoute>} />
-      <Route path="/en/terms" element={<Terms />} />
-      <Route path="/en/cookies" element={<Cookies />} />
-      <Route path="/en/gdpr" element={<Gdpr />} />
-      <Route path="/en/about-legal" element={<AboutLegal />} />
+      <Route path="/en/terms" element={<ProtectedRoute skipConsentCheck><Terms /></ProtectedRoute>} />
+      <Route path="/en/cookies" element={<ProtectedRoute skipConsentCheck><Cookies /></ProtectedRoute>} />
+      <Route path="/en/gdpr" element={<ProtectedRoute skipConsentCheck><Gdpr /></ProtectedRoute>} />
+      <Route path="/en/about-legal" element={<ProtectedRoute skipConsentCheck><AboutLegal /></ProtectedRoute>} />
       <Route path="*" element={<NotFound />} />
     </Routes>
   </Suspense>
@@ -101,8 +111,12 @@ const App = () => (
           <Sonner />
           <BrowserRouter>
             <LanguageProvider>
+              <ReloadPrompt />
+              <OfflineStatus />
               <StanceProvider>
-                <AppRoutes />
+                <ErrorBoundary name="GlobalApp">
+                  <AppRoutes />
+                </ErrorBoundary>
               </StanceProvider>
             </LanguageProvider>
           </BrowserRouter>

@@ -25,6 +25,8 @@ import MoodTrendChart from '@/components/timeline/MoodTrendChart';
 import PatternChart from '@/components/timeline/PatternChart';
 import HorizontalTimeline from '@/components/timeline/HorizontalTimeline';
 import { cn } from '@/lib/utils';
+import { safeFormat } from '@/lib/date-safe';
+import ErrorBoundary from '@/components/ErrorBoundary';
 
 interface SubjectWorkspaceSectionProps {
   subject: {
@@ -53,10 +55,10 @@ const SubjectWorkspaceSection = ({
   const feedRef = useRef<HTMLDivElement>(null);
   const [refreshKey, setRefreshKey] = useState(0);
   const [entryModalOpen, setEntryModalOpen] = useState(false);
-  const [entryModalDate, setEntryModalDate] = useState(format(new Date(), 'yyyy-MM-dd'));
+  const [entryModalDate, setEntryModalDate] = useState(safeFormat(new Date(), 'yyyy-MM-dd', lang));
   const [entryModalPrefill, setEntryModalPrefill] = useState<EntryModalPrefill | null>(null);
   const [observationModalOpen, setObservationModalOpen] = useState(false);
-  const [observationModalDate, setObservationModalDate] = useState(format(new Date(), 'yyyy-MM-dd'));
+  const [observationModalDate, setObservationModalDate] = useState(safeFormat(new Date(), 'yyyy-MM-dd', lang));
   const [observationOpen, setObservationOpen] = useState(true);
   const [calendarMonth, setCalendarMonth] = useState(new Date());
   const [calendarSelectedDate, setCalendarSelectedDate] = useState<Date | null>(null);
@@ -112,7 +114,7 @@ const SubjectWorkspaceSection = ({
     const targetDate = date ?? new Date();
     if (isFuture(startOfDay(targetDate))) return;
 
-    setEntryModalDate(format(targetDate, 'yyyy-MM-dd'));
+    setEntryModalDate(safeFormat(targetDate, 'yyyy-MM-dd', lang));
     setEntryModalPrefill(prefill ?? null);
     setEntryModalOpen(true);
   };
@@ -121,7 +123,7 @@ const SubjectWorkspaceSection = ({
     const targetDate = date ?? new Date();
     if (isFuture(startOfDay(targetDate))) return;
 
-    setObservationModalDate(format(targetDate, 'yyyy-MM-dd'));
+    setObservationModalDate(safeFormat(targetDate, 'yyyy-MM-dd', lang));
     setObservationModalOpen(true);
   };
   
@@ -209,24 +211,26 @@ const SubjectWorkspaceSection = ({
 
                 {/* 2. Mood Trend Chart (The Result / 'Quick Pulse Chart') */}
                 <ConsentGate consentKey="mood_tracking">
-                  <div className="animate-fade-in">
-                    {moodLoading ? (
-                      <div className="surface-card p-5 space-y-3">
-                        <Skeleton className="h-5 w-32 rounded-full" />
-                        <Skeleton className="h-4 w-52 rounded-full" />
-                        <Skeleton className="h-56 w-full rounded-3xl" />
-                      </div>
-                    ) : (
-                      <MoodTrendChart
-                        data={moodData}
-                        lang={lang}
-                        isPremium={isPremium}
-                        onPremiumClick={onPremiumClick}
-                        t={t}
-                        compact={isParallel}
-                      />
-                    )}
-                  </div>
+                  <ErrorBoundary name="MoodTrendChart">
+                    <div className="animate-fade-in">
+                      {moodLoading ? (
+                        <div className="surface-card p-5 space-y-3">
+                          <Skeleton className="h-5 w-32 rounded-full" />
+                          <Skeleton className="h-4 w-52 rounded-full" />
+                          <Skeleton className="h-56 w-full rounded-3xl" />
+                        </div>
+                      ) : (
+                        <MoodTrendChart
+                          data={moodData}
+                          lang={lang}
+                          isPremium={isPremium}
+                          onPremiumClick={onPremiumClick}
+                          t={t}
+                          compact={isParallel}
+                        />
+                      )}
+                    </div>
+                  </ErrorBoundary>
                 </ConsentGate>
 
                 {/* 3. Detailed Actions & Patterns */}
@@ -257,21 +261,23 @@ const SubjectWorkspaceSection = ({
                     </Collapsible>
 
                     {!isParallel && (
-                      <div className="surface-card p-4 sm:p-5 animate-fade-in min-w-0">
-                        <h2 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-4">
-                          {t.timeline.allActivity}
-                        </h2>
-                        {calendarLoading ? (
-                          <div className="space-y-3">
-                            <Skeleton className="h-4 w-36 rounded-full" />
-                            <Skeleton className="h-24 w-full rounded-3xl" />
-                          </div>
-                        ) : timelineItems.length === 0 ? (
-                          <p className="text-sm text-muted-foreground">{t.timeline.noActivity}</p>
-                        ) : (
-                          <HorizontalTimeline items={timelineItems} lang={lang} t={t} />
-                        )}
-                      </div>
+                      <ErrorBoundary name="HorizontalTimeline">
+                        <div className="surface-card p-4 sm:p-5 animate-fade-in min-w-0">
+                          <h2 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-4">
+                            {t.timeline.allActivity}
+                          </h2>
+                          {calendarLoading ? (
+                            <div className="space-y-3">
+                              <Skeleton className="h-4 w-36 rounded-full" />
+                              <Skeleton className="h-24 w-full rounded-3xl" />
+                            </div>
+                          ) : timelineItems.length === 0 ? (
+                            <p className="text-sm text-muted-foreground">{t.timeline.noActivity}</p>
+                          ) : (
+                            <HorizontalTimeline items={timelineItems} lang={lang} t={t} />
+                          )}
+                        </div>
+                      </ErrorBoundary>
                     )}
                   </div>
 
@@ -305,34 +311,38 @@ const SubjectWorkspaceSection = ({
                     )}
 
                     <ConsentGate consentKey="pattern_detection">
-                      <div className="animate-fade-in">
-                        <PatternChart logs={obsLogs} conceptMap={conceptMap} compact={isParallel} />
-                      </div>
+                      <ErrorBoundary name="PatternChart">
+                        <div className="animate-fade-in">
+                          <PatternChart logs={obsLogs} conceptMap={conceptMap} compact={isParallel} />
+                        </div>
+                      </ErrorBoundary>
                     </ConsentGate>
 
                     {!isParallel && (
-                      <div className="surface-card p-4 sm:p-6 animate-fade-in min-w-0">
-                        {calendarLoading ? (
-                          <div className="space-y-4">
-                            <div className="flex items-center justify-between">
-                              <Skeleton className="h-9 w-9 rounded-full" />
-                              <Skeleton className="h-4 w-28 rounded-full" />
-                              <Skeleton className="h-9 w-9 rounded-full" />
+                      <ErrorBoundary name="FeedCalendar">
+                        <div className="surface-card p-4 sm:p-6 animate-fade-in min-w-0">
+                          {calendarLoading ? (
+                            <div className="space-y-4">
+                              <div className="items-center justify-between flex">
+                                <Skeleton className="h-9 w-9 rounded-full" />
+                                <Skeleton className="h-4 w-28 rounded-full" />
+                                <Skeleton className="h-9 w-9 rounded-full" />
+                              </div>
+                              <Skeleton className="h-52 w-full rounded-3xl" />
                             </div>
-                            <Skeleton className="h-52 w-full rounded-3xl" />
-                          </div>
-                        ) : (
-                          <FeedCalendar
-                            items={calendarItems}
-                            currentMonth={calendarMonth}
-                            onMonthChange={setCalendarMonth}
-                            selectedDate={calendarSelectedDate}
-                            onSelectDate={setCalendarSelectedDate}
-                            onEntryClick={handleEntryClick}
-                            onCreateEntry={(date) => isSelfContext ? openEntryModal(date) : openObservationModal(date)}
-                          />
-                        )}
-                      </div>
+                          ) : (
+                            <FeedCalendar
+                              items={calendarItems}
+                              currentMonth={calendarMonth}
+                              onMonthChange={setCalendarMonth}
+                              selectedDate={calendarSelectedDate}
+                              onSelectDate={setCalendarSelectedDate}
+                              onEntryClick={handleEntryClick}
+                              onCreateEntry={(date) => isSelfContext ? openEntryModal(date) : openObservationModal(date)}
+                            />
+                          )}
+                        </div>
+                      </ErrorBoundary>
                     )}
                   </div>
                 </div>

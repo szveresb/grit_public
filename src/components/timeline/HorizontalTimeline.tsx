@@ -1,9 +1,9 @@
-import { useMemo, useState, useRef, useCallback } from 'react';
-import { format, parseISO } from 'date-fns';
+import { useState, useRef, useMemo, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { FBookOpen, FClipboardCheck, FEye, FChevronRight } from '@/components/icons/FreudIcons';
+import { safeFormat } from '@/lib/date-safe';
 import { getDateLocale } from '@/lib/date-locale';
 import { useLanguage } from '@/hooks/useLanguage';
-import { FBookOpen, FClipboardCheck, FEye, FChevronRight } from '@/components/icons/FreudIcons';
 
 interface TimelineItem {
   id: string;
@@ -179,7 +179,7 @@ const HorizontalTimeline = ({ items, lang, t }: Props) => {
 
                   {/* Date label below */}
                   <span className="mt-2 text-[8px] text-muted-foreground whitespace-nowrap leading-none sm:text-[9px]">
-                    {format(parseISO(dateKey), 'MMM d', { locale })}
+                    {safeFormat(dateKey, 'MMM d', lang as any)}
                   </span>
                 </div>
               );
@@ -213,7 +213,7 @@ const HorizontalTimeline = ({ items, lang, t }: Props) => {
                 </span>
               </div>
               <p className="text-xs text-muted-foreground mt-0.5">
-                {format(parseISO(selectedItem.date.slice(0, 10)), 'EEEE, MMM d', { locale })}
+                {safeFormat(selectedItem.date.slice(0, 10), 'EEEE, MMM d', lang as any)}
               </p>
               {selectedItem.detail && (
                 <p className="text-xs text-muted-foreground mt-1">{selectedItem.detail}</p>

@@ -3,12 +3,14 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useLanguage } from '@/hooks/useLanguage';
 import { useStance } from '@/hooks/useStance';
-import { format } from 'date-fns';
-import { getDateLocale } from '@/lib/date-locale';
 import { LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid } from 'recharts';
-import { FClock, FChevronDown } from '@/components/icons/FreudIcons';
+import { safeFormat } from '@/lib/date-safe';
+import { getDateLocale } from '@/lib/date-locale';
+import ErrorBoundary from '@/components/ErrorBoundary';
+import { FClock, FChevronDown, FTrendingUp } from '@/components/icons/FreudIcons';
 import { Progress } from '@/components/ui/progress';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
+import { useQuestionnaireTrends } from '@/hooks/useQuestionnaireTrends';
 
 interface ScoreEntry {
   id: string;
@@ -255,13 +257,20 @@ const ScoreHistory = ({
     <div className={compact ? 'space-y-4' : 'space-y-6'}>
       {groups.map((group) => {
         const chartData = group.entries.map((entry) => ({
-          date: format(new Date(entry.completed_at), 'MM/dd', { locale: dateLocale }),
+          date: safeFormat(entry.completed_at, 'MM/dd', lang),
           score: entry.total_score,
         }));
 
+        const { trends } = useQuestionnaireTrends({
+          userId: user?.id,
+          subjectType: effectiveSubjectType,
+          subjectId: effectiveSubjectId,
+          questionnaireId: group.questionnaire_id,
+        });
+
+        const latestTrend = trends[0];
         const latest = group.entries[group.entries.length - 1];
-        const previous = group.entries.length >= 2 ? group.entries[group.entries.length - 2] : null;
-        const trend = previous ? latest.total_score - previous.total_score : 0;
+        const trend = latestTrend ? latestTrend.trend_delta : 0;
         const latestRange = getMatchedRange(latest.total_score, group.scoreRanges);
         const percentage =
           group.scoringEnabled && group.maxPossibleScore > 0
@@ -269,7 +278,8 @@ const ScoreHistory = ({
             : 0;
 
         return (
-          <div key={group.questionnaire_id} className={`rounded-[1.5rem] border border-border/60 ${compact ? 'p-3 space-y-3' : 'p-4 space-y-4'}`}>
+          <ErrorBoundary key={group.questionnaire_id} name={`ScoreHistory-${group.title}`}>
+            <div className={`rounded-[1.5rem] border border-border/60 ${compact ? 'p-3 space-y-3' : 'p-4 space-y-4'}`}>
             {!compact && (
               <div className="flex items-center justify-between gap-3">
                 <h4 className="text-sm font-semibold text-foreground">{group.title}</h4>
@@ -278,10 +288,11 @@ const ScoreHistory = ({
                     <span className="text-lg font-bold text-foreground">{latest.total_score}</span>
                     {trend !== 0 && (
                       <span
-                        className={`rounded-full px-1.5 py-0.5 text-xs font-medium ${
-                          trend > 0 ? 'bg-primary/10 text-primary' : 'bg-muted text-muted-foreground'
+                        className={`rounded-full px-1.5 py-0.5 text-xs font-medium flex items-center gap-1 ${
+                          trend > 0 ? 'bg-primary/10 text-primary' : trend < 0 ? 'bg-destructive/10 text-destructive' : 'bg-muted text-muted-foreground'
                         }`}
                       >
+                        {trend !== 0 && <FTrendingUp className={`h-3 w-3 ${trend < 0 ? 'rotate-180' : ''}`} />}
                         {trend > 0 ? '+' : ''}
                         {trend}
                       </span>
@@ -389,7 +400,7 @@ const ScoreHistory = ({
                       <CollapsibleTrigger className="flex w-full items-center justify-between rounded-xl px-2 py-2 text-xs transition-colors hover:bg-accent/30">
                         <div className="flex items-center gap-1.5 text-muted-foreground">
                           <FClock className="h-3 w-3" />
-                          <span>{format(new Date(entry.completed_at), 'PPp', { locale: dateLocale })}</span>
+                          <span>{safeFormat(entry.completed_at, 'PPp', lang)}</span>
                           {entryRange && (
                             <span className="rounded-full border border-border px-1.5 py-0.5 text-[10px]">
                               {entryRange.label}
@@ -400,7 +411,7 @@ const ScoreHistory = ({
                           <span className="font-semibold text-foreground">
                             {group.scoringEnabled
                               ? `${entry.total_score} ${t.questionnaires_manage.points}`
-                              : format(new Date(entry.completed_at), 'PP', { locale: dateLocale })}
+                              : safeFormat(entry.completed_at, 'PP', lang)}
                           </span>
                           <FChevronDown
                             className={`h-3 w-3 text-muted-foreground transition-transform ${
@@ -436,7 +447,8 @@ const ScoreHistory = ({
                   );
                 })}
             </div>
-          </div>
+            </div>
+          </ErrorBoundary>
         );
       })}
     </div>

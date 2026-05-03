@@ -87,8 +87,22 @@ define(['./workbox-b6866b34'], (function (workbox) { 'use strict';
   workbox.cleanupOutdatedCaches();
   workbox.registerRoute(new workbox.NavigationRoute(workbox.createHandlerBoundToURL("index.html"), {
     allowlist: [/^\/$/],
-    denylist: [/\/emergency-exit/, /^\/~oauth/]
+    denylist: [/\/emergency-exit/, /^\/~oauth/, /\/supabase\//]
   }));
+  workbox.registerRoute(/^https:\/\/fonts\.googleapis\.com\/.*/i, new workbox.CacheFirst({
+    "cacheName": "google-fonts-stylesheets",
+    plugins: [new workbox.ExpirationPlugin({
+      maxEntries: 10,
+      maxAgeSeconds: 31536000
+    })]
+  }), 'GET');
+  workbox.registerRoute(/^https:\/\/fonts\.gstatic\.com\/.*/i, new workbox.CacheFirst({
+    "cacheName": "google-fonts-webfonts",
+    plugins: [new workbox.ExpirationPlugin({
+      maxEntries: 20,
+      maxAgeSeconds: 31536000
+    })]
+  }), 'GET');
   workbox.registerRoute(({
     request
   }) => request.destination === "script" || request.destination === "style" || request.destination === "image", new workbox.CacheFirst({

@@ -5,6 +5,7 @@ import { useLanguage } from '@/hooks/useLanguage';
 import { useStance } from '@/hooks/useStance';
 import { useAuth } from '@/hooks/useAuth';
 import { cn } from '@/lib/utils';
+import SubjectTrendBadge from './SubjectTrendBadge';
 import {
   Popover,
   PopoverContent,
@@ -154,9 +155,12 @@ const SubjectHubGrid = ({ onSelect, onToggleCompare, onStartParallel, selectedKe
               <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-muted-foreground/80">
                 {card.type === 'self' ? t.subjects.selfWorkspaceLabel : t.subjects.supportedWorkspaceLabel}
               </p>
-              <h2 className="text-lg font-bold tracking-tight text-foreground leading-tight px-4">
-                {card.name}
-              </h2>
+              <div className="flex items-center justify-center gap-2">
+                <h2 className="text-lg font-bold tracking-tight text-foreground leading-tight px-1">
+                  {card.name}
+                </h2>
+                <SubjectTrendBadge subjectType={card.type} subjectId={card.id} />
+              </div>
               <p className="mt-1 text-xs leading-relaxed text-muted-foreground/90 line-clamp-2 px-2">
                 {card.subtitle}
               </p>

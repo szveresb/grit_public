@@ -35,30 +35,58 @@ Deno.serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  const K_ANONYMITY_THRESHOLD = 20;
+  const CONSENT_KEY = "anonymized_analytics";
+  const requestIp = req.headers.get("x-forwarded-for") ?? req.headers.get("cf-connecting-ip") ?? null;
+  const userAgent = req.headers.get("user-agent") ?? null;
+
+  const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
+  const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
+  const admin = createClient(supabaseUrl, serviceRoleKey);
+
+  const writeAudit = async (row: Record<string, unknown>) => {
+    try {
+      await admin.from("analyst_export_audit").insert({
+        consent_key_applied: CONSENT_KEY,
+        k_anonymity_threshold: K_ANONYMITY_THRESHOLD,
+        request_ip: requestIp,
+        user_agent: userAgent,
+        ...row,
+      });
+    } catch (e) {
+      console.error("audit insert failed:", e);
+    }
+  };
+
   try {
     const authHeader = req.headers.get("Authorization");
     if (!authHeader) {
+      await writeAudit({
+        analyst_user_id: "00000000-0000-0000-0000-000000000000",
+        outcome: "denied_unauthorized",
+        threshold_met: false,
+      });
       return new Response(JSON.stringify({ error: "Unauthorized" }), {
         status: 401,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
-
-    const supabaseUrl = Deno.env.get("SUPABASE_URL")!;
-    const serviceRoleKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY")!;
 
     const userClient = createClient(supabaseUrl, Deno.env.get("SUPABASE_PUBLISHABLE_KEY")!, {
       global: { headers: { Authorization: authHeader } },
     });
     const { data: { user }, error: userError } = await userClient.auth.getUser();
     if (userError || !user) {
+      await writeAudit({
+        analyst_user_id: "00000000-0000-0000-0000-000000000000",
+        outcome: "denied_invalid_token",
+        threshold_met: false,
+      });
       return new Response(JSON.stringify({ error: "Unauthorized" }), {
         status: 401,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
-
-    const admin = createClient(supabaseUrl, serviceRoleKey);
 
     const { data: roleData } = await admin
       .from("user_roles")
@@ -67,6 +95,12 @@ Deno.serve(async (req) => {
       .in("role", ["analyst", "admin"]);
 
     if (!roleData || roleData.length === 0) {
+      await writeAudit({
+        analyst_user_id: user.id,
+        analyst_email: user.email ?? null,
+        outcome: "denied_forbidden_role",
+        threshold_met: false,
+      });
       return new Response(JSON.stringify({ error: "Forbidden: analyst or admin role required" }), {
         status: 403,
         headers: { ...corsHeaders, "Content-Type": "application/json" },
@@ -77,7 +111,18 @@ Deno.serve(async (req) => {
       .from("profiles")
       .select("id", { count: "exact", head: true });
 
-    if ((activeUserCount ?? 0) < 20) {
+    const url = new URL(req.url);
+    const format = url.searchParams.get("format") === "fhir" ? "fhir" : "json";
+
+    if ((activeUserCount ?? 0) < K_ANONYMITY_THRESHOLD) {
+      await writeAudit({
+        analyst_user_id: user.id,
+        analyst_email: user.email ?? null,
+        export_format: format,
+        active_user_count: activeUserCount ?? 0,
+        threshold_met: false,
+        outcome: "denied_threshold_not_met",
+      });
       return new Response(
         JSON.stringify({
           error: "Threshold not met",
@@ -91,7 +136,7 @@ Deno.serve(async (req) => {
     const { data: consentedUsers } = await admin
       .from("user_consents")
       .select("user_id")
-      .eq("consent_key", "anonymized_analytics")
+      .eq("consent_key", CONSENT_KEY)
       .eq("granted", true);
 
     const consentedUserIds = (consentedUsers ?? []).map((c: any) => c.user_id);
@@ -99,6 +144,15 @@ Deno.serve(async (req) => {
     // If no users consented, return empty data
     if (consentedUserIds.length === 0) {
       const now = new Date().toISOString();
+      await writeAudit({
+        analyst_user_id: user.id,
+        analyst_email: user.email ?? null,
+        export_format: format,
+        active_user_count: activeUserCount ?? 0,
+        consented_user_count: 0,
+        threshold_met: true,
+        outcome: "success_empty_no_consent",
+      });
       return new Response(JSON.stringify({
         disclaimer: {
           en: "Non-Diagnostic Data: This report contains raw user observations mapped to standard medical terminology. It does not constitute a clinical assessment.",
@@ -116,19 +170,52 @@ Deno.serve(async (req) => {
       });
     }
 
-    // Fetch aggregates filtered by consented users only
-    // We use the existing RPC functions but note they aggregate ALL data.
-    // For proper consent filtering, we query raw tables filtered by consented user IDs.
-    const [journalAgg, questionnaireAgg, roleDist, observationAgg] = await Promise.all([
+    // Fetch aggregates filtered by consented users only.
+    // All four sources are filtered by consentedUserIds for compliance with anonymized_analytics consent.
+    const [journalAgg, questionnaireAnswersRaw, roleRowsRaw, observationAgg] = await Promise.all([
       admin.from("journal_entries")
         .select("entry_date, impact_level, emotional_state")
         .in("user_id", consentedUserIds),
-      admin.rpc("analyst_questionnaire_aggregates").select("*"),
-      admin.rpc("analyst_role_distribution").select("*"),
+      admin.from("questionnaire_responses")
+        .select("id, questionnaire_id, questionnaires(title), questionnaire_answers(question_id, answer, questionnaire_questions(question_text))")
+        .in("user_id", consentedUserIds),
+      admin.from("user_roles")
+        .select("role")
+        .in("user_id", consentedUserIds),
       admin.from("observation_logs")
         .select("concept_id, intensity, observation_concepts(concept_code, name_en)")
         .in("user_id", consentedUserIds),
     ]);
+
+    // Aggregate questionnaire answers by (questionnaire_title, question_text) - consented users only
+    const qMap: Record<string, { questionnaire_title: string; question_text: string; response_ids: Set<string>; answers: any[] }> = {};
+    for (const resp of questionnaireAnswersRaw.data ?? []) {
+      const qTitle = (resp as any).questionnaires?.title ?? '';
+      const answers = (resp as any).questionnaire_answers ?? [];
+      for (const ans of answers) {
+        const qText = ans.questionnaire_questions?.question_text ?? '';
+        const key = `${qTitle}|||${qText}`;
+        if (!qMap[key]) qMap[key] = { questionnaire_title: qTitle, question_text: qText, response_ids: new Set(), answers: [] };
+        qMap[key].response_ids.add((resp as any).id);
+        qMap[key].answers.push(ans.answer);
+      }
+    }
+    const questionnaireAggResult = Object.values(qMap).map(v => ({
+      questionnaire_title: v.questionnaire_title,
+      question_text: v.question_text,
+      response_count: v.response_ids.size,
+      answer_distribution: v.answers,
+    }));
+
+    // Aggregate role distribution - consented users only
+    const roleCounts: Record<string, number> = {};
+    for (const r of roleRowsRaw.data ?? []) {
+      const role = (r as any).role;
+      roleCounts[role] = (roleCounts[role] ?? 0) + 1;
+    }
+    const roleDistResult = Object.entries(roleCounts)
+      .map(([role, user_count]) => ({ role, user_count }))
+      .sort((a, b) => b.user_count - a.user_count);
 
     // Aggregate journal entries by date (only consented users)
     const journalByDate: Record<string, { count: number; impacts: number[]; emotions: string[] }> = {};
@@ -167,14 +254,26 @@ Deno.serve(async (req) => {
       }))
       .sort((a, b) => b.log_count - a.log_count);
 
-    const url = new URL(req.url);
-    const format = url.searchParams.get("format");
     const now = new Date().toISOString();
 
     const disclaimer = {
       en: "Non-Diagnostic Data: This report contains raw user observations mapped to standard medical terminology. It does not constitute a clinical assessment.",
       hu: "Nem diagnosztikai adat: A jelentés felhasználó által rögzített megfigyeléseket tartalmaz, szabványos orvosi terminológiára leképezve. Nem minősül klinikai értékelésnek.",
     };
+
+    await writeAudit({
+      analyst_user_id: user.id,
+      analyst_email: user.email ?? null,
+      export_format: format,
+      active_user_count: activeUserCount ?? 0,
+      consented_user_count: consentedUserIds.length,
+      threshold_met: true,
+      outcome: format === "fhir" ? "success_fhir" : "success_json",
+      journal_aggregate_count: journalAggResult.length,
+      questionnaire_aggregate_count: questionnaireAggResult.length,
+      observation_aggregate_count: obsAggResult.length,
+      role_distribution_count: roleDistResult.length,
+    });
 
     if (format === "fhir") {
       const bundle = buildFhirBundle(obsAggResult, now);
@@ -190,8 +289,8 @@ Deno.serve(async (req) => {
       active_user_count: Math.floor((activeUserCount ?? 0) / 10) * 10,
       consented_user_count: consentedUserIds.length,
       journal_aggregates: journalAggResult,
-      questionnaire_aggregates: questionnaireAgg.data ?? [],
-      role_distribution: roleDist.data ?? [],
+      questionnaire_aggregates: questionnaireAggResult,
+      role_distribution: roleDistResult,
       observation_aggregates: obsAggResult,
     };
 
@@ -200,6 +299,12 @@ Deno.serve(async (req) => {
     });
   } catch (err) {
     console.error("analyst-export error:", err);
+    await writeAudit({
+      analyst_user_id: "00000000-0000-0000-0000-000000000000",
+      outcome: "error_internal",
+      threshold_met: false,
+      notes: String((err as Error)?.message ?? err).slice(0, 500),
+    });
     return new Response(JSON.stringify({ error: "Internal server error" }), {
       status: 500,
       headers: { ...corsHeaders, "Content-Type": "application/json" },
