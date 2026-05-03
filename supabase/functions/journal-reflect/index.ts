@@ -49,6 +49,26 @@ serve(async (req) => {
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
 
+    // Body size guard (64KB)
+    const contentLength = parseInt(req.headers.get("content-length") ?? "0", 10);
+    if (contentLength > 64 * 1024) {
+      return new Response(JSON.stringify({ error: "Request too large." }), {
+        status: 413, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+    if (!entry || typeof entry !== "object") {
+      return new Response(JSON.stringify({ error: "Invalid entry payload." }), {
+        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+    // Truncate text fields to safe lengths
+    const trunc = (s: unknown, n: number) => (typeof s === "string" ? s.slice(0, n) : s);
+    entry.title = trunc(entry.title, 200);
+    entry.event_description = trunc(entry.event_description, 2000);
+    entry.emotional_state = trunc(entry.emotional_state, 200);
+    entry.self_anchor = trunc(entry.self_anchor, 500);
+    entry.free_text = trunc(entry.free_text, 2000);
+
     // Build a user message from the journal entry fields
     const parts: string[] = [];
     if (entry.title) parts.push(`Title: ${entry.title}`);

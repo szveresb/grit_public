@@ -49,7 +49,14 @@ serve(async (req) => {
       });
     }
 
-    const { entries, observations } = await req.json();
+    // Body size guard (128KB for batch)
+    const contentLength = parseInt(req.headers.get("content-length") ?? "0", 10);
+    if (contentLength > 128 * 1024) {
+      return new Response(JSON.stringify({ error: "Request too large." }), {
+        status: 413, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+    let { entries, observations } = await req.json();
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
 
@@ -57,6 +64,28 @@ serve(async (req) => {
       return new Response(JSON.stringify({ error: "At least 2 journal entries or some observations are needed for pattern analysis." }), {
         status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
+    }
+
+    // Cap entry & observation counts and truncate text fields
+    const trunc = (s: unknown, n: number) => (typeof s === "string" ? s.slice(0, n) : s);
+    if (Array.isArray(entries)) {
+      entries = entries.slice(0, 50).map((e: any) => ({
+        ...e,
+        title: trunc(e?.title, 200),
+        event_description: trunc(e?.event_description, 1000),
+        emotional_state: trunc(e?.emotional_state, 200),
+        self_anchor: trunc(e?.self_anchor, 500),
+        free_text: trunc(e?.free_text, 1000),
+      }));
+    }
+    if (Array.isArray(observations)) {
+      observations = observations.slice(0, 100).map((o: any) => ({
+        ...o,
+        subject_name: trunc(o?.subject_name, 100),
+        concept_name: trunc(o?.concept_name, 200),
+        context_modifier: trunc(o?.context_modifier, 200),
+        user_narrative: trunc(o?.user_narrative, 1000),
+      }));
     }
 
     // Build a structured summary of all entries
