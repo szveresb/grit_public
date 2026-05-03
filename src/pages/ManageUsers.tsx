@@ -61,6 +61,13 @@ const ManageUsers = () => {
   };
 
   useEffect(() => { if (user && isAdmin) fetchUsers(); }, [user, isAdmin]);
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+    const hash = window.location.hash.replace('#', '');
+    if (!hash || loading) return;
+    const el = document.getElementById(hash);
+    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  }, [loading]);
 
   if (roleLoading) return <DashboardLayout><p className="text-sm text-muted-foreground">{t.loading}</p></DashboardLayout>;
   if (!isAdmin) return <Navigate to="/journal" replace />;
