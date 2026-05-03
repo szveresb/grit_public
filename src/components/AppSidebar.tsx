@@ -162,25 +162,33 @@ const AppSidebar = ({ onOpenFeedback }: AppSidebarProps) => {
             </SidebarGroupLabel>
             <SidebarGroupContent>
               <SidebarMenu>
-                {editorItems.map((item) => (
-                  <SidebarMenuItem key={item.url}>
-                    <SidebarMenuButton
-                      asChild
-                      isActive={currentPath === item.url}
-                      tooltip={item.title}
-                    >
-                      <NavLink
-                        to={localePath(item.url)}
-                        end
-                        className="hover:bg-accent rounded-xl"
-                        activeClassName="bg-accent text-foreground font-semibold rounded-xl"
+                {editorItems.map((item) => {
+                  const [pathOnly] = item.url.split('#');
+                  return (
+                    <SidebarMenuItem key={item.url}>
+                      <SidebarMenuButton
+                        asChild
+                        isActive={currentPath === pathOnly}
+                        tooltip={item.title}
                       >
-                        <item.icon className="h-4 w-4" />
-                        <span>{item.title}</span>
-                      </NavLink>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                ))}
+                        <NavLink
+                          to={localePath(item.url)}
+                          end
+                          className="hover:bg-accent rounded-xl"
+                          activeClassName="bg-accent text-foreground font-semibold rounded-xl"
+                        >
+                          <item.icon className="h-4 w-4" />
+                          <span className="flex-1">{item.title}</span>
+                          {item.badge && item.badge > 0 ? (
+                            <span className="ml-auto inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1.5 text-[10px] font-bold text-primary-foreground">
+                              {item.badge}
+                            </span>
+                          ) : null}
+                        </NavLink>
+                      </SidebarMenuButton>
+                    </SidebarMenuItem>
+                  );
+                })}
               </SidebarMenu>
             </SidebarGroupContent>
           </SidebarGroup>
