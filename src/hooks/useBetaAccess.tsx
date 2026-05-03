@@ -14,16 +14,37 @@ export const useBetaAccess = () => {
       return;
     }
 
-    const { data, error } = await supabase
-      .from('profiles')
-      .select('beta_access')
-      .eq('user_id', user.id)
-      .maybeSingle();
+    try {
+      // 1. Check profile for explicit beta access flag or legacy status
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('beta_access, created_at')
+        .eq('user_id', user.id)
+        .maybeSingle();
 
-    if (error || !data) {
+      // Legacy bypass: Anyone who signed up before the beta merge (May 3, 2026) is grandfathered in.
+      const isLegacyUser = profile?.created_at && new Date(profile.created_at) < new Date('2026-05-03T00:00:00Z');
+
+      if (profile?.beta_access || isLegacyUser) {
+        setHasAccess(true);
+        setLoading(false);
+        return;
+      }
+
+      // 2. Check for privileged roles that should bypass the gate
+      // This ensures new admins and staff aren't locked out even if created today.
+      const { data: roles } = await supabase
+        .from('user_roles')
+        .select('role')
+        .eq('user_id', user.id);
+
+      const privilegedRoles = ['admin', 'editor', 'analyst', 'observer', 'guest_editor'];
+      const hasPrivilegedRole = roles?.some(r => privilegedRoles.includes(r.role));
+
+      setHasAccess(hasPrivilegedRole || false);
+    } catch (error) {
+      console.error('Beta access check error:', error);
       setHasAccess(false);
-    } else {
-      setHasAccess(!!data.beta_access);
     }
     setLoading(false);
   };
