@@ -38,6 +38,7 @@ export interface Dictionary {
     management: string;
     manageLibrary: string;
     manageUsers: string;
+    betaSignups: string;
     manageQuestionnaires: string;
     analystExport: string;
     checkIn: string;
