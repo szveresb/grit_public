@@ -21,8 +21,25 @@ jobs:
           TARGET_REPO: "szveresb/grit.hu"
         run: |
           set -euo pipefail
+          
+          # Setup Git Identity
+          git config --global user.email "deploy@grit.hu"
+          git config --global user.name "Grit Deploy Bot"
+
+          # 1. Apply Production Supabase Overlay
+          if [ -f "supabase/config.prod.toml" ]; then
+            echo "Applying Production Supabase configuration..."
+            cp supabase/config.prod.toml supabase/config.toml
+          fi
+          
+          # 2. Commit the production-ready state
+          # This ensures the remote main branch has the correct config
+          git add supabase/config.toml vite.config.ts
+          git commit -m "chore: prepare production deployment [skip ci]" || echo "No changes to commit"
+
+          # 3. Force Push to Production
           git push --force \
             "https://x-access-token:${PROD_TOKEN}@github.com/${TARGET_REPO}.git" \
             "HEAD:refs/heads/main"
           
-          echo "Successfully promoted Beta to Production."
+          echo "Successfully promoted Beta to Production with protected configs."
