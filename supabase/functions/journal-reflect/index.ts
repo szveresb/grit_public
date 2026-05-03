@@ -45,17 +45,18 @@ serve(async (req) => {
       });
     }
 
-    const { entry } = await req.json();
-    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
-    if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
-
-    // Body size guard (64KB)
+    // Body size guard (64KB) — must run BEFORE parsing the body
     const contentLength = parseInt(req.headers.get("content-length") ?? "0", 10);
     if (contentLength > 64 * 1024) {
       return new Response(JSON.stringify({ error: "Request too large." }), {
         status: 413, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
+
+    const { entry } = await req.json();
+    const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
+    if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
+
     if (!entry || typeof entry !== "object") {
       return new Response(JSON.stringify({ error: "Invalid entry payload." }), {
         status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
