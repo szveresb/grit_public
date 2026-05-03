@@ -19,6 +19,7 @@ interface UserWithRoles { user_id: string; display_name: string | null; roles: A
 const ALL_ROLES: AppRole[] = [...ADMIN_ONLY_ROLES, ...SELF_SELECT_ROLES];
 
 export interface InviteCode { id: string; code: string; is_active: boolean; created_at: string; used_by: string | null }
+interface WaitlistRow { id: string; email: string; name: string | null; locale: string; status: string; created_at: string; invited_at: string | null; invite_code_id: string | null }
 
 const ManageUsers = () => {
   const { user } = useAuth();
@@ -26,6 +27,8 @@ const ManageUsers = () => {
   const { hasRole, loading: roleLoading } = useUserRole();
   const [users, setUsers] = useState<UserWithRoles[]>([]);
   const [codes, setCodes] = useState<InviteCode[]>([]);
+  const [waitlist, setWaitlist] = useState<WaitlistRow[]>([]);
+  const [sendingId, setSendingId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const isAdmin = hasRole('admin');
 
@@ -39,7 +42,22 @@ const ManageUsers = () => {
     const { data: codesData } = await supabase.from('invite_codes' as any).select('*').order('created_at', { ascending: false });
     setCodes((codesData as unknown as InviteCode[] | null) ?? []);
 
+    const { data: waitlistData } = await supabase.from('waitlist_emails' as any).select('*').order('created_at', { ascending: false });
+    setWaitlist((waitlistData as unknown as WaitlistRow[] | null) ?? []);
+
     setLoading(false);
+  };
+
+  const sendInvite = async (waitlistId: string) => {
+    setSendingId(waitlistId);
+    const { data, error } = await supabase.functions.invoke('send-beta-invite', { body: { waitlistId } });
+    if (error || (data as any)?.error) {
+      toast.error('Failed to send invite. ' + (((data as any)?.error) ?? error?.message ?? ''));
+    } else {
+      toast.success(`Invite sent (${(data as any)?.code ?? 'code generated'})`);
+      fetchUsers();
+    }
+    setSendingId(null);
   };
 
   useEffect(() => { if (user && isAdmin) fetchUsers(); }, [user, isAdmin]);
