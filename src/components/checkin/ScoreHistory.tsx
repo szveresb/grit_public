@@ -280,7 +280,7 @@ const ScoreHistory = ({
 interface ScoreHistoryGroupProps {
   group: GroupedScores;
   compact: boolean;
-  lang: string;
+  lang: 'en' | 'hu';
   t: any;
   dateLocale: ReturnType<typeof getDateLocale>;
   userId: string | undefined;
