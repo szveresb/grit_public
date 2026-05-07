@@ -255,31 +255,79 @@ const ScoreHistory = ({
 
   return (
     <div className={compact ? 'space-y-4' : 'space-y-6'}>
-      {groups.map((group) => {
-        const chartData = group.entries.map((entry) => ({
-          date: safeFormat(entry.completed_at, 'MM/dd', lang),
-          score: entry.total_score,
-        }));
+      {groups.map((group) => (
+        <ErrorBoundary key={group.questionnaire_id} name={`ScoreHistory-${group.title}`}>
+          <ScoreHistoryGroup
+            group={group}
+            compact={compact}
+            lang={lang}
+            t={t}
+            dateLocale={dateLocale}
+            userId={user?.id}
+            effectiveSubjectType={effectiveSubjectType}
+            effectiveSubjectId={effectiveSubjectId}
+            expandedEntries={expandedEntries}
+            answerCache={answerCache}
+            toggleEntry={toggleEntry}
+            getMatchedRange={getMatchedRange}
+          />
+        </ErrorBoundary>
+      ))}
+    </div>
+  );
+};
 
-        const { trends } = useQuestionnaireTrends({
-          userId: user?.id,
-          subjectType: effectiveSubjectType,
-          subjectId: effectiveSubjectId,
-          questionnaireId: group.questionnaire_id,
-        });
+interface ScoreHistoryGroupProps {
+  group: GroupedScores;
+  compact: boolean;
+  lang: 'en' | 'hu';
+  t: any;
+  dateLocale: ReturnType<typeof getDateLocale>;
+  userId: string | undefined;
+  effectiveSubjectType: 'self' | 'relative';
+  effectiveSubjectId: string | null;
+  expandedEntries: Set<string>;
+  answerCache: Record<string, AnswerDetail[]>;
+  toggleEntry: (id: string) => void;
+  getMatchedRange: (score: number, ranges: ScoreRange[]) => ScoreRange | undefined;
+}
 
-        const latestTrend = trends[0];
-        const latest = group.entries[group.entries.length - 1];
-        const trend = latestTrend ? latestTrend.trend_delta : 0;
-        const latestRange = getMatchedRange(latest.total_score, group.scoreRanges);
-        const percentage =
-          group.scoringEnabled && group.maxPossibleScore > 0
-            ? Math.round((latest.total_score / group.maxPossibleScore) * 100)
-            : 0;
+const ScoreHistoryGroup = ({
+  group,
+  compact,
+  lang,
+  t,
+  userId,
+  effectiveSubjectType,
+  effectiveSubjectId,
+  expandedEntries,
+  answerCache,
+  toggleEntry,
+  getMatchedRange,
+}: ScoreHistoryGroupProps) => {
+  const chartData = group.entries.map((entry) => ({
+    date: safeFormat(entry.completed_at, 'MM/dd', lang),
+    score: entry.total_score,
+  }));
 
-        return (
-          <ErrorBoundary key={group.questionnaire_id} name={`ScoreHistory-${group.title}`}>
-            <div className={`rounded-[1.5rem] border border-border/60 ${compact ? 'p-3 space-y-3' : 'p-4 space-y-4'}`}>
+  const { trends } = useQuestionnaireTrends({
+    userId,
+    subjectType: effectiveSubjectType,
+    subjectId: effectiveSubjectId,
+    questionnaireId: group.questionnaire_id,
+  });
+
+  const latestTrend = trends[0];
+  const latest = group.entries[group.entries.length - 1];
+  const trend = latestTrend ? latestTrend.trend_delta : 0;
+  const latestRange = getMatchedRange(latest.total_score, group.scoreRanges);
+  const percentage =
+    group.scoringEnabled && group.maxPossibleScore > 0
+      ? Math.round((latest.total_score / group.maxPossibleScore) * 100)
+      : 0;
+
+  return (
+    <div className={`rounded-[1.5rem] border border-border/60 ${compact ? 'p-3 space-y-3' : 'p-4 space-y-4'}`}>
             {!compact && (
               <div className="flex items-center justify-between gap-3">
                 <h4 className="text-sm font-semibold text-foreground">{group.title}</h4>
@@ -385,7 +433,7 @@ const ScoreHistory = ({
               </div>
             )}
 
-            <div className="space-y-1">
+      <div className="space-y-1">
               {group.entries
                 .slice()
                 .reverse()
@@ -446,11 +494,7 @@ const ScoreHistory = ({
                     </Collapsible>
                   );
                 })}
-            </div>
-            </div>
-          </ErrorBoundary>
-        );
-      })}
+      </div>
     </div>
   );
 };
