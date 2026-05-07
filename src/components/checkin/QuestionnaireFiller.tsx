@@ -89,6 +89,7 @@ const QuestionnaireFiller: React.FC<QuestionnaireFillerProps> = ({ onCompleted, 
   } | null>(null);
   const subjectScopeKey = `${activeSubject.type}:${activeSubject.id ?? 'self'}`;
   const previousSubjectScopeRef = useRef(subjectScopeKey);
+  const containerRef = useRef<HTMLDivElement>(null);
 
   const dateLocale = getDateLocale(lang);
   const isAdminOrEditor = hasAnyRole('admin', 'editor');
@@ -115,6 +116,17 @@ const QuestionnaireFiller: React.FC<QuestionnaireFillerProps> = ({ onCompleted, 
     setAnswers({});
     setScoreResult(null);
   }, [subjectScopeKey]);
+
+  useEffect(() => {
+    // Scroll to the container when scoreResult is set or when we return to history after completion
+    if (scoreResult || (activePanel?.mode === 'history' && !selectedQ && !loading)) {
+      // Use a small timeout to ensure the DOM has updated and rendered the new view
+      const timer = setTimeout(() => {
+        containerRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+      }, 100);
+      return () => clearTimeout(timer);
+    }
+  }, [scoreResult, activePanel?.mode, selectedQ, loading]);
 
   useEffect(() => {
     const load = async () => {
@@ -452,93 +464,153 @@ const QuestionnaireFiller: React.FC<QuestionnaireFillerProps> = ({ onCompleted, 
   if (loading) return <p className="text-sm text-muted-foreground">{t.loading}</p>;
   if (questionnaires.length === 0) return <p className="text-sm text-muted-foreground">{t.questionnaires_manage.noAvailable}</p>;
 
-  if (selectedQ && scoreResult) {
-    return (
-      <ScoreResults
-        totalScore={scoreResult.totalScore}
-        maxPossibleScore={scoreResult.maxPossibleScore}
-        questionScores={scoreResult.questionScores}
-        scoreRanges={scoreResult.scoreRanges}
-        onClose={() => {
-          const completedQuestionnaireId = selectedQ;
-          setSelectedQ(null);
-          setAnswers({});
-          setScoreResult(null);
-          if (completedQuestionnaireId) {
-            setActivePanel({ questionnaireId: completedQuestionnaireId, mode: 'history' });
+  return (
+    <div ref={containerRef} className="scroll-mt-20">
+      {selectedQ && scoreResult ? (
+        <ScoreResults
+          totalScore={scoreResult.totalScore}
+          maxPossibleScore={scoreResult.maxPossibleScore}
+          questionScores={scoreResult.questionScores}
+          scoreRanges={scoreResult.scoreRanges}
+          onClose={() => {
+            const completedQuestionnaireId = selectedQ;
+            setSelectedQ(null);
+            setAnswers({});
+            setScoreResult(null);
+            if (completedQuestionnaireId) {
+              setActivePanel({ questionnaireId: completedQuestionnaireId, mode: 'history' });
+            }
+          }}
+        />
+      ) : selectedQ ? (
+        (() => {
+          const questionnaire = questionnaires.find((candidate) => candidate.id === selectedQ);
+          const hasBranching = hasBranchingLogic(questions as unknown as QuestionWithLogic[]);
+
+          if (hasBranching) {
+            const questionsWithLogic = questions as unknown as QuestionWithLogic[];
+            const visiblePath = computeVisiblePath(questionsWithLogic, answers);
+            const currentQuestionId = visiblePath[visiblePath.length - 1];
+            const currentQuestion = questions.find((question) => question.id === currentQuestionId);
+            const answeredCount = visiblePath.filter((questionId) => answers[questionId] !== undefined).length;
+            const isLastAnswered = currentQuestion ? answers[currentQuestionId] !== undefined : false;
+            const lastResult =
+              currentQuestion && answers[currentQuestionId]
+                ? evaluateLogicRules(currentQuestion as unknown as QuestionWithLogic, answers[currentQuestionId])
+                : null;
+            const reachedEnd =
+              lastResult?.action === 'skip_to_end' ||
+              (isLastAnswered && !lastResult?.targetId && currentQuestion ? questions.indexOf(currentQuestion) === questions.length - 1 : false);
+
+            return (
+              <div className="space-y-5 animate-fade-in">
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <Button variant="outline" size="sm" className="rounded-2xl" onClick={() => setSelectedQ(null)}>
+                    <FArrowLeft className="mr-1 h-4 w-4" />
+                    {t.observations.back}
+                  </Button>
+                  <button
+                    type="button"
+                    onClick={() => {
+                      const activeQuestionnaireId = selectedQ;
+                      setSelectedQ(null);
+                      if (activeQuestionnaireId) {
+                        setActivePanel({ questionnaireId: activeQuestionnaireId, mode: 'history' });
+                      }
+                    }}
+                    className="text-xs font-medium text-primary underline underline-offset-2"
+                  >
+                    {t.questionnaires_manage.viewQuestionnaireHistory}
+                  </button>
+                </div>
+
+                <div className="space-y-1.5">
+                  <div className="flex items-center justify-between gap-2">
+                    <h3 className="text-sm font-semibold text-foreground">{qName(questionnaire)}</h3>
+                    <span className="text-[10px] text-muted-foreground">
+                      {t.questionnaires_manage.questionN.replace('{n}', String(answeredCount + (isLastAnswered ? 0 : 1)))} / ~{questions.length}
+                    </span>
+                  </div>
+                  {qDescription(questionnaire) && (
+                    <p className="text-sm italic leading-relaxed text-muted-foreground">
+                      {qDescription(questionnaire)}
+                    </p>
+                  )}
+                </div>
+
+                <div className="h-1 overflow-hidden rounded-full bg-border/50">
+                  <div
+                    className="h-full rounded-full bg-primary transition-all duration-500 ease-out"
+                    style={{ width: `${Math.min(100, (answeredCount / questions.length) * 100)}%` }}
+                  />
+                </div>
+
+                {reachedEnd ? (
+                  <div className="space-y-4">
+                    <p className="text-sm text-muted-foreground">
+                      {t.questionnaires_manage.completionSummary.replace('{count}', String(answeredCount))}
+                    </p>
+                    <div className="flex items-center gap-2">
+                      <Button size="sm" className="rounded-2xl" onClick={handleSubmit} disabled={submitting}>
+                        {submitting ? t.questionnaires_manage.submitting : t.submit}
+                      </Button>
+                      <Button size="sm" variant="outline" className="rounded-2xl" onClick={() => setSelectedQ(null)}>
+                        {t.cancel}
+                      </Button>
+                    </div>
+                  </div>
+                ) : currentQuestion ? (
+                  <div key={currentQuestion.id} className="space-y-3 animate-fade-in">
+                    <Label className="text-sm font-medium">
+                      {questions.indexOf(currentQuestion) + 1}. {currentQuestion.question_text}
+                    </Label>
+                    {renderInput(currentQuestion)}
+                  </div>
+                ) : null}
+              </div>
+            );
           }
-        }}
-      />
-    );
-  }
 
-  if (selectedQ) {
-    const questionnaire = questionnaires.find((candidate) => candidate.id === selectedQ);
-    const hasBranching = hasBranchingLogic(questions as unknown as QuestionWithLogic[]);
+          return (
+            <div className="space-y-5 animate-fade-in">
+              <div className="flex flex-wrap items-center justify-between gap-3">
+                <Button variant="outline" size="sm" className="rounded-2xl" onClick={() => setSelectedQ(null)}>
+                  <FArrowLeft className="mr-1 h-4 w-4" />
+                  {t.observations.back}
+                </Button>
+                <button
+                  type="button"
+                  onClick={() => {
+                    const activeQuestionnaireId = selectedQ;
+                    setSelectedQ(null);
+                    if (activeQuestionnaireId) {
+                      setActivePanel({ questionnaireId: activeQuestionnaireId, mode: 'history' });
+                    }
+                  }}
+                  className="text-xs font-medium text-primary underline underline-offset-2"
+                >
+                  {t.questionnaires_manage.viewQuestionnaireHistory}
+                </button>
+              </div>
 
-    if (hasBranching) {
-      const questionsWithLogic = questions as unknown as QuestionWithLogic[];
-      const visiblePath = computeVisiblePath(questionsWithLogic, answers);
-      const currentQuestionId = visiblePath[visiblePath.length - 1];
-      const currentQuestion = questions.find((question) => question.id === currentQuestionId);
-      const answeredCount = visiblePath.filter((questionId) => answers[questionId] !== undefined).length;
-      const isLastAnswered = currentQuestion ? answers[currentQuestionId] !== undefined : false;
-      const lastResult =
-        currentQuestion && answers[currentQuestionId]
-          ? evaluateLogicRules(currentQuestion as unknown as QuestionWithLogic, answers[currentQuestionId])
-          : null;
-      const reachedEnd =
-        lastResult?.action === 'skip_to_end' ||
-        (isLastAnswered && !lastResult?.targetId && currentQuestion ? questions.indexOf(currentQuestion) === questions.length - 1 : false);
+              <div className="space-y-1.5">
+                <h3 className="text-sm font-semibold text-foreground">{qName(questionnaire)}</h3>
+                {qDescription(questionnaire) && (
+                  <p className="border-l-2 border-primary/20 pl-3 text-sm italic leading-relaxed text-muted-foreground">
+                    {qDescription(questionnaire)}
+                  </p>
+                )}
+              </div>
 
-      return (
-        <div className="space-y-5 animate-fade-in">
-          <div className="flex flex-wrap items-center justify-between gap-3">
-              <Button variant="outline" size="sm" className="rounded-2xl" onClick={() => setSelectedQ(null)}>
-              <FArrowLeft className="mr-1 h-4 w-4" />
-              {t.observations.back}
-            </Button>
-            <button
-              type="button"
-              onClick={() => {
-                const activeQuestionnaireId = selectedQ;
-                setSelectedQ(null);
-                if (activeQuestionnaireId) {
-                  setActivePanel({ questionnaireId: activeQuestionnaireId, mode: 'history' });
-                }
-              }}
-              className="text-xs font-medium text-primary underline underline-offset-2"
-            >
-              {t.questionnaires_manage.viewQuestionnaireHistory}
-            </button>
-          </div>
+              {questions.map((question, index) => (
+                <div key={question.id} className="space-y-2">
+                  <Label className="text-sm font-medium">
+                    {index + 1}. {question.question_text}
+                  </Label>
+                  {renderInput(question)}
+                </div>
+              ))}
 
-          <div className="space-y-1.5">
-            <div className="flex items-center justify-between gap-2">
-              <h3 className="text-sm font-semibold text-foreground">{qName(questionnaire)}</h3>
-              <span className="text-[10px] text-muted-foreground">
-                {t.questionnaires_manage.questionN.replace('{n}', String(answeredCount + (isLastAnswered ? 0 : 1)))} / ~{questions.length}
-              </span>
-            </div>
-            {qDescription(questionnaire) && (
-              <p className="text-sm italic leading-relaxed text-muted-foreground">
-                {qDescription(questionnaire)}
-              </p>
-            )}
-          </div>
-
-          <div className="h-1 overflow-hidden rounded-full bg-border/50">
-            <div
-              className="h-full rounded-full bg-primary transition-all duration-500 ease-out"
-              style={{ width: `${Math.min(100, (answeredCount / questions.length) * 100)}%` }}
-            />
-          </div>
-
-          {reachedEnd ? (
-            <div className="space-y-4">
-              <p className="text-sm text-muted-foreground">
-                {t.questionnaires_manage.completionSummary.replace('{count}', String(answeredCount))}
-              </p>
               <div className="flex items-center gap-2">
                 <Button size="sm" className="rounded-2xl" onClick={handleSubmit} disabled={submitting}>
                   {submitting ? t.questionnaires_manage.submitting : t.submit}
@@ -548,119 +620,59 @@ const QuestionnaireFiller: React.FC<QuestionnaireFillerProps> = ({ onCompleted, 
                 </Button>
               </div>
             </div>
-          ) : currentQuestion ? (
-            <div key={currentQuestion.id} className="space-y-3 animate-fade-in">
-              <Label className="text-sm font-medium">
-                {questions.indexOf(currentQuestion) + 1}. {currentQuestion.question_text}
-              </Label>
-              {renderInput(currentQuestion)}
-            </div>
-          ) : null}
-        </div>
-      );
-    }
-
-    return (
-      <div className="space-y-5 animate-fade-in">
-        <div className="flex flex-wrap items-center justify-between gap-3">
-          <Button variant="outline" size="sm" className="rounded-2xl" onClick={() => setSelectedQ(null)}>
-            <FArrowLeft className="mr-1 h-4 w-4" />
-            {t.observations.back}
-          </Button>
-          <button
-            type="button"
-            onClick={() => {
-              const activeQuestionnaireId = selectedQ;
-              setSelectedQ(null);
-              if (activeQuestionnaireId) {
-                setActivePanel({ questionnaireId: activeQuestionnaireId, mode: 'history' });
-              }
-            }}
-            className="text-xs font-medium text-primary underline underline-offset-2"
-          >
-            {t.questionnaires_manage.viewQuestionnaireHistory}
-          </button>
-        </div>
-
-        <div className="space-y-1.5">
-          <h3 className="text-sm font-semibold text-foreground">{qName(questionnaire)}</h3>
-          {qDescription(questionnaire) && (
-            <p className="border-l-2 border-primary/20 pl-3 text-sm italic leading-relaxed text-muted-foreground">
-              {qDescription(questionnaire)}
-            </p>
-          )}
-        </div>
-
-        {questions.map((question, index) => (
-          <div key={question.id} className="space-y-2">
-            <Label className="text-sm font-medium">
-              {index + 1}. {question.question_text}
-            </Label>
-            {renderInput(question)}
-          </div>
-        ))}
-
-        <div className="flex items-center gap-2">
-          <Button size="sm" className="rounded-2xl" onClick={handleSubmit} disabled={submitting}>
-            {submitting ? t.questionnaires_manage.submitting : t.submit}
-          </Button>
-          <Button size="sm" variant="outline" className="rounded-2xl" onClick={() => setSelectedQ(null)}>
-            {t.cancel}
-          </Button>
-        </div>
-      </div>
-    );
-  }
-
-  return (
-    <div className="space-y-6">
-      <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
-        {questionnaires.map((questionnaire) => {
-          const lastCompletion = getLastCompletion(questionnaire.id);
-          const available = isAvailable(questionnaire);
-          const description = qDescription(questionnaire);
-          const cardPanelMode =
-            activePanel?.questionnaireId === questionnaire.id ? activePanel.mode : null;
-
-          return (
-            <QuestionnaireCard
-              key={questionnaire.id}
-              title={qName(questionnaire)}
-              description={description}
-              repeatLabel={getRepeatLabel(questionnaire.repeat_interval)}
-              lastCompletedLabel={
-                lastCompletion
-                  ? `${t.questionnaires_manage.lastCompleted}: ${formatDistanceToNow(new Date(lastCompletion.completed_at), {
-                      addSuffix: true,
-                      locale: dateLocale,
-                    })}`
-                  : undefined
-              }
-              available={available}
-              canReadMore={(description?.length ?? 0) > DESCRIPTION_TOGGLE_THRESHOLD}
-              onStart={() => loadQuestions(questionnaire.id)}
-              startLabel={t.questionnaires_manage.startQuestionnaire}
-              historyLabel={t.questionnaires_manage.viewQuestionnaireHistory}
-              availableNowLabel={t.questionnaires_manage.availableNow}
-              expandLabel={t.questionnaires_manage.expandDescription}
-              completedLabel={t.questionnaires_manage.alreadyCompleted}
-              closeLabel={t.ui.close}
-              detailPanelTitle={t.questionnaires_manage.detailPanelTitle}
-              activePanel={cardPanelMode}
-              onPanelChange={(mode) =>
-                setActivePanel(mode ? { questionnaireId: questionnaire.id, mode } : null)
-              }
-              historyContent={
-                <ScoreHistory
-                  questionnaireId={questionnaire.id}
-                  emptyMessage={t.questionnaires_manage.noHistoryForQuestionnaire}
-                  compact
-                />
-              }
-            />
           );
-        })}
-      </div>
+        })()
+      ) : (
+        <div className="space-y-6">
+          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
+            {questionnaires.map((questionnaire) => {
+              const lastCompletion = getLastCompletion(questionnaire.id);
+              const available = isAvailable(questionnaire);
+              const description = qDescription(questionnaire);
+              const cardPanelMode =
+                activePanel?.questionnaireId === questionnaire.id ? activePanel.mode : null;
+
+              return (
+                <QuestionnaireCard
+                  key={questionnaire.id}
+                  title={qName(questionnaire)}
+                  description={description}
+                  repeatLabel={getRepeatLabel(questionnaire.repeat_interval)}
+                  lastCompletedLabel={
+                    lastCompletion
+                      ? `${t.questionnaires_manage.lastCompleted}: ${formatDistanceToNow(new Date(lastCompletion.completed_at), {
+                          addSuffix: true,
+                          locale: dateLocale,
+                        })}`
+                      : undefined
+                  }
+                  available={available}
+                  canReadMore={(description?.length ?? 0) > DESCRIPTION_TOGGLE_THRESHOLD}
+                  onStart={() => loadQuestions(questionnaire.id)}
+                  startLabel={t.questionnaires_manage.startQuestionnaire}
+                  historyLabel={t.questionnaires_manage.viewQuestionnaireHistory}
+                  availableNowLabel={t.questionnaires_manage.availableNow}
+                  expandLabel={t.questionnaires_manage.expandDescription}
+                  completedLabel={t.questionnaires_manage.alreadyCompleted}
+                  closeLabel={t.ui.close}
+                  detailPanelTitle={t.questionnaires_manage.detailPanelTitle}
+                  activePanel={cardPanelMode}
+                  onPanelChange={(mode) =>
+                    setActivePanel(mode ? { questionnaireId: questionnaire.id, mode } : null)
+                  }
+                  historyContent={
+                    <ScoreHistory
+                      questionnaireId={questionnaire.id}
+                      emptyMessage={t.questionnaires_manage.noHistoryForQuestionnaire}
+                      compact
+                    />
+                  }
+                />
+              );
+            })}
+          </div>
+        </div>
+      )}
     </div>
   );
 };
