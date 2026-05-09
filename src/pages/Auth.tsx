@@ -181,9 +181,13 @@ const Auth = () => {
         </div>
 
         <div className="mt-6 text-center">
-          <p className="text-xs text-muted-foreground uppercase tracking-widest font-semibold pr-2">
-            CLOSED BETA ONLY
-          </p>
+          <button
+            type="button"
+            onClick={() => setIsSignUp(!isSignUp)}
+            className="text-xs text-muted-foreground hover:text-foreground transition-colors uppercase tracking-widest font-semibold"
+          >
+            {isSignUp ? t.auth.haveAccount : t.auth.noAccount}
+          </button>
         </div>
       </div>
     </div>
