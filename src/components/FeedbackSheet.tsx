@@ -339,7 +339,7 @@ const FeedbackSheet = ({ open, onOpenChange }: FeedbackSheetProps) => {
           <p className="mt-1 text-sm leading-relaxed text-muted-foreground">{t.feedback.subtitle}</p>
         </div>
       </div>
-      <div className="min-h-0 flex-1 overflow-y-auto pr-1 pb-20">{content}</div>
+      <div className="min-h-0 flex-1 overflow-y-auto pr-1 pb-32">{content}</div>
     </div>
   );
 
