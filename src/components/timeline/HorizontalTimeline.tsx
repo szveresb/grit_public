@@ -49,7 +49,7 @@ const HorizontalTimeline = ({ items, lang, t }: Props) => {
   const containerRef = useRef<HTMLDivElement>(null);
   const pinchRef = useRef<{ startDist: number; startScale: number } | null>(null);
 
-  // Group items by date
+  // Group items by date - items come sorted newest-first from the hook
   const grouped = useMemo(() => {
     const map = new Map<string, TimelineItem[]>();
     for (const item of items) {
@@ -57,23 +57,20 @@ const HorizontalTimeline = ({ items, lang, t }: Props) => {
       if (!map.has(key)) map.set(key, []);
       map.get(key)!.push(item);
     }
-    return Array.from(map.entries()); // sorted desc from items
+    return Array.from(map.entries());
   }, [items]);
-
-  // Reverse so oldest is on the left (items come sorted newest-first)
-  const groupedLTR = useMemo(() => [...grouped].reverse(), [grouped]);
 
   // Detect month boundaries for separators
   const monthBoundaries = useMemo(() => {
     const set = new Set<number>();
     let prevMonth = '';
-    groupedLTR.forEach(([dateKey], idx) => {
+    grouped.forEach(([dateKey], idx) => {
       const m = dateKey.slice(0, 7);
       if (prevMonth && m !== prevMonth) set.add(idx);
       prevMonth = m;
     });
     return set;
-  }, [groupedLTR]);
+  }, [grouped]);
 
   // Pinch-to-zoom handlers
   const onTouchStart = useCallback((e: React.TouchEvent) => {
@@ -100,7 +97,7 @@ const HorizontalTimeline = ({ items, lang, t }: Props) => {
 
   // Let short timelines fill the card on mobile, but still allow horizontal scroll
   // once the number of date groups would become too dense.
-  const trackWidthRem = Math.max(groupedLTR.length * 2.75, 18);
+  const trackWidthRem = Math.max(grouped.length * 2.75, 18);
   const trackStyle = { 
     minWidth: '100%', 
     width: `${trackWidthRem}rem`,
@@ -143,7 +140,7 @@ const HorizontalTimeline = ({ items, lang, t }: Props) => {
 
           {/* Date groups */}
           <div className="relative flex gap-x-4 gap-y-4 px-2 pb-2 sm:gap-x-6 sm:px-4 md:gap-x-8">
-            {groupedLTR.map(([dateKey, dayItems], groupIdx) => {
+            {grouped.map(([dateKey, dayItems], groupIdx) => {
               const isMonthBoundary = monthBoundaries.has(groupIdx);
               return (
                 <div key={dateKey} className="relative flex min-w-0 flex-col items-center" style={{ minWidth: 24 }}>

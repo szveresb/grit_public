@@ -45,6 +45,14 @@ serve(async (req) => {
       });
     }
 
+    // Body size guard (64KB) — must run BEFORE parsing the body
+    const contentLength = parseInt(req.headers.get("content-length") ?? "0", 10);
+    if (contentLength > 64 * 1024) {
+      return new Response(JSON.stringify({ error: "Request too large." }), {
+        status: 413, headers: { ...corsHeaders, "Content-Type": "application/json" },
+      });
+    }
+
     const { entry } = await req.json();
     const LOVABLE_API_KEY = Deno.env.get("LOVABLE_API_KEY");
     if (!LOVABLE_API_KEY) throw new Error("LOVABLE_API_KEY is not configured");
@@ -54,37 +62,25 @@ serve(async (req) => {
         status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
       });
     }
-
-    // Field-level character caps to bound prompt size and AI costs
-    const cap = (v: unknown, n: number) =>
-      typeof v === "string" ? v.slice(0, n) : undefined;
-    const safe = {
-      title: cap(entry.title, 200),
-      entry_date: cap(entry.entry_date, 32),
-      event_description: cap(entry.event_description, 2000),
-      impact_level: typeof entry.impact_level === "number" ? entry.impact_level : undefined,
-      emotional_state: cap(entry.emotional_state, 200),
-      self_anchor: cap(entry.self_anchor, 500),
-      free_text: cap(entry.free_text, 2000),
-    };
+    // Truncate text fields to safe lengths
+    const trunc = (s: unknown, n: number) => (typeof s === "string" ? s.slice(0, n) : s);
+    entry.title = trunc(entry.title, 200);
+    entry.event_description = trunc(entry.event_description, 2000);
+    entry.emotional_state = trunc(entry.emotional_state, 200);
+    entry.self_anchor = trunc(entry.self_anchor, 500);
+    entry.free_text = trunc(entry.free_text, 2000);
 
     // Build a user message from the journal entry fields
     const parts: string[] = [];
-    if (safe.title) parts.push(`Title: ${safe.title}`);
-    if (safe.entry_date) parts.push(`Date: ${safe.entry_date}`);
-    if (safe.event_description) parts.push(`What happened: ${safe.event_description}`);
-    if (safe.impact_level) parts.push(`Impact level: ${safe.impact_level}/5`);
-    if (safe.emotional_state) parts.push(`Emotional state: ${safe.emotional_state}`);
-    if (safe.self_anchor) parts.push(`Self-anchor: ${safe.self_anchor}`);
-    if (safe.free_text) parts.push(`Additional notes: ${safe.free_text}`);
+    if (entry.title) parts.push(`Title: ${entry.title}`);
+    if (entry.entry_date) parts.push(`Date: ${entry.entry_date}`);
+    if (entry.event_description) parts.push(`What happened: ${entry.event_description}`);
+    if (entry.impact_level) parts.push(`Impact level: ${entry.impact_level}/5`);
+    if (entry.emotional_state) parts.push(`Emotional state: ${entry.emotional_state}`);
+    if (entry.self_anchor) parts.push(`Self-anchor: ${entry.self_anchor}`);
+    if (entry.free_text) parts.push(`Additional notes: ${entry.free_text}`);
 
     const userMessage = `Please reflect on this journal entry:\n\n${parts.join('\n')}`;
-
-    if (userMessage.length > 8000) {
-      return new Response(JSON.stringify({ error: "Entry too large. Please shorten your input." }), {
-        status: 400, headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
-    }
 
     const response = await fetch("https://ai.gateway.lovable.dev/v1/chat/completions", {
       method: "POST",

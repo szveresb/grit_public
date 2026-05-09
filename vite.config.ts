@@ -98,7 +98,11 @@ export default defineConfig(({ mode }) => ({
             },
           },
         ],
-        navigateFallbackDenylist: [/\/emergency-exit/, /^\/~oauth/, /\/supabase\//],
+        navigateFallbackDenylist: [
+          /\/emergency-exit/, 
+          ...(mode === 'production' ? [/^\/~oauth/] : []), 
+          /\/supabase\//
+        ],
       },
       devOptions: { enabled: true },
     }),
