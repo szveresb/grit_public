@@ -226,7 +226,7 @@ const FeedbackSheet = ({ open, onOpenChange }: FeedbackSheetProps) => {
         <p className="text-[10px] font-semibold uppercase tracking-[0.2em] text-muted-foreground">
           {t.feedback.contextLabel}
         </p>
-        <p className="mt-2 text-sm font-medium text-foreground">
+        <p className="mt-2 text-sm font-medium text-foreground break-words">
           {pageLabel} / {subjectLabel} / {viewportLabel}
         </p>
         <p className="mt-1 text-xs leading-relaxed text-muted-foreground">{t.feedback.contextHint}</p>
@@ -249,7 +249,7 @@ const FeedbackSheet = ({ open, onOpenChange }: FeedbackSheetProps) => {
                 }`}
               >
                 <div className="text-sm font-semibold text-foreground">{option.label}</div>
-                <div className="mt-1 text-xs leading-relaxed text-muted-foreground">{option.description}</div>
+                <div className="mt-1 text-xs leading-relaxed text-muted-foreground break-words">{option.description}</div>
               </button>
             );
           })}
@@ -339,7 +339,7 @@ const FeedbackSheet = ({ open, onOpenChange }: FeedbackSheetProps) => {
           <p className="mt-1 text-sm leading-relaxed text-muted-foreground">{t.feedback.subtitle}</p>
         </div>
       </div>
-      <div className="min-h-0 flex-1 overflow-y-auto pr-1">{content}</div>
+      <div className="min-h-0 flex-1 overflow-y-auto pr-1 pb-20">{content}</div>
     </div>
   );
 
