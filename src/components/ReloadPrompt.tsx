@@ -4,9 +4,13 @@ import { toast } from 'sonner';
 import { useLanguage } from '@/hooks/useLanguage';
 
 const ReloadPrompt: React.FC = () => {
-  const { t } = useLanguage();
-
   if (import.meta.env.DEV) return null;
+
+  return <ReloadPromptInternal />;
+};
+
+const ReloadPromptInternal: React.FC = () => {
+  const { t } = useLanguage();
 
   const {
     offlineReady: [offlineReady, setOfflineReady],
