@@ -33,3 +33,27 @@ This task has been **paused** because the underlying SNOMED CT logic and clinica
 
 ## Next Priority
 The project pivot to the **Clinical Entity Architecture (SNOMED CT / BNO-10)** is now the primary focus. AI Sensemaking remains suspended until this foundational structural mapping is implemented.
+
+## Release: Beta → Live
+
+Two Lovable projects exist:
+- **Grit.hu - beta** (`f7d3d508-…`) — this repo. Develop and test here.
+- **Grit.hu - live** (`b3d1ffcc-…`) — connected to GitHub `szveresb/grit.hu` `main`.
+
+**Important:** Both Lovable projects currently share the **same Supabase backend** (`project_id = dgymkgeulpaavnqavnrw`). The `supabase/config.prod.toml` overlay is therefore a no-op today; if you ever split databases, update that file with the live Supabase ref before the next release.
+
+### How to ship a release
+1. Verify the milestone in beta preview.
+2. In the **beta GitHub repo** → `Actions` tab → run **"Release Beta to Production"** (`workflow_dispatch`). It force-pushes beta `HEAD` (with the prod Supabase overlay) to `szveresb/grit.hu` `main`.
+3. Lovable Live auto-syncs from `main` within seconds.
+4. Open **Grit.hu - live** in Lovable → **Publish → Update** to deploy the new build.
+
+### Prerequisites (one-time)
+- Beta repo secret `PROD_REPO_TOKEN`: PAT with `repo` scope on `szveresb/grit.hu`.
+- `supabase/config.prod.toml` must hold the **live** Supabase ref if/when the backends are split.
+- Never commit directly to live; the workflow force-pushes and would overwrite divergent commits.
+
+### What does NOT travel through the workflow
+- Database migrations — apply to the live Supabase project separately (currently moot since DB is shared).
+- Edge-function secrets — re-add in live's Cloud → Secrets if backends are ever split.
+- `.env` files — managed by each Lovable project and are not committed.
