@@ -1,10 +1,12 @@
-# [COMPLETED] Granular Consent Mechanism — "Sovereign Consent"
 
-## Overview
+
+## Granular Consent Mechanism — "Sovereign Consent"
+
+### Overview
 
 A card-based consent carousel that activates after first login, educating users on data handling while collecting granular consent. Revisitable from the Profile page as a "Privacy & AI Control" section with toggleable data categories.
 
-## Database
+### Database
 
 **New table: `user_consents`**
 - `id` uuid PK
@@ -18,7 +20,7 @@ A card-based consent carousel that activates after first login, educating users 
 **New column on `profiles`:**
 - `consent_completed` boolean DEFAULT false — tracks whether the user has completed the initial consent flow
 
-## Consent Categories (7 cards)
+### Consent Categories (7 cards)
 
 1. **Journal & Observations** — storing personal entries and observation logs
 2. **Mood Tracking** — QuickPulse data collection
@@ -30,7 +32,7 @@ A card-based consent carousel that activates after first login, educating users 
 
 Each card shows: icon, human-surface title, 2-sentence plain explanation, toggle switch, and a "Learn more" expandable section.
 
-## Components
+### Components
 
 1. **`src/components/consent/ConsentCarousel.tsx`** — Embla carousel with 7 consent cards + summary card. Each card is a rounded-3xl soft-UI card with a Switch toggle. Final card shows a summary of all choices with a "Confirm & Continue" button. Saves all consents to `user_consents` and sets `profiles.consent_completed = true`.
 
@@ -40,7 +42,7 @@ Each card shows: icon, human-surface title, 2-sentence plain explanation, toggle
 
 4. **`src/components/consent/ConsentDashboard.tsx`** — Profile-embeddable version with "Advanced Settings" progressive disclosure (category-specific date ranges and sub-toggles for Pattern Detection).
 
-## Integration Points
+### Integration Points
 
 **ProtectedRoute** — After auth check, if `consent_completed` is false, redirect to `/consent` (or `/en/consent`).
 
@@ -52,15 +54,15 @@ Each card shows: icon, human-surface title, 2-sentence plain explanation, toggle
 
 **RecapBanner** — After completing consent, show a one-time banner on the journal page confirming privacy settings are active.
 
-## New Page
+### New Page
 
 **`src/pages/ConsentOnboarding.tsx`** — Full-screen page (no sidebar) with the ConsentCarousel centered. Bamboo background, same aesthetic as Auth page. On completion, navigates to `/journal`.
 
-## i18n
+### i18n
 
 Add `consent` section to Dictionary with keys for each card title, description, learn-more text, summary heading, confirm button, and profile section labels. Both `hu.ts` and `en.ts`.
 
-## Flow
+### Flow
 
 ```text
 Sign Up → Email Verify → First Login
@@ -76,12 +78,13 @@ Profile → Privacy & AI Control section
   → "Advanced Settings" expands date-range/category filters for Pattern Detection
 ```
 
-## Implementation Steps
+### Implementation Steps
 
-- [x] 1. Database migration: create `user_consents` table with RLS; add `consent_completed` to `profiles`
-- [x] 2. Create consent components (ConsentCard, ConsentCarousel, ConsentSummary, ConsentDashboard)
-- [x] 3. Create ConsentOnboarding page
-- [x] 4. Update ProtectedRoute to check consent status
-- [x] 5. Add consent routes to App.tsx
-- [x] 6. Add ConsentDashboard to Profile page
-- [x] 7. Add all i18n keys (hu + en)
+1. Database migration: create `user_consents` table with RLS; add `consent_completed` to `profiles`
+2. Create consent components (ConsentCard, ConsentCarousel, ConsentSummary, ConsentDashboard)
+3. Create ConsentOnboarding page
+4. Update ProtectedRoute to check consent status
+5. Add consent routes to App.tsx
+6. Add ConsentDashboard to Profile page
+7. Add all i18n keys (hu + en)
+
