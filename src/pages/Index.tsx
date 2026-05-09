@@ -1,4 +1,4 @@
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useLanguage } from '@/hooks/useLanguage';
@@ -9,7 +9,7 @@ import SystemPreview from '@/components/SystemPreview';
 
 const Index = () => {
   const { user } = useAuth();
-  const { t, lang, localePath } = useLanguage();
+  const { t, localePath } = useLanguage();
   const [bgLoaded, setBgLoaded] = useState(false);
 
   useEffect(() => {
