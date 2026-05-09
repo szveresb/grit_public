@@ -5,6 +5,9 @@ import { useLanguage } from '@/hooks/useLanguage';
 
 const ReloadPrompt: React.FC = () => {
   const { t } = useLanguage();
+
+  if (import.meta.env.DEV) return null;
+
   const {
     offlineReady: [offlineReady, setOfflineReady],
     needRefresh: [needRefresh, setNeedRefresh],
