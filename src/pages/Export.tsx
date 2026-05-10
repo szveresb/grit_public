@@ -244,7 +244,7 @@ const Export = () => {
             </div>
           </>
         ) : (
-          <div className="surface-card p-6 space-y-6 bg-white text-black print:p-0 print:shadow-none">
+          <div id="print-area" className="surface-card p-6 space-y-6 bg-white text-black print:p-0 print:shadow-none">
             <div className="flex justify-between items-center print:hidden">
               <Button variant="outline" size="sm" className="rounded-2xl" onClick={() => setShowPreview(false)}>
                 {t.back || 'Back'}
@@ -324,10 +324,9 @@ const Export = () => {
             <style>{`
               @media print {
                 body * { visibility: hidden; }
+                #print-area, #print-area * { visibility: visible; }
+                #print-area { position: absolute; left: 0; top: 0; width: 100%; padding: 20px; background: white; color: black; }
                 .print\\:hidden { display: none !important; }
-                .surface-card { background: white !important; color: black !important; border: none !important; box-shadow: none !important; }
-                .surface-card * { visibility: visible; }
-                .surface-card { position: absolute; left: 0; top: 0; width: 100%; }
                 table { page-break-inside: avoid; }
                 tr { page-break-inside: avoid; page-break-after: auto; }
               }
