@@ -15,7 +15,7 @@ import {
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 
-interface UserWithRoles { user_id: string; display_name: string | null; roles: AppRole[]; }
+interface UserWithRoles { user_id: string; display_name: string | null; email: string | null; roles: AppRole[]; }
 const ALL_ROLES: AppRole[] = [...ADMIN_ONLY_ROLES, ...SELF_SELECT_ROLES];
 
 export interface InviteCode { id: string; code: string; is_active: boolean; created_at: string; used_by: string | null }
@@ -32,9 +32,12 @@ const ManageUsers = () => {
   const fetchUsers = async () => {
     const { data: profiles } = await supabase.from('profiles').select('user_id, display_name');
     const { data: allRoles } = await supabase.from('user_roles').select('user_id, role');
+    const { data: emails } = await supabase.rpc('admin_list_user_emails' as any);
+    const emailMap = new Map<string, string>();
+    ((emails as unknown as { user_id: string; email: string }[] | null) ?? []).forEach(e => emailMap.set(e.user_id, e.email));
     const roleMap = new Map<string, AppRole[]>();
     (allRoles ?? []).forEach(r => { const existing = roleMap.get(r.user_id) ?? []; existing.push(r.role as AppRole); roleMap.set(r.user_id, existing); });
-    setUsers((profiles ?? []).map(p => ({ user_id: p.user_id, display_name: p.display_name, roles: roleMap.get(p.user_id) ?? [] })));
+    setUsers((profiles ?? []).map(p => ({ user_id: p.user_id, display_name: p.display_name, email: emailMap.get(p.user_id) ?? null, roles: roleMap.get(p.user_id) ?? [] })));
 
     const { data: codesData } = await supabase.from('invite_codes' as any).select('*').order('created_at', { ascending: false });
     setCodes((codesData as unknown as InviteCode[] | null) ?? []);
@@ -112,6 +115,9 @@ const ManageUsers = () => {
                     <span className="text-sm font-semibold text-foreground truncate">{u.display_name || 'Unnamed user'}</span>
                     {u.user_id === user?.id && <Badge variant="outline" className="rounded-full text-[10px]">{t.manageUsers.you}</Badge>}
                   </div>
+                  {u.email && (
+                    <p className="text-xs text-muted-foreground font-mono truncate -mt-1">{u.email}</p>
+                  )}
                   <div className="flex flex-wrap gap-1.5">
                     {u.roles.length === 0 && <span className="text-xs text-muted-foreground italic">{t.manageUsers.noRoles}</span>}
                     {u.roles.map(role => (
