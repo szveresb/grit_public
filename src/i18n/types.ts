@@ -299,6 +299,9 @@ export interface Dictionary {
     scaleLabels: string;
     scaleLabelsPlaceholder: string;
     reverseScoring: string;
+    typeText: string;
+    typeMultipleChoice: string;
+    optionsPlaceholder: string;
     yourScore: string;
     scoreBreakdown: string;
     totalScore: string;
@@ -498,6 +501,12 @@ export interface Dictionary {
     removedRole: string;
     you: string;
     noRoles: string;
+    betaInvitesTitle: string;
+    generateCode: string;
+    codeGenerated: string;
+    noCodes: string;
+    usedSuffix: string;
+    unnamedUser: string;
   };
 
   // Analyst Export
@@ -662,6 +671,10 @@ export interface Dictionary {
     toggleSidebar: string;
     breadcrumb: string;
     premiumBadge: string;
+    menu: string;
+    dismiss: string;
+    back: string;
+    previewAlt: string;
   };
 
   feedback: {
