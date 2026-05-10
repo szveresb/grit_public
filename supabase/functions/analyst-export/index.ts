@@ -132,7 +132,6 @@ Deno.serve(async (req) => {
       );
     }
 
-    // Get user IDs that have consented to anonymized_analytics
     const { data: consentedUsers } = await admin
       .from("user_consents")
       .select("user_id")
@@ -141,33 +140,27 @@ Deno.serve(async (req) => {
 
     const consentedUserIds = (consentedUsers ?? []).map((c: any) => c.user_id);
 
-    // If no users consented, return empty data
-    if (consentedUserIds.length === 0) {
+    // Enforce k-anonymity on the consented population, not just total profiles.
+    // Exporting data from a small consented subset (even if total profiles >= threshold)
+    // would allow re-identification of sensitive health data.
+    if (consentedUserIds.length < K_ANONYMITY_THRESHOLD) {
       const now = new Date().toISOString();
       await writeAudit({
         analyst_user_id: user.id,
         analyst_email: user.email ?? null,
         export_format: format,
         active_user_count: activeUserCount ?? 0,
-        consented_user_count: 0,
-        threshold_met: true,
-        outcome: "success_empty_no_consent",
+        consented_user_count: consentedUserIds.length,
+        threshold_met: false,
+        outcome: "denied_consented_threshold_not_met",
       });
-      return new Response(JSON.stringify({
-        disclaimer: {
-          en: "Non-Diagnostic Data: This report contains raw user observations mapped to standard medical terminology. It does not constitute a clinical assessment.",
-          hu: "Nem diagnosztikai adat: A jelentés felhasználó által rögzített megfigyeléseket tartalmaz, szabványos orvosi terminológiára leképezve. Nem minősül klinikai értékelésnek.",
-        },
-        exported_at: now,
-        active_user_count: 0,
-        consent_note: "No users have consented to anonymized analytics.",
-        journal_aggregates: [],
-        questionnaire_aggregates: [],
-        role_distribution: [],
-        observation_aggregates: [],
-      }, null, 2), {
-        headers: { ...corsHeaders, "Content-Type": "application/json" },
-      });
+      return new Response(
+        JSON.stringify({
+          error: "Threshold not met",
+          message: `Anonymised data export requires at least ${K_ANONYMITY_THRESHOLD} users who have consented to anonymized analytics. Threshold not yet met.`,
+        }),
+        { status: 403, headers: { ...corsHeaders, "Content-Type": "application/json" } }
+      );
     }
 
     // Fetch aggregates filtered by consented users only.
@@ -187,24 +180,26 @@ Deno.serve(async (req) => {
         .in("user_id", consentedUserIds),
     ]);
 
-    // Aggregate questionnaire answers by (questionnaire_title, question_text) - consented users only
-    const qMap: Record<string, { questionnaire_title: string; question_text: string; response_ids: Set<string>; answers: any[] }> = {};
+    // Aggregate questionnaire answers by (questionnaire_title, question_text) - consented users only.
+    // Store distribution as counts per answer value, not raw per-user answers, to prevent re-identification.
+    const qMap: Record<string, { questionnaire_title: string; question_text: string; response_ids: Set<string>; answerCounts: Record<string, number> }> = {};
     for (const resp of questionnaireAnswersRaw.data ?? []) {
       const qTitle = (resp as any).questionnaires?.title ?? '';
       const answers = (resp as any).questionnaire_answers ?? [];
       for (const ans of answers) {
         const qText = ans.questionnaire_questions?.question_text ?? '';
         const key = `${qTitle}|||${qText}`;
-        if (!qMap[key]) qMap[key] = { questionnaire_title: qTitle, question_text: qText, response_ids: new Set(), answers: [] };
+        if (!qMap[key]) qMap[key] = { questionnaire_title: qTitle, question_text: qText, response_ids: new Set(), answerCounts: {} };
         qMap[key].response_ids.add((resp as any).id);
-        qMap[key].answers.push(ans.answer);
+        const answerKey = typeof ans.answer === 'string' ? ans.answer : JSON.stringify(ans.answer);
+        qMap[key].answerCounts[answerKey] = (qMap[key].answerCounts[answerKey] ?? 0) + 1;
       }
     }
     const questionnaireAggResult = Object.values(qMap).map(v => ({
       questionnaire_title: v.questionnaire_title,
       question_text: v.question_text,
       response_count: v.response_ids.size,
-      answer_distribution: v.answers,
+      answer_distribution: v.answerCounts,
     }));
 
     // Aggregate role distribution - consented users only
