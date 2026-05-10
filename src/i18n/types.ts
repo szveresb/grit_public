@@ -276,6 +276,8 @@ export interface Dictionary {
     questionnaireCreated: string;
     questionnaireDeleted: string;
     questionnaireCloned: string;
+    publishedToast: string;
+    unpublishedToast: string;
     submitting: string;
     repeatInterval: string;
     repeatOnce: string;

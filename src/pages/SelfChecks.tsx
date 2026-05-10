@@ -127,7 +127,7 @@ const SelfChecks = () => {
       toast.success(t.questionnaires_manage.questionnaireUpdated);
     } else {
       const { data: q, error } = await supabase.from('questionnaires').insert({ title: formTitle, description: formDesc || null, created_by: user.id, is_published: formPublished, repeat_interval: formRepeat || null, scoring_enabled: formScoringEnabled, scoring_mode: formScoringMode, score_ranges: (formScoreRanges.length ? formScoreRanges : null) as unknown as Json }).select('id').single();
-      if (error || !q) { toast.error(error ? friendlyDbError(error) : 'Failed'); setSaving(false); return; }
+      if (error || !q) { toast.error(error ? friendlyDbError(error) : t.errors.genericFailure); setSaving(false); return; }
       const qRows = formQuestions.filter(nq => nq.text.trim()).map((nq, i) => {
         let answerScores: Record<string, number> | null = null;
         if (formScoringEnabled && formScoringMode === 'weighted') answerScores = nq.answerScores;
@@ -150,7 +150,7 @@ const SelfChecks = () => {
   const togglePublished = async (q: Questionnaire) => {
     const { error } = await supabase.from('questionnaires').update({ is_published: !q.is_published }).eq('id', q.id);
     if (error) { toast.error(friendlyDbError(error)); return; }
-    toast.success(q.is_published ? 'Unpublished' : 'Published'); fetchQuestionnaires();
+    toast.success(q.is_published ? t.questionnaires_manage.unpublishedToast : t.questionnaires_manage.publishedToast); fetchQuestionnaires();
   };
 
   const handleClone = async (q: Questionnaire) => {
@@ -166,7 +166,7 @@ const SelfChecks = () => {
       scoring_mode: q.scoring_mode,
       score_ranges: q.score_ranges,
     }).select('id').single();
-    if (error || !cloned) { toast.error(error ? friendlyDbError(error) : 'Failed'); return; }
+    if (error || !cloned) { toast.error(error ? friendlyDbError(error) : t.errors.genericFailure); return; }
     // Clone questions
     const { data: origQuestions } = await supabase.from('questionnaire_questions').select('*').eq('questionnaire_id', q.id).order('sort_order');
     if (origQuestions && origQuestions.length > 0) {
