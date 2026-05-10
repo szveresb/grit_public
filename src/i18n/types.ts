@@ -70,6 +70,8 @@ export interface Dictionary {
     gatedLoginCta: string;
     systemPreviewTitle: string;
     systemPreviewSubtitle: string;
+    systemPreviewPulseCaption: string;
+    systemPreviewTrendCaption: string;
     noArticles: string;
     journalPreviewTitle: string;
     journalPreviewSubtitle: string;
