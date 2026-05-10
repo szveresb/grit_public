@@ -10,7 +10,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import { toast } from 'sonner';
 import { friendlyDbError } from '@/lib/db-error';
-import { FSave, FLoader } from '@/components/icons/FreudIcons';
+import { FSave, FLoader, FChevronDown, FChevronUp } from '@/components/icons/FreudIcons';
 import { Navigate } from 'react-router-dom';
 import { hu } from '@/i18n/hu';
 import { en } from '@/i18n/en';
@@ -34,6 +34,7 @@ const ManageLanding = () => {
   const [sections, setSections] = useState<LandingSection[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [expandedId, setExpandedId] = useState<string | null>(null);
 
   const canManage = hasAnyRole('admin', 'editor');
 
@@ -142,11 +143,21 @@ const ManageLanding = () => {
           </div>
         ) : sections.map(section => (
           <div key={section.id} className="surface-card p-6 space-y-5">
-            <div className="flex items-center justify-between">
-              <h2 className="text-sm font-semibold text-foreground uppercase tracking-widest">
-                {section.section_key.replace('_', ' ')}
-              </h2>
+            <div 
+              className="flex items-center justify-between cursor-pointer" 
+              onClick={() => setExpandedId(expandedId === section.id ? null : section.id)}
+            >
               <div className="flex items-center gap-2">
+                <h2 className="text-sm font-semibold text-foreground uppercase tracking-widest">
+                  {section.section_key.replace('_', ' ')}
+                </h2>
+                {expandedId === section.id ? (
+                  <FChevronUp className="h-4 w-4 text-muted-foreground" />
+                ) : (
+                  <FChevronDown className="h-4 w-4 text-muted-foreground" />
+                )}
+              </div>
+              <div className="flex items-center gap-2" onClick={e => e.stopPropagation()}>
                 <Label htmlFor={`active-${section.id}`} className="text-xs text-muted-foreground">{t.admin.manageLanding.active}</Label>
                 <Switch
                   id={`active-${section.id}`}
@@ -156,7 +167,9 @@ const ManageLanding = () => {
               </div>
             </div>
 
-            {/* Title HU */}
+            {expandedId === section.id && (
+              <div className="space-y-5 pt-2">
+                {/* Title HU */}
             <div className="space-y-1.5">
               <Label className="text-xs text-muted-foreground">{t.admin.manageLanding.titleHu}</Label>
               <Input
@@ -312,6 +325,8 @@ const ManageLanding = () => {
               {saving ? <FLoader className="h-4 w-4 animate-spin" /> : <FSave className="h-4 w-4" />}
               {t.admin.manageLanding.save}
             </Button>
+              </div>
+            )}
           </div>
         ))}
       </div>
