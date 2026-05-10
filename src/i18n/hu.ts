@@ -24,6 +24,17 @@ export const hu: Dictionary = {
     componentCrashTitle: 'Váratlan hiba történt',
     componentCrashDesc: 'Hiba lépett fel a felület megjelenítése közben. Csapatunkat értesítettük a problémáról.',
     retry: 'Próbáld újra',
+    notAuthenticated: 'Nincs bejelentkezve',
+    exportFailed: 'Az exportálás sikertelen',
+    failedToSubmit: 'A beküldés sikertelen',
+    titleRequired: 'A cím megadása kötelező',
+    signInForReflection: 'Jelentkezz be a reflexiókhoz',
+    signInForPatterns: 'Jelentkezz be a mintázatok elemzéséhez',
+    reflectionUnavailable: 'A reflexió jelenleg nem elérhető',
+    reflectionFailed: 'A reflexió létrehozása sikertelen',
+    patternsUnavailable: 'A mintázatelemzés jelenleg nem elérhető',
+    patternsFailed: 'A mintázatok elemzése sikertelen',
+    offlineDescription: 'Jelenleg offline állapotban vagy.',
   },
 
   nav: {

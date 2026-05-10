@@ -88,7 +88,7 @@ const QuickPulse = ({
 
     if (!navigator.onLine) {
       toast.info(t.pwa?.syncPending || "Sync Pending – will upload when connection restores", {
-        description: "You are currently offline.",
+        description: t.errors.offlineDescription,
       });
       setSaved(true);
       setTimeout(() => setSaved(false), 3000);
