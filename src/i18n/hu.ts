@@ -941,7 +941,7 @@ export const hu: Dictionary = {
       title: 'Impresszum',
       operatorLabel: 'Üzemeltető neve',
       operatorValue: '[Üzemeltető Neve]',
-      countryLabel: 'Tartózkodási ország',
+      countryLabel: 'Ország',
       countryValue: '[Ország]',
       cityLabel: 'Város',
       cityValue: '[Város]',

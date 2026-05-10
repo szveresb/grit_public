@@ -41,7 +41,35 @@ const ManageLanding = () => {
         .from('landing_sections')
         .select('*')
         .order('created_at');
-      setSections((data as LandingSection[]) ?? []);
+      
+      let sectionsData = (data as LandingSection[]) ?? [];
+      const hasImpressum = sectionsData.some(s => s.section_key === 'impressum');
+
+      if (!hasImpressum) {
+        const { data: newSection } = await supabase
+          .from('landing_sections')
+          .insert({
+            section_key: 'impressum',
+            title: 'Impressum',
+            is_active: true,
+            config: {
+              operator_hu: '[Üzemeltető Neve]',
+              operator_en: '[Operator Name]',
+              country_hu: '[Ország]',
+              country_en: '[Country]',
+              city_hu: '[Város]',
+              city_en: '[City]'
+            }
+          })
+          .select()
+          .single();
+        
+        if (newSection) {
+          sectionsData = [...sectionsData, newSection as LandingSection];
+        }
+      }
+
+      setSections(sectionsData);
       setLoading(false);
     };
     fetchSections();
@@ -187,6 +215,66 @@ const ManageLanding = () => {
                     onChange={e => updateConfig(section.id, 'mood_labels_en', e.target.value.split(',').map((s: string) => s.trim()))}
                     className="rounded-2xl"
                   />
+                </div>
+              </>
+            )}
+
+            {/* Impressum fields */}
+            {section.section_key === 'impressum' && (
+              <>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-1.5">
+                    <Label className="text-xs text-muted-foreground">Üzemeltető Neve (HU)</Label>
+                    <Input
+                      value={section.config?.operator_hu ?? ''}
+                      onChange={e => updateConfig(section.id, 'operator_hu', e.target.value)}
+                      className="rounded-2xl"
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label className="text-xs text-muted-foreground">Operator Name (EN)</Label>
+                    <Input
+                      value={section.config?.operator_en ?? ''}
+                      onChange={e => updateConfig(section.id, 'operator_en', e.target.value)}
+                      className="rounded-2xl"
+                    />
+                  </div>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-1.5">
+                    <Label className="text-xs text-muted-foreground">Ország (HU)</Label>
+                    <Input
+                      value={section.config?.country_hu ?? ''}
+                      onChange={e => updateConfig(section.id, 'country_hu', e.target.value)}
+                      className="rounded-2xl"
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label className="text-xs text-muted-foreground">Country (EN)</Label>
+                    <Input
+                      value={section.config?.country_en ?? ''}
+                      onChange={e => updateConfig(section.id, 'country_en', e.target.value)}
+                      className="rounded-2xl"
+                    />
+                  </div>
+                </div>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="space-y-1.5">
+                    <Label className="text-xs text-muted-foreground">Város (HU)</Label>
+                    <Input
+                      value={section.config?.city_hu ?? ''}
+                      onChange={e => updateConfig(section.id, 'city_hu', e.target.value)}
+                      className="rounded-2xl"
+                    />
+                  </div>
+                  <div className="space-y-1.5">
+                    <Label className="text-xs text-muted-foreground">City (EN)</Label>
+                    <Input
+                      value={section.config?.city_en ?? ''}
+                      onChange={e => updateConfig(section.id, 'city_en', e.target.value)}
+                      className="rounded-2xl"
+                    />
+                  </div>
                 </div>
               </>
             )}
