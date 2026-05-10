@@ -74,6 +74,7 @@ const AppSidebar = ({ onOpenFeedback }: AppSidebarProps) => {
     ...(canManageLanding ? [{ title: t.nav.manageLanding, url: '/manage-landing', icon: FHome }] : []),
     ...(isAdmin ? [{ title: t.nav.betaSignups, url: '/manage-users#beta-signups', icon: FHeartPulse, badge: pendingSignups }] : []),
     ...(isAdmin ? [{ title: t.nav.manageUsers, url: '/manage-users', icon: FUsers }] : []),
+    ...(isAdmin ? [{ title: t.nav.manageFeedback, url: '/manage-feedback', icon: FMessageCircle }] : []),
     ...(canAnalyse ? [{ title: t.nav.analystExport, url: '/analyst-export', icon: FBarChart }] : []),
   ];
 

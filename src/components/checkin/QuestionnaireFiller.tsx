@@ -280,8 +280,8 @@ const QuestionnaireFiller: React.FC<QuestionnaireFillerProps> = ({ onCompleted, 
     if (!user || !selectedQ) return;
 
     if (!navigator.onLine) {
-      toast.info(t.pwa?.syncPending || 'Sync Pending – will upload when connection restores', {
-        description: 'You are currently offline.',
+      toast.info(t.pwa.syncPending, {
+        description: t.errors.offlineDescription,
       });
       return;
     }

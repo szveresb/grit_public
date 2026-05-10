@@ -127,7 +127,7 @@ const SelfChecks = () => {
       toast.success(t.questionnaires_manage.questionnaireUpdated);
     } else {
       const { data: q, error } = await supabase.from('questionnaires').insert({ title: formTitle, description: formDesc || null, created_by: user.id, is_published: formPublished, repeat_interval: formRepeat || null, scoring_enabled: formScoringEnabled, scoring_mode: formScoringMode, score_ranges: (formScoreRanges.length ? formScoreRanges : null) as unknown as Json }).select('id').single();
-      if (error || !q) { toast.error(error ? friendlyDbError(error) : 'Failed'); setSaving(false); return; }
+      if (error || !q) { toast.error(error ? friendlyDbError(error) : t.errors.genericFailure); setSaving(false); return; }
       const qRows = formQuestions.filter(nq => nq.text.trim()).map((nq, i) => {
         let answerScores: Record<string, number> | null = null;
         if (formScoringEnabled && formScoringMode === 'weighted') answerScores = nq.answerScores;
@@ -150,7 +150,7 @@ const SelfChecks = () => {
   const togglePublished = async (q: Questionnaire) => {
     const { error } = await supabase.from('questionnaires').update({ is_published: !q.is_published }).eq('id', q.id);
     if (error) { toast.error(friendlyDbError(error)); return; }
-    toast.success(q.is_published ? 'Unpublished' : 'Published'); fetchQuestionnaires();
+    toast.success(q.is_published ? t.questionnaires_manage.unpublishedToast : t.questionnaires_manage.publishedToast); fetchQuestionnaires();
   };
 
   const handleClone = async (q: Questionnaire) => {
@@ -166,7 +166,7 @@ const SelfChecks = () => {
       scoring_mode: q.scoring_mode,
       score_ranges: q.score_ranges,
     }).select('id').single();
-    if (error || !cloned) { toast.error(error ? friendlyDbError(error) : 'Failed'); return; }
+    if (error || !cloned) { toast.error(error ? friendlyDbError(error) : t.errors.genericFailure); return; }
     // Clone questions
     const { data: origQuestions } = await supabase.from('questionnaire_questions').select('*').eq('questionnaire_id', q.id).order('sort_order');
     if (origQuestions && origQuestions.length > 0) {
@@ -207,7 +207,7 @@ const SelfChecks = () => {
     if (!user || !selectedQ) return;
     setSubmitting(true);
     const { data: resp, error } = await supabase.from('questionnaire_responses').insert({ user_id: user.id, questionnaire_id: selectedQ }).select('id').single();
-    if (error || !resp) { toast.error('Failed to submit'); setSubmitting(false); return; }
+    if (error || !resp) { toast.error(t.errors.failedToSubmit); setSubmitting(false); return; }
     const answerRows = Object.entries(answers).map(([question_id, answer]) => ({ response_id: resp.id, question_id, answer: JSON.stringify(answer) }));
     if (answerRows.length) await supabase.from('questionnaire_answers').insert(answerRows);
     toast.success(t.questionnaires_manage.completed); setSelectedQ(null); setAnswers({}); setSubmitting(false);
@@ -352,17 +352,17 @@ const SelfChecks = () => {
                   <Input value={nq.text} onChange={e => { const c = [...formQuestions]; c[i].text = e.target.value; setFormQuestions(c); }} placeholder={`${t.questionnaires_manage.questions} ${i + 1}`} className="flex-1 rounded-2xl" />
                   <select value={nq.type} onChange={e => { const c = [...formQuestions]; c[i].type = e.target.value; setFormQuestions(c); }}
                     className="border border-input rounded-2xl px-3 text-sm bg-background">
-                    <option value="text">Text</option>
+                    <option value="text">{t.questionnaires_manage.typeText}</option>
                     <option value="scale">{t.questionnaires_manage.scaleType}</option>
                     <option value="yes_no">{t.yes}/{t.no}</option>
-                    <option value="multiple_choice">Multiple Choice</option>
+                    <option value="multiple_choice">{t.questionnaires_manage.typeMultipleChoice}</option>
                   </select>
                   {formQuestions.length > 1 && (
                     <Button type="button" variant="ghost" size="icon" onClick={() => setFormQuestions(q => q.filter((_, j) => j !== i))}><FTrash className="h-4 w-4" /></Button>
                   )}
                 </div>
                 {nq.type === 'multiple_choice' && (
-                  <Input value={nq.options} onChange={e => { const c = [...formQuestions]; c[i].options = e.target.value; setFormQuestions(c); }} placeholder="Options (comma-separated)" className="text-xs rounded-2xl" />
+                  <Input value={nq.options} onChange={e => { const c = [...formQuestions]; c[i].options = e.target.value; setFormQuestions(c); }} placeholder={t.questionnaires_manage.optionsPlaceholder} className="text-xs rounded-2xl" />
                 )}
                 {nq.type === 'scale' && (
                   <div className="space-y-2">

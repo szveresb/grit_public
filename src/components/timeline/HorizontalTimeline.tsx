@@ -1,4 +1,4 @@
-import { useState, useRef, useMemo, useCallback } from 'react';
+import { useState, useRef, useMemo, useCallback, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { FBookOpen, FClipboardCheck, FEye, FChevronRight } from '@/components/icons/FreudIcons';
 import { safeFormat } from '@/lib/date-safe';
@@ -57,7 +57,8 @@ const HorizontalTimeline = ({ items, lang, t }: Props) => {
       if (!map.has(key)) map.set(key, []);
       map.get(key)!.push(item);
     }
-    return Array.from(map.entries());
+    // Reverse so timeline reads left-to-right: oldest on the left, latest on the right
+    return Array.from(map.entries()).reverse();
   }, [items]);
 
   // Detect month boundaries for separators
@@ -70,6 +71,13 @@ const HorizontalTimeline = ({ items, lang, t }: Props) => {
       prevMonth = m;
     });
     return set;
+  }, [grouped]);
+
+  // Auto-scroll to the right edge so the latest entry is visible on load
+  useEffect(() => {
+    const el = containerRef.current;
+    if (!el) return;
+    el.scrollLeft = el.scrollWidth;
   }, [grouped]);
 
   // Pinch-to-zoom handlers

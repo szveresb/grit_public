@@ -54,13 +54,22 @@ const QuickPulse = ({
       });
   }, [lang]);
 
-  const fallbackLabels = [
-    t.checkIn.moodStruggling,
-    t.checkIn.moodUneasy,
-    t.checkIn.moodOkay,
-    t.checkIn.moodGood,
-    t.checkIn.moodStrong,
-  ];
+  const isObserved = activeSubject.type === 'relative';
+  const fallbackLabels = isObserved
+    ? [
+        t.checkIn.moodStrugglingObserved,
+        t.checkIn.moodUneasyObserved,
+        t.checkIn.moodOkayObserved,
+        t.checkIn.moodGoodObserved,
+        t.checkIn.moodStrongObserved,
+      ]
+    : [
+        t.checkIn.moodStruggling,
+        t.checkIn.moodUneasy,
+        t.checkIn.moodOkay,
+        t.checkIn.moodGood,
+        t.checkIn.moodStrong,
+      ];
   const moodLabels = managedLabels ?? fallbackLabels;
   const supportedName = activeSubject.type === 'relative' ? activeSubject.name.trim() : '';
   const profilePulseTitle = activeSubject.type === 'relative'
@@ -78,8 +87,8 @@ const QuickPulse = ({
     const label = moodLabels[index];
 
     if (!navigator.onLine) {
-      toast.info(t.pwa?.syncPending || "Sync Pending – will upload when connection restores", {
-        description: "You are currently offline.",
+      toast.info(t.pwa.syncPending, {
+        description: t.errors.offlineDescription,
       });
       setSaved(true);
       setTimeout(() => setSaved(false), 3000);

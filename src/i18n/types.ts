@@ -25,6 +25,18 @@ export interface Dictionary {
     componentCrashTitle: string;
     componentCrashDesc: string;
     retry: string;
+    notAuthenticated: string;
+    exportFailed: string;
+    failedToSubmit: string;
+    titleRequired: string;
+    signInForReflection: string;
+    signInForPatterns: string;
+    reflectionUnavailable: string;
+    reflectionFailed: string;
+    patternsUnavailable: string;
+    patternsFailed: string;
+    offlineDescription: string;
+    genericFailure: string;
   };
 
   // Nav
@@ -50,6 +62,7 @@ export interface Dictionary {
     surveys: string;
     manageLanding: string;
     feedback: string;
+    manageFeedback: string;
   };
 
   // Index / Landing
@@ -71,6 +84,8 @@ export interface Dictionary {
     gatedLoginCta: string;
     systemPreviewTitle: string;
     systemPreviewSubtitle: string;
+    systemPreviewPulseCaption: string;
+    systemPreviewTrendCaption: string;
     noArticles: string;
     journalPreviewTitle: string;
     journalPreviewSubtitle: string;
@@ -222,6 +237,11 @@ export interface Dictionary {
     moodOkay: string;
     moodGood: string;
     moodStrong: string;
+    moodStrugglingObserved: string;
+    moodUneasyObserved: string;
+    moodOkayObserved: string;
+    moodGoodObserved: string;
+    moodStrongObserved: string;
     pulseSaved: string;
     goDeeper: string;
     noStory: string;
@@ -258,6 +278,8 @@ export interface Dictionary {
     questionnaireCreated: string;
     questionnaireDeleted: string;
     questionnaireCloned: string;
+    publishedToast: string;
+    unpublishedToast: string;
     submitting: string;
     repeatInterval: string;
     repeatOnce: string;
@@ -295,6 +317,9 @@ export interface Dictionary {
     scaleLabels: string;
     scaleLabelsPlaceholder: string;
     reverseScoring: string;
+    typeText: string;
+    typeMultipleChoice: string;
+    optionsPlaceholder: string;
     yourScore: string;
     scoreBreakdown: string;
     totalScore: string;
@@ -409,6 +434,31 @@ export interface Dictionary {
     disclaimer: string;
     noObservations: string;
     bnoLabels: Record<string, string>;
+    back: string;
+    printPdf: string;
+    downloadCsv: string;
+    exportedAt: string;
+    headerDate: string;
+    headerConcept: string;
+    headerIntensity: string;
+    headerContext: string;
+    countLabel: string;
+    avgIntensityLabel: string;
+    summaryNote: string;
+    journalEntries: string;
+    questionnaireResponses: string;
+    observationsFhir: string;
+  };
+
+  betaGate: {
+    closedBeta: string;
+    description: string;
+    placeholder: string;
+    verifying: string;
+    submit: string;
+    accessGranted: string;
+    invalidCode: string;
+    genericError: string;
   };
 
   error: {
@@ -494,6 +544,32 @@ export interface Dictionary {
     removedRole: string;
     you: string;
     noRoles: string;
+    betaInvitesTitle: string;
+    generateCode: string;
+    codeGenerated: string;
+    noCodes: string;
+    usedSuffix: string;
+    unnamedUser: string;
+  };
+
+  manageFeedback: {
+    title: string;
+    subtitle: string;
+    noFeedback: string;
+    loadingFeedback: string;
+    kind: string;
+    urgency: string;
+    page: string;
+    user: string;
+    date: string;
+    message: string;
+    context: string;
+    filterAll: string;
+    filterBug: string;
+    filterUnclear: string;
+    filterIdea: string;
+    filterPraise: string;
+    filterQuestion: string;
   };
 
   // Analyst Export
@@ -658,6 +734,10 @@ export interface Dictionary {
     toggleSidebar: string;
     breadcrumb: string;
     premiumBadge: string;
+    menu: string;
+    dismiss: string;
+    back: string;
+    previewAlt: string;
   };
 
   feedback: {

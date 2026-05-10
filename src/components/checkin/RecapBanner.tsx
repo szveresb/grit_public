@@ -16,7 +16,7 @@ const RecapBanner = ({ days, onCatchUp, onDismiss }: RecapBannerProps) => {
       <button
         onClick={onDismiss}
         className="absolute top-4 right-4 text-muted-foreground hover:text-foreground transition-colors"
-        aria-label="Dismiss"
+        aria-label={t.ui.dismiss}
       >
         <FClose className="h-4 w-4" />
       </button>

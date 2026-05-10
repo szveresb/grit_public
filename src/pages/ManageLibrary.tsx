@@ -71,7 +71,7 @@ const ManageLibrary = () => {
   };
 
   const handleSave = async () => {
-    if (!form.title.trim()) { toast.error('Title is required'); return; }
+    if (!form.title.trim()) { toast.error(t.errors.titleRequired); return; }
     setSaving(true);
     const titleLocalized = form.title_en.trim() ? { en: form.title_en.trim() } : {};
     const excerptLocalized = form.excerpt_en.trim() ? { en: form.excerpt_en.trim() } : {};
@@ -154,7 +154,7 @@ const ManageLibrary = () => {
               <Label className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">{t.manageLibrary.imageUrl}</Label>
               <Input value={form.image_url} onChange={e => setForm(f => ({ ...f, image_url: e.target.value }))} placeholder="https://images.unsplash.com/..." className="rounded-2xl" />
               {form.image_url && (
-                <img src={form.image_url} alt="Preview" className="mt-2 h-24 w-full object-cover rounded-2xl border border-border" onError={e => (e.currentTarget.style.display = 'none')} />
+                <img src={form.image_url} alt={t.ui.previewAlt} className="mt-2 h-24 w-full object-cover rounded-2xl border border-border" onError={e => (e.currentTarget.style.display = 'none')} />
               )}
             </div>
             <div className="grid grid-cols-3 gap-4">

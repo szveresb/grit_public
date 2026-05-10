@@ -247,14 +247,14 @@ const Export = () => {
           <div id="print-area" className="surface-card p-6 space-y-6 bg-white text-black print:p-0 print:shadow-none">
             <div className="flex justify-between items-center print:hidden">
               <Button variant="outline" size="sm" className="rounded-2xl" onClick={() => setShowPreview(false)}>
-                Back
+                {t.export.back}
               </Button>
               <div className="flex gap-2">
                 <Button size="sm" className="rounded-2xl" onClick={() => window.print()}>
-                  Print to PDF
+                  {t.export.printPdf}
                 </Button>
                 <Button size="sm" variant="secondary" className="rounded-2xl" onClick={handleCsvExport}>
-                  Download CSV
+                  {t.export.downloadCsv}
                 </Button>
               </div>
             </div>
@@ -264,7 +264,7 @@ const Export = () => {
                 {previewType === 'therapist' ? t.export.therapistTitle : t.export.title}
               </h1>
               <p className="text-xs text-gray-500">
-                Exported at: {new Date(previewData.exported_at).toLocaleString()}
+                {t.export.exportedAt}: {new Date(previewData.exported_at).toLocaleString()}
               </p>
             </div>
 
@@ -283,15 +283,15 @@ const Export = () => {
                           {bno.bno_code} - {bno.bno_label_localized}
                         </h3>
                         <div className="text-xs text-gray-500">
-                          Count: {bno.observation_count} | Avg Intensity: {bno.avg_intensity}
+                          {t.export.countLabel}: {bno.observation_count} | {t.export.avgIntensityLabel}: {bno.avg_intensity}
                         </div>
                         <table className="w-full text-xs border-collapse">
                           <thead>
                             <tr className="bg-gray-100">
-                              <th className="border p-1 text-left">Date</th>
-                              <th className="border p-1 text-left">Concept</th>
-                              <th className="border p-1 text-center">Intensity</th>
-                              <th className="border p-1 text-left">Context</th>
+                              <th className="border p-1 text-left">{t.export.headerDate}</th>
+                              <th className="border p-1 text-left">{t.export.headerConcept}</th>
+                              <th className="border p-1 text-center">{t.export.headerIntensity}</th>
+                              <th className="border p-1 text-left">{t.export.headerContext}</th>
                             </tr>
                           </thead>
                           <tbody>
@@ -312,11 +312,11 @@ const Export = () => {
               </div>
             ) : (
               <div className="space-y-4">
-                <p className="text-sm">Summary of your data. Use CSV export for tabular data.</p>
+                <p className="text-sm">{t.export.summaryNote}</p>
                 <div className="text-xs">
-                  <p>Journal Entries: {previewData.journal_entries?.length || 0}</p>
-                  <p>Questionnaire Responses: {previewData.questionnaire_responses?.length || 0}</p>
-                  <p>Observations (FHIR): {previewData.observation_logs_fhir?.length || 0}</p>
+                  <p>{t.export.journalEntries}: {previewData.journal_entries?.length || 0}</p>
+                  <p>{t.export.questionnaireResponses}: {previewData.questionnaire_responses?.length || 0}</p>
+                  <p>{t.export.observationsFhir}: {previewData.observation_logs_fhir?.length || 0}</p>
                 </div>
               </div>
             )}

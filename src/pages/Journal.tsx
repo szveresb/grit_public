@@ -117,16 +117,16 @@ const Journal = () => {
     setReflections(prev => ({ ...prev, [entry.id]: '' }));
     try {
       const { data: { session: currentSession } } = await supabase.auth.getSession();
-      if (!currentSession?.access_token) { toast.error('Please sign in to use reflections'); setReflectingId(null); return; }
+      if (!currentSession?.access_token) { toast.error(t.errors.signInForReflection); setReflectingId(null); return; }
       const resp = await fetch(REFLECT_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${currentSession.access_token}` },
         body: JSON.stringify({ entry }),
       });
-      if (!resp.ok) { const err = await resp.json().catch(() => ({ error: 'Reflection unavailable' })); toast.error(err.error || 'Failed'); setReflectingId(null); return; }
+      if (!resp.ok) { const err = await resp.json().catch(() => ({ error: t.errors.reflectionUnavailable })); toast.error(err.error || t.errors.reflectionFailed); setReflectingId(null); return; }
       let accumulated = '';
       await readSSEStream(resp, (content) => { accumulated += content; setReflections(prev => ({ ...prev, [entry.id]: accumulated })); });
-    } catch (e) { console.error('Reflect error:', e); toast.error('Failed to generate reflection'); }
+    } catch (e) { console.error('Reflect error:', e); toast.error(t.errors.reflectionFailed); }
     setReflectingId(null);
   };
 
@@ -151,16 +151,16 @@ const Journal = () => {
     try {
       const sorted = [...entries].sort((a, b) => a.entry_date.localeCompare(b.entry_date));
       const { data: { session: currentSession } } = await supabase.auth.getSession();
-      if (!currentSession?.access_token) { toast.error('Please sign in to analyze patterns'); setAnalyzingPatterns(false); return; }
+      if (!currentSession?.access_token) { toast.error(t.errors.signInForPatterns); setAnalyzingPatterns(false); return; }
       const resp = await fetch(PATTERNS_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json', Authorization: `Bearer ${currentSession.access_token}` },
         body: JSON.stringify({ entries: sorted }),
       });
-      if (!resp.ok) { const err = await resp.json().catch(() => ({ error: 'Pattern analysis unavailable' })); toast.error(err.error || 'Failed'); setAnalyzingPatterns(false); return; }
+      if (!resp.ok) { const err = await resp.json().catch(() => ({ error: t.errors.patternsUnavailable })); toast.error(err.error || t.errors.patternsFailed); setAnalyzingPatterns(false); return; }
       let accumulated = '';
       await readSSEStream(resp, (content) => { accumulated += content; setPatternSummary(accumulated); });
-    } catch (e) { console.error('Pattern analysis error:', e); toast.error('Failed to analyze patterns'); }
+    } catch (e) { console.error('Pattern analysis error:', e); toast.error(t.errors.patternsFailed); }
     setAnalyzingPatterns(false);
   };
 
