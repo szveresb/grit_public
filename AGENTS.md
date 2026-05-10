@@ -22,6 +22,9 @@
 3. **Do not perform database migrations unless the user is present to watch the logs.**
    Supabase migration files (`supabase/migrations/`) affect production schema and RLS policies. Always confirm presence before executing or creating migration SQL.
 
+4. **Always confirm the repository before making any changes.**
+   You must explicitly ask the user to confirm which repository (`grit.hu` or `grit.hu-beta`) you should be working in before starting to change any files.
+
 ---
 
 ## Coding Standards
