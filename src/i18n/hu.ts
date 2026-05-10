@@ -937,6 +937,17 @@ export const hu: Dictionary = {
         'Bármely olyan adatkezelés, amely lehetővé tehetné egy egyéni felhasználó újraazonosítását.',
       ],
     },
+    impressum: {
+      title: 'Impresszum',
+      operatorLabel: 'Üzemeltető neve',
+      operatorValue: '[Üzemeltető Neve]',
+      countryLabel: 'Tartózkodási ország',
+      countryValue: '[Ország]',
+      cityLabel: 'Város',
+      cityValue: '[Város]',
+      emailLabel: 'E-mail',
+      clickToReveal: 'Kattints a megjelenítéshez',
+    },
   },
 
   premium: {

@@ -886,6 +886,17 @@ export interface Dictionary {
       s7Desc: string;
       s7Items: string[];
     };
+    impressum: {
+      title: string;
+      operatorLabel: string;
+      operatorValue: string;
+      countryLabel: string;
+      countryValue: string;
+      cityLabel: string;
+      cityValue: string;
+      emailLabel: string;
+      clickToReveal: string;
+    };
   };
 
   // Premium / dual-perspective

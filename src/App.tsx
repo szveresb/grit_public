@@ -27,6 +27,7 @@ const Terms = lazy(() => import("./pages/Terms"));
 const Cookies = lazy(() => import("./pages/Cookies"));
 const Gdpr = lazy(() => import("./pages/Gdpr"));
 const AboutLegal = lazy(() => import("./pages/AboutLegal"));
+const Impressum = lazy(() => import("./pages/Impressum"));
 const Library = lazy(() => import("./pages/Library"));
 const Article = lazy(() => import("./pages/Article"));
 const SelfChecks = lazy(() => import("./pages/SelfChecks"));
@@ -73,6 +74,7 @@ const AppRoutes = () => (
       <Route path="/cookies" element={<ProtectedRoute skipConsentCheck><Cookies /></ProtectedRoute>} />
       <Route path="/gdpr" element={<ProtectedRoute skipConsentCheck><Gdpr /></ProtectedRoute>} />
       <Route path="/about-legal" element={<ProtectedRoute skipConsentCheck><AboutLegal /></ProtectedRoute>} />
+      <Route path="/impressum" element={<ProtectedRoute skipConsentCheck><Impressum /></ProtectedRoute>} />
       <Route path="/en" element={<Index />} />
       <Route path="/en/auth" element={<Auth />} />
       <Route path="/en/dashboard" element={<Navigate to="/en/journal" replace />} />
@@ -97,6 +99,7 @@ const AppRoutes = () => (
       <Route path="/en/cookies" element={<ProtectedRoute skipConsentCheck><Cookies /></ProtectedRoute>} />
       <Route path="/en/gdpr" element={<ProtectedRoute skipConsentCheck><Gdpr /></ProtectedRoute>} />
       <Route path="/en/about-legal" element={<ProtectedRoute skipConsentCheck><AboutLegal /></ProtectedRoute>} />
+      <Route path="/en/impressum" element={<ProtectedRoute skipConsentCheck><Impressum /></ProtectedRoute>} />
       <Route path="*" element={<NotFound />} />
     </Routes>
   </Suspense>

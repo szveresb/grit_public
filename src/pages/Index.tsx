@@ -89,6 +89,7 @@ const Index = () => {
             <Link to={localePath('/terms')} className="text-xs text-muted-foreground hover:text-foreground transition-colors">{t.landing.terms}</Link>
             <Link to={localePath('/cookies')} className="text-xs text-muted-foreground hover:text-foreground transition-colors">{t.landing.cookies}</Link>
             <Link to={localePath('/gdpr')} className="text-xs text-muted-foreground hover:text-foreground transition-colors">{t.landing.gdpr}</Link>
+            <Link to={localePath('/impressum')} className="text-xs text-muted-foreground hover:text-foreground transition-colors">{t.legal.impressum.title}</Link>
           </div>
         </div>
       </footer>

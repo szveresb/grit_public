@@ -938,6 +938,17 @@ export const en: Dictionary = {
         'Any processing that could enable re-identification of an individual user.',
       ],
     },
+    impressum: {
+      title: 'Impressum',
+      operatorLabel: 'Operator Name',
+      operatorValue: '[Operator Name]',
+      countryLabel: 'Country of residence',
+      countryValue: '[Country]',
+      cityLabel: 'City',
+      cityValue: '[City]',
+      emailLabel: 'Email',
+      clickToReveal: 'Click to reveal',
+    },
   },
 
   premium: {
