@@ -35,6 +35,7 @@ export const hu: Dictionary = {
     patternsUnavailable: 'A mintázatelemzés jelenleg nem elérhető',
     patternsFailed: 'A mintázatok elemzése sikertelen',
     offlineDescription: 'Jelenleg offline állapotban vagy.',
+    genericFailure: 'A művelet sikertelen',
   },
 
   nav: {
@@ -265,6 +266,8 @@ export const hu: Dictionary = {
     questionnaireCreated: 'Kérdőív létrehozva',
     questionnaireDeleted: 'Kérdőív törölve',
     questionnaireCloned: 'Kérdőív klónozva',
+    publishedToast: 'Közzétéve',
+    unpublishedToast: 'Visszavonva',
     submitting: 'Beküldés...',
     repeatInterval: 'Ismétlődés',
     repeatOnce: 'Egyszeri',

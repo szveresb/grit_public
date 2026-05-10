@@ -36,6 +36,7 @@ export interface Dictionary {
     patternsUnavailable: string;
     patternsFailed: string;
     offlineDescription: string;
+    genericFailure: string;
   };
 
   // Nav
@@ -275,6 +276,8 @@ export interface Dictionary {
     questionnaireCreated: string;
     questionnaireDeleted: string;
     questionnaireCloned: string;
+    publishedToast: string;
+    unpublishedToast: string;
     submitting: string;
     repeatInterval: string;
     repeatOnce: string;

@@ -87,7 +87,7 @@ const QuickPulse = ({
     const label = moodLabels[index];
 
     if (!navigator.onLine) {
-      toast.info(t.pwa?.syncPending || "Sync Pending – will upload when connection restores", {
+      toast.info(t.pwa.syncPending, {
         description: t.errors.offlineDescription,
       });
       setSaved(true);

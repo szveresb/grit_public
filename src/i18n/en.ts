@@ -35,6 +35,7 @@ export const en: Dictionary = {
     patternsUnavailable: 'Pattern analysis unavailable',
     patternsFailed: 'Failed to analyze patterns',
     offlineDescription: 'You are currently offline.',
+    genericFailure: 'Operation failed',
   },
 
   nav: {
@@ -265,6 +266,8 @@ export const en: Dictionary = {
     questionnaireCreated: 'Questionnaire created',
     questionnaireDeleted: 'Questionnaire deleted',
     questionnaireCloned: 'Questionnaire cloned',
+    publishedToast: 'Published',
+    unpublishedToast: 'Unpublished',
     submitting: 'Submitting...',
     repeatInterval: 'Repeat',
     repeatOnce: 'One-time',
