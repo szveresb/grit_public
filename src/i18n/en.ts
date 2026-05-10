@@ -57,7 +57,7 @@ export const en: Dictionary = {
     analystExport: 'Analyst Export',
     checkIn: 'Journal',
     surveys: 'Surveys',
-    manageLanding: 'Manage Landing',
+    manageLanding: 'Content Management',
     feedback: 'Feedback',
     manageFeedback: 'Manage Feedback',
   },
@@ -481,8 +481,8 @@ export const en: Dictionary = {
 
   admin: {
     manageLanding: {
-      title: 'Manage Landing Sections',
-      subtitle: 'Dynamic sections of the landing page.',
+      title: 'Content Management',
+      subtitle: 'Manage landing page and legal documents.',
       loading: 'Loading...',
       active: 'Active',
       save: 'Save',

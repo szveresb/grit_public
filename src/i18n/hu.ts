@@ -57,7 +57,7 @@ export const hu: Dictionary = {
     analystExport: 'Elemzői export',
     checkIn: 'Napló',
     surveys: 'Kérdőívek',
-    manageLanding: 'Landing kezelése',
+    manageLanding: 'Tartalomkezelés',
     feedback: 'Visszajelzés',
     manageFeedback: 'Visszajelzések kezelése',
   },
@@ -480,8 +480,8 @@ export const hu: Dictionary = {
 
   admin: {
     manageLanding: {
-      title: 'Landing szekciók kezelése',
-      subtitle: 'A nyitólap dinamikus szekciói.',
+      title: 'Tartalomkezelés',
+      subtitle: 'A landing oldal és a jogi dokumentumok kezelése.',
       loading: 'Betöltés...',
       active: 'Aktív',
       save: 'Mentés',

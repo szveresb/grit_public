@@ -12,6 +12,8 @@ import { toast } from 'sonner';
 import { friendlyDbError } from '@/lib/db-error';
 import { FSave, FLoader } from '@/components/icons/FreudIcons';
 import { Navigate } from 'react-router-dom';
+import { hu } from '@/i18n/hu';
+import { en } from '@/i18n/en';
 
 interface LandingSection {
   id: string;
@@ -43,29 +45,32 @@ const ManageLanding = () => {
         .order('created_at');
       
       let sectionsData = (data as LandingSection[]) ?? [];
-      const hasImpressum = sectionsData.some(s => s.section_key === 'impressum');
+      const keys = ['about_legal', 'terms', 'cookies', 'gdpr', 'impressum'];
+      
+      for (const key of keys) {
+        const hasSection = sectionsData.some(s => s.section_key === key);
+        if (!hasSection) {
+          const tKey = key === 'about_legal' ? 'about' : key;
+          const huContent = hu.legal[tKey as keyof typeof hu.legal] || {};
+          const enContent = en.legal[tKey as keyof typeof en.legal] || {};
 
-      if (!hasImpressum) {
-        const { data: newSection } = await supabase
-          .from('landing_sections')
-          .insert({
-            section_key: 'impressum',
-            title: 'Impressum',
-            is_active: true,
-            config: {
-              operator_hu: '[Üzemeltető Neve]',
-              operator_en: '[Operator Name]',
-              country_hu: '[Ország]',
-              country_en: '[Country]',
-              city_hu: '[Város]',
-              city_en: '[City]'
-            }
-          })
-          .select()
-          .single();
-        
-        if (newSection) {
-          sectionsData = [...sectionsData, newSection as LandingSection];
+          const { data: newSection } = await supabase
+            .from('landing_sections')
+            .insert({
+              section_key: key,
+              title: key.replace('_', ' ').toUpperCase(),
+              is_active: true,
+              config: {
+                hu: huContent,
+                en: enContent
+              }
+            })
+            .select()
+            .single();
+          
+          if (newSection) {
+            sectionsData = [...sectionsData, newSection as LandingSection];
+          }
         }
       }
 
@@ -83,6 +88,20 @@ const ManageLanding = () => {
     setSections(prev => prev.map(s => {
       if (s.id !== id) return s;
       return { ...s, config: { ...(s.config ?? {}), [key]: value } };
+    }));
+  };
+
+  const updateLegalConfig = (id: string, lang: 'hu' | 'en', key: string, value: any) => {
+    setSections(prev => prev.map(s => {
+      if (s.id !== id) return s;
+      const currentLangConfig = s.config?.[lang] ?? {};
+      return {
+        ...s,
+        config: {
+          ...(s.config ?? {}),
+          [lang]: { ...currentLangConfig, [key]: value }
+        }
+      };
     }));
   };
 
@@ -219,64 +238,74 @@ const ManageLanding = () => {
               </>
             )}
 
-            {/* Impressum fields */}
-            {section.section_key === 'impressum' && (
-              <>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-1.5">
-                    <Label className="text-xs text-muted-foreground">Üzemeltető Neve (HU)</Label>
-                    <Input
-                      value={section.config?.operator_hu ?? ''}
-                      onChange={e => updateConfig(section.id, 'operator_hu', e.target.value)}
-                      className="rounded-2xl"
-                    />
+            {['about_legal', 'terms', 'cookies', 'gdpr', 'impressum'].includes(section.section_key) && (
+              <div className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {/* HU Column */}
+                  <div className="space-y-3">
+                    <h3 className="text-xs font-semibold text-foreground uppercase tracking-wider">Hungarian</h3>
+                    {Object.entries(section.config?.hu || {}).map(([key, value]) => (
+                      <div key={key} className="space-y-1">
+                        <Label className="text-xs text-muted-foreground">{key}</Label>
+                        {typeof value === 'string' ? (
+                          value.length > 50 ? (
+                            <Textarea
+                              value={value}
+                              onChange={e => updateLegalConfig(section.id, 'hu', key, e.target.value)}
+                              className="rounded-xl min-h-[60px]"
+                            />
+                          ) : (
+                            <Input
+                              value={value}
+                              onChange={e => updateLegalConfig(section.id, 'hu', key, e.target.value)}
+                              className="rounded-xl"
+                            />
+                          )
+                        ) : Array.isArray(value) ? (
+                          <Textarea
+                            value={value.join('\n')}
+                            onChange={e => updateLegalConfig(section.id, 'hu', key, e.target.value.split('\n'))}
+                            className="rounded-xl min-h-[60px]"
+                            placeholder="One item per line"
+                          />
+                        ) : null}
+                      </div>
+                    ))}
                   </div>
-                  <div className="space-y-1.5">
-                    <Label className="text-xs text-muted-foreground">Operator Name (EN)</Label>
-                    <Input
-                      value={section.config?.operator_en ?? ''}
-                      onChange={e => updateConfig(section.id, 'operator_en', e.target.value)}
-                      className="rounded-2xl"
-                    />
+
+                  {/* EN Column */}
+                  <div className="space-y-3">
+                    <h3 className="text-xs font-semibold text-foreground uppercase tracking-wider">English</h3>
+                    {Object.entries(section.config?.en || {}).map(([key, value]) => (
+                      <div key={key} className="space-y-1">
+                        <Label className="text-xs text-muted-foreground">{key}</Label>
+                        {typeof value === 'string' ? (
+                          value.length > 50 ? (
+                            <Textarea
+                              value={value}
+                              onChange={e => updateLegalConfig(section.id, 'en', key, e.target.value)}
+                              className="rounded-xl min-h-[60px]"
+                            />
+                          ) : (
+                            <Input
+                              value={value}
+                              onChange={e => updateLegalConfig(section.id, 'en', key, e.target.value)}
+                              className="rounded-xl"
+                            />
+                          )
+                        ) : Array.isArray(value) ? (
+                          <Textarea
+                            value={value.join('\n')}
+                            onChange={e => updateLegalConfig(section.id, 'en', key, e.target.value.split('\n'))}
+                            className="rounded-xl min-h-[60px]"
+                            placeholder="One item per line"
+                          />
+                        ) : null}
+                      </div>
+                    ))}
                   </div>
                 </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-1.5">
-                    <Label className="text-xs text-muted-foreground">Ország (HU)</Label>
-                    <Input
-                      value={section.config?.country_hu ?? ''}
-                      onChange={e => updateConfig(section.id, 'country_hu', e.target.value)}
-                      className="rounded-2xl"
-                    />
-                  </div>
-                  <div className="space-y-1.5">
-                    <Label className="text-xs text-muted-foreground">Country (EN)</Label>
-                    <Input
-                      value={section.config?.country_en ?? ''}
-                      onChange={e => updateConfig(section.id, 'country_en', e.target.value)}
-                      className="rounded-2xl"
-                    />
-                  </div>
-                </div>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="space-y-1.5">
-                    <Label className="text-xs text-muted-foreground">Város (HU)</Label>
-                    <Input
-                      value={section.config?.city_hu ?? ''}
-                      onChange={e => updateConfig(section.id, 'city_hu', e.target.value)}
-                      className="rounded-2xl"
-                    />
-                  </div>
-                  <div className="space-y-1.5">
-                    <Label className="text-xs text-muted-foreground">City (EN)</Label>
-                    <Input
-                      value={section.config?.city_en ?? ''}
-                      onChange={e => updateConfig(section.id, 'city_en', e.target.value)}
-                      className="rounded-2xl"
-                    />
-                  </div>
-                </div>
-              </>
+              </div>
             )}
 
             <Button size="sm" className="rounded-2xl gap-1.5" onClick={() => handleSave(section)} disabled={saving}>
