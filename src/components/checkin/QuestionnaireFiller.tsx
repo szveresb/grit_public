@@ -281,7 +281,7 @@ const QuestionnaireFiller: React.FC<QuestionnaireFillerProps> = ({ onCompleted, 
 
     if (!navigator.onLine) {
       toast.info(t.pwa?.syncPending || 'Sync Pending – will upload when connection restores', {
-        description: 'You are currently offline.',
+        description: t.errors.offlineDescription,
       });
       return;
     }
