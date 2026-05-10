@@ -28,6 +28,34 @@ interface LandingSection {
   is_active: boolean;
 }
 
+const convertToText = (obj: Record<string, any>) => {
+  let text = '';
+  if (obj.title) text += `# ${obj.title}\n\n`;
+  if (obj.lastUpdated) text += `*${obj.lastUpdated}*\n\n`;
+  
+  const keys = Object.keys(obj).sort((a, b) => {
+    const aMatch = a.match(/s(\d+)/);
+    const bMatch = b.match(/s(\d+)/);
+    if (aMatch && bMatch) {
+      return parseInt(aMatch[1]) - parseInt(bMatch[1]);
+    }
+    return a.localeCompare(b);
+  });
+  
+  for (const key of keys) {
+    if (key === 'title' || key === 'lastUpdated') continue;
+    
+    if (key.endsWith('Title')) {
+      text += `## ${obj[key]}\n\n`;
+    } else if (key.endsWith('Items') && Array.isArray(obj[key])) {
+      text += obj[key].map((item: string) => `- ${item}`).join('\n') + '\n\n';
+    } else if (typeof obj[key] === 'string') {
+      text += `${obj[key]}\n\n`;
+    }
+  }
+  return text.trim();
+};
+
 const ManageLanding = () => {
   const { t } = useLanguage();
   const { hasAnyRole, loading: roleLoading } = useUserRole();
@@ -55,16 +83,22 @@ const ManageLanding = () => {
           const huContent = hu.legal[tKey as keyof typeof hu.legal] || {};
           const enContent = en.legal[tKey as keyof typeof en.legal] || {};
 
+          const isLegalPage = ['about_legal', 'terms', 'cookies', 'gdpr'].includes(key);
+          const config = isLegalPage ? {
+            hu: convertToText(huContent),
+            en: convertToText(enContent)
+          } : {
+            hu: huContent,
+            en: enContent
+          };
+
           const { data: newSection } = await supabase
             .from('landing_sections')
             .insert({
               section_key: key,
               title: key.replace('_', ' ').toUpperCase(),
               is_active: true,
-              config: {
-                hu: huContent,
-                en: enContent
-              }
+              config: config
             })
             .select()
             .single();
@@ -101,6 +135,19 @@ const ManageLanding = () => {
         config: {
           ...(s.config ?? {}),
           [lang]: { ...currentLangConfig, [key]: value }
+        }
+      };
+    }));
+  };
+
+  const updateFullConfig = (id: string, lang: 'hu' | 'en', value: string) => {
+    setSections(prev => prev.map(s => {
+      if (s.id !== id) return s;
+      return {
+        ...s,
+        config: {
+          ...(s.config ?? {}),
+          [lang]: value
         }
       };
     }));
@@ -251,7 +298,33 @@ const ManageLanding = () => {
               </>
             )}
 
-            {['about_legal', 'terms', 'cookies', 'gdpr', 'impressum'].includes(section.section_key) && (
+            {['about_legal', 'terms', 'cookies', 'gdpr'].includes(section.section_key) && (
+              <div className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {/* HU Column */}
+                  <div className="space-y-1.5">
+                    <Label className="text-xs text-muted-foreground">Hungarian Content</Label>
+                    <Textarea
+                      value={section.config?.hu ?? ''}
+                      onChange={e => updateFullConfig(section.id, 'hu', e.target.value)}
+                      className="rounded-xl min-h-[300px]"
+                    />
+                  </div>
+
+                  {/* EN Column */}
+                  <div className="space-y-1.5">
+                    <Label className="text-xs text-muted-foreground">English Content</Label>
+                    <Textarea
+                      value={section.config?.en ?? ''}
+                      onChange={e => updateFullConfig(section.id, 'en', e.target.value)}
+                      className="rounded-xl min-h-[300px]"
+                    />
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {section.section_key === 'impressum' && (
               <div className="space-y-4">
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   {/* HU Column */}
@@ -261,25 +334,10 @@ const ManageLanding = () => {
                       <div key={key} className="space-y-1">
                         <Label className="text-xs text-muted-foreground">{key}</Label>
                         {typeof value === 'string' ? (
-                          value.length > 50 ? (
-                            <Textarea
-                              value={value}
-                              onChange={e => updateLegalConfig(section.id, 'hu', key, e.target.value)}
-                              className="rounded-xl min-h-[60px]"
-                            />
-                          ) : (
-                            <Input
-                              value={value}
-                              onChange={e => updateLegalConfig(section.id, 'hu', key, e.target.value)}
-                              className="rounded-xl"
-                            />
-                          )
-                        ) : Array.isArray(value) ? (
-                          <Textarea
-                            value={value.join('\n')}
-                            onChange={e => updateLegalConfig(section.id, 'hu', key, e.target.value.split('\n'))}
-                            className="rounded-xl min-h-[60px]"
-                            placeholder="One item per line"
+                          <Input
+                            value={value}
+                            onChange={e => updateLegalConfig(section.id, 'hu', key, e.target.value)}
+                            className="rounded-xl"
                           />
                         ) : null}
                       </div>
@@ -293,25 +351,10 @@ const ManageLanding = () => {
                       <div key={key} className="space-y-1">
                         <Label className="text-xs text-muted-foreground">{key}</Label>
                         {typeof value === 'string' ? (
-                          value.length > 50 ? (
-                            <Textarea
-                              value={value}
-                              onChange={e => updateLegalConfig(section.id, 'en', key, e.target.value)}
-                              className="rounded-xl min-h-[60px]"
-                            />
-                          ) : (
-                            <Input
-                              value={value}
-                              onChange={e => updateLegalConfig(section.id, 'en', key, e.target.value)}
-                              className="rounded-xl"
-                            />
-                          )
-                        ) : Array.isArray(value) ? (
-                          <Textarea
-                            value={value.join('\n')}
-                            onChange={e => updateLegalConfig(section.id, 'en', key, e.target.value.split('\n'))}
-                            className="rounded-xl min-h-[60px]"
-                            placeholder="One item per line"
+                          <Input
+                            value={value}
+                            onChange={e => updateLegalConfig(section.id, 'en', key, e.target.value)}
+                            className="rounded-xl"
                           />
                         ) : null}
                       </div>
