@@ -71,7 +71,7 @@ const ManageLibrary = () => {
   };
 
   const handleSave = async () => {
-    if (!form.title.trim()) { toast.error('Title is required'); return; }
+    if (!form.title.trim()) { toast.error(t.errors.titleRequired); return; }
     setSaving(true);
     const titleLocalized = form.title_en.trim() ? { en: form.title_en.trim() } : {};
     const excerptLocalized = form.excerpt_en.trim() ? { en: form.excerpt_en.trim() } : {};

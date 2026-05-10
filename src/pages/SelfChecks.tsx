@@ -207,7 +207,7 @@ const SelfChecks = () => {
     if (!user || !selectedQ) return;
     setSubmitting(true);
     const { data: resp, error } = await supabase.from('questionnaire_responses').insert({ user_id: user.id, questionnaire_id: selectedQ }).select('id').single();
-    if (error || !resp) { toast.error('Failed to submit'); setSubmitting(false); return; }
+    if (error || !resp) { toast.error(t.errors.failedToSubmit); setSubmitting(false); return; }
     const answerRows = Object.entries(answers).map(([question_id, answer]) => ({ response_id: resp.id, question_id, answer: JSON.stringify(answer) }));
     if (answerRows.length) await supabase.from('questionnaire_answers').insert(answerRows);
     toast.success(t.questionnaires_manage.completed); setSelectedQ(null); setAnswers({}); setSubmitting(false);
