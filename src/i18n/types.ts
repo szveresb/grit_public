@@ -36,6 +36,7 @@ export interface Dictionary {
     patternsUnavailable: string;
     patternsFailed: string;
     offlineDescription: string;
+    genericFailure: string;
   };
 
   // Nav
