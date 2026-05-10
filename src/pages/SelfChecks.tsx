@@ -352,17 +352,17 @@ const SelfChecks = () => {
                   <Input value={nq.text} onChange={e => { const c = [...formQuestions]; c[i].text = e.target.value; setFormQuestions(c); }} placeholder={`${t.questionnaires_manage.questions} ${i + 1}`} className="flex-1 rounded-2xl" />
                   <select value={nq.type} onChange={e => { const c = [...formQuestions]; c[i].type = e.target.value; setFormQuestions(c); }}
                     className="border border-input rounded-2xl px-3 text-sm bg-background">
-                    <option value="text">Text</option>
+                    <option value="text">{t.questionnaires_manage.typeText}</option>
                     <option value="scale">{t.questionnaires_manage.scaleType}</option>
                     <option value="yes_no">{t.yes}/{t.no}</option>
-                    <option value="multiple_choice">Multiple Choice</option>
+                    <option value="multiple_choice">{t.questionnaires_manage.typeMultipleChoice}</option>
                   </select>
                   {formQuestions.length > 1 && (
                     <Button type="button" variant="ghost" size="icon" onClick={() => setFormQuestions(q => q.filter((_, j) => j !== i))}><FTrash className="h-4 w-4" /></Button>
                   )}
                 </div>
                 {nq.type === 'multiple_choice' && (
-                  <Input value={nq.options} onChange={e => { const c = [...formQuestions]; c[i].options = e.target.value; setFormQuestions(c); }} placeholder="Options (comma-separated)" className="text-xs rounded-2xl" />
+                  <Input value={nq.options} onChange={e => { const c = [...formQuestions]; c[i].options = e.target.value; setFormQuestions(c); }} placeholder={t.questionnaires_manage.optionsPlaceholder} className="text-xs rounded-2xl" />
                 )}
                 {nq.type === 'scale' && (
                   <div className="space-y-2">

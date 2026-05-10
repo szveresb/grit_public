@@ -42,16 +42,16 @@ const BetaGate = () => {
       if (error) throw error;
       
       if (data === true) {
-        toast.success('Access granted!');
+        toast.success(t.betaGate.accessGranted);
         sessionStorage.removeItem('pending_invite_code');
         await refreshAccess();
         // Force navigate to protected route which will now pass the beta_access check
         navigate(localePath('/journal'));
       } else {
-        toast.error('Invalid or already used invite code.');
+        toast.error(t.betaGate.invalidCode);
       }
     } catch (err: any) {
-      toast.error(err.message || 'An error occurred.');
+      toast.error(err.message || t.betaGate.genericError);
     } finally {
       setLoading(false);
     }
@@ -76,10 +76,10 @@ const BetaGate = () => {
             Grit.hu
           </p>
           <h1 className="text-2xl font-bold tracking-tight text-foreground">
-            Closed Beta
+            {t.betaGate.closedBeta}
           </h1>
           <p className="text-sm leading-relaxed text-muted-foreground text-balance">
-            We are currently in a private testing phase. Please enter your invite code to gain access.
+            {t.betaGate.description}
           </p>
         </div>
 
@@ -87,7 +87,7 @@ const BetaGate = () => {
           <Input
             value={code}
             onChange={(e) => setCode(e.target.value.toUpperCase())}
-            placeholder="INVITE CODE"
+            placeholder={t.betaGate.placeholder}
             className="h-12 rounded-xl text-center font-mono tracking-widest uppercase text-foreground bg-accent/30"
             required
             autoCapitalize="characters"
@@ -98,7 +98,7 @@ const BetaGate = () => {
             className="h-11 w-full rounded-full font-semibold"
             disabled={loading || !code.trim()}
           >
-            {loading ? 'Verifying...' : 'Enter Platform'}
+            {loading ? t.betaGate.verifying : t.betaGate.submit}
           </Button>
         </form>
 
@@ -107,7 +107,7 @@ const BetaGate = () => {
             onClick={handleSignOut}
             className="text-xs text-muted-foreground hover:text-foreground transition-colors uppercase tracking-widest font-semibold"
           >
-            Sign Out
+            {t.signOut}
           </button>
         </div>
       </div>

@@ -299,6 +299,9 @@ export interface Dictionary {
     scaleLabels: string;
     scaleLabelsPlaceholder: string;
     reverseScoring: string;
+    typeText: string;
+    typeMultipleChoice: string;
+    optionsPlaceholder: string;
     yourScore: string;
     scoreBreakdown: string;
     totalScore: string;
@@ -413,6 +416,31 @@ export interface Dictionary {
     disclaimer: string;
     noObservations: string;
     bnoLabels: Record<string, string>;
+    back: string;
+    printPdf: string;
+    downloadCsv: string;
+    exportedAt: string;
+    headerDate: string;
+    headerConcept: string;
+    headerIntensity: string;
+    headerContext: string;
+    countLabel: string;
+    avgIntensityLabel: string;
+    summaryNote: string;
+    journalEntries: string;
+    questionnaireResponses: string;
+    observationsFhir: string;
+  };
+
+  betaGate: {
+    closedBeta: string;
+    description: string;
+    placeholder: string;
+    verifying: string;
+    submit: string;
+    accessGranted: string;
+    invalidCode: string;
+    genericError: string;
   };
 
   error: {
@@ -498,6 +526,12 @@ export interface Dictionary {
     removedRole: string;
     you: string;
     noRoles: string;
+    betaInvitesTitle: string;
+    generateCode: string;
+    codeGenerated: string;
+    noCodes: string;
+    usedSuffix: string;
+    unnamedUser: string;
   };
 
   // Analyst Export
@@ -662,6 +696,10 @@ export interface Dictionary {
     toggleSidebar: string;
     breadcrumb: string;
     premiumBadge: string;
+    menu: string;
+    dismiss: string;
+    back: string;
+    previewAlt: string;
   };
 
   feedback: {

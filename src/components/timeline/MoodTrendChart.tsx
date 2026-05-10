@@ -212,7 +212,7 @@ const MoodTrendChart = ({ data, lang, isPremium = false, onPremiumClick, t, comp
         >
           <FSparkles className="h-3.5 w-3.5" />
           <span className="font-medium">{t.timeline.timelineSlider}</span>
-          <span className="px-1.5 py-0.5 rounded-full bg-amber-200/60 dark:bg-amber-800/40 text-[10px] font-semibold uppercase tracking-wider">Premium</span>
+          <span className="px-1.5 py-0.5 rounded-full bg-amber-200/60 dark:bg-amber-800/40 text-[10px] font-semibold uppercase tracking-wider">{t.ui.premiumBadge}</span>
         </button>
       )}
     </div>
