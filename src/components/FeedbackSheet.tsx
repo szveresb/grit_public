@@ -10,16 +10,12 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import {
-  Drawer,
-  DrawerContent,
-} from '@/components/ui/drawer';
-import {
-  Sheet,
-  SheetContent,
-  SheetDescription,
-  SheetHeader,
-  SheetTitle,
-} from '@/components/ui/sheet';
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+} from '@/components/ui/dialog';
 import { FCheck, FLoader, FMessageCircle } from '@/components/icons/FreudIcons';
 import { toast } from 'sonner';
 
@@ -248,7 +244,7 @@ const FeedbackSheet = ({ open, onOpenChange }: FeedbackSheetProps) => {
                     : 'border-border/60 bg-card hover:border-primary/30 hover:bg-accent/20'
                 }`}
               >
-                <div className="text-sm font-semibold text-foreground">{option.label}</div>
+                <div className="text-sm font-semibold text-foreground break-words">{option.label}</div>
                 <div className="mt-1 text-xs leading-relaxed text-muted-foreground break-words">{option.description}</div>
               </button>
             );
@@ -328,45 +324,29 @@ const FeedbackSheet = ({ open, onOpenChange }: FeedbackSheetProps) => {
     </div>
   );
 
-  const panel = (
-    <div className="flex h-full flex-col gap-6">
-      <div className="space-y-2">
-        <div className="flex h-11 w-11 items-center justify-center rounded-[1.25rem] bg-primary/10 text-primary">
-          <FMessageCircle className="h-5 w-5" />
-        </div>
-        <div>
-          <h2 className="text-xl font-semibold tracking-tight text-foreground">{t.feedback.title}</h2>
-          <p className="mt-1 text-sm leading-relaxed text-muted-foreground">{t.feedback.subtitle}</p>
-        </div>
-      </div>
-      <div className="min-h-0 flex-1 overflow-y-auto pr-1 pb-32">{content}</div>
-    </div>
-  );
-
   if (!user) return null;
 
-  if (isMobile) {
-    return (
-      <Drawer open={open} onOpenChange={onOpenChange}>
-        <DrawerContent className="max-h-[88vh] rounded-t-[1.75rem] border-border/70 bg-background">
-          <div className="overflow-y-auto px-5 pb-5 pt-5">
-            {panel}
-          </div>
-        </DrawerContent>
-      </Drawer>
-    );
-  }
-
   return (
-    <Sheet open={open} onOpenChange={onOpenChange}>
-      <SheetContent side="right" className="w-[28rem] border-border/70 bg-background px-5 py-6 sm:max-w-[28rem]">
-        <SheetHeader className="sr-only">
-          <SheetTitle>{t.feedback.title}</SheetTitle>
-          <SheetDescription>{t.feedback.subtitle}</SheetDescription>
-        </SheetHeader>
-        {panel}
-      </SheetContent>
-    </Sheet>
+    <Dialog open={open} onOpenChange={onOpenChange}>
+      <DialogContent className="max-w-[32rem] p-6 rounded-[1.75rem]">
+        <DialogHeader className="sr-only">
+          <DialogTitle>{t.feedback.title}</DialogTitle>
+          <DialogDescription>{t.feedback.subtitle}</DialogDescription>
+        </DialogHeader>
+        <div className="flex flex-col gap-6 max-h-[80vh]">
+          <div className="space-y-2">
+            <div className="flex h-11 w-11 items-center justify-center rounded-[1.25rem] bg-primary/10 text-primary">
+              <FMessageCircle className="h-5 w-5" />
+            </div>
+            <div>
+              <h2 className="text-xl font-semibold tracking-tight text-foreground">{t.feedback.title}</h2>
+              <p className="mt-1 text-sm leading-relaxed text-muted-foreground">{t.feedback.subtitle}</p>
+            </div>
+          </div>
+          <div className="min-h-0 flex-1 overflow-y-auto pr-1 pb-4">{content}</div>
+        </div>
+      </DialogContent>
+    </Dialog>
   );
 };
 

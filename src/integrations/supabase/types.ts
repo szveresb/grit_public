@@ -1013,6 +1013,13 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      admin_list_user_emails: {
+        Args: never
+        Returns: {
+          email: string
+          user_id: string
+        }[]
+      }
       analyst_consented_user_ids: {
         Args: { _consent_key: string }
         Returns: string[]

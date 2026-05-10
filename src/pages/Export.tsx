@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import DashboardLayout from '@/components/DashboardLayout';
 import { useAuth } from '@/hooks/useAuth';
 import { useLanguage } from '@/hooks/useLanguage';
@@ -21,6 +22,9 @@ interface FhirObservation {
 const Export = () => {
   const { user } = useAuth();
   const { t, lang } = useLanguage();
+  const [showPreview, setShowPreview] = useState(false);
+  const [previewData, setPreviewData] = useState<any>(null);
+  const [previewType, setPreviewType] = useState<'all' | 'therapist'>('all');
 
   const handleExport = async () => {
     if (!user) return;
@@ -79,14 +83,9 @@ const Export = () => {
       observation_logs_fhir: fhirObservations,
     };
 
-    const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `grithu-export-${new Date().toISOString().split('T')[0]}.json`;
-    a.click();
-    URL.revokeObjectURL(url);
-    toast.success(t.profile.dataExported);
+    setPreviewData(exportData);
+    setPreviewType('all');
+    setShowPreview(true);
   };
 
   const handleTherapistExport = async () => {
@@ -169,36 +168,171 @@ const Export = () => {
       subjects: subjectSummaries,
     };
 
-    const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+    setPreviewData(exportData);
+    setPreviewType('therapist');
+    setShowPreview(true);
+  };
+
+  const handleCsvExport = () => {
+    if (!previewData) return;
+    
+    let csvContent = '';
+    
+    if (previewType === 'therapist') {
+      csvContent = 'Subject,BNO Code,BNO Label,Date,Intensity,Concept,Context\n';
+      previewData.subjects.forEach((subject: any) => {
+        subject.bno_summary.forEach((bno: any) => {
+          bno.observations.forEach((obs: any) => {
+            const row = [
+              `"${subject.subject_label}"`,
+              `"${bno.bno_code}"`,
+              `"${bno.bno_label_localized}"`,
+              `"${new Date(obs.logged_at).toISOString()}"`,
+              obs.intensity,
+              `"${obs.concept_localized}"`,
+              `"${obs.context || ''}"`
+            ].join(',');
+            csvContent += row + '\n';
+          });
+        });
+      });
+    } else {
+      csvContent = 'Resource Type,Status,Date,SNOMED Code,Display,Intensity\n';
+      previewData.observation_logs_fhir.forEach((obs: any) => {
+        const row = [
+          obs.resourceType,
+          obs.status,
+          `"${obs.effectiveDateTime}"`,
+          `"${obs.code.coding[0]?.code || ''}"`,
+          `"${obs.code.coding[0]?.display || ''}"`,
+          obs.valueInteger
+        ].join(',');
+        csvContent += row + '\n';
+      });
+    }
+
+    const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `grithu-therapist-export-${new Date().toISOString().split('T')[0]}.json`;
+    a.download = `grithu-export-${previewType}-${new Date().toISOString().split('T')[0]}.csv`;
     a.click();
     URL.revokeObjectURL(url);
-    toast.success(t.profile.dataExported);
   };
 
   return (
     <DashboardLayout>
       <div className="max-w-lg mx-auto w-full space-y-6">
-        <div>
-          <h1 className="text-lg md:text-xl font-bold tracking-tight text-foreground">{t.export.title}</h1>
-          <p className="mt-1 text-sm text-muted-foreground leading-relaxed">{t.export.subtitle}</p>
-        </div>
-        <div className="surface-card p-6 space-y-6">
-          <p className="text-sm text-muted-foreground leading-relaxed">{t.export.desc}</p>
-          <Button onClick={handleExport} size="sm" className="rounded-2xl">
-            <FDownload className="h-4 w-4 mr-1.5" /> {t.export.exportAll}
-          </Button>
-        </div>
-        <div className="surface-card p-6 space-y-6">
-          <h2 className="text-sm md:text-base font-semibold text-foreground">{t.export.therapistTitle}</h2>
-          <p className="text-sm text-muted-foreground leading-relaxed">{t.export.therapistDesc}</p>
-          <Button onClick={handleTherapistExport} size="sm" variant="secondary" className="rounded-2xl">
-            <FDownload className="h-4 w-4 mr-1.5" /> {t.export.therapistExport}
-          </Button>
-        </div>
+        {!showPreview ? (
+          <>
+            <div>
+              <h1 className="text-lg md:text-xl font-bold tracking-tight text-foreground">{t.export.title}</h1>
+              <p className="mt-1 text-sm text-muted-foreground leading-relaxed">{t.export.subtitle}</p>
+            </div>
+            <div className="surface-card p-6 space-y-6">
+              <p className="text-sm text-muted-foreground leading-relaxed">{t.export.desc}</p>
+              <Button onClick={handleExport} size="sm" className="rounded-2xl">
+                <FDownload className="h-4 w-4 mr-1.5" /> {t.export.exportAll}
+              </Button>
+            </div>
+            <div className="surface-card p-6 space-y-6">
+              <h2 className="text-sm md:text-base font-semibold text-foreground">{t.export.therapistTitle}</h2>
+              <p className="text-sm text-muted-foreground leading-relaxed">{t.export.therapistDesc}</p>
+              <Button onClick={handleTherapistExport} size="sm" variant="secondary" className="rounded-2xl">
+                <FDownload className="h-4 w-4 mr-1.5" /> {t.export.therapistExport}
+              </Button>
+            </div>
+          </>
+        ) : (
+          <div id="print-area" className="surface-card p-6 space-y-6 bg-white text-black print:p-0 print:shadow-none">
+            <div className="flex justify-between items-center print:hidden">
+              <Button variant="outline" size="sm" className="rounded-2xl" onClick={() => setShowPreview(false)}>
+                Back
+              </Button>
+              <div className="flex gap-2">
+                <Button size="sm" className="rounded-2xl" onClick={() => window.print()}>
+                  Print to PDF
+                </Button>
+                <Button size="sm" variant="secondary" className="rounded-2xl" onClick={handleCsvExport}>
+                  Download CSV
+                </Button>
+              </div>
+            </div>
+
+            <div className="border-b pb-4">
+              <h1 className="text-xl font-bold">
+                {previewType === 'therapist' ? t.export.therapistTitle : t.export.title}
+              </h1>
+              <p className="text-xs text-gray-500">
+                Exported at: {new Date(previewData.exported_at).toLocaleString()}
+              </p>
+            </div>
+
+            <div className="text-sm text-gray-600 italic">
+              {previewData.disclaimer}
+            </div>
+
+            {previewType === 'therapist' ? (
+              <div className="space-y-6">
+                {previewData.subjects.map((subject: any, si: number) => (
+                  <div key={si} className="space-y-4">
+                    <h2 className="text-lg font-semibold border-b pb-1">{subject.subject_label}</h2>
+                    {subject.bno_summary.map((bno: any, bi: number) => (
+                      <div key={bi} className="space-y-2">
+                        <h3 className="text-sm font-medium">
+                          {bno.bno_code} - {bno.bno_label_localized}
+                        </h3>
+                        <div className="text-xs text-gray-500">
+                          Count: {bno.observation_count} | Avg Intensity: {bno.avg_intensity}
+                        </div>
+                        <table className="w-full text-xs border-collapse">
+                          <thead>
+                            <tr className="bg-gray-100">
+                              <th className="border p-1 text-left">Date</th>
+                              <th className="border p-1 text-left">Concept</th>
+                              <th className="border p-1 text-center">Intensity</th>
+                              <th className="border p-1 text-left">Context</th>
+                            </tr>
+                          </thead>
+                          <tbody>
+                            {bno.observations.map((obs: any, oi: number) => (
+                              <tr key={oi}>
+                                <td className="border p-1">{new Date(obs.logged_at).toLocaleString()}</td>
+                                <td className="border p-1">{obs.concept_localized}</td>
+                                <td className="border p-1 text-center">{obs.intensity}</td>
+                                <td className="border p-1">{obs.context || '-'}</td>
+                              </tr>
+                            ))}
+                          </tbody>
+                        </table>
+                      </div>
+                    ))}
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="space-y-4">
+                <p className="text-sm">Summary of your data. Use CSV export for tabular data.</p>
+                <div className="text-xs">
+                  <p>Journal Entries: {previewData.journal_entries?.length || 0}</p>
+                  <p>Questionnaire Responses: {previewData.questionnaire_responses?.length || 0}</p>
+                  <p>Observations (FHIR): {previewData.observation_logs_fhir?.length || 0}</p>
+                </div>
+              </div>
+            )}
+
+            <style>{`
+              @media print {
+                body * { visibility: hidden; }
+                #print-area, #print-area * { visibility: visible; }
+                #print-area { position: absolute; left: 0; top: 0; width: 100%; padding: 20px; background: white; color: black; }
+                .print\\:hidden { display: none !important; }
+                table { page-break-inside: avoid; }
+                tr { page-break-inside: avoid; page-break-after: auto; }
+              }
+            `}</style>
+          </div>
+        )}
       </div>
     </DashboardLayout>
   );
