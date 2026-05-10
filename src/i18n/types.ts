@@ -416,6 +416,31 @@ export interface Dictionary {
     disclaimer: string;
     noObservations: string;
     bnoLabels: Record<string, string>;
+    back: string;
+    printPdf: string;
+    downloadCsv: string;
+    exportedAt: string;
+    headerDate: string;
+    headerConcept: string;
+    headerIntensity: string;
+    headerContext: string;
+    countLabel: string;
+    avgIntensityLabel: string;
+    summaryNote: string;
+    journalEntries: string;
+    questionnaireResponses: string;
+    observationsFhir: string;
+  };
+
+  betaGate: {
+    closedBeta: string;
+    description: string;
+    placeholder: string;
+    verifying: string;
+    submit: string;
+    accessGranted: string;
+    invalidCode: string;
+    genericError: string;
   };
 
   error: {
