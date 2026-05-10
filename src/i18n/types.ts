@@ -221,6 +221,11 @@ export interface Dictionary {
     moodOkay: string;
     moodGood: string;
     moodStrong: string;
+    moodStrugglingObserved: string;
+    moodUneasyObserved: string;
+    moodOkayObserved: string;
+    moodGoodObserved: string;
+    moodStrongObserved: string;
     pulseSaved: string;
     goDeeper: string;
     noStory: string;
