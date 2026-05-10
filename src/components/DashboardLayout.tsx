@@ -1,4 +1,5 @@
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { Fragment, useState } from 'react';
 import { SidebarProvider, SidebarTrigger } from '@/components/ui/sidebar';
 import { useStance } from '@/hooks/useStance';
 import AppSidebar from '@/components/AppSidebar';
@@ -8,11 +9,18 @@ import ContextAwareToolPanel from '@/components/ContextAwareToolPanel';
 import SubjectCardRegistry from '@/components/SubjectCardRegistry';
 import FeedbackSheet from '@/components/FeedbackSheet';
 import { useAuth } from '@/hooks/useAuth';
-import { useLanguage } from '@/hooks/useLanguage';
+import { useLanguage, stripLangPrefix } from '@/hooks/useLanguage';
 import { Button } from '@/components/ui/button';
 import { FLogOut, FUser } from '@/components/icons/FreudIcons';
 import bambooBg from '@/assets/bamboo-bg.jpg';
-import { useState } from 'react';
+import {
+  Breadcrumb,
+  BreadcrumbList,
+  BreadcrumbItem,
+  BreadcrumbLink,
+  BreadcrumbPage,
+  BreadcrumbSeparator,
+} from '@/components/ui/breadcrumb';
 
 interface DashboardLayoutProps {
   children: React.ReactNode;
@@ -29,7 +37,24 @@ const DashboardShell = ({
   const { user, signOut, displayName } = useAuth();
   const { t, localePath } = useLanguage();
   const navigate = useNavigate();
+  const { pathname } = useLocation();
   const [feedbackOpen, setFeedbackOpen] = useState(false);
+  
+  const currentPath = stripLangPrefix(pathname);
+  const segments = currentPath.split('/').filter(Boolean);
+
+  const getBreadcrumbLabel = (segment: string) => {
+    switch (segment) {
+      case 'manage-questionnaires': return t.nav.manageQuestionnaires;
+      case 'manage-users': return t.nav.manageUsers || 'Manage Users';
+      case 'surveys': return t.nav.surveys;
+      case 'journal': return t.nav.checkIn;
+      case 'profile': return t.nav.account;
+      case 'timeline': return t.timeline?.pageTitle || 'Timeline';
+      case 'export': return t.nav.dataExport || 'Export';
+      default: return segment.replace(/-/g, ' ');
+    }
+  };
   const themeClass = activeSubject.type === 'relative' ? 'theme-observer' : 'theme-self';
 
   const handleGatedClick = (path: string) => {
@@ -81,6 +106,39 @@ const DashboardShell = ({
           </header>
           <div className="flex-1 px-4 md:px-8 py-6 md:py-8 pb-20">
             <div className="max-w-7xl mx-auto w-full">
+              {segments.length > 0 && (
+                <Breadcrumb className="mb-6">
+                  <BreadcrumbList>
+                    <BreadcrumbItem>
+                      <BreadcrumbLink asChild>
+                        <Link to={localePath('/')} className="text-muted-foreground hover:text-foreground transition-colors">
+                          {t.nav.home}
+                        </Link>
+                      </BreadcrumbLink>
+                    </BreadcrumbItem>
+                    {segments.map((segment, index) => {
+                      const isLast = index === segments.length - 1;
+                      const path = `/${segments.slice(0, index + 1).join('/')}`;
+                      return (
+                        <Fragment key={path}>
+                          <BreadcrumbSeparator />
+                          <BreadcrumbItem>
+                            {isLast ? (
+                              <BreadcrumbPage>{getBreadcrumbLabel(segment)}</BreadcrumbPage>
+                            ) : (
+                              <BreadcrumbLink asChild>
+                                <Link to={localePath(path)} className="text-muted-foreground hover:text-foreground transition-colors">
+                                  {getBreadcrumbLabel(segment)}
+                                </Link>
+                              </BreadcrumbLink>
+                            )}
+                          </BreadcrumbItem>
+                        </Fragment>
+                      );
+                    })}
+                  </BreadcrumbList>
+                </Breadcrumb>
+              )}
               {user && showSubjectRegistry && <SubjectCardRegistry />}
               {user && showContextToolPanel && <ContextAwareToolPanel />}
               {children}

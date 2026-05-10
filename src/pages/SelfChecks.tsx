@@ -1,4 +1,5 @@
 import { useEffect, useState, useCallback } from 'react';
+import { useLocation } from 'react-router-dom';
 import DashboardLayout from '@/components/DashboardLayout';
 import { useAuth } from '@/hooks/useAuth';
 import { useLanguage } from '@/hooks/useLanguage';
@@ -37,6 +38,14 @@ const SelfChecks = () => {
   const { t } = useLanguage();
   const { hasAnyRole } = useUserRole();
   const isEditor = hasAnyRole('admin', 'editor');
+  const location = useLocation();
+
+  useEffect(() => {
+    // Reset state when location changes (e.g., clicking sidebar link)
+    setSelectedQ(null);
+    setShowForm(false);
+    setEditingId(null);
+  }, [location]);
   const [questionnaires, setQuestionnaires] = useState<Questionnaire[]>([]);
   const [selectedQ, setSelectedQ] = useState<string | null>(null);
   const [questions, setQuestions] = useState<Question[]>([]);
@@ -547,7 +556,7 @@ const SelfChecks = () => {
             </div>
           ) : questionnaires.map(q => (
             <div key={q.id} className="surface-card p-5 flex items-start gap-4">
-              <button onClick={() => loadQuestions(q.id)} className="flex-1 text-left hover:opacity-80 transition-opacity min-w-0">
+              <button onClick={() => isEditor ? openEdit(q) : loadQuestions(q.id)} className="flex-1 text-left hover:opacity-80 transition-opacity min-w-0">
                 <div className="flex items-center gap-2 mb-1">
                   <span className="text-sm font-semibold">{q.title}</span>
                   {!q.is_published && <span className="text-[10px] px-2 py-0.5 rounded-full border border-border text-muted-foreground">{t.draft}</span>}
