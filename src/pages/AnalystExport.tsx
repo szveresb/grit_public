@@ -20,17 +20,17 @@ const AnalystExport = () => {
     setDownloading(true);
     try {
       const { data: { session } } = await supabase.auth.getSession();
-      if (!session) { toast.error('Not authenticated'); return; }
+      if (!session) { toast.error(t.errors.notAuthenticated); return; }
       const res = await fetch(`${import.meta.env.VITE_SUPABASE_URL}/functions/v1/analyst-export`, {
         headers: { Authorization: `Bearer ${session.access_token}`, 'Content-Type': 'application/json', apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY },
       });
       const body = await res.json();
-      if (!res.ok) { toast.error(body.message || body.error || 'Export failed'); return; }
+      if (!res.ok) { toast.error(body.message || body.error || t.errors.exportFailed); return; }
       const blob = new Blob([JSON.stringify(body, null, 2)], { type: 'application/json' });
       const url = URL.createObjectURL(blob);
       const a = document.createElement('a'); a.href = url; a.download = `analyst-export-${new Date().toISOString().split('T')[0]}.json`; a.click(); URL.revokeObjectURL(url);
       toast.success(t.analystExport.exported);
-    } catch { toast.error('Export failed'); } finally { setDownloading(false); }
+    } catch { toast.error(t.errors.exportFailed); } finally { setDownloading(false); }
   };
 
   if (roleLoading) return <DashboardLayout><p className="text-sm text-muted-foreground">{t.loading}</p></DashboardLayout>;
