@@ -24,6 +24,17 @@ export const en: Dictionary = {
     componentCrashTitle: 'Something went wrong',
     componentCrashDesc: 'An unexpected error occurred while rendering this section. Our team has been notified.',
     retry: 'Try Again',
+    notAuthenticated: 'Not authenticated',
+    exportFailed: 'Export failed',
+    failedToSubmit: 'Failed to submit',
+    titleRequired: 'Title is required',
+    signInForReflection: 'Please sign in to use reflections',
+    signInForPatterns: 'Please sign in to analyze patterns',
+    reflectionUnavailable: 'Reflection unavailable',
+    reflectionFailed: 'Failed to generate reflection',
+    patternsUnavailable: 'Pattern analysis unavailable',
+    patternsFailed: 'Failed to analyze patterns',
+    offlineDescription: 'You are currently offline.',
   },
 
   nav: {

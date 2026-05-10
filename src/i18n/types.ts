@@ -25,6 +25,17 @@ export interface Dictionary {
     componentCrashTitle: string;
     componentCrashDesc: string;
     retry: string;
+    notAuthenticated: string;
+    exportFailed: string;
+    failedToSubmit: string;
+    titleRequired: string;
+    signInForReflection: string;
+    signInForPatterns: string;
+    reflectionUnavailable: string;
+    reflectionFailed: string;
+    patternsUnavailable: string;
+    patternsFailed: string;
+    offlineDescription: string;
   };
 
   // Nav
