@@ -59,7 +59,7 @@ const PublicHeader = () => {
           <button
             className="lg:hidden p-2 -mr-2 text-muted-foreground hover:text-foreground transition-colors"
             onClick={() => setMobileMenuOpen(true)}
-            aria-label="Menu"
+            aria-label={t.ui.menu}
           >
             <FMenu className="h-5 w-5" />
           </button>

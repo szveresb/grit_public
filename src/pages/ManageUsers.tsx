@@ -72,26 +72,26 @@ const ManageUsers = () => {
 
         <div className="surface-card p-5 space-y-4 border-primary/20">
           <div className="flex items-center justify-between">
-             <h2 className="text-sm font-semibold uppercase tracking-widest text-muted-foreground text-primary">Beta Invite Codes</h2>
+             <h2 className="text-sm font-semibold uppercase tracking-widest text-muted-foreground text-primary">{t.manageUsers.betaInvitesTitle}</h2>
              <Button 
                 onClick={async () => {
                   const { error } = await supabase.rpc('generate_invite_code' as any);
                   if (error) toast.error(friendlyDbError(error));
-                  else { toast.success('Code generated!'); fetchUsers(); }
+                  else { toast.success(t.manageUsers.codeGenerated); fetchUsers(); }
                 }}
                 size="sm" className="rounded-full h-8 text-[11px] font-bold"
              >
                <FPlus className="h-3 w-3 mr-1" />
-               Generate Code
+               {t.manageUsers.generateCode}
              </Button>
           </div>
           {codes.length === 0 ? (
-            <p className="text-xs text-muted-foreground italic">No codes generated yet.</p>
+            <p className="text-xs text-muted-foreground italic">{t.manageUsers.noCodes}</p>
           ) : (
             <div className="flex flex-wrap gap-2">
               {codes.map(c => (
                 <Badge key={c.id} variant={c.is_active ? "default" : "outline"} className={`rounded-md font-mono text-xs ${c.is_active ? '' : 'opacity-50'}`}>
-                  {c.code} {c.used_by && '(Used)'}
+                  {c.code} {c.used_by && t.manageUsers.usedSuffix}
                 </Badge>
               ))}
             </div>
@@ -112,7 +112,7 @@ const ManageUsers = () => {
                 <div key={u.user_id} className="surface-card p-5 space-y-3">
                   <div className="flex items-center gap-2">
                     <FShield className="h-4 w-4 text-muted-foreground" />
-                    <span className="text-sm font-semibold text-foreground truncate">{u.display_name || 'Unnamed user'}</span>
+                    <span className="text-sm font-semibold text-foreground truncate">{u.display_name || t.manageUsers.unnamedUser}</span>
                     {u.user_id === user?.id && <Badge variant="outline" className="rounded-full text-[10px]">{t.manageUsers.you}</Badge>}
                   </div>
                   {u.email && (
