@@ -247,14 +247,14 @@ const Export = () => {
           <div id="print-area" className="surface-card p-6 space-y-6 bg-white text-black print:p-0 print:shadow-none">
             <div className="flex justify-between items-center print:hidden">
               <Button variant="outline" size="sm" className="rounded-2xl" onClick={() => setShowPreview(false)}>
-                {t.back || 'Back'}
+                Back
               </Button>
               <div className="flex gap-2">
                 <Button size="sm" className="rounded-2xl" onClick={() => window.print()}>
-                  {t.print || 'Print to PDF'}
+                  Print to PDF
                 </Button>
                 <Button size="sm" variant="secondary" className="rounded-2xl" onClick={handleCsvExport}>
-                  {t.exportCsv || 'Download CSV'}
+                  Download CSV
                 </Button>
               </div>
             </div>
@@ -264,7 +264,7 @@ const Export = () => {
                 {previewType === 'therapist' ? t.export.therapistTitle : t.export.title}
               </h1>
               <p className="text-xs text-gray-500">
-                {t.export.exportedAt || 'Exported at'}: {new Date(previewData.exported_at).toLocaleString()}
+                Exported at: {new Date(previewData.exported_at).toLocaleString()}
               </p>
             </div>
 
