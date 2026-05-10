@@ -20,6 +20,7 @@ const Profile = lazy(() => import("./pages/Profile"));
 const Export = lazy(() => import("./pages/Export"));
 const ManageLibrary = lazy(() => import("./pages/ManageLibrary"));
 const ManageUsers = lazy(() => import("./pages/ManageUsers"));
+const ManageFeedback = lazy(() => import("./pages/ManageFeedback"));
 const AnalystExport = lazy(() => import("./pages/AnalystExport"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const Terms = lazy(() => import("./pages/Terms"));
@@ -60,6 +61,7 @@ const AppRoutes = () => (
       <Route path="/export" element={<ProtectedRoute skipConsentCheck><Export /></ProtectedRoute>} />
       <Route path="/manage-library" element={<ProtectedRoute><ManageLibrary /></ProtectedRoute>} />
       <Route path="/manage-users" element={<ProtectedRoute><ManageUsers /></ProtectedRoute>} />
+      <Route path="/manage-feedback" element={<ProtectedRoute><ManageFeedback /></ProtectedRoute>} />
       <Route path="/manage-questionnaires" element={<ProtectedRoute><SelfChecks /></ProtectedRoute>} />
       <Route path="/analyst-export" element={<ProtectedRoute><AnalystExport /></ProtectedRoute>} />
       <Route path="/manage-landing" element={<ProtectedRoute><ManageLanding /></ProtectedRoute>} />
@@ -83,6 +85,7 @@ const AppRoutes = () => (
       <Route path="/en/export" element={<ProtectedRoute skipConsentCheck><Export /></ProtectedRoute>} />
       <Route path="/en/manage-library" element={<ProtectedRoute><ManageLibrary /></ProtectedRoute>} />
       <Route path="/en/manage-users" element={<ProtectedRoute><ManageUsers /></ProtectedRoute>} />
+      <Route path="/en/manage-feedback" element={<ProtectedRoute><ManageFeedback /></ProtectedRoute>} />
       <Route path="/en/manage-questionnaires" element={<ProtectedRoute><SelfChecks /></ProtectedRoute>} />
       <Route path="/en/analyst-export" element={<ProtectedRoute><AnalystExport /></ProtectedRoute>} />
       <Route path="/en/manage-landing" element={<ProtectedRoute><ManageLanding /></ProtectedRoute>} />

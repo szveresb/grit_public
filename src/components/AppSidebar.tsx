@@ -57,6 +57,7 @@ const AppSidebar = ({ onOpenFeedback }: AppSidebarProps) => {
     ...(canManageQuestionnaires ? [{ title: t.nav.manageQuestionnaires, url: '/manage-questionnaires', icon: FFileText }] : []),
     ...(canManageLanding ? [{ title: t.nav.manageLanding, url: '/manage-landing', icon: FHome }] : []),
     ...(isAdmin ? [{ title: t.nav.manageUsers, url: '/manage-users', icon: FUsers }] : []),
+    ...(isAdmin ? [{ title: t.nav.manageFeedback, url: '/manage-feedback', icon: FMessageCircle }] : []),
     ...(canAnalyse ? [{ title: t.nav.analystExport, url: '/analyst-export', icon: FBarChart }] : []),
   ];
 

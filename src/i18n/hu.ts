@@ -59,6 +59,7 @@ export const hu: Dictionary = {
     surveys: 'Kérdőívek',
     manageLanding: 'Landing kezelése',
     feedback: 'Visszajelzés',
+    manageFeedback: 'Visszajelzések kezelése',
   },
 
   landing: {
@@ -541,6 +542,26 @@ export const hu: Dictionary = {
     noCodes: 'Még nincs generált kód.',
     usedSuffix: '(Felhasznált)',
     unnamedUser: 'Névtelen felhasználó',
+  },
+
+  manageFeedback: {
+    title: 'Visszajelzések kezelése',
+    subtitle: 'A felhasználók által beküldött visszajelzések áttekintése.',
+    noFeedback: 'Még nem érkezett visszajelzés.',
+    loadingFeedback: 'Visszajelzések betöltése...',
+    kind: 'Típus',
+    urgency: 'Sürgősség',
+    page: 'Oldal',
+    user: 'Felhasználó',
+    date: 'Dátum',
+    message: 'Üzenet',
+    context: 'Kontextus',
+    filterAll: 'Összes',
+    filterBug: 'Hiba',
+    filterUnclear: 'Nem egyértelmű',
+    filterIdea: 'Ötlet',
+    filterPraise: 'Dicséret',
+    filterQuestion: 'Kérdés',
   },
 
   analystExport: {

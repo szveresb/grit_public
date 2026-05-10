@@ -59,6 +59,7 @@ export const en: Dictionary = {
     surveys: 'Surveys',
     manageLanding: 'Manage Landing',
     feedback: 'Feedback',
+    manageFeedback: 'Manage Feedback',
   },
 
   landing: {
@@ -542,6 +543,26 @@ export const en: Dictionary = {
     noCodes: 'No codes generated yet.',
     usedSuffix: '(Used)',
     unnamedUser: 'Unnamed user',
+  },
+
+  manageFeedback: {
+    title: 'Manage Feedback',
+    subtitle: 'Review feedback submitted by users.',
+    noFeedback: 'No feedback received yet.',
+    loadingFeedback: 'Loading feedback...',
+    kind: 'Kind',
+    urgency: 'Urgency',
+    page: 'Page',
+    user: 'User',
+    date: 'Date',
+    message: 'Message',
+    context: 'Context',
+    filterAll: 'All',
+    filterBug: 'Bug',
+    filterUnclear: 'Unclear',
+    filterIdea: 'Idea',
+    filterPraise: 'Praise',
+    filterQuestion: 'Question',
   },
 
   analystExport: {

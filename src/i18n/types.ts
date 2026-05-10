@@ -61,6 +61,7 @@ export interface Dictionary {
     surveys: string;
     manageLanding: string;
     feedback: string;
+    manageFeedback: string;
   };
 
   // Index / Landing
@@ -548,6 +549,26 @@ export interface Dictionary {
     noCodes: string;
     usedSuffix: string;
     unnamedUser: string;
+  };
+
+  manageFeedback: {
+    title: string;
+    subtitle: string;
+    noFeedback: string;
+    loadingFeedback: string;
+    kind: string;
+    urgency: string;
+    page: string;
+    user: string;
+    date: string;
+    message: string;
+    context: string;
+    filterAll: string;
+    filterBug: string;
+    filterUnclear: string;
+    filterIdea: string;
+    filterPraise: string;
+    filterQuestion: string;
   };
 
   // Analyst Export
