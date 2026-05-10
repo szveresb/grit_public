@@ -80,7 +80,7 @@ const ManageFeedback = () => {
   });
 
   return (
-    <DashboardLayout>
+    <DashboardLayout showContextToolPanel={false}>
       <div className="space-y-6">
         <div>
           <h1 className="text-2xl font-semibold tracking-tight">{t.manageFeedback.title}</h1>
