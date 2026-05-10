@@ -67,6 +67,8 @@ export const hu: Dictionary = {
     gatedLoginCta: 'Van meghívó kódóm',
     systemPreviewTitle: 'Rendszerbemutató',
     systemPreviewSubtitle: 'Egy pillantás a strukturált önmegfigyelési eszközökbe, amelyekhez hozzáférést kapsz.',
+    systemPreviewPulseCaption: 'Súrlódásmentes, egyetlen érintéses érzelmi horgony. Folyamatos klinikai skálákkal szabványosítva.',
+    systemPreviewTrendCaption: 'Az érzelmi alapszinted és ingadozási mintáid valós idejű megjelenítése a választott időablakban.',
     noArticles: 'Még nincsenek elérhető cikkek.',
     journalPreviewTitle: 'Napló – előnézet',
     journalPreviewSubtitle: 'Nézd meg, hogyan néz ki a strukturált önreflexió. Hozz létre fiókot, hogy nyomon követhesd a fejlődésedet.',

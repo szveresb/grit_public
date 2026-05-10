@@ -27,10 +27,10 @@ const SystemPreview = () => {
     <section className="relative z-10 px-4 md:px-8 py-16 max-w-7xl mx-auto space-y-6">
       <div className="text-center mb-10">
         <h2 className="text-2xl font-bold tracking-tight text-foreground">
-          {t.landing?.systemPreviewTitle || 'System Preview'}
+          {t.landing.systemPreviewTitle}
         </h2>
         <p className="mt-2 text-sm text-muted-foreground text-balance max-w-lg mx-auto">
-          {t.landing?.systemPreviewSubtitle || 'A glimpse into the structured self-observation tools you will gain access to.'}
+          {t.landing.systemPreviewSubtitle}
         </p>
       </div>
 
@@ -44,7 +44,7 @@ const SystemPreview = () => {
             />
           </div>
           <p className="text-xs text-muted-foreground mt-4 text-center px-4">
-            A frictionless, single-tap emotional anchor. Standardized using continuous clinical scales.
+            {t.landing.systemPreviewPulseCaption}
           </p>
         </div>
 
@@ -58,7 +58,7 @@ const SystemPreview = () => {
             />
           </div>
           <p className="text-xs text-muted-foreground mt-4 text-center px-4">
-            Real-time visualization of your emotional baseline and instability patterns over your chosen window.
+            {t.landing.systemPreviewTrendCaption}
           </p>
         </div>
       </div>

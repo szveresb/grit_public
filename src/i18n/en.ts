@@ -67,6 +67,8 @@ export const en: Dictionary = {
     gatedLoginCta: 'I have an invite code',
     systemPreviewTitle: 'System Preview',
     systemPreviewSubtitle: 'A glimpse into the structured self-observation tools you will gain access to.',
+    systemPreviewPulseCaption: 'A frictionless, single-tap emotional anchor. Standardized using continuous clinical scales.',
+    systemPreviewTrendCaption: 'Real-time visualization of your emotional baseline and instability patterns over your chosen window.',
     noArticles: 'No articles available yet.',
     journalPreviewTitle: 'Journal Preview',
     journalPreviewSubtitle: 'See what structured self-reflection looks like. Create an account to track your progress over time.',
