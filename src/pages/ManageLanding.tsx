@@ -10,8 +10,10 @@ import { Textarea } from '@/components/ui/textarea';
 import { Switch } from '@/components/ui/switch';
 import { toast } from 'sonner';
 import { friendlyDbError } from '@/lib/db-error';
-import { FSave, FLoader } from '@/components/icons/FreudIcons';
+import { FSave, FLoader, FChevronDown, FChevronUp } from '@/components/icons/FreudIcons';
 import { Navigate } from 'react-router-dom';
+import { hu } from '@/i18n/hu';
+import { en } from '@/i18n/en';
 
 interface LandingSection {
   id: string;
@@ -26,12 +28,41 @@ interface LandingSection {
   is_active: boolean;
 }
 
+const convertToText = (obj: Record<string, any>) => {
+  let text = '';
+  if (obj.title) text += `# ${obj.title}\n\n`;
+  if (obj.lastUpdated) text += `*${obj.lastUpdated}*\n\n`;
+  
+  const keys = Object.keys(obj).sort((a, b) => {
+    const aMatch = a.match(/s(\d+)/);
+    const bMatch = b.match(/s(\d+)/);
+    if (aMatch && bMatch) {
+      return parseInt(aMatch[1]) - parseInt(bMatch[1]);
+    }
+    return a.localeCompare(b);
+  });
+  
+  for (const key of keys) {
+    if (key === 'title' || key === 'lastUpdated') continue;
+    
+    if (key.endsWith('Title')) {
+      text += `## ${obj[key]}\n\n`;
+    } else if (key.endsWith('Items') && Array.isArray(obj[key])) {
+      text += obj[key].map((item: string) => `- ${item}`).join('\n') + '\n\n';
+    } else if (typeof obj[key] === 'string') {
+      text += `${obj[key]}\n\n`;
+    }
+  }
+  return text.trim();
+};
+
 const ManageLanding = () => {
   const { t } = useLanguage();
   const { hasAnyRole, loading: roleLoading } = useUserRole();
   const [sections, setSections] = useState<LandingSection[]>([]);
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
+  const [expandedId, setExpandedId] = useState<string | null>(null);
 
   const canManage = hasAnyRole('admin', 'editor');
 
@@ -41,7 +72,44 @@ const ManageLanding = () => {
         .from('landing_sections')
         .select('*')
         .order('created_at');
-      setSections((data as LandingSection[]) ?? []);
+      
+      let sectionsData = (data as LandingSection[]) ?? [];
+      const keys = ['about_legal', 'terms', 'cookies', 'gdpr', 'impressum'];
+      
+      for (const key of keys) {
+        const hasSection = sectionsData.some(s => s.section_key === key);
+        if (!hasSection) {
+          const tKey = key === 'about_legal' ? 'about' : key;
+          const huContent = hu.legal[tKey as keyof typeof hu.legal] || {};
+          const enContent = en.legal[tKey as keyof typeof en.legal] || {};
+
+          const isLegalPage = ['about_legal', 'terms', 'cookies', 'gdpr'].includes(key);
+          const config = isLegalPage ? {
+            hu: convertToText(huContent),
+            en: convertToText(enContent)
+          } : {
+            hu: huContent,
+            en: enContent
+          };
+
+          const { data: newSection } = await supabase
+            .from('landing_sections')
+            .insert({
+              section_key: key,
+              title: key.replace('_', ' ').toUpperCase(),
+              is_active: true,
+              config: config
+            })
+            .select()
+            .single();
+          
+          if (newSection) {
+            sectionsData = [...sectionsData, newSection as LandingSection];
+          }
+        }
+      }
+
+      setSections(sectionsData);
       setLoading(false);
     };
     fetchSections();
@@ -55,6 +123,33 @@ const ManageLanding = () => {
     setSections(prev => prev.map(s => {
       if (s.id !== id) return s;
       return { ...s, config: { ...(s.config ?? {}), [key]: value } };
+    }));
+  };
+
+  const updateLegalConfig = (id: string, lang: 'hu' | 'en', key: string, value: any) => {
+    setSections(prev => prev.map(s => {
+      if (s.id !== id) return s;
+      const currentLangConfig = s.config?.[lang] ?? {};
+      return {
+        ...s,
+        config: {
+          ...(s.config ?? {}),
+          [lang]: { ...currentLangConfig, [key]: value }
+        }
+      };
+    }));
+  };
+
+  const updateFullConfig = (id: string, lang: 'hu' | 'en', value: string) => {
+    setSections(prev => prev.map(s => {
+      if (s.id !== id) return s;
+      return {
+        ...s,
+        config: {
+          ...(s.config ?? {}),
+          [lang]: value
+        }
+      };
     }));
   };
 
@@ -95,11 +190,21 @@ const ManageLanding = () => {
           </div>
         ) : sections.map(section => (
           <div key={section.id} className="surface-card p-6 space-y-5">
-            <div className="flex items-center justify-between">
-              <h2 className="text-sm font-semibold text-foreground uppercase tracking-widest">
-                {section.section_key.replace('_', ' ')}
-              </h2>
+            <div 
+              className="flex items-center justify-between cursor-pointer" 
+              onClick={() => setExpandedId(expandedId === section.id ? null : section.id)}
+            >
               <div className="flex items-center gap-2">
+                <h2 className="text-sm font-semibold text-foreground uppercase tracking-widest">
+                  {section.section_key.replace('_', ' ')}
+                </h2>
+                {expandedId === section.id ? (
+                  <FChevronUp className="h-4 w-4 text-muted-foreground" />
+                ) : (
+                  <FChevronDown className="h-4 w-4 text-muted-foreground" />
+                )}
+              </div>
+              <div className="flex items-center gap-2" onClick={e => e.stopPropagation()}>
                 <Label htmlFor={`active-${section.id}`} className="text-xs text-muted-foreground">{t.admin.manageLanding.active}</Label>
                 <Switch
                   id={`active-${section.id}`}
@@ -109,7 +214,9 @@ const ManageLanding = () => {
               </div>
             </div>
 
-            {/* Title HU */}
+            {expandedId === section.id && (
+              <div className="space-y-5 pt-2">
+                {/* Title HU */}
             <div className="space-y-1.5">
               <Label className="text-xs text-muted-foreground">{t.admin.manageLanding.titleHu}</Label>
               <Input
@@ -191,10 +298,78 @@ const ManageLanding = () => {
               </>
             )}
 
+            {['about_legal', 'terms', 'cookies', 'gdpr'].includes(section.section_key) && (
+              <div className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {/* HU Column */}
+                  <div className="space-y-1.5">
+                    <Label className="text-xs text-muted-foreground">Hungarian Content</Label>
+                    <Textarea
+                      value={section.config?.hu ?? ''}
+                      onChange={e => updateFullConfig(section.id, 'hu', e.target.value)}
+                      className="rounded-xl min-h-[300px]"
+                    />
+                  </div>
+
+                  {/* EN Column */}
+                  <div className="space-y-1.5">
+                    <Label className="text-xs text-muted-foreground">English Content</Label>
+                    <Textarea
+                      value={section.config?.en ?? ''}
+                      onChange={e => updateFullConfig(section.id, 'en', e.target.value)}
+                      className="rounded-xl min-h-[300px]"
+                    />
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {section.section_key === 'impressum' && (
+              <div className="space-y-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                  {/* HU Column */}
+                  <div className="space-y-3">
+                    <h3 className="text-xs font-semibold text-foreground uppercase tracking-wider">Hungarian</h3>
+                    {Object.entries(section.config?.hu || {}).map(([key, value]) => (
+                      <div key={key} className="space-y-1">
+                        <Label className="text-xs text-muted-foreground">{key}</Label>
+                        {typeof value === 'string' ? (
+                          <Input
+                            value={value}
+                            onChange={e => updateLegalConfig(section.id, 'hu', key, e.target.value)}
+                            className="rounded-xl"
+                          />
+                        ) : null}
+                      </div>
+                    ))}
+                  </div>
+
+                  {/* EN Column */}
+                  <div className="space-y-3">
+                    <h3 className="text-xs font-semibold text-foreground uppercase tracking-wider">English</h3>
+                    {Object.entries(section.config?.en || {}).map(([key, value]) => (
+                      <div key={key} className="space-y-1">
+                        <Label className="text-xs text-muted-foreground">{key}</Label>
+                        {typeof value === 'string' ? (
+                          <Input
+                            value={value}
+                            onChange={e => updateLegalConfig(section.id, 'en', key, e.target.value)}
+                            className="rounded-xl"
+                          />
+                        ) : null}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              </div>
+            )}
+
             <Button size="sm" className="rounded-2xl gap-1.5" onClick={() => handleSave(section)} disabled={saving}>
               {saving ? <FLoader className="h-4 w-4 animate-spin" /> : <FSave className="h-4 w-4" />}
               {t.admin.manageLanding.save}
             </Button>
+              </div>
+            )}
           </div>
         ))}
       </div>

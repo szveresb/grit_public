@@ -388,6 +388,30 @@ Admin/editor-managed content sections for the public landing page.
 
 ---
 
+### 4.9 `user_feedback`
+
+Stores user feedback submissions.
+
+| Column | Type | Notes |
+|---|---|---|
+| `id` | uuid (PK) | |
+| `user_id` | uuid | Auth user |
+| `summary` | text | Brief summary of the feedback |
+| `message` | text | Detailed message |
+| `kind` | text | Type of feedback (bug, unclear, idea, praise, question) |
+| `urgency` | text | Low, medium, high |
+| `page_path` | text | URL path where feedback was submitted |
+| `viewport` | text | Screen size / viewport info |
+| `locale` | text | User language (hu/en) |
+| `subject_type` | text | Self or relative |
+| `subject_id` | uuid | Nullable; references subjects.id |
+| `context_json` | jsonb | Additional technical context |
+| `created_at` | timestamptz | Default `now()` |
+
+**RLS:** Users can insert their own feedback. Admins can view and delete all.
+
+---
+
 ## 5. Database Functions
 
 | Function | Purpose | Security |
@@ -455,6 +479,7 @@ All routes are served under both `/` (Hungarian default) and `/en/` (English pre
 | `/manage-questionnaires` | `SelfChecks` | Yes (editor+) | Questionnaire management with logic jump editor, scoring, and cloning. |
 | `/manage-landing` | `ManageLanding` | Yes (editor+) | Landing page CMS |
 | `/manage-users` | `ManageUsers` | Yes (admin) | User role assignment |
+| `/manage-feedback` | `ManageFeedback` | Yes (admin) | Review and filter user feedback |
 | `/analyst-export` | `AnalystExport` | Yes (analyst) | Anonymized aggregate data download |
 | `/about-legal` | `AboutLegal` | No | About & legal information |
 | `/terms` | `Terms` | No | Terms of service |
@@ -469,6 +494,7 @@ All routes are served under both `/` (Hungarian default) and `/en/` (English pre
 
 - **`PublicHeader`** — Shared top navigation for all public/legal pages: brand link, nav links (Library, Check-in, About), `LanguageToggle`, auth/dashboard button, mobile hamburger menu (Sheet). Gated nav for protected routes redirects unauthenticated users to `/auth`.
 - **`DashboardLayout`** — Sidebar navigation + top header with auth controls (authenticated pages)
+- **`FeedbackSheet`** — Slide-over sheet for submitting feedback (bug, idea, etc.), available in `DashboardLayout`.
 - **`AppSidebar`** — Role-aware navigation with Navigate / Explore / Management sections
 - **`ProtectedRoute`** — Auth guard wrapper
 - **`EmergencyExit`** — Quick-exit safety button (always visible); redirects to neutral site

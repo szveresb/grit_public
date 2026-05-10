@@ -58,7 +58,7 @@ export const en: Dictionary = {
     analystExport: 'Analyst Export',
     checkIn: 'Journal',
     surveys: 'Surveys',
-    manageLanding: 'Manage Landing',
+    manageLanding: 'Content Management',
     feedback: 'Feedback',
     manageFeedback: 'Manage Feedback',
   },
@@ -482,8 +482,8 @@ export const en: Dictionary = {
 
   admin: {
     manageLanding: {
-      title: 'Manage Landing Sections',
-      subtitle: 'Dynamic sections of the landing page.',
+      title: 'Content Management',
+      subtitle: 'Manage landing page and legal documents.',
       loading: 'Loading...',
       active: 'Active',
       save: 'Save',
@@ -938,6 +938,17 @@ export const en: Dictionary = {
         'Advertising, behavioural targeting, profiling, or sale to data brokers.',
         'Any processing that could enable re-identification of an individual user.',
       ],
+    },
+    impressum: {
+      title: 'Impressum',
+      operatorLabel: 'Operator Name',
+      operatorValue: '[Operator Name]',
+      countryLabel: 'Country of residence',
+      countryValue: '[Country]',
+      cityLabel: 'City',
+      cityValue: '[City]',
+      emailLabel: 'Email',
+      clickToReveal: 'Click to reveal',
     },
   },
 
