@@ -208,7 +208,7 @@ export const hu: Dictionary = {
     quickPulseTitleSupportedFallback: 'Hogy van most a támogatott személy?',
     whatHappenedTitle: 'Mi történik?',
     yourStoryTitle: 'A te történeted',
-    moodStruggling: 'Küzdök',
+    moodStruggling: 'Küzdelmes',
     moodUneasy: 'Nyugtalan',
     moodOkay: 'Rendben',
     moodGood: 'Jól',
