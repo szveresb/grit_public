@@ -1,9 +1,28 @@
+import { useState, useEffect } from 'react';
 import { useLanguage } from '@/hooks/useLanguage';
 import PublicHeader from '@/components/PublicHeader';
+import { supabase } from '@/integrations/supabase/client';
 
 const Cookies = () => {
-  const { t } = useLanguage();
-  const content = t.legal.cookies;
+  const { t, lang } = useLanguage();
+  const [dbContent, setDbContent] = useState<any>(null);
+  
+  useEffect(() => {
+    const fetchContent = async () => {
+      const { data } = await supabase
+        .from('landing_sections')
+        .select('config')
+        .eq('section_key', 'cookies')
+        .single();
+      
+      if (data?.config) {
+        setDbContent(lang === 'en' ? data.config.en : data.config.hu);
+      }
+    };
+    fetchContent();
+  }, [lang]);
+
+  const content = { ...t.legal.cookies, ...(dbContent || {}) };
 
   return (
     <div className="min-h-screen bg-background">
