@@ -426,6 +426,20 @@ export const en: Dictionary = {
       'F41.1': 'Generalized anxiety disorder',
       'F32.9': 'Depressive episode, unspecified',
     },
+    back: 'Back',
+    printPdf: 'Print to PDF',
+    downloadCsv: 'Download CSV',
+    exportedAt: 'Exported at',
+    headerDate: 'Date',
+    headerConcept: 'Concept',
+    headerIntensity: 'Intensity',
+    headerContext: 'Context',
+    countLabel: 'Count',
+    avgIntensityLabel: 'Avg Intensity',
+    summaryNote: 'Summary of your data. Use CSV export for tabular data.',
+    journalEntries: 'Journal Entries',
+    questionnaireResponses: 'Questionnaire Responses',
+    observationsFhir: 'Observations (FHIR)',
   },
 
   betaGate: {
@@ -503,6 +517,12 @@ export const en: Dictionary = {
     removedRole: 'Removed {role} role',
     you: 'You',
     noRoles: 'No roles assigned',
+    betaInvitesTitle: 'Beta Invite Codes',
+    generateCode: 'Generate Code',
+    codeGenerated: 'Code generated!',
+    noCodes: 'No codes generated yet.',
+    usedSuffix: '(Used)',
+    unnamedUser: 'Unnamed user',
   },
 
   analystExport: {
@@ -693,6 +713,10 @@ export const en: Dictionary = {
     toggleSidebar: 'Toggle Sidebar',
     breadcrumb: 'breadcrumb',
     premiumBadge: 'Premium',
+    menu: 'Menu',
+    dismiss: 'Dismiss',
+    back: 'Back',
+    previewAlt: 'Preview',
   },
 
   feedback: {

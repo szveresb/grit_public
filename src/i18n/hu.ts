@@ -408,6 +408,20 @@ export const hu: Dictionary = {
       'F41.1': 'Generalizált szorongásos zavar',
       'F32.9': 'Depressziós epizód m.n.o.',
     },
+    back: 'Vissza',
+    printPdf: 'Nyomtatás PDF-be',
+    downloadCsv: 'CSV letöltése',
+    exportedAt: 'Exportálva',
+    headerDate: 'Dátum',
+    headerConcept: 'Fogalom',
+    headerIntensity: 'Intenzitás',
+    headerContext: 'Kontextus',
+    countLabel: 'Darabszám',
+    avgIntensityLabel: 'Átlagos intenzitás',
+    summaryNote: 'Adataid összefoglalója. Részletes táblázatos adatokhoz használd a CSV exportot.',
+    journalEntries: 'Naplóbejegyzések',
+    questionnaireResponses: 'Kérdőív válaszok',
+    observationsFhir: 'Megfigyelések (FHIR)',
   },
 
   betaGate: {
@@ -502,6 +516,12 @@ export const hu: Dictionary = {
     removedRole: '{role} szerep eltávolítva',
     you: 'Te',
     noRoles: 'Nincs kiosztott szerep',
+    betaInvitesTitle: 'Béta meghívókódok',
+    generateCode: 'Kód generálása',
+    codeGenerated: 'Kód létrehozva!',
+    noCodes: 'Még nincs generált kód.',
+    usedSuffix: '(Felhasznált)',
+    unnamedUser: 'Névtelen felhasználó',
   },
 
   analystExport: {
@@ -692,6 +712,10 @@ export const hu: Dictionary = {
     toggleSidebar: 'Oldalsáv váltása',
     breadcrumb: 'morzsa',
     premiumBadge: 'Prémium',
+    menu: 'Menü',
+    dismiss: 'Bezárás',
+    back: 'Vissza',
+    previewAlt: 'Előnézet',
   },
 
   feedback: {
