@@ -88,7 +88,6 @@ const SubjectWorkspaceSection = ({
     calendarItems,
     obsLogs,
     conceptMap,
-    nudges,
     loading: calendarLoading,
   } = useCalendarFeedData({
     userId: user?.id,
