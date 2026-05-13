@@ -1,6 +1,7 @@
 import { Link } from 'react-router-dom';
 import { Badge } from '@/components/ui/badge';
 import { useLanguage } from '@/hooks/useLanguage';
+import { stripMarkdown } from '@/lib/simple-markdown';
 
 interface ArticleCardProps {
   id: string;
@@ -35,7 +36,7 @@ const ArticleCard = ({ id, title, excerpt, category, source, author, featured = 
       </h3>
       {excerpt && (
         <p className={`mt-2 text-xs text-muted-foreground leading-relaxed ${featured ? '' : 'line-clamp-3'}`}>
-          {excerpt}
+          {stripMarkdown(excerpt)}
         </p>
       )}
       {(author || source) && (
