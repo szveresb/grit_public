@@ -5,6 +5,7 @@ import { useLanguage } from '@/hooks/useLanguage';
 import { useAuth } from '@/hooks/useAuth';
 import { useMoodTrendData } from '@/hooks/useMoodTrendData';
 import { useCalendarFeedData } from '@/hooks/useCalendarFeedData';
+import { usePatternDetectionRange } from '@/hooks/usePatternDetectionRange';
 import { useGlobalInactivity } from '@/hooks/useGlobalInactivity';
 import { ScopedStanceProvider } from '@/hooks/useStance';
 import QuickPulse from '@/components/checkin/QuickPulse';
@@ -133,7 +134,27 @@ const SubjectWorkspaceSection = ({
     localStorage.setItem(`grit_dismissed_patterns_${subject.id ?? 'self'}`, JSON.stringify(updated));
   };
 
-  const visibleNudges = nudges.filter(n => !dismissedPatterns.includes(n.id));
+  const { resolved: patternRange } = usePatternDetectionRange();
+
+  const rangedNudges = (() => {
+    const startISO = safeFormat(patternRange.start, 'yyyy-MM-dd', lang);
+    const endISO = safeFormat(patternRange.end, 'yyyy-MM-dd', lang);
+    const counts: Record<string, number> = {};
+    for (const log of obsLogs) {
+      if (log.logged_at < startISO || log.logged_at > endISO) continue;
+      counts[log.concept_id] = (counts[log.concept_id] ?? 0) + 1;
+    }
+    return Object.entries(counts)
+      .filter(([, count]) => count >= 3)
+      .map(([conceptId, count]) => {
+        const concept = conceptMap[conceptId];
+        const name = concept ? (lang === 'en' ? concept.name_en : concept.name_hu) : '';
+        return { id: conceptId, name, count };
+      })
+      .filter((n) => n.name);
+  })();
+
+  const visibleNudges = rangedNudges.filter((n) => !dismissedPatterns.includes(n.id));
 
   return (
     <ScopedStanceProvider
