@@ -6,6 +6,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { buildCategories } from './consentCategories';
 import ConsentCard from './ConsentCard';
 import ConsentHistoryDialog from './ConsentHistoryDialog';
+import AdvancedSettingsPanel from './AdvancedSettingsPanel';
 import { toast } from 'sonner';
 import { FShield, FClock } from '@/components/icons/FreudIcons';
 import { safeFormat } from '@/lib/date-safe';
@@ -51,6 +52,8 @@ const ConsentDashboard = () => {
             />
           ))}
         </div>
+
+        <AdvancedSettingsPanel />
 
         <div className="flex items-center justify-between pt-1">
           {lastUpdated && (

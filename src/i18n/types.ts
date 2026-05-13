@@ -716,6 +716,26 @@ export interface Dictionary {
     gateMessage: string;
     gateAction: string;
     categories: Record<string, { title: string; description: string; learnMore: string }>;
+    advancedSettings: {
+      title: string;
+      subtitle: string;
+      disabledHint: string;
+      patternDetection: {
+        title: string;
+        subtitle: string;
+        activeRange: string;
+        reset: string;
+        startLabel: string;
+        endLabel: string;
+        pickDate: string;
+      };
+      presets: {
+        '7d': string;
+        '30d': string;
+        '90d': string;
+        custom: string;
+      };
+    };
   };
 
   // Subjects / dual perspective
