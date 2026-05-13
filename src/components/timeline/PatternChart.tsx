@@ -1,5 +1,16 @@
 import { useMemo, useState } from 'react';
-import { getISOWeek, parseISO, startOfWeek, subWeeks, isAfter, format } from 'date-fns';
+import {
+  getISOWeek,
+  parseISO,
+  startOfWeek,
+  subWeeks,
+  isAfter,
+  format,
+  addWeeks,
+  isBefore,
+  startOfDay,
+  endOfDay,
+} from 'date-fns';
 import { Link } from 'react-router-dom';
 import { getDateLocale } from '@/lib/date-locale';
 import { useLanguage } from '@/hooks/useLanguage';
@@ -21,6 +32,8 @@ interface PatternChartProps {
   logs: ObsLog[];
   conceptMap: ConceptMap;
   compact?: boolean;
+  rangeStart?: Date;
+  rangeEnd?: Date;
 }
 
 interface WeekBucket {
@@ -30,7 +43,7 @@ interface WeekBucket {
   details: Record<string, { date: string; narrative?: string | null; intensity: number }[]>;
 }
 
-const PatternChart = ({ logs, conceptMap, compact = false }: PatternChartProps) => {
+const PatternChart = ({ logs, conceptMap, compact = false, rangeStart, rangeEnd }: PatternChartProps) => {
   const { t, lang, localePath } = useLanguage();
   const [expanded, setExpanded] = useState<string | null>(null); // "cid-weekIdx"
 
@@ -38,17 +51,31 @@ const PatternChart = ({ logs, conceptMap, compact = false }: PatternChartProps) 
   const { weeks, flaggedConcepts, maxCount } = useMemo(() => {
     const now = new Date();
     const buckets: WeekBucket[] = [];
-    for (let i = 7; i >= 0; i--) {
-      const ws = startOfWeek(subWeeks(now, i), { weekStartsOn: 1 });
-      buckets.push({ weekNum: getISOWeek(ws), weekStart: ws, counts: {}, details: {} });
+
+    if (rangeStart && rangeEnd) {
+      let ws = startOfWeek(rangeStart, { weekStartsOn: 1 });
+      const endWeek = startOfWeek(rangeEnd, { weekStartsOn: 1 });
+      let guard = 0;
+      while (!isAfter(ws, endWeek) && guard++ < 104) {
+        buckets.push({ weekNum: getISOWeek(ws), weekStart: ws, counts: {}, details: {} });
+        ws = addWeeks(ws, 1);
+      }
+    } else {
+      for (let i = 7; i >= 0; i--) {
+        const ws = startOfWeek(subWeeks(now, i), { weekStartsOn: 1 });
+        buckets.push({ weekNum: getISOWeek(ws), weekStart: ws, counts: {}, details: {} });
+      }
     }
-    const cutoff = buckets[0].weekStart;
+
+    const lower = rangeStart ? startOfDay(rangeStart) : buckets[0].weekStart;
+    const upper = rangeEnd ? endOfDay(rangeEnd) : null;
 
     for (const log of logs) {
       const d = parseISO(log.logged_at);
-      if (!isAfter(d, cutoff) && format(d, 'yyyy-MM-dd') !== format(cutoff, 'yyyy-MM-dd')) continue;
+      if (isBefore(d, lower)) continue;
+      if (upper && isAfter(d, upper)) continue;
       const wn = getISOWeek(d);
-      const bucket = buckets.find(b => b.weekNum === wn);
+      const bucket = buckets.find((b) => b.weekNum === wn);
       if (bucket) {
         bucket.counts[log.concept_id] = (bucket.counts[log.concept_id] || 0) + 1;
         if (!bucket.details[log.concept_id]) bucket.details[log.concept_id] = [];
@@ -66,7 +93,7 @@ const PatternChart = ({ logs, conceptMap, compact = false }: PatternChartProps) 
     }
 
     return { weeks: buckets, flaggedConcepts: Array.from(conceptHits), maxCount: max };
-  }, [logs]);
+  }, [logs, rangeStart, rangeEnd]);
 
   if (flaggedConcepts.length === 0) return null;
 
