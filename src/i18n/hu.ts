@@ -737,6 +737,26 @@ export const hu: Dictionary = {
         learnMore: 'Az anonimizált adatok csak akkor válnak elérhetővé elemzők számára, ha legalább 20 aktív felhasználó van. Az egyéni azonosítás nem lehetséges.',
       },
     },
+    advancedSettings: {
+      title: 'Haladó beállítások',
+      subtitle: 'Finomhangolhatod, hogyan számoljuk és jelenítjük meg a felismert mintákat.',
+      disabledHint: 'A beállítások megnyitásához engedélyezd fent a Mintázat felismerést.',
+      patternDetection: {
+        title: 'Mintázat felismerési időszak',
+        subtitle: 'Válaszd ki, mekkora időablakot nézzen a rendszer a mintázatok kereséséhez.',
+        activeRange: 'Aktív időszak: {start} – {end}',
+        reset: 'Visszaállítás alapértelmezettre (30 nap)',
+        startLabel: 'Kezdet',
+        endLabel: 'Vég',
+        pickDate: 'Válassz dátumot',
+      },
+      presets: {
+        '7d': '7 nap',
+        '30d': '30 nap',
+        '90d': '90 nap',
+        custom: 'Egyéni',
+      },
+    },
   },
 
   subjects: {
