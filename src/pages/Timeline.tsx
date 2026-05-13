@@ -7,6 +7,9 @@ import { useCalendarFeedData } from '@/hooks/useCalendarFeedData';
 import { useDualPerspectiveData } from '@/hooks/useDualPerspectiveData';
 import PatternPulseChart from '@/components/timeline/PatternPulseChart';
 import CorrelationChart from '@/components/timeline/CorrelationChart';
+import DualPerspectiveInsights from '@/components/timeline/DualPerspectiveInsights';
+import CorrelationScatter from '@/components/timeline/CorrelationScatter';
+import ConceptCorrelationList from '@/components/timeline/ConceptCorrelationList';
 import { FTimeline, FSparkles, FList } from '@/components/icons/FreudIcons';
 import SubjectSelector from '@/components/observations/SubjectSelector';
 import ErrorBoundary from '@/components/ErrorBoundary';
@@ -25,6 +28,7 @@ const Timeline = () => {
   } = useStance();
 
   const [viewMode, setViewMode] = useState<'individual' | 'correlation'>('individual');
+  const [windowDays, setWindowDays] = useState<7 | 30 | 90>(30);
 
   const { obsLogs, conceptMap, loading: feedLoading } = useCalendarFeedData({
     userId: user?.id,
@@ -34,10 +38,10 @@ const Timeline = () => {
     t,
   });
 
-  const { data: correlationData, loading: correlationLoading } = useDualPerspectiveData({
+  const { data: correlationData, stats: correlationStats, loading: correlationLoading } = useDualPerspectiveData({
     userId: user?.id,
     relativeId: selectedSubjectId,
-    days: 30,
+    days: windowDays,
   });
 
   const loading = viewMode === 'individual' ? feedLoading : correlationLoading;
@@ -102,12 +106,47 @@ const Timeline = () => {
               <p className="text-sm font-medium text-muted-foreground">{t.loading}</p>
             </div>
           ) : showCorrelation ? (
-            <CorrelationChart 
-              data={correlationData} 
-              lang={lang} 
-              t={t} 
-              relativeName={selectedSubjectName || t.subjects.otherLabel} 
-            />
+            <div className="space-y-5">
+              <div className="flex items-center justify-center gap-2">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mr-1">
+                  {t.timeline.dual.windowLabel}
+                </span>
+                {([7, 30, 90] as const).map((w) => (
+                  <button
+                    key={w}
+                    onClick={() => setWindowDays(w)}
+                    className={`px-3 py-1 text-[11px] font-semibold rounded-full border transition-colors ${
+                      windowDays === w
+                        ? 'bg-primary text-primary-foreground border-primary'
+                        : 'bg-background text-muted-foreground border-border hover:bg-muted/40'
+                    }`}
+                  >
+                    {w === 7 ? t.timeline.dual.window7d : w === 30 ? t.timeline.dual.window30d : t.timeline.dual.window90d}
+                  </button>
+                ))}
+              </div>
+
+              <DualPerspectiveInsights
+                stats={correlationStats}
+                t={t}
+                relativeName={selectedSubjectName || t.subjects.otherLabel}
+              />
+
+              <CorrelationChart
+                data={correlationData}
+                lang={lang}
+                t={t}
+                relativeName={selectedSubjectName || t.subjects.otherLabel}
+              />
+
+              <CorrelationScatter stats={correlationStats} t={t} lang={lang} />
+
+              <ConceptCorrelationList stats={correlationStats} t={t} lang={lang} />
+
+              <p className="text-[10px] text-muted-foreground italic text-center px-4">
+                {t.timeline.dual.disclaimer}
+              </p>
+            </div>
           ) : (
             <PatternPulseChart logs={obsLogs} conceptMap={conceptMap} />
           )}
