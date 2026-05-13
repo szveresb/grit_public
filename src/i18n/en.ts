@@ -738,6 +738,26 @@ export const en: Dictionary = {
         learnMore: 'Anonymized data only becomes available to analysts when at least 20 active users exist. Individual identification is not possible.',
       },
     },
+    advancedSettings: {
+      title: 'Advanced settings',
+      subtitle: 'Fine-tune how detected patterns are computed and shown.',
+      disabledHint: 'Enable Pattern Detection above to configure these settings.',
+      patternDetection: {
+        title: 'Pattern detection window',
+        subtitle: 'Choose the time window the system looks at when surfacing patterns.',
+        activeRange: 'Active range: {start} – {end}',
+        reset: 'Reset to default (30 days)',
+        startLabel: 'Start',
+        endLabel: 'End',
+        pickDate: 'Pick a date',
+      },
+      presets: {
+        '7d': '7 days',
+        '30d': '30 days',
+        '90d': '90 days',
+        custom: 'Custom',
+      },
+    },
   },
 
   subjects: {
