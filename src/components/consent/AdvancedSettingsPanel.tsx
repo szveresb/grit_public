@@ -69,6 +69,11 @@ const AdvancedSettingsPanel = () => {
           </div>
         </AccordionTrigger>
         <AccordionContent className="pb-5">
+          {!enabled && (
+            <p className="text-xs text-muted-foreground italic pb-3">
+              {t.consent.advancedSettings.disabledHint}
+            </p>
+          )}
           <div
             className={cn(
               'rounded-3xl border border-border/50 bg-background/40 p-4 space-y-4',
@@ -188,12 +193,6 @@ const AdvancedSettingsPanel = () => {
                 {t.consent.advancedSettings.patternDetection.reset}
               </button>
             </div>
-
-            {!enabled && (
-              <p className="text-xs text-muted-foreground italic pt-1">
-                {t.consent.advancedSettings.disabledHint}
-              </p>
-            )}
           </div>
         </AccordionContent>
       </AccordionItem>
