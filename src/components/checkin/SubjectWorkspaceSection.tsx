@@ -334,7 +334,13 @@ const SubjectWorkspaceSection = ({
                     <ConsentGate consentKey="pattern_detection">
                       <ErrorBoundary name="PatternChart">
                         <div className="animate-fade-in">
-                          <PatternChart logs={obsLogs} conceptMap={conceptMap} compact={isParallel} />
+                          <PatternChart
+                            logs={obsLogs}
+                            conceptMap={conceptMap}
+                            compact={isParallel}
+                            rangeStart={patternRange.start}
+                            rangeEnd={patternRange.end}
+                          />
                         </div>
                       </ErrorBoundary>
                     </ConsentGate>
