@@ -82,17 +82,42 @@ const CorrelationScatter = ({ stats, t, lang }: Props) => {
             <ZAxis type="number" dataKey="z" range={[40, 220]} />
             <Tooltip
               cursor={{ strokeDasharray: '3 3' }}
-              contentStyle={{
-                background: 'hsl(var(--popover))',
-                border: '1px solid hsl(var(--border))',
-                borderRadius: 12,
-                fontSize: 11,
-              }}
-              formatter={(value: any, name: any) => [Number(value).toFixed(1), name]}
-              labelFormatter={(_, payload) => {
-                const p = payload?.[0]?.payload;
-                if (!p?.date) return '';
-                return format(parseISO(p.date), 'PPP', { locale });
+              content={({ active, payload }) => {
+                if (!active || !payload || payload.length === 0) return null;
+                const p = payload[0].payload as {
+                  x: number;
+                  y: number;
+                  z: number;
+                  date?: string;
+                };
+                if (!p?.date) return null;
+                return (
+                  <div className="rounded-2xl border border-border bg-popover/95 backdrop-blur-sm p-3 shadow-xl text-xs space-y-2 min-w-[180px]">
+                    <p className="font-bold text-foreground border-b border-border/50 pb-1.5 mb-1.5">
+                      {format(parseISO(p.date), 'PPP', { locale })}
+                    </p>
+                    <div className="flex items-center justify-between gap-4">
+                      <div className="flex items-center gap-2">
+                        <div className="h-1.5 w-1.5 rounded-full bg-primary" />
+                        <span className="text-muted-foreground">{t.timeline.dual.scatterAxisSelf}</span>
+                      </div>
+                      <span className="font-bold tabular-nums">{p.x.toFixed(1)}/5</span>
+                    </div>
+                    <div className="flex items-center justify-between gap-4">
+                      <div className="flex items-center gap-2">
+                        <div className="h-1.5 w-1.5 rounded-full bg-destructive" />
+                        <span className="text-muted-foreground">{t.timeline.dual.scatterAxisRelative}</span>
+                      </div>
+                      <span className="font-bold tabular-nums">{p.y.toFixed(1)}/5</span>
+                    </div>
+                    <p className="text-[10px] text-muted-foreground pt-1.5 mt-1 border-t border-border/50 tabular-nums">
+                      {p.z}{' '}
+                      {p.z === 1
+                        ? t.timeline.observationCountSingle || 'observation'
+                        : t.timeline.observationCountPlural || 'observations'}
+                    </p>
+                  </div>
+                );
               }}
             />
             <Scatter
