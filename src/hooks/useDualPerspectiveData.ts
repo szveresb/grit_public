@@ -8,6 +8,7 @@ export interface CorrelationPoint {
   selfMood: number | null;
   relativeIntensity: number | null;
   observationCount: number;
+  moodPulseCount: number;
 }
 
 export interface ConceptCorrelation {
@@ -135,6 +136,7 @@ export const useDualPerspectiveData = ({
           selfMood: stats?.moodCount ? stats.moodSum / stats.moodCount : null,
           relativeIntensity: stats?.obsCount ? stats.obsSum / stats.obsCount : null,
           observationCount: stats?.obsCount || 0,
+          moodPulseCount: stats?.moodCount || 0,
         });
       }
 
