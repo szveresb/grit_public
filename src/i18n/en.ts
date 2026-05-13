@@ -524,6 +524,14 @@ export const en: Dictionary = {
     titleEn: 'Title (EN)',
     excerptHu: 'Excerpt (HU)',
     excerptEn: 'Excerpt (EN)',
+    formatBold: 'Bold',
+    formatItalic: 'Italic',
+    formatHeading: 'Heading',
+    formatList: 'List',
+    formatLink: 'Link',
+    markdownHint: 'Formatting: **bold**, *italic*, ## heading, - list, [text](url)',
+    linkPromptUrl: 'Link URL',
+    linkPromptText: 'Link text',
   },
 
   manageUsers: {

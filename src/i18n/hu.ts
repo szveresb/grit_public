@@ -523,6 +523,14 @@ export const hu: Dictionary = {
     titleEn: 'Cím (EN)',
     excerptHu: 'Kivonat (HU)',
     excerptEn: 'Kivonat (EN)',
+    formatBold: 'Félkövér',
+    formatItalic: 'Dőlt',
+    formatHeading: 'Címsor',
+    formatList: 'Lista',
+    formatLink: 'Link',
+    markdownHint: 'Formázás: **félkövér**, *dőlt*, ## címsor, - lista, [szöveg](url)',
+    linkPromptUrl: 'Link URL',
+    linkPromptText: 'Link szövege',
   },
 
   manageUsers: {
