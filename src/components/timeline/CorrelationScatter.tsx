@@ -19,9 +19,10 @@ interface Props {
   stats: DualStats;
   t: Dictionary;
   lang: Lang;
+  onPointClick?: (date: string) => void;
 }
 
-const CorrelationScatter = ({ stats, t, lang }: Props) => {
+const CorrelationScatter = ({ stats, t, lang, onPointClick }: Props) => {
   const locale = getDateLocale(lang);
   const points = stats.scatter;
 
@@ -129,6 +130,11 @@ const CorrelationScatter = ({ stats, t, lang }: Props) => {
               }))}
               fill="hsl(var(--primary))"
               fillOpacity={0.55}
+              cursor={onPointClick ? 'pointer' : 'default'}
+              onClick={(payload: any) => {
+                const date = payload?.payload?.date ?? payload?.date;
+                if (date && onPointClick) onPointClick(date);
+              }}
             />
             {regressionLine && (
               <Scatter
