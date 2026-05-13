@@ -8,6 +8,7 @@ export interface CorrelationPoint {
   selfMood: number | null;
   relativeIntensity: number | null;
   observationCount: number;
+  moodPulseCount: number;
 }
 
 export interface ConceptCorrelation {
