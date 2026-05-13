@@ -529,6 +529,14 @@ export interface Dictionary {
     titleEn: string;
     excerptHu: string;
     excerptEn: string;
+    formatBold: string;
+    formatItalic: string;
+    formatHeading: string;
+    formatList: string;
+    formatLink: string;
+    markdownHint: string;
+    linkPromptUrl: string;
+    linkPromptText: string;
   };
 
   // Manage Users
