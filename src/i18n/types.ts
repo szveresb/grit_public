@@ -405,6 +405,39 @@ export interface Dictionary {
     environmentDesc: string;
     observationCountSingle: string;
     observationCountPlural: string;
+    dual: {
+      windowLabel: string;
+      window7d: string;
+      window30d: string;
+      window90d: string;
+      overallCorrelation: string;
+      overallCorrelationDesc: string;
+      strengthStrongInverse: string;
+      strengthModerateInverse: string;
+      strengthWeakInverse: string;
+      strengthNone: string;
+      strengthWeak: string;
+      strengthModerate: string;
+      strengthStrong: string;
+      leadLagTitle: string;
+      leadLagSameDay: string;
+      leadLagAfter: string;
+      leadLagBefore: string;
+      leadLagNone: string;
+      coOccurrenceTitle: string;
+      coOccurrenceDesc: string;
+      notEnoughOverlap: string;
+      notEnoughOverlapDesc: string;
+      scatterTitle: string;
+      scatterSubtitle: string;
+      scatterAxisSelf: string;
+      scatterAxisRelative: string;
+      conceptListTitle: string;
+      conceptListSubtitle: string;
+      conceptDays: string;
+      noPairedConcepts: string;
+      disclaimer: string;
+    };
   };
 
 
