@@ -28,7 +28,10 @@ interface LibraryArticle {
   category: string;
   featured: boolean;
   author: string;
+  created_at: string;
 }
+
+type SortMode = 'featured_first' | 'newest' | 'oldest' | 'title_asc' | 'title_desc';
 
 const CategoryPage = () => {
   const { slug } = useParams<{ slug: string }>();
@@ -37,6 +40,7 @@ const CategoryPage = () => {
   const [articles, setArticles] = useState<LibraryArticle[]>([]);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
+  const [sortBy, setSortBy] = useState<SortMode>('featured_first');
 
   useEffect(() => {
     if (!slug) return;
