@@ -83,15 +83,15 @@ const ManageLanding = () => {
         const hasSection = sectionsData.some(s => s.section_key === key);
         if (!hasSection) {
           const tKey = key === 'about_legal' ? 'about' : key;
-          const huContent = (hu.legal as Record<string, unknown>)[tKey] as Record<string, unknown> | undefined ?? {};
-          const enContent = (en.legal as Record<string, unknown>)[tKey] as Record<string, unknown> | undefined ?? {};
+          const huContent = (hu.legal[tKey as keyof typeof hu.legal] || {}) as Record<string, unknown>;
+          const enContent = (en.legal[tKey as keyof typeof en.legal] || {}) as Record<string, unknown>;
 
           const isLegalPage = ['about_legal', 'terms', 'cookies', 'gdpr'].includes(key);
           const isItemList = ['content_categories', 'top_menu'].includes(key);
-          const config = isItemList
+          const config: Record<string, unknown> = isItemList
             ? { items: [] }
             : isLegalPage
-              ? { hu: convertToText(huContent as Record<string, unknown>), en: convertToText(enContent as Record<string, unknown>) }
+              ? { hu: convertToText(huContent), en: convertToText(enContent) }
               : { hu: huContent, en: enContent };
 
           const { data: newSection } = await supabase
@@ -100,7 +100,7 @@ const ManageLanding = () => {
               section_key: key,
               title: key.replace('_', ' ').toUpperCase(),
               is_active: true,
-              config: config as Record<string, unknown>,
+              config: config,
             })
             .select()
             .single();
