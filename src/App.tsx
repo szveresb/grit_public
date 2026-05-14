@@ -35,6 +35,7 @@ const Surveys = lazy(() => import("./pages/Surveys"));
 const ManageLanding = lazy(() => import("./pages/ManageLanding"));
 const ConsentOnboarding = lazy(() => import("./pages/ConsentOnboarding"));
 const Timeline = lazy(() => import("./pages/Timeline"));
+const CategoryPage = lazy(() => import("./pages/CategoryPage"));
 
 
 const queryClient = new QueryClient();
@@ -70,6 +71,7 @@ const AppRoutes = () => (
       
       <Route path="/library" element={<ProtectedRoute><Library /></ProtectedRoute>} />
       <Route path="/library/:id" element={<ProtectedRoute><Article /></ProtectedRoute>} />
+      <Route path="/category/:slug" element={<CategoryPage />} />
       <Route path="/terms" element={<ProtectedRoute skipConsentCheck><Terms /></ProtectedRoute>} />
       <Route path="/cookies" element={<ProtectedRoute skipConsentCheck><Cookies /></ProtectedRoute>} />
       <Route path="/gdpr" element={<ProtectedRoute skipConsentCheck><Gdpr /></ProtectedRoute>} />
@@ -95,6 +97,7 @@ const AppRoutes = () => (
       
       <Route path="/en/library" element={<ProtectedRoute><Library /></ProtectedRoute>} />
       <Route path="/en/library/:id" element={<ProtectedRoute><Article /></ProtectedRoute>} />
+      <Route path="/en/category/:slug" element={<CategoryPage />} />
       <Route path="/en/terms" element={<ProtectedRoute skipConsentCheck><Terms /></ProtectedRoute>} />
       <Route path="/en/cookies" element={<ProtectedRoute skipConsentCheck><Cookies /></ProtectedRoute>} />
       <Route path="/en/gdpr" element={<ProtectedRoute skipConsentCheck><Gdpr /></ProtectedRoute>} />
