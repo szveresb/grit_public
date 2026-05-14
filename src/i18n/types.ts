@@ -242,6 +242,8 @@ export interface Dictionary {
     moodGoodObserved: string;
     moodStrongObserved: string;
     pulseSaved: string;
+    pulseDateLabel: string;
+    pulseDateToday: string;
     goDeeper: string;
     noStory: string;
     reflectDialogTitle: string;
