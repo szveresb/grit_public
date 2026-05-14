@@ -100,8 +100,15 @@ const CategoryPage = () => {
   const label = (lang === 'en' ? category?.label_en : category?.label_hu) || category?.article_category || slug;
   const description = (lang === 'en' ? category?.description_en : category?.description_hu) || '';
 
-  const localizedTitle = (a: LibraryArticle) => (lang === 'en' && a.title_localized?.en) || a.title;
   const localizedExcerpt = (a: LibraryArticle) => (lang === 'en' && a.excerpt_localized?.en) || a.excerpt;
+
+  const sortOptions: { value: SortMode; label: string }[] = [
+    { value: 'featured_first', label: t.category?.sortFeaturedFirst || 'Kiemelt először' },
+    { value: 'newest', label: t.category?.sortNewest || 'Legújabb' },
+    { value: 'oldest', label: t.category?.sortOldest || 'Legrégebbi' },
+    { value: 'title_asc', label: t.category?.sortTitleAsc || 'Cím (A–Z)' },
+    { value: 'title_desc', label: t.category?.sortTitleDesc || 'Cím (Z–A)' },
+  ];
 
   return (
     <div className="min-h-screen relative w-full overflow-x-hidden">
@@ -109,9 +116,26 @@ const CategoryPage = () => {
       <div className="fixed inset-0 z-0 bg-background/80" />
       <PublicHeader />
       <section className="relative z-10 px-4 md:px-8 py-12 max-w-7xl mx-auto">
-        <div className="mb-8">
-          <h1 className="text-xl md:text-2xl font-bold tracking-tight text-foreground">{label}</h1>
-          {description && <p className="mt-1 text-sm text-muted-foreground">{description}</p>}
+        <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-8">
+          <div>
+            <h1 className="text-xl md:text-2xl font-bold tracking-tight text-foreground">{label}</h1>
+            {description && <p className="mt-1 text-sm text-muted-foreground">{description}</p>}
+          </div>
+          <div className="flex items-center gap-2">
+            <label htmlFor="sort-select" className="text-xs text-muted-foreground whitespace-nowrap">
+              {t.category?.sortBy || 'Rendezés'}
+            </label>
+            <select
+              id="sort-select"
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value as SortMode)}
+              className="h-9 rounded-xl border border-input bg-background px-3 py-1 text-sm text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+            >
+              {sortOptions.map((opt) => (
+                <option key={opt.value} value={opt.value}>{opt.label}</option>
+              ))}
+            </select>
+          </div>
         </div>
         {loading ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
