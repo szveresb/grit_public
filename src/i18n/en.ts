@@ -234,6 +234,8 @@ export const en: Dictionary = {
     moodGoodObserved: 'Doing well',
     moodStrongObserved: 'Steady',
     pulseSaved: 'Entry noted 🌿',
+    pulseDateLabel: 'For date',
+    pulseDateToday: 'Today',
     goDeeper: 'Want to go deeper?',
     noStory: 'Nothing here yet. Your journal entries and observations will appear here.',
     reflectDialogTitle: 'Looking back',
