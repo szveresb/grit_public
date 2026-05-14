@@ -155,7 +155,7 @@ const CategoryPage = () => {
               <ArticleCard
                 key={article.id}
                 id={article.id}
-                title={localizedTitle(article)}
+                title={localizedTitleFn(article)}
                 excerpt={localizedExcerpt(article)}
                 category={article.category}
                 source={article.source}
