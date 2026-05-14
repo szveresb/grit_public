@@ -234,6 +234,8 @@ export const hu: Dictionary = {
     moodGoodObserved: 'Jól van',
     moodStrongObserved: 'Erős',
     pulseSaved: 'Bejegyzés feljegyezve 🌿',
+    pulseDateLabel: 'Dátum',
+    pulseDateToday: 'Ma',
     goDeeper: 'Szeretnél mélyebbre menni?',
     noStory: 'Még nincs itt semmi. A naplóbejegyzéseid és megfigyeléseid itt fognak megjelenni.',
     reflectDialogTitle: 'Visszatekintés',
