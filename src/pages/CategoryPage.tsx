@@ -28,7 +28,10 @@ interface LibraryArticle {
   category: string;
   featured: boolean;
   author: string;
+  created_at: string;
 }
+
+type SortMode = 'featured_first' | 'newest' | 'oldest' | 'title_asc' | 'title_desc';
 
 const CategoryPage = () => {
   const { slug } = useParams<{ slug: string }>();
@@ -37,6 +40,7 @@ const CategoryPage = () => {
   const [articles, setArticles] = useState<LibraryArticle[]>([]);
   const [loading, setLoading] = useState(true);
   const [notFound, setNotFound] = useState(false);
+  const [sortBy, setSortBy] = useState<SortMode>('featured_first');
 
   useEffect(() => {
     if (!slug) return;
@@ -55,7 +59,7 @@ const CategoryPage = () => {
       }
       const { data: arts } = await supabase
         .from('library_articles')
-        .select('id, title, title_localized, excerpt, excerpt_localized, source, category, url, featured, author')
+        .select('id, title, title_localized, excerpt, excerpt_localized, source, category, url, featured, author, created_at')
         .eq('published', true)
         .eq('category', cat.article_category)
         .order('created_at', { ascending: false });
@@ -67,18 +71,44 @@ const CategoryPage = () => {
     return () => { cancelled = true; };
   }, [slug]);
 
-  const sorted = useMemo(
-    () => [...articles].sort((a, b) => (b.featured ? 1 : 0) - (a.featured ? 1 : 0)),
-    [articles],
-  );
+  const localizedTitleFn = (a: LibraryArticle) =>
+    (lang === 'en' && a.title_localized?.en) || a.title;
+
+  const sorted = useMemo(() => {
+    const list = [...articles];
+    switch (sortBy) {
+      case 'featured_first':
+        return list.sort(
+          (a, b) => (b.featured ? 1 : 0) - (a.featured ? 1 : 0) ||
+            new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+        );
+      case 'newest':
+        return list.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+      case 'oldest':
+        return list.sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
+      case 'title_asc':
+        return list.sort((a, b) => localizedTitleFn(a).localeCompare(localizedTitleFn(b), lang));
+      case 'title_desc':
+        return list.sort((a, b) => localizedTitleFn(b).localeCompare(localizedTitleFn(a), lang));
+      default:
+        return list;
+    }
+  }, [articles, sortBy, lang]);
 
   if (notFound) return <Navigate to={localePath('/library')} replace />;
 
   const label = (lang === 'en' ? category?.label_en : category?.label_hu) || category?.article_category || slug;
   const description = (lang === 'en' ? category?.description_en : category?.description_hu) || '';
 
-  const localizedTitle = (a: LibraryArticle) => (lang === 'en' && a.title_localized?.en) || a.title;
   const localizedExcerpt = (a: LibraryArticle) => (lang === 'en' && a.excerpt_localized?.en) || a.excerpt;
+
+  const sortOptions: { value: SortMode; label: string }[] = [
+    { value: 'featured_first', label: t.category?.sortFeaturedFirst || 'Kiemelt először' },
+    { value: 'newest', label: t.category?.sortNewest || 'Legújabb' },
+    { value: 'oldest', label: t.category?.sortOldest || 'Legrégebbi' },
+    { value: 'title_asc', label: t.category?.sortTitleAsc || 'Cím (A–Z)' },
+    { value: 'title_desc', label: t.category?.sortTitleDesc || 'Cím (Z–A)' },
+  ];
 
   return (
     <div className="min-h-screen relative w-full overflow-x-hidden">
@@ -86,9 +116,26 @@ const CategoryPage = () => {
       <div className="fixed inset-0 z-0 bg-background/80" />
       <PublicHeader />
       <section className="relative z-10 px-4 md:px-8 py-12 max-w-7xl mx-auto">
-        <div className="mb-8">
-          <h1 className="text-xl md:text-2xl font-bold tracking-tight text-foreground">{label}</h1>
-          {description && <p className="mt-1 text-sm text-muted-foreground">{description}</p>}
+        <div className="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4 mb-8">
+          <div>
+            <h1 className="text-xl md:text-2xl font-bold tracking-tight text-foreground">{label}</h1>
+            {description && <p className="mt-1 text-sm text-muted-foreground">{description}</p>}
+          </div>
+          <div className="flex items-center gap-2">
+            <label htmlFor="sort-select" className="text-xs text-muted-foreground whitespace-nowrap">
+              {t.category?.sortBy || 'Rendezés'}
+            </label>
+            <select
+              id="sort-select"
+              value={sortBy}
+              onChange={(e) => setSortBy(e.target.value as SortMode)}
+              className="h-9 rounded-xl border border-input bg-background px-3 py-1 text-sm text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+            >
+              {sortOptions.map((opt) => (
+                <option key={opt.value} value={opt.value}>{opt.label}</option>
+              ))}
+            </select>
+          </div>
         </div>
         {loading ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -108,7 +155,7 @@ const CategoryPage = () => {
               <ArticleCard
                 key={article.id}
                 id={article.id}
-                title={localizedTitle(article)}
+                title={localizedTitleFn(article)}
                 excerpt={localizedExcerpt(article)}
                 category={article.category}
                 source={article.source}

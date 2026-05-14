@@ -115,6 +115,15 @@ export const en: Dictionary = {
     verifyContinue: 'Verify & Continue',
   },
 
+  category: {
+    sortBy: 'Sort by',
+    sortFeaturedFirst: 'Featured first',
+    sortNewest: 'Newest',
+    sortOldest: 'Oldest',
+    sortTitleAsc: 'Title (A–Z)',
+    sortTitleDesc: 'Title (Z–A)',
+  },
+
   article: {
     backToLibrary: 'Back to Library',
     notFound: 'Article not found.',
