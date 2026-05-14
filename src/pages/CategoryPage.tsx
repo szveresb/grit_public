@@ -59,7 +59,7 @@ const CategoryPage = () => {
       }
       const { data: arts } = await supabase
         .from('library_articles')
-        .select('id, title, title_localized, excerpt, excerpt_localized, source, category, url, featured, author')
+        .select('id, title, title_localized, excerpt, excerpt_localized, source, category, url, featured, author, created_at')
         .eq('published', true)
         .eq('category', cat.article_category)
         .order('created_at', { ascending: false });
