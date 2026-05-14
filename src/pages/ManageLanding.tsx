@@ -14,6 +14,8 @@ import { FSave, FLoader, FChevronDown, FChevronUp } from '@/components/icons/Fre
 import { Navigate } from 'react-router-dom';
 import { hu } from '@/i18n/hu';
 import { en } from '@/i18n/en';
+import ContentCategoriesEditor, { CategoryItem } from '@/components/admin/ContentCategoriesEditor';
+import TopMenuEditor, { TopMenuItem } from '@/components/admin/TopMenuEditor';
 
 interface LandingSection {
   id: string;
@@ -63,6 +65,7 @@ const ManageLanding = () => {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [expandedId, setExpandedId] = useState<string | null>(null);
+  const [availableCategories, setAvailableCategories] = useState<string[]>([]);
 
   const canManage = hasAnyRole('admin', 'editor');
 
@@ -74,23 +77,22 @@ const ManageLanding = () => {
         .order('created_at');
       
       let sectionsData = (data as LandingSection[]) ?? [];
-      const keys = ['about_legal', 'terms', 'cookies', 'gdpr', 'impressum'];
+      const keys = ['about_legal', 'terms', 'cookies', 'gdpr', 'impressum', 'content_categories', 'top_menu'];
       
       for (const key of keys) {
         const hasSection = sectionsData.some(s => s.section_key === key);
         if (!hasSection) {
           const tKey = key === 'about_legal' ? 'about' : key;
-          const huContent = hu.legal[tKey as keyof typeof hu.legal] || {};
-          const enContent = en.legal[tKey as keyof typeof en.legal] || {};
+          const huContent = (hu.legal as Record<string, unknown>)[tKey] as Record<string, unknown> | undefined ?? {};
+          const enContent = (en.legal as Record<string, unknown>)[tKey] as Record<string, unknown> | undefined ?? {};
 
           const isLegalPage = ['about_legal', 'terms', 'cookies', 'gdpr'].includes(key);
-          const config = isLegalPage ? {
-            hu: convertToText(huContent),
-            en: convertToText(enContent)
-          } : {
-            hu: huContent,
-            en: enContent
-          };
+          const isItemList = ['content_categories', 'top_menu'].includes(key);
+          const config = isItemList
+            ? { items: [] }
+            : isLegalPage
+              ? { hu: convertToText(huContent as Record<string, unknown>), en: convertToText(enContent as Record<string, unknown>) }
+              : { hu: huContent, en: enContent };
 
           const { data: newSection } = await supabase
             .from('landing_sections')
@@ -113,6 +115,13 @@ const ManageLanding = () => {
       setLoading(false);
     };
     fetchSections();
+    supabase
+      .from('library_articles')
+      .select('category')
+      .then(({ data }) => {
+        const cats = Array.from(new Set((data ?? []).map((r: { category: string }) => r.category).filter(Boolean)));
+        setAvailableCategories(cats.sort());
+      });
   }, []);
 
   const updateSection = (id: string, updates: Partial<LandingSection>) => {
@@ -216,6 +225,31 @@ const ManageLanding = () => {
 
             {expandedId === section.id && (
               <div className="space-y-5 pt-2">
+                {section.section_key === 'content_categories' ? (
+                  <>
+                    <ContentCategoriesEditor
+                      items={(section.config?.items as CategoryItem[]) ?? []}
+                      onChange={(items) => updateConfig(section.id, 'items', items)}
+                      availableCategories={availableCategories}
+                    />
+                    <Button size="sm" className="rounded-2xl gap-1.5" onClick={() => handleSave(section)} disabled={saving}>
+                      {saving ? <FLoader className="h-4 w-4 animate-spin" /> : <FSave className="h-4 w-4" />}
+                      {t.admin.manageLanding.save}
+                    </Button>
+                  </>
+                ) : section.section_key === 'top_menu' ? (
+                  <>
+                    <TopMenuEditor
+                      items={(section.config?.items as TopMenuItem[]) ?? []}
+                      onChange={(items) => updateConfig(section.id, 'items', items)}
+                    />
+                    <Button size="sm" className="rounded-2xl gap-1.5" onClick={() => handleSave(section)} disabled={saving}>
+                      {saving ? <FLoader className="h-4 w-4 animate-spin" /> : <FSave className="h-4 w-4" />}
+                      {t.admin.manageLanding.save}
+                    </Button>
+                  </>
+                ) : (
+                <>
                 {/* Title HU */}
             <div className="space-y-1.5">
               <Label className="text-xs text-muted-foreground">{t.admin.manageLanding.titleHu}</Label>
@@ -368,6 +402,8 @@ const ManageLanding = () => {
               {saving ? <FLoader className="h-4 w-4 animate-spin" /> : <FSave className="h-4 w-4" />}
               {t.admin.manageLanding.save}
             </Button>
+                </>
+                )}
               </div>
             )}
           </div>
