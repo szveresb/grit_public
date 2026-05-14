@@ -184,26 +184,33 @@ const ManageLibrary = () => {
               </h2>
               <Button variant="ghost" size="icon" onClick={() => setShowForm(false)}><FClose className="h-4 w-4" /></Button>
             </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">{t.manageLibrary.titleHu}</Label>
-                <Input value={form.title} onChange={e => setForm(f => ({ ...f, title: e.target.value }))} placeholder={t.manageLibrary.titleHu} className="rounded-2xl" />
+            <div className="space-y-6">
+              {/* Hungarian Content */}
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">{t.manageLibrary.titleHu}</Label>
+                  <Input value={form.title} onChange={e => setForm(f => ({ ...f, title: e.target.value }))} placeholder={t.manageLibrary.titleHu} className="rounded-2xl" />
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">{t.manageLibrary.excerptHu}</Label>
+                  <FormatToolbar field="excerpt" />
+                  <Textarea ref={excerptHuRef} value={form.excerpt} onChange={e => setForm(f => ({ ...f, excerpt: e.target.value }))} rows={5} className="rounded-2xl font-mono text-xs" />
+                </div>
               </div>
-              <div className="space-y-2">
-                <Label className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">{t.manageLibrary.titleEn}</Label>
-                <Input value={form.title_en} onChange={e => setForm(f => ({ ...f, title_en: e.target.value }))} placeholder={t.manageLibrary.titleEn} className="rounded-2xl" />
-              </div>
-            </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">{t.manageLibrary.excerptHu}</Label>
-                <FormatToolbar field="excerpt" />
-                <Textarea ref={excerptHuRef} value={form.excerpt} onChange={e => setForm(f => ({ ...f, excerpt: e.target.value }))} rows={5} className="rounded-2xl font-mono text-xs" />
-              </div>
-              <div className="space-y-2">
-                <Label className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">{t.manageLibrary.excerptEn}</Label>
-                <FormatToolbar field="excerpt_en" />
-                <Textarea ref={excerptEnRef} value={form.excerpt_en} onChange={e => setForm(f => ({ ...f, excerpt_en: e.target.value }))} rows={5} className="rounded-2xl font-mono text-xs" />
+
+              <div className="border-t border-border/40" />
+
+              {/* English Content */}
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">{t.manageLibrary.titleEn}</Label>
+                  <Input value={form.title_en} onChange={e => setForm(f => ({ ...f, title_en: e.target.value }))} placeholder={t.manageLibrary.titleEn} className="rounded-2xl" />
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">{t.manageLibrary.excerptEn}</Label>
+                  <FormatToolbar field="excerpt_en" />
+                  <Textarea ref={excerptEnRef} value={form.excerpt_en} onChange={e => setForm(f => ({ ...f, excerpt_en: e.target.value }))} rows={5} className="rounded-2xl font-mono text-xs" />
+                </div>
               </div>
             </div>
             <p className="text-[11px] text-muted-foreground -mt-2">{t.manageLibrary.markdownHint}</p>
