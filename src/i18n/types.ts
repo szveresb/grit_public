@@ -118,6 +118,16 @@ export interface Dictionary {
     verifyContinue: string;
   };
 
+  // Category page
+  category: {
+    sortBy: string;
+    sortFeaturedFirst: string;
+    sortNewest: string;
+    sortOldest: string;
+    sortTitleAsc: string;
+    sortTitleDesc: string;
+  };
+
   // Article detail
   article: {
     backToLibrary: string;
