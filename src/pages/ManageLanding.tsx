@@ -100,7 +100,7 @@ const ManageLanding = () => {
               section_key: key,
               title: key.replace('_', ' ').toUpperCase(),
               is_active: true,
-              config: config
+              config: config as Record<string, unknown>,
             })
             .select()
             .single();
