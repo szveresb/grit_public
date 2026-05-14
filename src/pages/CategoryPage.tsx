@@ -71,10 +71,29 @@ const CategoryPage = () => {
     return () => { cancelled = true; };
   }, [slug]);
 
-  const sorted = useMemo(
-    () => [...articles].sort((a, b) => (b.featured ? 1 : 0) - (a.featured ? 1 : 0)),
-    [articles],
-  );
+  const localizedTitleFn = (a: LibraryArticle) =>
+    (lang === 'en' && a.title_localized?.en) || a.title;
+
+  const sorted = useMemo(() => {
+    const list = [...articles];
+    switch (sortBy) {
+      case 'featured_first':
+        return list.sort(
+          (a, b) => (b.featured ? 1 : 0) - (a.featured ? 1 : 0) ||
+            new Date(b.created_at).getTime() - new Date(a.created_at).getTime()
+        );
+      case 'newest':
+        return list.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
+      case 'oldest':
+        return list.sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime());
+      case 'title_asc':
+        return list.sort((a, b) => localizedTitleFn(a).localeCompare(localizedTitleFn(b), lang));
+      case 'title_desc':
+        return list.sort((a, b) => localizedTitleFn(b).localeCompare(localizedTitleFn(a), lang));
+      default:
+        return list;
+    }
+  }, [articles, sortBy, lang]);
 
   if (notFound) return <Navigate to={localePath('/library')} replace />;
 
