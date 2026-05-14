@@ -115,6 +115,15 @@ export const hu: Dictionary = {
     verifyContinue: 'Ellenőrzés és tovább',
   },
 
+  category: {
+    sortBy: 'Rendezés',
+    sortFeaturedFirst: 'Kiemelt először',
+    sortNewest: 'Legújabb',
+    sortOldest: 'Legrégebbi',
+    sortTitleAsc: 'Cím (A–Z)',
+    sortTitleDesc: 'Cím (Z–A)',
+  },
+
   article: {
     backToLibrary: 'Vissza a könyvtárba',
     notFound: 'A cikk nem található.',
