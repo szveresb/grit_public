@@ -136,11 +136,20 @@ const CorrelationChart = ({ data, lang, t, relativeName }: CorrelationChartProps
                     <span className="font-bold">{p.relativeIntensity ? `${p.relativeIntensity.toFixed(1)}/5` : '—'}</span>
                   </div>
 
-                  {p.observationCount > 0 && (
-                    <p className="text-[10px] text-muted-foreground pt-1 border-t border-border/50">
-                      {p.observationCount} {p.observationCount === 1 ? t.timeline.observationCountSingle || 'observation' : t.timeline.observationCountPlural || 'observations'}
-                    </p>
-                  )}
+                  <div className="pt-1.5 mt-1 border-t border-border/50 space-y-0.5 text-[10px] text-muted-foreground">
+                    <div className="flex justify-between gap-4">
+                      <span>{t.timeline.dual.scatterAxisSelf}</span>
+                      <span className="tabular-nums">
+                        {p.moodPulseCount} {p.moodPulseCount === 1 ? (t.timeline.observationCountSingle || 'pulse') : (t.timeline.observationCountPlural || 'pulses')}
+                      </span>
+                    </div>
+                    <div className="flex justify-between gap-4">
+                      <span>{t.timeline.dual.scatterAxisRelative}</span>
+                      <span className="tabular-nums">
+                        {p.observationCount} {p.observationCount === 1 ? (t.timeline.observationCountSingle || 'observation') : (t.timeline.observationCountPlural || 'observations')}
+                      </span>
+                    </div>
+                  </div>
                 </div>
               );
             }}

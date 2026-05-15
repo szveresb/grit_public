@@ -1,90 +1,64 @@
+## Goal
+Add an **"Advanced Settings"** section to `ConsentDashboard` whose first (and currently only) control is a **date-range filter for the Pattern Detection** category. It lets the user limit which observation logs are considered when patterns are detected and rendered.
 
+## Scope
+Frontend-only. No schema migration. Settings persist per-user in `localStorage` (key: `grit_pattern_detection_range_${user.id}`). Bilingual HU/EN.
 
-## Granular Consent Mechanism — "Sovereign Consent"
+## What gets added
 
-### Overview
+### 1. Collapsible Advanced Settings panel in ConsentDashboard
+- Rendered below the existing consent cards.
+- Built with shadcn `Accordion` (single, collapsible). Header: gear icon + `t.consent.advancedSettings.title`, subtitle line.
+- Disabled / dimmed with explanatory copy when `pattern_detection` consent is **off** — toggling it back on enables the controls.
 
-A card-based consent carousel that activates after first login, educating users on data handling while collecting granular consent. Revisitable from the Profile page as a "Privacy & AI Control" section with toggleable data categories.
+### 2. Pattern Detection range control
+Inside the panel, a card titled `t.consent.advancedSettings.patternDetection.title`:
+- Three preset pill buttons: **7 days / 30 days / 90 days**.
+- A fourth **"Custom"** option that reveals two shadcn `Popover` + `Calendar` date pickers (start, end) following the project's shadcn-datepicker pattern (`pointer-events-auto`, `mode="single"`).
+- A footer line: `t.consent.advancedSettings.patternDetection.activeRange` showing the resolved range as `MMM d – MMM d`.
+- A subtle "Reset to default (30 days)" link.
 
-### Database
-
-**New table: `user_consents`**
-- `id` uuid PK
-- `user_id` uuid NOT NULL (references auth.users)
-- `consent_key` text NOT NULL (e.g. `journal_storage`, `observation_storage`, `mood_tracking`, `free_text_ai`, `pattern_detection`, `fhir_export`, `anonymized_analytics`)
-- `granted` boolean NOT NULL DEFAULT false
-- `updated_at` timestamptz DEFAULT now()
-- UNIQUE(`user_id`, `consent_key`)
-- RLS: users can only read/write own rows (`auth.uid() = user_id`)
-
-**New column on `profiles`:**
-- `consent_completed` boolean DEFAULT false — tracks whether the user has completed the initial consent flow
-
-### Consent Categories (7 cards)
-
-1. **Journal & Observations** — storing personal entries and observation logs
-2. **Mood Tracking** — QuickPulse data collection
-3. **Free Text Processing** — AI analysis of narrative fields
-4. **Pattern Detection** — AI-powered trend identification across date ranges
-5. **Questionnaire Data** — storing survey responses and scores
-6. **FHIR Export** — mapping data to clinical codes for portability
-7. **Anonymized Analytics** — contributing to aggregate (k-anonymous) statistics
-
-Each card shows: icon, human-surface title, 2-sentence plain explanation, toggle switch, and a "Learn more" expandable section.
-
-### Components
-
-1. **`src/components/consent/ConsentCarousel.tsx`** — Embla carousel with 7 consent cards + summary card. Each card is a rounded-3xl soft-UI card with a Switch toggle. Final card shows a summary of all choices with a "Confirm & Continue" button. Saves all consents to `user_consents` and sets `profiles.consent_completed = true`.
-
-2. **`src/components/consent/ConsentCard.tsx`** — Individual card: icon, title, description, toggle, optional "Learn more" collapsible.
-
-3. **`src/components/consent/ConsentSummary.tsx`** — Summary card showing all 7 toggles with their current state, used both as the final carousel slide and in the Profile page.
-
-4. **`src/components/consent/ConsentDashboard.tsx`** — Profile-embeddable version with "Advanced Settings" progressive disclosure (category-specific date ranges and sub-toggles for Pattern Detection).
-
-### Integration Points
-
-**ProtectedRoute** — After auth check, if `consent_completed` is false, redirect to `/consent` (or `/en/consent`).
-
-**Auth.tsx** — No changes needed; the redirect happens in ProtectedRoute after successful login.
-
-**App.tsx** — Add `/consent` and `/en/consent` routes pointing to a new `ConsentOnboarding` page (protected but exempt from consent check).
-
-**Profile.tsx** — Add a new card section "Privacy & AI Control" with the `ConsentDashboard` component, allowing users to review and update their consents at any time.
-
-**RecapBanner** — After completing consent, show a one-time banner on the journal page confirming privacy settings are active.
-
-### New Page
-
-**`src/pages/ConsentOnboarding.tsx`** — Full-screen page (no sidebar) with the ConsentCarousel centered. Bamboo background, same aesthetic as Auth page. On completion, navigates to `/journal`.
-
-### i18n
-
-Add `consent` section to Dictionary with keys for each card title, description, learn-more text, summary heading, confirm button, and profile section labels. Both `hu.ts` and `en.ts`.
-
-### Flow
-
-```text
-Sign Up → Email Verify → First Login
-  → ProtectedRoute checks profiles.consent_completed
-  → false → redirect to /consent
-  → ConsentCarousel (7 cards + summary)
-  → "Confirm" → upsert user_consents rows + set consent_completed
-  → Navigate to /journal with RecapBanner
-
-Profile → Privacy & AI Control section
-  → ConsentDashboard with toggles
-  → Changes saved immediately via upsert
-  → "Advanced Settings" expands date-range/category filters for Pattern Detection
+### 3. Storage hook — `src/hooks/usePatternDetectionRange.ts`
+```ts
+type Preset = '7d' | '30d' | '90d' | 'custom';
+interface PatternRange { preset: Preset; startDate?: string; endDate?: string }
+export const usePatternDetectionRange = () => { range, setRange, resolved: { start: Date; end: Date } }
 ```
+- Reads from / writes to localStorage scoped by the authenticated user id.
+- `resolved` always returns concrete dates (presets are computed from `new Date()`).
+- Default: `{ preset: '30d' }`.
 
-### Implementation Steps
+### 4. Wire the range into pattern detection
+Two consumers of pattern data filter by the resolved range:
+- `src/components/timeline/PatternChart.tsx` — accept optional `rangeStart`/`rangeEnd` props; if provided, filter `logs` on `logged_at` inside the existing `useMemo` aggregation. (No behavioural change when omitted.)
+- `src/components/checkin/SubjectWorkspaceSection.tsx` — read `usePatternDetectionRange()` and pass the resolved dates into `<PatternChart>`. The `nudge` summary above also clips to the same window so the headline counts agree with the chart.
 
-1. Database migration: create `user_consents` table with RLS; add `consent_completed` to `profiles`
-2. Create consent components (ConsentCard, ConsentCarousel, ConsentSummary, ConsentDashboard)
-3. Create ConsentOnboarding page
-4. Update ProtectedRoute to check consent status
-5. Add consent routes to App.tsx
-6. Add ConsentDashboard to Profile page
-7. Add all i18n keys (hu + en)
+### 5. i18n (HU + EN)
+Add to `consent` namespace:
+- `advancedSettings.title`, `advancedSettings.subtitle`
+- `advancedSettings.disabledHint` (shown when consent is off)
+- `advancedSettings.patternDetection.title`, `.subtitle`
+- `presets.7d`, `presets.30d`, `presets.90d`, `presets.custom`
+- `range.start`, `range.end`, `range.activeRange` ("Active range: {start} – {end}"), `range.reset`
 
+### 6. Files
+
+**New**
+- `src/hooks/usePatternDetectionRange.ts`
+- `src/components/consent/AdvancedSettingsPanel.tsx` (the Accordion + the pattern detection card)
+
+**Modified**
+- `src/components/consent/ConsentDashboard.tsx` — render `<AdvancedSettingsPanel />` after the consent cards.
+- `src/components/timeline/PatternChart.tsx` — optional range props + filter.
+- `src/components/checkin/SubjectWorkspaceSection.tsx` — pass range into `PatternChart` and apply to the nudge summary list.
+- `src/i18n/types.ts`, `src/i18n/en.ts`, `src/i18n/hu.ts` — new keys.
+
+## What stays out of scope
+- No DB column on `user_consents`; if the user later wants cross-device persistence we can add a `settings jsonb` column in a follow-up.
+- No backend filtering in `journal-patterns` edge function (current pattern detection on this surface is client-side from `obsLogs`).
+- No new "advanced settings" beyond pattern detection — the panel is built generically so we can add more controls later, but only the pattern detection control ships now.
+- ConsentOnboarding flow unchanged.
+
+## Validation
+- Manual: open `/profile`, expand Advanced Settings, switch presets and a custom range; confirm `PatternChart` and the nudge list re-render with the filtered window.
+- Edge cases handled: `pattern_detection` consent off → controls disabled, prior selection retained but unused; custom range with `end < start` → swapped; no logs in range → existing PatternChart empty state shows.

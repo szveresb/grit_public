@@ -1,13 +1,11 @@
-import { Link } from 'react-router-dom';
 import { useEffect, useState, useMemo } from 'react';
 import { useLanguage } from '@/hooks/useLanguage';
 import { supabase } from '@/integrations/supabase/client';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Skeleton } from '@/components/ui/skeleton';
-import PublicHeader from '@/components/PublicHeader';
+import DashboardLayout from '@/components/DashboardLayout';
 import ArticleCard from '@/components/ArticleCard';
-import bambooBg from '@/assets/bamboo-bg.jpg';
 
 interface LibraryArticle {
   id: string;
@@ -23,7 +21,7 @@ interface LibraryArticle {
 }
 
 const Library = () => {
-  const { t, lang, localePath } = useLanguage();
+  const { t, lang } = useLanguage();
   const [articles, setArticles] = useState<LibraryArticle[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
@@ -68,14 +66,8 @@ const Library = () => {
     (lang === 'en' && a.excerpt_localized?.en) || a.excerpt;
 
   return (
-    <div className="min-h-screen relative w-full overflow-x-hidden">
-      <div className="fixed inset-0 z-0 bg-cover bg-center" style={{ backgroundImage: `url(${bambooBg})`, opacity: 0.12 }} />
-      <div className="fixed inset-0 z-0 bg-background/80" />
-
-      <PublicHeader />
-
-      {/* Content */}
-      <section className="relative z-10 px-4 md:px-8 py-12 max-w-7xl mx-auto">
+    <DashboardLayout showContextToolPanel={false}>
+      <section>
         <div className="mb-8">
           <h1 className="text-xl md:text-2xl font-bold tracking-tight text-foreground">{t.landing.libraryTitle}</h1>
           <p className="mt-1 text-sm text-muted-foreground">{t.landing.librarySubtitle}</p>
@@ -165,21 +157,7 @@ const Library = () => {
           </div>
         )}
       </section>
-
-      {/* Footer */}
-      <footer className="relative z-10 border-t border-border bg-card/40 backdrop-blur-xl">
-        <div className="max-w-7xl mx-auto px-4 md:px-8 py-6 flex flex-col sm:flex-row items-center justify-between gap-4">
-          <span className="text-xs text-muted-foreground">{t.landing.footerRights.replace('{year}', String(new Date().getFullYear()))}</span>
-          <div className="flex items-center gap-6">
-            <Link to={localePath('/about-legal')} className="text-xs text-muted-foreground hover:text-foreground transition-colors">{t.nav.about} Grit.hu</Link>
-            <Link to={localePath('/terms')} className="text-xs text-muted-foreground hover:text-foreground transition-colors">{t.landing.terms}</Link>
-            <Link to={localePath('/cookies')} className="text-xs text-muted-foreground hover:text-foreground transition-colors">{t.landing.cookies}</Link>
-            <Link to={localePath('/gdpr')} className="text-xs text-muted-foreground hover:text-foreground transition-colors">{t.landing.gdpr}</Link>
-            <Link to={localePath('/impressum')} className="text-xs text-muted-foreground hover:text-foreground transition-colors">{t.legal.impressum.title}</Link>
-          </div>
-        </div>
-      </footer>
-    </div>
+    </DashboardLayout>
   );
 };
 

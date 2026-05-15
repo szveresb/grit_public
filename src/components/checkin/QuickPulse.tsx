@@ -1,14 +1,19 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useId, useState } from 'react';
+import { cn } from '@/lib/utils';
 import { useAuth } from '@/hooks/useAuth';
 import { useLanguage } from '@/hooks/useLanguage';
 import { useStance } from '@/hooks/useStance';
 import { supabase } from '@/integrations/supabase/client';
 import { toast } from 'sonner';
-import { format } from 'date-fns';
+import { format, isToday, startOfDay } from 'date-fns';
 import { friendlyDbError } from '@/lib/db-error';
 import {
   FMoodStruggling, FMoodUneasy, FMoodOkay, FMoodGood, FMoodStrong,
 } from '@/components/icons/FreudIcons';
+import { FCalendar } from '@/components/icons/FreudIcons';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Calendar } from '@/components/ui/calendar';
+import { getDateLocale } from '@/lib/date-locale';
 
 const moodIcons = [FMoodStruggling, FMoodUneasy, FMoodOkay, FMoodGood, FMoodStrong];
 
@@ -36,6 +41,9 @@ const QuickPulse = ({
   const { activeSubject, subjectType, selectedSubjectId } = useStance();
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [entryDate, setEntryDate] = useState<Date>(() => startOfDay(new Date()));
+  const [dateOpen, setDateOpen] = useState(false);
+  const dateLabelId = useId();
   const [managedTitle, setManagedTitle] = useState<string | null>(null);
   const [managedLabels, setManagedLabels] = useState<string[] | null>(null);
   const effectiveSubjectId = subjectId ?? selectedSubjectId;
@@ -100,7 +108,7 @@ const QuickPulse = ({
       user_id: user.id,
       level,
       label,
-      entry_date: format(new Date(), 'yyyy-MM-dd'),
+      entry_date: format(entryDate, 'yyyy-MM-dd'),
       subject_type: effectiveSubjectType,
     };
     if (effectiveSubjectType === 'relative' && effectiveSubjectId) {
@@ -131,6 +139,53 @@ const QuickPulse = ({
         </h2>
       )}
 
+      {user && (
+        <div className="flex items-center justify-center gap-2">
+          <span
+            id={dateLabelId}
+            className="text-[10px] font-medium uppercase tracking-wider text-muted-foreground"
+          >
+            {t.checkIn.pulseDateLabel}
+          </span>
+          <Popover open={dateOpen} onOpenChange={setDateOpen}>
+            <PopoverTrigger asChild>
+              <button
+                type="button"
+                aria-labelledby={dateLabelId}
+                aria-label={`${t.checkIn.pulseDateLabel}: ${
+                  isToday(entryDate)
+                    ? t.checkIn.pulseDateToday
+                    : format(entryDate, 'PPP', { locale: getDateLocale(lang) })
+                }`}
+                aria-haspopup="dialog"
+                aria-expanded={dateOpen}
+                className="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full border border-border bg-card/60 text-xs font-medium text-foreground hover:border-primary/50 transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background"
+              >
+                <FCalendar className="w-3.5 h-3.5 text-primary" aria-hidden="true" />
+                {isToday(entryDate)
+                  ? t.checkIn.pulseDateToday
+                  : format(entryDate, 'PPP', { locale: getDateLocale(lang) })}
+              </button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-0" align="center">
+              <Calendar
+                mode="single"
+                selected={entryDate}
+                onSelect={(d) => {
+                  if (d) {
+                    setEntryDate(startOfDay(d));
+                    setDateOpen(false);
+                  }
+                }}
+                disabled={(d) => d > new Date()}
+                initialFocus
+                className={cn('p-3 pointer-events-auto')}
+              />
+            </PopoverContent>
+          </Popover>
+        </div>
+      )}
+
       <div className="flex justify-center gap-1.5 sm:gap-2 md:gap-3 lg:gap-4 overflow-hidden">
         {moodIcons.map((Icon, i) => {
           const opacityLevels = ['opacity-30', 'opacity-50', 'opacity-70', 'opacity-85', 'opacity-100'];
@@ -139,11 +194,12 @@ const QuickPulse = ({
               <button
                 onClick={() => handleMoodTap(i)}
                 disabled={saving}
-                className={`flex items-center justify-center w-11 sm:w-12 md:w-14 h-11 sm:h-12 md:h-14 rounded-2xl border transition-all hover:scale-105 hover:shadow-md active:scale-95 ${
+                aria-label={moodLabels[i]}
+                className={`flex items-center justify-center w-11 sm:w-12 md:w-14 h-11 sm:h-12 md:h-14 rounded-2xl border transition-all hover:scale-105 hover:shadow-md active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background ${
                   saved ? 'opacity-50 pointer-events-none' : 'hover:border-primary/50'
                 } border-border bg-card/60 backdrop-blur`}
               >
-                <span className={`text-primary ${opacityLevels[i]}`}>
+                <span className={`text-primary ${opacityLevels[i]}`} aria-hidden="true">
                   <Icon className="w-6 h-6" />
                 </span>
               </button>

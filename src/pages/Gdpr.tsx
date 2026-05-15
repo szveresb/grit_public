@@ -17,7 +17,8 @@ const Gdpr = () => {
         .single();
       
       if (data?.config) {
-        setDbContent(lang === 'en' ? data.config.en : data.config.hu);
+        const cfg = data.config as Record<string, any>;
+        setDbContent(lang === 'en' ? cfg.en : cfg.hu);
       }
     };
     fetchContent();

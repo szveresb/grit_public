@@ -27,7 +27,7 @@ const Impressum = () => {
         .single();
       
       if (data?.config) {
-        const config = data.config;
+        const config = data.config as Record<string, any>;
         setDbValues({
           operator: lang === 'en' ? config.operator_en : config.operator_hu,
           country: lang === 'en' ? config.country_en : config.country_hu,

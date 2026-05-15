@@ -40,12 +40,13 @@ const AppSidebar = ({ onOpenFeedback }: AppSidebarProps) => {
     { title: t.nav.checkIn, url: '/journal', icon: FHeartPulse },
     { title: t.timeline.pageTitle, url: '/timeline', icon: FTimeline },
     { title: t.nav.surveys, url: '/surveys', icon: FFileText },
+    { title: t.nav.library, url: '/library', icon: FLibrary },
     { title: t.nav.dataExport, url: '/export', icon: FDownload },
     { title: accountTitle, url: '/profile', icon: FUser },
   ];
 
   const topMenuItems = [
-    { title: t.nav.library, url: '/#library', icon: FLibrary },
+    { title: t.nav.library, url: '/library', icon: FLibrary },
     { title: t.nav.surveys, url: '/surveys', icon: FFileText },
     { title: t.nav.about, url: '/#about', icon: FInfo },
   ];

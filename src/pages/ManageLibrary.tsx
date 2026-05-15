@@ -14,6 +14,7 @@ import { Badge } from '@/components/ui/badge';
 import { toast } from 'sonner';
 import { FPlus, FPencil, FTrash, FClose, FSave, FSearch } from '@/components/icons/FreudIcons';
 import { Navigate } from 'react-router-dom';
+import { stripMarkdown } from '@/lib/simple-markdown';
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
@@ -40,9 +41,66 @@ const ManageLibrary = () => {
   const [saving, setSaving] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const formRef = useRef<HTMLDivElement>(null);
+  const excerptHuRef = useRef<HTMLTextAreaElement>(null);
+  const excerptEnRef = useRef<HTMLTextAreaElement>(null);
   const [filterCategory, setFilterCategory] = useState('All');
 
   const isEditor = hasRole('admin') || hasRole('editor') || hasRole('guest_editor');
+
+  type ExcerptField = 'excerpt' | 'excerpt_en';
+  const applyFormat = (field: ExcerptField, kind: 'bold' | 'italic' | 'heading' | 'list' | 'link') => {
+    const ref = field === 'excerpt' ? excerptHuRef.current : excerptEnRef.current;
+    if (!ref) return;
+    const start = ref.selectionStart ?? 0;
+    const end = ref.selectionEnd ?? 0;
+    const value = ref.value;
+    const selected = value.slice(start, end);
+    let before = value.slice(0, start);
+    let after = value.slice(end);
+    let inserted = '';
+    let cursorOffset = 0;
+    if (kind === 'bold') {
+      inserted = `**${selected || 'bold'}**`;
+      cursorOffset = selected ? inserted.length : 2 + 4;
+    } else if (kind === 'italic') {
+      inserted = `*${selected || 'italic'}*`;
+      cursorOffset = selected ? inserted.length : 1 + 6;
+    } else if (kind === 'heading') {
+      // Heading must start its own line
+      if (before.length > 0 && !before.endsWith('\n')) before += '\n';
+      inserted = `## ${selected || 'Heading'}`;
+      cursorOffset = inserted.length;
+      if (!after.startsWith('\n')) after = '\n' + after;
+    } else if (kind === 'list') {
+      if (before.length > 0 && !before.endsWith('\n')) before += '\n';
+      inserted = `- ${selected || 'item'}`;
+      cursorOffset = inserted.length;
+      if (!after.startsWith('\n')) after = '\n' + after;
+    } else if (kind === 'link') {
+      const url = window.prompt(t.manageLibrary.linkPromptUrl, 'https://');
+      if (!url) return;
+      const label = selected || window.prompt(t.manageLibrary.linkPromptText, '') || url;
+      inserted = `[${label}](${url})`;
+      cursorOffset = inserted.length;
+    }
+    const next = before + inserted + after;
+    setForm(f => ({ ...f, [field]: next } as typeof f));
+    requestAnimationFrame(() => {
+      ref.focus();
+      const pos = before.length + cursorOffset;
+      ref.setSelectionRange(pos, pos);
+    });
+  };
+
+  const FormatToolbar = ({ field }: { field: ExcerptField }) => (
+    <div className="flex flex-wrap items-center gap-1">
+      <Button type="button" variant="outline" size="sm" className="h-7 px-2 rounded-xl text-xs font-bold" onClick={() => applyFormat(field, 'bold')} title={t.manageLibrary.formatBold}>B</Button>
+      <Button type="button" variant="outline" size="sm" className="h-7 px-2 rounded-xl text-xs italic" onClick={() => applyFormat(field, 'italic')} title={t.manageLibrary.formatItalic}>I</Button>
+      <Button type="button" variant="outline" size="sm" className="h-7 px-2 rounded-xl text-xs" onClick={() => applyFormat(field, 'heading')} title={t.manageLibrary.formatHeading}>H</Button>
+      <Button type="button" variant="outline" size="sm" className="h-7 px-2 rounded-xl text-xs" onClick={() => applyFormat(field, 'list')} title={t.manageLibrary.formatList}>•</Button>
+      <Button type="button" variant="outline" size="sm" className="h-7 px-2 rounded-xl text-xs" onClick={() => applyFormat(field, 'link')} title={t.manageLibrary.formatLink}>🔗</Button>
+    </div>
+  );
 
   const fetchArticles = async () => {
     const { data } = await supabase.from('library_articles').select('*').order('created_at', { ascending: false });
@@ -126,26 +184,36 @@ const ManageLibrary = () => {
               </h2>
               <Button variant="ghost" size="icon" onClick={() => setShowForm(false)}><FClose className="h-4 w-4" /></Button>
             </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">{t.manageLibrary.titleHu}</Label>
-                <Input value={form.title} onChange={e => setForm(f => ({ ...f, title: e.target.value }))} placeholder={t.manageLibrary.titleHu} className="rounded-2xl" />
+            <div className="space-y-6">
+              {/* Hungarian Content */}
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">{t.manageLibrary.titleHu}</Label>
+                  <Input value={form.title} onChange={e => setForm(f => ({ ...f, title: e.target.value }))} placeholder={t.manageLibrary.titleHu} className="rounded-2xl" />
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">{t.manageLibrary.excerptHu}</Label>
+                  <FormatToolbar field="excerpt" />
+                  <Textarea ref={excerptHuRef} value={form.excerpt} onChange={e => setForm(f => ({ ...f, excerpt: e.target.value }))} rows={5} className="rounded-2xl font-mono text-xs" />
+                </div>
               </div>
-              <div className="space-y-2">
-                <Label className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">{t.manageLibrary.titleEn}</Label>
-                <Input value={form.title_en} onChange={e => setForm(f => ({ ...f, title_en: e.target.value }))} placeholder={t.manageLibrary.titleEn} className="rounded-2xl" />
+
+              <div className="border-t border-border/40" />
+
+              {/* English Content */}
+              <div className="space-y-4">
+                <div className="space-y-2">
+                  <Label className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">{t.manageLibrary.titleEn}</Label>
+                  <Input value={form.title_en} onChange={e => setForm(f => ({ ...f, title_en: e.target.value }))} placeholder={t.manageLibrary.titleEn} className="rounded-2xl" />
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">{t.manageLibrary.excerptEn}</Label>
+                  <FormatToolbar field="excerpt_en" />
+                  <Textarea ref={excerptEnRef} value={form.excerpt_en} onChange={e => setForm(f => ({ ...f, excerpt_en: e.target.value }))} rows={5} className="rounded-2xl font-mono text-xs" />
+                </div>
               </div>
             </div>
-            <div className="grid grid-cols-2 gap-4">
-              <div className="space-y-2">
-                <Label className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">{t.manageLibrary.excerptHu}</Label>
-                <Textarea value={form.excerpt} onChange={e => setForm(f => ({ ...f, excerpt: e.target.value }))} rows={3} className="rounded-2xl" />
-              </div>
-              <div className="space-y-2">
-                <Label className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">{t.manageLibrary.excerptEn}</Label>
-                <Textarea value={form.excerpt_en} onChange={e => setForm(f => ({ ...f, excerpt_en: e.target.value }))} rows={3} className="rounded-2xl" />
-              </div>
-            </div>
+            <p className="text-[11px] text-muted-foreground -mt-2">{t.manageLibrary.markdownHint}</p>
             <div className="space-y-2">
               <Label className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">{t.manageLibrary.url}</Label>
               <Input value={form.url} onChange={e => setForm(f => ({ ...f, url: e.target.value }))} placeholder="https://..." className="rounded-2xl" />
@@ -212,7 +280,7 @@ const ManageLibrary = () => {
                     {a.featured && <Badge variant="default" className="rounded-full text-[10px]">⭐ {t.featured}</Badge>}
                   </div>
                   <h3 className="text-sm font-semibold text-foreground truncate">{a.title}</h3>
-                  {a.excerpt && <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{a.excerpt}</p>}
+                  {a.excerpt && <p className="text-xs text-muted-foreground mt-1 line-clamp-2">{stripMarkdown(a.excerpt)}</p>}
                   {a.source && <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground mt-2">{a.author} · {a.source}</p>}
                   {!a.source && <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground mt-2">{a.author}</p>}
                 </div>

@@ -8,6 +8,7 @@ import { Skeleton } from '@/components/ui/skeleton';
 import { FArrowRight } from '@/components/icons/FreudIcons';
 import PublicHeader from '@/components/PublicHeader';
 import bambooBg from '@/assets/bamboo-bg.jpg';
+import { renderSimpleMarkdown } from '@/lib/simple-markdown';
 
 interface ArticleData {
   id: string;
@@ -102,8 +103,8 @@ const Article = () => {
             )}
 
             {localizedExcerpt && (
-              <div className="text-sm text-foreground/90 leading-relaxed whitespace-pre-line">
-                {localizedExcerpt}
+              <div className="text-sm text-foreground/90 leading-relaxed">
+                {renderSimpleMarkdown(localizedExcerpt)}
               </div>
             )}
 

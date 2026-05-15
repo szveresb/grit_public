@@ -119,6 +119,16 @@ export interface Dictionary {
     verifyContinue: string;
   };
 
+  // Category page
+  category: {
+    sortBy: string;
+    sortFeaturedFirst: string;
+    sortNewest: string;
+    sortOldest: string;
+    sortTitleAsc: string;
+    sortTitleDesc: string;
+  };
+
   // Article detail
   article: {
     backToLibrary: string;
@@ -243,6 +253,8 @@ export interface Dictionary {
     moodGoodObserved: string;
     moodStrongObserved: string;
     pulseSaved: string;
+    pulseDateLabel: string;
+    pulseDateToday: string;
     goDeeper: string;
     noStory: string;
     reflectDialogTitle: string;
@@ -406,6 +418,39 @@ export interface Dictionary {
     environmentDesc: string;
     observationCountSingle: string;
     observationCountPlural: string;
+    dual: {
+      windowLabel: string;
+      window7d: string;
+      window30d: string;
+      window90d: string;
+      overallCorrelation: string;
+      overallCorrelationDesc: string;
+      strengthStrongInverse: string;
+      strengthModerateInverse: string;
+      strengthWeakInverse: string;
+      strengthNone: string;
+      strengthWeak: string;
+      strengthModerate: string;
+      strengthStrong: string;
+      leadLagTitle: string;
+      leadLagSameDay: string;
+      leadLagAfter: string;
+      leadLagBefore: string;
+      leadLagNone: string;
+      coOccurrenceTitle: string;
+      coOccurrenceDesc: string;
+      notEnoughOverlap: string;
+      notEnoughOverlapDesc: string;
+      scatterTitle: string;
+      scatterSubtitle: string;
+      scatterAxisSelf: string;
+      scatterAxisRelative: string;
+      conceptListTitle: string;
+      conceptListSubtitle: string;
+      conceptDays: string;
+      noPairedConcepts: string;
+      disclaimer: string;
+    };
   };
 
 
@@ -530,6 +575,14 @@ export interface Dictionary {
     titleEn: string;
     excerptHu: string;
     excerptEn: string;
+    formatBold: string;
+    formatItalic: string;
+    formatHeading: string;
+    formatList: string;
+    formatLink: string;
+    markdownHint: string;
+    linkPromptUrl: string;
+    linkPromptText: string;
   };
 
   // Manage Users
@@ -676,6 +729,26 @@ export interface Dictionary {
     gateMessage: string;
     gateAction: string;
     categories: Record<string, { title: string; description: string; learnMore: string }>;
+    advancedSettings: {
+      title: string;
+      subtitle: string;
+      disabledHint: string;
+      patternDetection: {
+        title: string;
+        subtitle: string;
+        activeRange: string;
+        reset: string;
+        startLabel: string;
+        endLabel: string;
+        pickDate: string;
+      };
+      presets: {
+        '7d': string;
+        '30d': string;
+        '90d': string;
+        custom: string;
+      };
+    };
   };
 
   // Subjects / dual perspective
