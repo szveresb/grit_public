@@ -79,7 +79,7 @@ const DashboardShell = ({
               Grit.hu
             </Link>
             <nav className="hidden md:flex items-center justify-center flex-1 gap-8">
-              <a href={`${localePath('/')}#library`} className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">{t.nav.library}</a>
+              <Link to={localePath('/library')} className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">{t.nav.library}</Link>
               <button onClick={() => handleGatedClick('/surveys')} className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1.5">
                 {t.nav.surveys}
               </button>
