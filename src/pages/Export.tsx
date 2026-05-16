@@ -242,6 +242,17 @@ const Export = () => {
     URL.revokeObjectURL(url);
   };
 
+  const inRange = (iso?: string | null) => {
+    if (!iso) return true;
+    const d = iso.slice(0, 10);
+    if (filterFrom && d < filterFrom) return false;
+    if (filterTo && d > filterTo) return false;
+    return true;
+  };
+  const pulsesF = (previewData?.mood_pulses ?? []).filter((p: any) => inRange(p.entry_date));
+  const journalF = (previewData?.journal_entries ?? []).filter((e: any) => inRange(e.entry_date));
+  const obsF = (previewData?.observation_logs_fhir ?? []).filter((o: any) => inRange(o.effectiveDateTime));
+
   return (
     <DashboardLayout>
       <div className="max-w-lg mx-auto w-full space-y-5">
@@ -357,13 +368,13 @@ const Export = () => {
               <div className="space-y-6">
                 <p className="text-sm">{t.export.summaryNote}</p>
                 <div className="text-xs">
-                  <p>{t.export.journalEntries}: {previewData.journal_entries?.length || 0}</p>
+                  <p>{t.export.journalEntries}: {journalF.length}</p>
                   <p>{t.export.questionnaireResponses}: {previewData.questionnaire_responses?.length || 0}</p>
-                  <p>{t.export.observationsFhir}: {previewData.observation_logs_fhir?.length || 0}</p>
-                  <p>{t.export.moodPulses}: {previewData.mood_pulses?.length || 0}</p>
+                  <p>{t.export.observationsFhir}: {obsF.length}</p>
+                  <p>{t.export.moodPulses}: {pulsesF.length}</p>
                 </div>
 
-                {previewData.mood_pulses?.length > 0 && (
+                {pulsesF.length > 0 && (
                   <div className="space-y-2">
                     <h3 className="text-sm font-medium">{t.export.moodPulses}</h3>
                     <table className="w-full text-xs border-collapse">
@@ -376,7 +387,7 @@ const Export = () => {
                         </tr>
                       </thead>
                       <tbody>
-                        {previewData.mood_pulses.map((p: any, i: number) => (
+                        {pulsesF.map((p: any, i: number) => (
                           <tr key={i}>
                             <td className="border p-1">{p.entry_date}</td>
                             <td className="border p-1 text-center">{p.level}</td>
@@ -389,7 +400,7 @@ const Export = () => {
                   </div>
                 )}
 
-                {previewData.journal_entries?.length > 0 && (
+                {journalF.length > 0 && (
                   <div className="space-y-2">
                     <h3 className="text-sm font-medium">{t.export.journalEntries}</h3>
                     <table className="w-full text-xs border-collapse">
@@ -402,7 +413,7 @@ const Export = () => {
                         </tr>
                       </thead>
                       <tbody>
-                        {previewData.journal_entries.map((e: any, i: number) => (
+                        {journalF.map((e: any, i: number) => (
                           <tr key={i}>
                             <td className="border p-1">{e.entry_date}</td>
                             <td className="border p-1">{e.title}</td>
@@ -415,7 +426,7 @@ const Export = () => {
                   </div>
                 )}
 
-                {previewData.observation_logs_fhir?.length > 0 && (
+                {obsF.length > 0 && (
                   <div className="space-y-2">
                     <h3 className="text-sm font-medium">{t.export.observationsFhir}</h3>
                     <table className="w-full text-xs border-collapse">
@@ -427,7 +438,7 @@ const Export = () => {
                         </tr>
                       </thead>
                       <tbody>
-                        {previewData.observation_logs_fhir.map((obs: any, i: number) => (
+                        {obsF.map((obs: any, i: number) => (
                           <tr key={i}>
                             <td className="border p-1">{obs.effectiveDateTime}</td>
                             <td className="border p-1">{obs.code.coding[0]?.display}</td>
