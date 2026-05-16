@@ -544,11 +544,6 @@ const QuestionnaireFiller: React.FC<QuestionnaireFillerProps> = ({ onCompleted, 
                       {t.questionnaires_manage.questionN.replace('{n}', String(answeredCount + (isLastAnswered ? 0 : 1)))} / ~{questions.length}
                     </span>
                   </div>
-                  {qDescription(questionnaire) && (
-                    <p className="text-sm italic leading-relaxed text-muted-foreground">
-                      {qDescription(questionnaire)}
-                    </p>
-                  )}
                 </div>
 
                 <div className="h-1 overflow-hidden rounded-full bg-border/50">
@@ -608,11 +603,6 @@ const QuestionnaireFiller: React.FC<QuestionnaireFillerProps> = ({ onCompleted, 
 
               <div className="space-y-1.5">
                 <h3 className="text-sm font-semibold text-foreground">{qName(questionnaire)}</h3>
-                {qDescription(questionnaire) && (
-                  <p className="border-l-2 border-primary/20 pl-3 text-sm italic leading-relaxed text-muted-foreground">
-                    {qDescription(questionnaire)}
-                  </p>
-                )}
               </div>
 
               {questions.map((question, index) => (
