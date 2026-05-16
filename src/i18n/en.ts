@@ -494,7 +494,7 @@ export const en: Dictionary = {
 
   export: {
     title: 'Data Export',
-    subtitle: 'Download all your data in a portable format.',
+    subtitle: 'Download your data in PDF or CSV format',
     desc: 'Export includes journal entries, self-check responses, and observation logs (FHIR-formatted) as JSON. This is your data — take it with you.',
     exportAll: 'Export All Data',
     therapistTitle: 'Therapist Export',
