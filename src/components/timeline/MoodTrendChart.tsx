@@ -31,12 +31,14 @@ type RangePreset = '7d' | '30d' | 'all';
 
 const moodIcons = [FMoodStruggling, FMoodUneasy, FMoodOkay, FMoodGood, FMoodStrong];
 
-const CustomYTick = ({ x, y, payload }: any) => {
+const makeYTick = (labels: readonly string[]) => ({ x, y, payload }: any) => {
   const idx = (payload.value as number) - 1;
   const Icon = moodIcons[idx];
+  const label = labels[idx];
   if (!Icon) return null;
   return (
     <g transform={`translate(${x - 16},${y - 10})`}>
+      <title>{label}</title>
       <Icon width={20} height={20} className="text-primary" />
     </g>
   );
@@ -115,6 +117,9 @@ const MoodTrendChart = ({ data, lang, isPremium = false, onPremiumClick, t, comp
       ? (v: number) => format(new Date(v), 'MMM d', { locale })
       : shortDayTick;
 
+  const isDense = filtered.length > 30;
+  const YTick = makeYTick(labels);
+
   return (
     <div className="surface-card p-5 space-y-2">
       {/* Header with preset toggle */}
@@ -123,20 +128,29 @@ const MoodTrendChart = ({ data, lang, isPremium = false, onPremiumClick, t, comp
           <h2 className="text-sm font-semibold text-foreground">{t.timeline.moodTrendTitle}</h2>
           <p className="text-xs text-muted-foreground">{t.timeline.moodTrendSubtitle}</p>
         </div>
-        <div className="flex gap-1 shrink-0">
-          {(['7d', '30d', 'all'] as RangePreset[]).map(p => (
-            <button
-              key={p}
-              onClick={() => handlePreset(p)}
-              className={`px-2.5 py-1 text-xs rounded-full transition-colors ${
-                preset === p
-                  ? 'bg-primary text-primary-foreground font-semibold'
-                  : 'bg-muted/60 text-muted-foreground hover:bg-muted'
-              }`}
-            >
-              {t.timeline.presets[p]}
-            </button>
-          ))}
+        <div
+          role="radiogroup"
+          aria-label={t.timeline.rangeLabel}
+          className="inline-flex shrink-0 rounded-full bg-muted/60 p-0.5 border border-border/60"
+        >
+          {(['7d', '30d', 'all'] as RangePreset[]).map(p => {
+            const active = preset === p;
+            return (
+              <button
+                key={p}
+                role="radio"
+                aria-checked={active}
+                onClick={() => handlePreset(p)}
+                className={`px-3 py-1 text-xs rounded-full transition-all focus:outline-none focus-visible:ring-2 focus-visible:ring-primary/50 ${
+                  active
+                    ? 'bg-primary text-primary-foreground font-semibold shadow-sm'
+                    : 'text-muted-foreground hover:text-foreground'
+                }`}
+              >
+                {t.timeline.presets[p]}
+              </button>
+            );
+          })}
         </div>
       </div>
 
@@ -162,7 +176,7 @@ const MoodTrendChart = ({ data, lang, isPremium = false, onPremiumClick, t, comp
             tick={{ fontSize: 11 }}
             className="text-muted-foreground"
           />
-          <YAxis domain={[1, 5]} ticks={[1, 2, 3, 4, 5]} tick={<CustomYTick />} width={32} />
+          <YAxis domain={[1, 5]} ticks={[1, 2, 3, 4, 5]} tick={<YTick />} width={32} />
           <ChartTooltip
             content={({ active, payload }) => {
               if (!active || !payload?.[0]) return null;
@@ -203,6 +217,25 @@ const MoodTrendChart = ({ data, lang, isPremium = false, onPremiumClick, t, comp
           )}
         </AreaChart>
       </ChartContainer>
+
+      {/* Legend + interaction hint */}
+      {!compact && (
+        <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-1 pt-1 text-[11px] text-muted-foreground">
+          <div className="flex items-center gap-3">
+            <span className="inline-flex items-center gap-1.5">
+              <span className="inline-block h-2 w-2 rounded-full bg-primary" aria-hidden />
+              {t.timeline.legendDot}
+            </span>
+            <span className="inline-flex items-center gap-1.5">
+              <span className="inline-block h-[2px] w-4 rounded-full bg-primary" aria-hidden />
+              {t.timeline.legendTrend}
+            </span>
+          </div>
+          <span className="italic">
+            {isDense ? t.timeline.hintDense : t.timeline.hintHover}
+          </span>
+        </div>
+      )}
 
       {/* Premium upsell for timeline slider */}
       {filtered.length > 3 && !isPremium && !compact && (
