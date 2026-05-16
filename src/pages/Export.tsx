@@ -183,14 +183,20 @@ const Export = () => {
 
   const handleCsvExport = () => {
     if (!previewData) return;
-    
+    const inRange = (iso?: string | null) => {
+      if (!iso) return true;
+      const d = iso.slice(0, 10);
+      if (filterFrom && d < filterFrom) return false;
+      if (filterTo && d > filterTo) return false;
+      return true;
+    };
     let csvContent = '';
     
     if (previewType === 'therapist') {
       csvContent = 'Subject,BNO Code,BNO Label,Date,Intensity,Concept,Context\n';
       previewData.subjects.forEach((subject: any) => {
         subject.bno_summary.forEach((bno: any) => {
-          bno.observations.forEach((obs: any) => {
+          bno.observations.filter((o: any) => inRange(o.logged_at)).forEach((obs: any) => {
             const row = [
               `"${subject.subject_label}"`,
               `"${bno.bno_code}"`,
@@ -205,16 +211,24 @@ const Export = () => {
         });
       });
     } else {
-      csvContent = 'Resource Type,Status,Date,SNOMED Code,Display,Intensity\n';
-      previewData.observation_logs_fhir.forEach((obs: any) => {
+      csvContent = 'Source,Date,Code,Display,Value,Extra\n';
+      previewData.observation_logs_fhir.filter((o: any) => inRange(o.effectiveDateTime)).forEach((obs: any) => {
         const row = [
-          obs.resourceType,
-          obs.status,
+          'observation',
           `"${obs.effectiveDateTime}"`,
           `"${obs.code.coding[0]?.code || ''}"`,
           `"${obs.code.coding[0]?.display || ''}"`,
-          obs.valueInteger
+          obs.valueInteger,
+          ''
         ].join(',');
+        csvContent += row + '\n';
+      });
+      (previewData.mood_pulses ?? []).filter((p: any) => inRange(p.entry_date)).forEach((p: any) => {
+        const row = ['mood_pulse', `"${p.entry_date}"`, '', `"${p.label || ''}"`, p.level, `"${p.subject_type || ''}"`].join(',');
+        csvContent += row + '\n';
+      });
+      (previewData.journal_entries ?? []).filter((e: any) => inRange(e.entry_date)).forEach((e: any) => {
+        const row = ['journal', `"${e.entry_date}"`, '', `"${(e.title || '').replace(/"/g, "'")}"`, e.impact_level ?? '', `"${(e.emotional_state || e.event_description || '').replace(/"/g, "'")}"`].join(',');
         csvContent += row + '\n';
       });
     }
