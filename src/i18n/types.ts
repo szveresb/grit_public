@@ -51,6 +51,7 @@ export interface Dictionary {
     dataExport: string;
     account: string;
     navigate: string;
+    mySpace: string;
     explore: string;
     management: string;
     manageLibrary: string;

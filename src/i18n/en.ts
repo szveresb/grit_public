@@ -49,6 +49,7 @@ export const en: Dictionary = {
     dataExport: 'Data Export',
     account: 'Account',
     navigate: 'Navigate',
+    mySpace: 'My Space',
     explore: 'Explore',
     management: 'Management',
     manageLibrary: 'Manage Library',

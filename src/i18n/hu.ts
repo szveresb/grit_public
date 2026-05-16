@@ -49,6 +49,7 @@ export const hu: Dictionary = {
     dataExport: 'Adatexport',
     account: 'Fiók',
     navigate: 'Navigáció',
+    mySpace: 'Saját tér',
     explore: 'Felfedezés',
     management: 'Kezelés',
     manageLibrary: 'Könyvtár kezelése',

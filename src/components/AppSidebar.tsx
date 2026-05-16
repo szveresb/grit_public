@@ -8,12 +8,13 @@ import { stripLangPrefix } from '@/hooks/useLanguage';
 import { useIsMobile } from '@/hooks/use-mobile';
 import {
   FHome, FDashboard, FHeartPulse, FClock, FDownload, FUser,
-  FLibrary, FUsers, FBarChart, FFileText, FInfo, FLock, FTimeline, FMessageCircle,
+  FLibrary, FUsers, FBarChart, FFileText, FInfo, FLock, FTimeline, FMessageCircle, FChevronDown,
 } from '@/components/icons/FreudIcons';
 import {
   Sidebar, SidebarContent, SidebarGroup, SidebarGroupLabel, SidebarGroupContent,
   SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarHeader,
 } from '@/components/ui/sidebar';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 
 interface AppSidebarProps {
   onOpenFeedback: () => void;
@@ -52,6 +53,8 @@ const AppSidebar = ({ onOpenFeedback }: AppSidebarProps) => {
   const canManageQuestionnaires = hasAnyRole('admin', 'editor');
 
   const canManageLanding = hasAnyRole('admin', 'editor');
+  const [isMySpaceOpen, setIsMySpaceOpen] = React.useState(true);
+  const [isManagementOpen, setIsManagementOpen] = React.useState(true);
 
   const editorItems = [
     ...(canManageLibrary ? [{ title: t.nav.manageLibrary, url: '/manage-library', icon: FLibrary }] : []),
@@ -61,6 +64,26 @@ const AppSidebar = ({ onOpenFeedback }: AppSidebarProps) => {
     ...(isAdmin ? [{ title: t.nav.manageFeedback, url: '/manage-feedback', icon: FMessageCircle }] : []),
     ...(canAnalyse ? [{ title: t.nav.analystExport, url: '/analyst-export', icon: FBarChart }] : []),
   ];
+
+  const renderMenuItem = (item: { title: string; url: string; icon: React.ComponentType<{ className?: string }> }) => (
+    <SidebarMenuItem key={item.url}>
+      <SidebarMenuButton
+        asChild
+        isActive={currentPath === item.url}
+        tooltip={item.title}
+      >
+        <NavLink
+          to={localePath(item.url)}
+          end
+          className="hover:bg-accent rounded-xl"
+          activeClassName="bg-accent text-foreground font-semibold rounded-xl"
+        >
+          <item.icon className="h-4 w-4" />
+          <span>{item.title}</span>
+        </NavLink>
+      </SidebarMenuButton>
+    </SidebarMenuItem>
+  );
 
   return (
     <Sidebar collapsible="icon">
@@ -72,32 +95,19 @@ const AppSidebar = ({ onOpenFeedback }: AppSidebarProps) => {
 
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
-            {t.nav.navigate}
-          </SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {navItems.map((item) => (
-                <SidebarMenuItem key={item.url}>
-                  <SidebarMenuButton
-                    asChild
-                    isActive={currentPath === item.url}
-                    tooltip={item.title}
-                  >
-                    <NavLink
-                      to={localePath(item.url)}
-                      end
-                      className="hover:bg-accent rounded-xl"
-                      activeClassName="bg-accent text-foreground font-semibold rounded-xl"
-                    >
-                      <item.icon className="h-4 w-4" />
-                      <span>{item.title}</span>
-                    </NavLink>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
-            </SidebarMenu>
-          </SidebarGroupContent>
+          <Collapsible open={isMySpaceOpen} onOpenChange={setIsMySpaceOpen}>
+            <CollapsibleTrigger className="flex w-full items-center justify-between rounded-md px-2 py-1 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground transition-colors hover:text-foreground">
+              <span>{t.nav.mySpace}</span>
+              <FChevronDown className={`h-3.5 w-3.5 transition-transform ${isMySpaceOpen ? 'rotate-180' : ''}`} />
+            </CollapsibleTrigger>
+            <CollapsibleContent>
+              <SidebarGroupContent>
+                <SidebarMenu>
+                  {navItems.map(renderMenuItem)}
+                </SidebarMenu>
+              </SidebarGroupContent>
+            </CollapsibleContent>
+          </Collapsible>
         </SidebarGroup>
 
         {isMobile && (
@@ -142,32 +152,19 @@ const AppSidebar = ({ onOpenFeedback }: AppSidebarProps) => {
 
         {editorItems.length > 0 && (
           <SidebarGroup>
-            <SidebarGroupLabel className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
-              {t.nav.management}
-            </SidebarGroupLabel>
-            <SidebarGroupContent>
-              <SidebarMenu>
-                {editorItems.map((item) => (
-                  <SidebarMenuItem key={item.url}>
-                    <SidebarMenuButton
-                      asChild
-                      isActive={currentPath === item.url}
-                      tooltip={item.title}
-                    >
-                      <NavLink
-                        to={localePath(item.url)}
-                        end
-                        className="hover:bg-accent rounded-xl"
-                        activeClassName="bg-accent text-foreground font-semibold rounded-xl"
-                      >
-                        <item.icon className="h-4 w-4" />
-                        <span>{item.title}</span>
-                      </NavLink>
-                    </SidebarMenuButton>
-                  </SidebarMenuItem>
-                ))}
-              </SidebarMenu>
-            </SidebarGroupContent>
+            <Collapsible open={isManagementOpen} onOpenChange={setIsManagementOpen}>
+              <CollapsibleTrigger className="flex w-full items-center justify-between rounded-md px-2 py-1 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground transition-colors hover:text-foreground">
+                <span>{t.nav.management}</span>
+                <FChevronDown className={`h-3.5 w-3.5 transition-transform ${isManagementOpen ? 'rotate-180' : ''}`} />
+              </CollapsibleTrigger>
+              <CollapsibleContent>
+                <SidebarGroupContent>
+                  <SidebarMenu>
+                    {editorItems.map(renderMenuItem)}
+                  </SidebarMenu>
+                </SidebarGroupContent>
+              </CollapsibleContent>
+            </Collapsible>
           </SidebarGroup>
         )}
 
