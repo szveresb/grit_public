@@ -312,6 +312,22 @@ export interface Dictionary {
     supportedSelectionEmpty: string;
     detailPanelTitle: string;
     questionnaireJournalTitle: string;
+    // Scan helpers
+    filterAll: string;
+    filterDueNow: string;
+    filterCompleted: string;
+    filterByFrequency: string;
+    sortLabel: string;
+    sortMostUrgent: string;
+    sortRecentlyUsed: string;
+    sortAlphabetical: string;
+    metaFrequency: string;
+    metaLastCompletion: string;
+    metaNextDue: string;
+    metaNever: string;
+    metaDueNow: string;
+    metaNotScheduled: string;
+    noMatchingQuestionnaires: string;
     // Scoring
     scoringEnabled: string;
     scoringMode: string;

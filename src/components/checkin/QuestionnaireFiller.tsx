@@ -12,6 +12,14 @@ import { toast } from 'sonner';
 import { FArrowLeft } from '@/components/icons/FreudIcons';
 import { formatDistanceToNow, differenceInHours } from 'date-fns';
 import { getDateLocale } from '@/lib/date-locale';
+import { format, addDays } from 'date-fns';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import ScoreResults from './ScoreResults';
 import ScoreHistory from './ScoreHistory';
 import QuestionnaireCard from './QuestionnaireCard';
@@ -90,6 +98,11 @@ const QuestionnaireFiller: React.FC<QuestionnaireFillerProps> = ({ onCompleted, 
   const subjectScopeKey = `${activeSubject.type}:${activeSubject.id ?? 'self'}`;
   const previousSubjectScopeRef = useRef(subjectScopeKey);
   const containerRef = useRef<HTMLDivElement>(null);
+
+  type FilterMode = 'all' | 'due' | 'completed' | string; // string for freq
+  type SortMode = 'urgent' | 'recent' | 'alpha';
+  const [filter, setFilter] = useState<FilterMode>('all');
+  const [sortMode, setSortMode] = useState<SortMode>('urgent');
 
   const dateLocale = getDateLocale(lang);
   const isAdminOrEditor = hasAnyRole('admin', 'editor');
@@ -624,53 +637,170 @@ const QuestionnaireFiller: React.FC<QuestionnaireFillerProps> = ({ onCompleted, 
         })()
       ) : (
         <div className="space-y-6">
-          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
-            {questionnaires.map((questionnaire) => {
-              const lastCompletion = getLastCompletion(questionnaire.id);
-              const available = isAvailable(questionnaire);
-              const description = qDescription(questionnaire);
-              const cardPanelMode =
-                activePanel?.questionnaireId === questionnaire.id ? activePanel.mode : null;
+          {(() => {
+            const tm = t.questionnaires_manage;
+            const frequencies = Array.from(
+              new Set(questionnaires.map((q) => q.repeat_interval ?? 'once'))
+            );
 
-              return (
-                <QuestionnaireCard
-                  key={questionnaire.id}
-                  title={qName(questionnaire)}
-                  description={description}
-                  repeatLabel={getRepeatLabel(questionnaire.repeat_interval)}
-                  lastCompletedLabel={
-                    lastCompletion
-                      ? `${t.questionnaires_manage.lastCompleted}: ${formatDistanceToNow(new Date(lastCompletion.completed_at), {
-                          addSuffix: true,
-                          locale: dateLocale,
-                        })}`
-                      : undefined
-                  }
-                  available={available}
-                  canReadMore={(description?.length ?? 0) > DESCRIPTION_TOGGLE_THRESHOLD}
-                  onStart={() => loadQuestions(questionnaire.id)}
-                  startLabel={t.questionnaires_manage.startQuestionnaire}
-                  historyLabel={t.questionnaires_manage.viewQuestionnaireHistory}
-                  availableNowLabel={t.questionnaires_manage.availableNow}
-                  expandLabel={t.questionnaires_manage.expandDescription}
-                  completedLabel={t.questionnaires_manage.alreadyCompleted}
-                  closeLabel={t.ui.close}
-                  detailPanelTitle={t.questionnaires_manage.detailPanelTitle}
-                  activePanel={cardPanelMode}
-                  onPanelChange={(mode) =>
-                    setActivePanel(mode ? { questionnaireId: questionnaire.id, mode } : null)
-                  }
-                  historyContent={
-                    <ScoreHistory
-                      questionnaireId={questionnaire.id}
-                      emptyMessage={t.questionnaires_manage.noHistoryForQuestionnaire}
-                      compact
-                    />
-                  }
-                />
-              );
-            })}
-          </div>
+            const computeNextDueDate = (q: Questionnaire): Date | null => {
+              const last = getLastCompletion(q.id);
+              if (!last) return new Date(0); // due now
+              if (!q.repeat_interval || q.repeat_interval === 'anytime') return null;
+              const days = INTERVAL_DAYS[q.repeat_interval];
+              if (!days) return null;
+              return addDays(new Date(last.completed_at), days);
+            };
+
+            const enriched = questionnaires.map((q) => {
+              const last = getLastCompletion(q.id);
+              const nextDue = computeNextDueDate(q);
+              return {
+                q,
+                last,
+                nextDue,
+                available: isAvailable(q),
+                urgencyKey: nextDue ? nextDue.getTime() : Number.POSITIVE_INFINITY,
+                lastKey: last ? new Date(last.completed_at).getTime() : 0,
+              };
+            });
+
+            let filtered = enriched;
+            if (filter === 'due') filtered = enriched.filter((e) => e.available);
+            else if (filter === 'completed') filtered = enriched.filter((e) => e.last);
+            else if (filter !== 'all') filtered = enriched.filter((e) => (e.q.repeat_interval ?? 'once') === filter);
+
+            const sorted = [...filtered].sort((a, b) => {
+              if (sortMode === 'alpha') return qName(a.q).localeCompare(qName(b.q));
+              if (sortMode === 'recent') return b.lastKey - a.lastKey;
+              return a.urgencyKey - b.urgencyKey;
+            });
+
+            return (
+              <>
+                <div className="flex flex-wrap items-center justify-between gap-3">
+                  <div className="flex flex-wrap gap-2">
+                    {[
+                      { id: 'all', label: tm.filterAll },
+                      { id: 'due', label: tm.filterDueNow },
+                      { id: 'completed', label: tm.filterCompleted },
+                    ].map((f) => (
+                      <button
+                        key={f.id}
+                        type="button"
+                        onClick={() => setFilter(f.id)}
+                        className={`rounded-full border px-3 py-1 text-xs font-medium transition-colors ${
+                          filter === f.id
+                            ? 'border-primary bg-primary text-primary-foreground'
+                            : 'border-border bg-background text-muted-foreground hover:border-primary/50'
+                        }`}
+                      >
+                        {f.label}
+                      </button>
+                    ))}
+                    {frequencies.length > 1 && (
+                      <Select
+                        value={frequencies.includes(filter) ? filter : '__freq__'}
+                        onValueChange={(v) => v !== '__freq__' && setFilter(v)}
+                      >
+                        <SelectTrigger
+                          className={`h-7 w-auto gap-1.5 rounded-full border px-3 text-xs font-medium ${
+                            frequencies.includes(filter)
+                              ? 'border-primary bg-primary text-primary-foreground'
+                              : 'border-border bg-background text-muted-foreground'
+                          }`}
+                        >
+                          <SelectValue placeholder={tm.filterByFrequency}>
+                            {frequencies.includes(filter)
+                              ? getRepeatLabel(filter === 'once' ? null : filter)
+                              : tm.filterByFrequency}
+                          </SelectValue>
+                        </SelectTrigger>
+                        <SelectContent>
+                          {frequencies.map((freq) => (
+                            <SelectItem key={freq} value={freq}>
+                              {getRepeatLabel(freq === 'once' ? null : freq)}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    )}
+                  </div>
+                  <Select value={sortMode} onValueChange={(v) => setSortMode(v as SortMode)}>
+                    <SelectTrigger className="h-8 w-auto gap-1.5 rounded-full text-xs">
+                      <span className="text-muted-foreground">{tm.sortLabel}:</span>
+                      <SelectValue />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="urgent">{tm.sortMostUrgent}</SelectItem>
+                      <SelectItem value="recent">{tm.sortRecentlyUsed}</SelectItem>
+                      <SelectItem value="alpha">{tm.sortAlphabetical}</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+
+                {sorted.length === 0 ? (
+                  <p className="text-sm text-muted-foreground">{tm.noMatchingQuestionnaires}</p>
+                ) : (
+                  <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
+                    {sorted.map(({ q: questionnaire, last: lastCompletion, available, nextDue }) => {
+                      const description = qDescription(questionnaire);
+                      const cardPanelMode =
+                        activePanel?.questionnaireId === questionnaire.id ? activePanel.mode : null;
+
+                      const lastValue = lastCompletion
+                        ? formatDistanceToNow(new Date(lastCompletion.completed_at), {
+                            addSuffix: true,
+                            locale: dateLocale,
+                          })
+                        : tm.metaNever;
+
+                      let nextDueValue: string;
+                      if (!nextDue) nextDueValue = tm.metaNotScheduled;
+                      else if (available) nextDueValue = tm.metaDueNow;
+                      else nextDueValue = format(nextDue, 'PP', { locale: dateLocale });
+
+                      return (
+                        <QuestionnaireCard
+                          key={questionnaire.id}
+                          title={qName(questionnaire)}
+                          description={description}
+                          repeatLabel={getRepeatLabel(questionnaire.repeat_interval)}
+                          metaFrequencyLabel={tm.metaFrequency}
+                          metaFrequencyValue={getRepeatLabel(questionnaire.repeat_interval)}
+                          metaLastCompletionLabel={tm.metaLastCompletion}
+                          metaLastCompletionValue={lastValue}
+                          metaNextDueLabel={tm.metaNextDue}
+                          metaNextDueValue={nextDueValue}
+                          available={available}
+                          canReadMore={(description?.length ?? 0) > DESCRIPTION_TOGGLE_THRESHOLD}
+                          onStart={() => loadQuestions(questionnaire.id)}
+                          startLabel={tm.startQuestionnaire}
+                          historyLabel={tm.viewQuestionnaireHistory}
+                          availableNowLabel={tm.availableNow}
+                          expandLabel={tm.expandDescription}
+                          completedLabel={tm.alreadyCompleted}
+                          closeLabel={t.ui.close}
+                          detailPanelTitle={tm.detailPanelTitle}
+                          activePanel={cardPanelMode}
+                          onPanelChange={(mode) =>
+                            setActivePanel(mode ? { questionnaireId: questionnaire.id, mode } : null)
+                          }
+                          historyContent={
+                            <ScoreHistory
+                              questionnaireId={questionnaire.id}
+                              emptyMessage={tm.noHistoryForQuestionnaire}
+                              compact
+                            />
+                          }
+                        />
+                      );
+                    })}
+                  </div>
+                )}
+              </>
+            );
+          })()}
         </div>
       )}
     </div>
