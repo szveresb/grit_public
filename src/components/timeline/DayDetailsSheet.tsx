@@ -80,7 +80,7 @@ const DayDetailsSheet = ({
 
       const obsRows = (obsRes.data ?? []) as ObsRow[];
       const conceptIds = Array.from(new Set(obsRows.map((r) => r.concept_id)));
-      let conceptMap: Record<string, { name_hu: string; name_en: string }> = {};
+      const conceptMap: Record<string, { name_hu: string; name_en: string }> = {};
       if (conceptIds.length > 0) {
         const { data: cRows } = await supabase
           .from('observation_concepts')
