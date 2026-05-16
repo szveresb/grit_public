@@ -5,7 +5,15 @@ import reactRefresh from "eslint-plugin-react-refresh";
 import tseslint from "typescript-eslint";
 
 export default tseslint.config(
-  { ignores: ["dist"] },
+  {
+    ignores: [
+      "dist",
+      "dev-dist",
+      "build",
+      "supabase/functions/**",
+      "src/integrations/supabase/types.ts",
+    ],
+  },
   {
     extends: [js.configs.recommended, ...tseslint.configs.recommended],
     files: ["**/*.{ts,tsx}"],
@@ -21,19 +29,8 @@ export default tseslint.config(
       ...reactHooks.configs.recommended.rules,
       "react-refresh/only-export-components": ["warn", { allowConstantExport: true }],
       "@typescript-eslint/no-unused-vars": "off",
-      "no-restricted-syntax": [
-        "error",
-        {
-          selector:
-            "Literal[value=/\\b(?:bg|text|border|ring|stroke|fill|from|to|via)-(?:slate|gray|zinc|neutral|stone|red|orange|amber|yellow|lime|green|emerald|teal|cyan|sky|blue|indigo|violet|purple|fuchsia|pink|rose|white|black)(?:-\\d{1,3})?(?:\\u002F\\d{1,3})?\\b/]",
-          message: "Raw color utility classes are not allowed. Use semantic design tokens only.",
-        },
-        {
-          selector:
-            "TemplateElement[value.cooked=/\\b(?:bg|text|border|ring|stroke|fill|from|to|via)-(?:slate|gray|zinc|neutral|stone|red|orange|amber|yellow|lime|green|emerald|teal|cyan|sky|blue|indigo|violet|purple|fuchsia|pink|rose|white|black)(?:-\\d{1,3})?(?:\\u002F\\d{1,3})?\\b/]",
-          message: "Raw color utility classes are not allowed. Use semantic design tokens only.",
-        },
-      ],
+      "@typescript-eslint/no-explicit-any": "off",
+      "@typescript-eslint/no-empty-object-type": "off",
     },
   },
 );

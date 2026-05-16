@@ -245,8 +245,7 @@ export const ScopedStanceProvider = ({ children, subject }: ScopedStanceProvider
 
 export const useStance = () => {
   const scoped = useContext(ScopedStanceContext);
-  if (scoped) return scoped;
-
   const ctx = useContext(StanceContext);
+  if (scoped) return scoped;
   return ctx ?? defaultStance;
 };
