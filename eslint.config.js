@@ -25,12 +25,12 @@ export default tseslint.config(
         "error",
         {
           selector:
-            "Literal[value=/\\b(?:bg|text|border|ring|stroke|fill|from|to|via)-(?:slate|gray|zinc|neutral|stone|red|orange|amber|yellow|lime|green|emerald|teal|cyan|sky|blue|indigo|violet|purple|fuchsia|pink|rose|white|black)(?:-\\d{1,3})?(?:\\/\\d{1,3})?\\b/]",
+            "Literal[value=/\\b(?:bg|text|border|ring|stroke|fill|from|to|via)-(?:slate|gray|zinc|neutral|stone|red|orange|amber|yellow|lime|green|emerald|teal|cyan|sky|blue|indigo|violet|purple|fuchsia|pink|rose|white|black)(?:-\\d{1,3})?(?:\\u002F\\d{1,3})?\\b/]",
           message: "Raw color utility classes are not allowed. Use semantic design tokens only.",
         },
         {
           selector:
-            "TemplateElement[value.cooked=/\\b(?:bg|text|border|ring|stroke|fill|from|to|via)-(?:slate|gray|zinc|neutral|stone|red|orange|amber|yellow|lime|green|emerald|teal|cyan|sky|blue|indigo|violet|purple|fuchsia|pink|rose|white|black)(?:-\\d{1,3})?(?:\\/\\d{1,3})?\\b/]",
+            "TemplateElement[value.cooked=/\\b(?:bg|text|border|ring|stroke|fill|from|to|via)-(?:slate|gray|zinc|neutral|stone|red|orange|amber|yellow|lime|green|emerald|teal|cyan|sky|blue|indigo|violet|purple|fuchsia|pink|rose|white|black)(?:-\\d{1,3})?(?:\\u002F\\d{1,3})?\\b/]",
           message: "Raw color utility classes are not allowed. Use semantic design tokens only.",
         },
       ],
