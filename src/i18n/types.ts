@@ -419,6 +419,11 @@ export interface Dictionary {
     entries: string;
     entry: string;
     timelineSlider: string;
+    rangeLabel: string;
+    legendDot: string;
+    legendTrend: string;
+    hintHover: string;
+    hintDense: string;
     pageTitle: string;
     pageSubtitle: string;
     noPatterns: string;
