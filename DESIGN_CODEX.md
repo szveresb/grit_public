@@ -1,4 +1,4 @@
-# Grit.hu — UI Design Codex
+﻿# Grit.hu — UI Design Codex
 
 > Living reference for the visual language, component patterns, and design principles of Grit.hu.
 
