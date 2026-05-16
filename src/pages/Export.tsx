@@ -254,7 +254,7 @@ const Export = () => {
   const obsF = (previewData?.observation_logs_fhir ?? []).filter((o: any) => inRange(o.effectiveDateTime));
 
   return (
-    <DashboardLayout>
+    <DashboardLayout showContextToolPanel={false}>
       <div className="max-w-lg mx-auto w-full space-y-5">
         {!showPreview ? (
           <>
