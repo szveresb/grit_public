@@ -292,7 +292,7 @@ const Export = () => {
               </div>
             </div>
 
-            <div className="flex flex-wrap items-end gap-3 print:hidden">
+            <div className="flex flex-wrap items-end gap-3 print:hidden border rounded-xl p-3 bg-gray-50">
               <div className="flex flex-col gap-1">
                 <Label htmlFor="filter-from" className="text-xs">{lang === 'hu' ? 'Kezdő dátum' : 'From date'}</Label>
                 <Input id="filter-from" type="date" value={filterFrom} onChange={(e) => setFilterFrom(e.target.value)} className="h-8 w-40" />
