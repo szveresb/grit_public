@@ -476,7 +476,7 @@ export const hu: Dictionary = {
 
   export: {
     title: 'Adatok exportálása',
-    subtitle: 'Töltsd le adataidat szabványos JSON formátumban.',
+    subtitle: 'Töltsd le adataidat PDF vagy CSV formátumban',
     desc: 'Az exportált fájl tartalmazza az összes naplóbejegyzést, kérdőív választ és megfigyelési naplót.',
     exportAll: 'Minden adat exportálása',
     therapistTitle: 'Összefoglaló szakember számára',
