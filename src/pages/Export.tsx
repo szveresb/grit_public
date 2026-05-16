@@ -190,6 +190,14 @@ const Export = () => {
       if (filterTo && d > filterTo) return false;
       return true;
     };
+    // Neutralize CSV formula injection: prefix risky leading chars with a single quote
+    // so spreadsheet apps treat the cell as text rather than a formula.
+    const csvSafe = (v: unknown): string => {
+      const s = v == null ? '' : String(v);
+      const sanitized = /^[=+\-@\t\r]/.test(s) ? `'${s}` : s;
+      return sanitized.replace(/"/g, '""');
+    };
+    const q = (v: unknown) => `"${csvSafe(v)}"`;
     let csvContent = '';
     
     if (previewType === 'therapist') {
@@ -198,13 +206,13 @@ const Export = () => {
         subject.bno_summary.forEach((bno: any) => {
           bno.observations.filter((o: any) => inRange(o.logged_at)).forEach((obs: any) => {
             const row = [
-              `"${subject.subject_label}"`,
-              `"${bno.bno_code}"`,
-              `"${bno.bno_label_localized}"`,
-              `"${new Date(obs.logged_at).toISOString()}"`,
+              q(subject.subject_label),
+              q(bno.bno_code),
+              q(bno.bno_label_localized),
+              q(new Date(obs.logged_at).toISOString()),
               obs.intensity,
-              `"${obs.concept_localized}"`,
-              `"${obs.context || ''}"`
+              q(obs.concept_localized),
+              q(obs.context || '')
             ].join(',');
             csvContent += row + '\n';
           });
@@ -215,20 +223,20 @@ const Export = () => {
       previewData.observation_logs_fhir.filter((o: any) => inRange(o.effectiveDateTime)).forEach((obs: any) => {
         const row = [
           'observation',
-          `"${obs.effectiveDateTime}"`,
-          `"${obs.code.coding[0]?.code || ''}"`,
-          `"${obs.code.coding[0]?.display || ''}"`,
+          q(obs.effectiveDateTime),
+          q(obs.code.coding[0]?.code || ''),
+          q(obs.code.coding[0]?.display || ''),
           obs.valueInteger,
           ''
         ].join(',');
         csvContent += row + '\n';
       });
       (previewData.mood_pulses ?? []).filter((p: any) => inRange(p.entry_date)).forEach((p: any) => {
-        const row = ['mood_pulse', `"${p.entry_date}"`, '', `"${p.label || ''}"`, p.level, `"${p.subject_type || ''}"`].join(',');
+        const row = ['mood_pulse', q(p.entry_date), '', q(p.label || ''), p.level, q(p.subject_type || '')].join(',');
         csvContent += row + '\n';
       });
       (previewData.journal_entries ?? []).filter((e: any) => inRange(e.entry_date)).forEach((e: any) => {
-        const row = ['journal', `"${e.entry_date}"`, '', `"${(e.title || '').replace(/"/g, "'")}"`, e.impact_level ?? '', `"${(e.emotional_state || e.event_description || '').replace(/"/g, "'")}"`].join(',');
+        const row = ['journal', q(e.entry_date), '', q(e.title || ''), e.impact_level ?? '', q(e.emotional_state || e.event_description || '')].join(',');
         csvContent += row + '\n';
       });
     }
