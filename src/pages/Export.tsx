@@ -4,6 +4,8 @@ import { useAuth } from '@/hooks/useAuth';
 import { useLanguage } from '@/hooks/useLanguage';
 import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
 import { FDownload } from '@/components/icons/FreudIcons';
 
@@ -25,17 +27,20 @@ const Export = () => {
   const [showPreview, setShowPreview] = useState(false);
   const [previewData, setPreviewData] = useState<any>(null);
   const [previewType, setPreviewType] = useState<'all' | 'therapist'>('all');
+  const [filterFrom, setFilterFrom] = useState<string>('');
+  const [filterTo, setFilterTo] = useState<string>('');
 
   const handleExport = async () => {
     if (!user) return;
 
-    const [entriesRes, responsesRes, logsRes, conceptsRes] = await Promise.all([
+    const [entriesRes, responsesRes, logsRes, conceptsRes, pulsesRes] = await Promise.all([
       supabase.from('journal_entries').select('*').eq('user_id', user.id).order('entry_date'),
       supabase.from('questionnaire_responses')
         .select('*, questionnaires(title, snomed_code), questionnaire_answers(question_id, answer, questionnaire_questions(question_text))')
         .eq('user_id', user.id),
       supabase.from('observation_logs').select('*').eq('user_id', user.id).order('logged_at'),
       supabase.from('observation_concepts').select('id, concept_code, name_en, bno_code'),
+      supabase.from('mood_pulses').select('*').eq('user_id', user.id).order('entry_date'),
     ]);
 
     const conceptMap: Record<string, { concept_code: string; name_en: string; bno_code?: string }> = {};
@@ -81,10 +86,13 @@ const Export = () => {
       journal_entries: entriesRes.data ?? [],
       questionnaire_responses: responsesRes.data ?? [],
       observation_logs_fhir: fhirObservations,
+      mood_pulses: pulsesRes.data ?? [],
     };
 
     setPreviewData(exportData);
     setPreviewType('all');
+    setFilterFrom('');
+    setFilterTo('');
     setShowPreview(true);
   };
 
