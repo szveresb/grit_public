@@ -32,18 +32,13 @@ const Surveys = () => {
         <ConsentGate consentKey="questionnaire_data">
           <div className="space-y-5">
             <section className="surface-card space-y-5 p-5 sm:p-6">
-              <div className="flex items-start gap-3 pb-3 border-b border-border/50">
-                <div className="mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+              <div className="flex items-center gap-3 pb-3 border-b border-border/50">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-primary/10 text-primary">
                   <FClipboardCheck className="h-4 w-4" />
                 </div>
-                <div className="space-y-1">
-                  <h2 className="text-base font-semibold text-foreground">
-                    {t.subjects.selfQuestionnaireTitle}
-                  </h2>
-                  <p className="text-sm leading-relaxed text-muted-foreground">
-                    {t.subjects.selfQuestionnaireDesc}
-                  </p>
-                </div>
+                <h2 className="text-base font-semibold text-foreground">
+                  {t.subjects.selfQuestionnaireTitle}
+                </h2>
               </div>
 
               <ScopedStanceProvider subject={{ type: 'self' }}>
@@ -52,20 +47,15 @@ const Surveys = () => {
             </section>
 
             <section className="surface-card space-y-5 p-5 sm:p-6">
-              <div className="flex items-start gap-3 pb-3 border-b border-border/50">
-                <div className="mt-0.5 flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+              <div className="flex items-center gap-3 pb-3 border-b border-border/50">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-primary/10 text-primary">
                   <FUsers className="h-4 w-4" />
                 </div>
-                <div className="space-y-1">
-                  <h2 className="text-base font-semibold text-foreground">
-                    {t.subjects.thirdPartyQuestionnaireTitle}
-                  </h2>
-                  <p className="text-sm leading-relaxed text-muted-foreground">
-                    {supportedSubject
-                      ? t.subjects.thirdPartyQuestionnaireDesc.replace('{name}', supportedSubject.name)
-                      : t.questionnaires_manage.supportedSelectionEmpty}
-                  </p>
-                </div>
+                <h2 className="text-base font-semibold text-foreground">
+                  {supportedSubject
+                    ? `${t.subjects.thirdPartyQuestionnaireTitle} · ${supportedSubject.name}`
+                    : t.subjects.thirdPartyQuestionnaireTitle}
+                </h2>
               </div>
 
               {supportedSubject ? (
