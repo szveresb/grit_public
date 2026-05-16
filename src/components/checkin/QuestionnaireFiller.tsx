@@ -801,20 +801,6 @@ const QuestionnaireFiller: React.FC<QuestionnaireFillerProps> = ({ onCompleted, 
               </>
             );
           })()}
-          {/* legacy block removed */}
-          <div className="hidden">
-            {questionnaires.map((questionnaire) => {
-              const lastCompletion = getLastCompletion(questionnaire.id);
-              const available = isAvailable(questionnaire);
-              const description = qDescription(questionnaire);
-              const cardPanelMode =
-                activePanel?.questionnaireId === questionnaire.id ? activePanel.mode : null;
-
-              return (
-                <div key={questionnaire.id} />
-              );
-            })}
-          </div>
         </div>
       )}
     </div>
