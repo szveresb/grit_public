@@ -514,6 +514,7 @@ export interface Dictionary {
     journalEntries: string;
     questionnaireResponses: string;
     observationsFhir: string;
+    moodPulses: string;
   };
 
   betaGate: {
