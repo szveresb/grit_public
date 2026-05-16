@@ -267,6 +267,22 @@ const Export = () => {
               </div>
             </div>
 
+            <div className="flex flex-wrap items-end gap-3 print:hidden border rounded-xl p-3 bg-gray-50">
+              <div className="flex flex-col gap-1">
+                <Label htmlFor="filter-from" className="text-xs">{lang === 'hu' ? 'Kezdő dátum' : 'From date'}</Label>
+                <Input id="filter-from" type="date" value={filterFrom} onChange={(e) => setFilterFrom(e.target.value)} className="h-8 w-40" />
+              </div>
+              <div className="flex flex-col gap-1">
+                <Label htmlFor="filter-to" className="text-xs">{lang === 'hu' ? 'Záró dátum' : 'To date'}</Label>
+                <Input id="filter-to" type="date" value={filterTo} onChange={(e) => setFilterTo(e.target.value)} className="h-8 w-40" />
+              </div>
+              {(filterFrom || filterTo) && (
+                <Button size="sm" variant="ghost" onClick={() => { setFilterFrom(''); setFilterTo(''); }}>
+                  {lang === 'hu' ? 'Szűrő törlése' : 'Clear filter'}
+                </Button>
+              )}
+            </div>
+
             <div className="border-b pb-4">
               <h1 className="text-xl font-bold">
                 {previewType === 'therapist' ? t.export.therapistTitle : t.export.title}
@@ -274,6 +290,11 @@ const Export = () => {
               <p className="text-xs text-gray-500">
                 {t.export.exportedAt}: {new Date(previewData.exported_at).toLocaleString()}
               </p>
+              {(filterFrom || filterTo) && (
+                <p className="text-xs text-gray-500 mt-1">
+                  {lang === 'hu' ? 'Időszak' : 'Range'}: {filterFrom || '…'} – {filterTo || '…'}
+                </p>
+              )}
             </div>
 
             <div className="text-sm text-gray-600 italic">
