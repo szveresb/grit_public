@@ -12,6 +12,14 @@ import { toast } from 'sonner';
 import { FArrowLeft } from '@/components/icons/FreudIcons';
 import { formatDistanceToNow, differenceInHours } from 'date-fns';
 import { getDateLocale } from '@/lib/date-locale';
+import { format, addDays } from 'date-fns';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import ScoreResults from './ScoreResults';
 import ScoreHistory from './ScoreHistory';
 import QuestionnaireCard from './QuestionnaireCard';
@@ -90,6 +98,11 @@ const QuestionnaireFiller: React.FC<QuestionnaireFillerProps> = ({ onCompleted, 
   const subjectScopeKey = `${activeSubject.type}:${activeSubject.id ?? 'self'}`;
   const previousSubjectScopeRef = useRef(subjectScopeKey);
   const containerRef = useRef<HTMLDivElement>(null);
+
+  type FilterMode = 'all' | 'due' | 'completed' | string; // string for freq
+  type SortMode = 'urgent' | 'recent' | 'alpha';
+  const [filter, setFilter] = useState<FilterMode>('all');
+  const [sortMode, setSortMode] = useState<SortMode>('urgent');
 
   const dateLocale = getDateLocale(lang);
   const isAdminOrEditor = hasAnyRole('admin', 'editor');
