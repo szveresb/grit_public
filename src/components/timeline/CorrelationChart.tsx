@@ -26,15 +26,6 @@ const CorrelationChart = ({ data, lang, t, relativeName }: CorrelationChartProps
     return data.some(p => p.selfMood !== null || p.relativeIntensity !== null);
   }, [data]);
 
-  if (!hasData) {
-    return (
-      <div className="surface-card p-6 text-center space-y-3">
-        <FTimeline className="h-8 w-8 text-muted-foreground mx-auto" />
-        <p className="text-sm text-muted-foreground">{t.timeline.noPatterns}</p>
-      </div>
-    );
-  }
-
   // Pre-process for rendering (converting nulls to undefined so they don't break the lines)
   const chartData = useMemo(() => {
     return data.map(p => ({
@@ -44,6 +35,15 @@ const CorrelationChart = ({ data, lang, t, relativeName }: CorrelationChartProps
       displayRelative: p.relativeIntensity ?? undefined,
     }));
   }, [data]);
+
+  if (!hasData) {
+    return (
+      <div className="surface-card p-6 text-center space-y-3">
+        <FTimeline className="h-8 w-8 text-muted-foreground mx-auto" />
+        <p className="text-sm text-muted-foreground">{t.timeline.noPatterns}</p>
+      </div>
+    );
+  }
 
   return (
     <div className="surface-card p-5 space-y-6 animate-fade-in relative overflow-hidden">
