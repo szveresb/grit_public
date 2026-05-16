@@ -525,6 +525,7 @@ export const en: Dictionary = {
     journalEntries: 'Journal Entries',
     questionnaireResponses: 'Questionnaire Responses',
     observationsFhir: 'Observations (FHIR)',
+    moodPulses: 'Quick Pulse entries',
   },
 
   betaGate: {
