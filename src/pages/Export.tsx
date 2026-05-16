@@ -311,13 +311,90 @@ const Export = () => {
                 ))}
               </div>
             ) : (
-              <div className="space-y-4">
+              <div className="space-y-6">
                 <p className="text-sm">{t.export.summaryNote}</p>
                 <div className="text-xs">
                   <p>{t.export.journalEntries}: {previewData.journal_entries?.length || 0}</p>
                   <p>{t.export.questionnaireResponses}: {previewData.questionnaire_responses?.length || 0}</p>
                   <p>{t.export.observationsFhir}: {previewData.observation_logs_fhir?.length || 0}</p>
+                  <p>{t.export.moodPulses}: {previewData.mood_pulses?.length || 0}</p>
                 </div>
+
+                {previewData.mood_pulses?.length > 0 && (
+                  <div className="space-y-2">
+                    <h3 className="text-sm font-medium">{t.export.moodPulses}</h3>
+                    <table className="w-full text-xs border-collapse">
+                      <thead>
+                        <tr className="bg-gray-100">
+                          <th className="border p-1 text-left">{t.export.headerDate}</th>
+                          <th className="border p-1 text-center">{t.export.headerIntensity}</th>
+                          <th className="border p-1 text-left">{t.export.headerConcept}</th>
+                          <th className="border p-1 text-left">{t.export.headerContext}</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {previewData.mood_pulses.map((p: any, i: number) => (
+                          <tr key={i}>
+                            <td className="border p-1">{p.entry_date}</td>
+                            <td className="border p-1 text-center">{p.level}</td>
+                            <td className="border p-1">{p.label}</td>
+                            <td className="border p-1">{p.subject_type}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+
+                {previewData.journal_entries?.length > 0 && (
+                  <div className="space-y-2">
+                    <h3 className="text-sm font-medium">{t.export.journalEntries}</h3>
+                    <table className="w-full text-xs border-collapse">
+                      <thead>
+                        <tr className="bg-gray-100">
+                          <th className="border p-1 text-left">{t.export.headerDate}</th>
+                          <th className="border p-1 text-left">Title</th>
+                          <th className="border p-1 text-center">{t.export.headerIntensity}</th>
+                          <th className="border p-1 text-left">{t.export.headerContext}</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {previewData.journal_entries.map((e: any, i: number) => (
+                          <tr key={i}>
+                            <td className="border p-1">{e.entry_date}</td>
+                            <td className="border p-1">{e.title}</td>
+                            <td className="border p-1 text-center">{e.impact_level ?? '-'}</td>
+                            <td className="border p-1">{e.emotional_state || e.event_description || '-'}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+
+                {previewData.observation_logs_fhir?.length > 0 && (
+                  <div className="space-y-2">
+                    <h3 className="text-sm font-medium">{t.export.observationsFhir}</h3>
+                    <table className="w-full text-xs border-collapse">
+                      <thead>
+                        <tr className="bg-gray-100">
+                          <th className="border p-1 text-left">{t.export.headerDate}</th>
+                          <th className="border p-1 text-left">{t.export.headerConcept}</th>
+                          <th className="border p-1 text-center">{t.export.headerIntensity}</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {previewData.observation_logs_fhir.map((obs: any, i: number) => (
+                          <tr key={i}>
+                            <td className="border p-1">{obs.effectiveDateTime}</td>
+                            <td className="border p-1">{obs.code.coding[0]?.display}</td>
+                            <td className="border p-1 text-center">{obs.valueInteger}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
               </div>
             )}
 
