@@ -104,10 +104,10 @@ const DashboardShell = ({
               )}
             </div>
           </header>
-          <div className="flex-1 px-4 md:px-8 py-6 md:py-8 pb-20">
+          <div className="flex-1 px-4 md:px-8 pt-5 md:pt-6 pb-16">
             <div className="max-w-7xl mx-auto w-full">
               {segments.length > 0 && (
-                <Breadcrumb className="mb-6">
+                <Breadcrumb className="mb-5 pb-3 border-b border-border/40">
                   <BreadcrumbList>
                     <BreadcrumbItem>
                       <BreadcrumbLink asChild>

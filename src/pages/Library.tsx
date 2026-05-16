@@ -68,13 +68,13 @@ const Library = () => {
   return (
     <DashboardLayout showContextToolPanel={false}>
       <section>
-        <div className="mb-8">
+        <div className="mb-5 pb-3 border-b border-border/50">
           <h1 className="text-xl md:text-2xl font-bold tracking-tight text-foreground">{t.landing.libraryTitle}</h1>
           <p className="mt-1 text-sm text-muted-foreground">{t.landing.librarySubtitle}</p>
         </div>
 
         {/* Filters */}
-        <div className="flex flex-col sm:flex-row gap-4 mb-8">
+        <div className="flex flex-col sm:flex-row gap-4 mb-6">
           <Input
             placeholder={t.manageLibrary.searchArticles}
             value={search}

@@ -87,14 +87,14 @@ const Profile = () => {
 
   return (
     <DashboardLayout showSubjectRegistry={true}>
-      <div className="max-w-lg mx-auto w-full space-y-6">
-        <div>
+      <div className="max-w-lg mx-auto w-full space-y-5">
+        <div className="pb-3 border-b border-border/50">
           <h1 className="text-lg md:text-xl font-bold tracking-tight text-foreground">{t.profile.title}</h1>
           <p className="mt-1 text-sm text-muted-foreground leading-relaxed">{t.profile.subtitle}</p>
         </div>
 
-        <div className="surface-card p-6 space-y-6">
-          <h2 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">{t.profile.profileSection}</h2>
+        <div className="surface-card p-5 sm:p-6 space-y-5">
+          <h2 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground pb-3 border-b border-border/50">{t.profile.profileSection}</h2>
           <div className="space-y-2">
             <Label className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">{t.profile.emailLabel}</Label>
             <Input value={user?.email ?? ''} disabled className="opacity-60 rounded-2xl" />
@@ -108,8 +108,8 @@ const Profile = () => {
           </Button>
         </div>
 
-        <div className="surface-card p-6 space-y-6">
-          <h2 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">{t.profile.roleFraming}</h2>
+        <div className="surface-card p-5 sm:p-6 space-y-5">
+          <h2 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground pb-3 border-b border-border/50">{t.profile.roleFraming}</h2>
           {roleLoading ? (
             <p className="text-sm text-muted-foreground">{t.loading}</p>
           ) : (
@@ -146,8 +146,8 @@ const Profile = () => {
           )}
         </div>
 
-        <div className="surface-card p-6 space-y-6">
-          <h2 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">{t.profile.yourData}</h2>
+        <div className="surface-card p-5 sm:p-6 space-y-5">
+          <h2 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground pb-3 border-b border-border/50">{t.profile.yourData}</h2>
           <p className="text-sm text-muted-foreground leading-relaxed">{t.profile.yourDataDesc}</p>
           <Button onClick={handleExport} size="sm" variant="outline" className="rounded-2xl">
             <FDownload className="h-4 w-4 mr-1.5" /> {t.profile.exportAllData}

@@ -1,64 +1,87 @@
 ## Goal
-Add an **"Advanced Settings"** section to `ConsentDashboard` whose first (and currently only) control is a **date-range filter for the Pattern Detection** category. It lets the user limit which observation logs are considered when patterns are detected and rendered.
+
+Refine the app's spacing rhythm so top sections feel tighter, section boundaries read clearly, and whitespace anchors content rather than drifting. Keep the calm Soft‑UI Bamboo aesthetic — no color, font, or layout overhaul.
 
 ## Scope
-Frontend-only. No schema migration. Settings persist per-user in `localStorage` (key: `grit_pattern_detection_range_${user.id}`). Bilingual HU/EN.
 
-## What gets added
+Frontend / presentation only. No business logic, no i18n keys, no data changes.
 
-### 1. Collapsible Advanced Settings panel in ConsentDashboard
-- Rendered below the existing consent cards.
-- Built with shadcn `Accordion` (single, collapsible). Header: gear icon + `t.consent.advancedSettings.title`, subtitle line.
-- Disabled / dimmed with explanatory copy when `pattern_detection` consent is **off** — toggling it back on enables the controls.
+Pages and shared chrome touched:
+- `src/components/DashboardLayout.tsx` (header + content frame, breadcrumb gap)
+- `src/pages/Journal.tsx`
+- `src/pages/CheckIn.tsx`
+- `src/pages/Surveys.tsx`
+- `src/pages/Library.tsx`
+- `src/pages/Timeline.tsx`
+- `src/pages/Profile.tsx`
+- `src/pages/Export.tsx`
+- Section header pattern used inside `SubjectWorkspaceSection`, `QuestionnaireFiller`, `JournalCalendar` headers (heading + thin divider treatment, no content change)
 
-### 2. Pattern Detection range control
-Inside the panel, a card titled `t.consent.advancedSettings.patternDetection.title`:
-- Three preset pill buttons: **7 days / 30 days / 90 days**.
-- A fourth **"Custom"** option that reveals two shadcn `Popover` + `Calendar` date pickers (start, end) following the project's shadcn-datepicker pattern (`pointer-events-auto`, `mode="single"`).
-- A footer line: `t.consent.advancedSettings.patternDetection.activeRange` showing the resolved range as `MMM d – MMM d`.
-- A subtle "Reset to default (30 days)" link.
+## Spacing rhythm (the rules)
 
-### 3. Storage hook — `src/hooks/usePatternDetectionRange.ts`
-```ts
-type Preset = '7d' | '30d' | '90d' | 'custom';
-interface PatternRange { preset: Preset; startDate?: string; endDate?: string }
-export const usePatternDetectionRange = () => { range, setRange, resolved: { start: Date; end: Date } }
+Establish one consistent vertical scale per page:
+
+```text
+page top padding   py-6 md:py-8   →  py-5 md:py-6
+breadcrumb → title mb-6           →  mb-4
+title block (h1 + subtitle)       →  space-y-1 (already), but
+title block → first section       →  mt-5 (was implicit space-y-6/8)
+section → section (major)         →  space-y-6  (was 6–8 mixed)
+section → section (minor inside)  →  space-y-3
+card inner padding                 →  p-5 sm:p-6 (was p-6 / p-8 mix)
 ```
-- Reads from / writes to localStorage scoped by the authenticated user id.
-- `resolved` always returns concrete dates (presets are computed from `new Date()`).
-- Default: `{ preset: '30d' }`.
 
-### 4. Wire the range into pattern detection
-Two consumers of pattern data filter by the resolved range:
-- `src/components/timeline/PatternChart.tsx` — accept optional `rangeStart`/`rangeEnd` props; if provided, filter `logs` on `logged_at` inside the existing `useMemo` aggregation. (No behavioural change when omitted.)
-- `src/components/checkin/SubjectWorkspaceSection.tsx` — read `usePatternDetectionRange()` and pass the resolved dates into `<PatternChart>`. The `nudge` summary above also clips to the same window so the headline counts agree with the chart.
+Result: top of every page sits ~12–16px higher, and inner cards stop competing with page padding.
 
-### 5. i18n (HU + EN)
-Add to `consent` namespace:
-- `advancedSettings.title`, `advancedSettings.subtitle`
-- `advancedSettings.disabledHint` (shown when consent is off)
-- `advancedSettings.patternDetection.title`, `.subtitle`
-- `presets.7d`, `presets.30d`, `presets.90d`, `presets.custom`
-- `range.start`, `range.end`, `range.activeRange` ("Active range: {start} – {end}"), `range.reset`
+## Section boundary pattern
 
-### 6. Files
+Introduce a single, reusable visual rhythm for section headings within a page (no new component required — just consistent markup):
 
-**New**
-- `src/hooks/usePatternDetectionRange.ts`
-- `src/components/consent/AdvancedSettingsPanel.tsx` (the Accordion + the pattern detection card)
+```tsx
+<header className="flex items-end justify-between gap-3 pb-2 border-b border-border/60">
+  <div>
+    <h2 className="text-xs font-bold uppercase tracking-[0.18em] text-muted-foreground">
+      {label}
+    </h2>
+    <p className="text-sm text-foreground/80 mt-0.5">{hint}</p>
+  </div>
+  {actions}
+</header>
+```
 
-**Modified**
-- `src/components/consent/ConsentDashboard.tsx` — render `<AdvancedSettingsPanel />` after the consent cards.
-- `src/components/timeline/PatternChart.tsx` — optional range props + filter.
-- `src/components/checkin/SubjectWorkspaceSection.tsx` — pass range into `PatternChart` and apply to the nudge summary list.
-- `src/i18n/types.ts`, `src/i18n/en.ts`, `src/i18n/hu.ts` — new keys.
+- Replaces ad-hoc `<h3 class="text-xs uppercase…">` headers that float without an anchor.
+- The hairline `border-b border-border/60` is the "intentional emptiness" anchor — calm, not loud.
+- Where a card already has a border, use the same pattern *inside* the card with `border-b border-border/50 pb-3 mb-4` instead of full margins.
 
-## What stays out of scope
-- No DB column on `user_consents`; if the user later wants cross-device persistence we can add a `settings jsonb` column in a follow-up.
-- No backend filtering in `journal-patterns` edge function (current pattern detection on this surface is client-side from `obsLogs`).
-- No new "advanced settings" beyond pattern detection — the panel is built generically so we can add more controls later, but only the pattern detection control ships now.
-- ConsentOnboarding flow unchanged.
+Apply this pattern to:
+- Journal: "Filters", "AI Reflections" (existing PatternSummary header), "Entries"
+- CheckIn: "Workspace header" already exists — only adjust spacing (`space-y-8` → `space-y-6`, header gap-6 → gap-4)
+- Surveys: each `<section class="surface-card">` gets the inner-header treatment (replacing nested `space-y-1` blocks that have no divider)
+- Library: "Featured" and "Articles" get the divider header; collapse `mb-8` → `mb-5`
+- Timeline: range chip row gets `pt-3 border-t border-border/50` so it reads as a control band, not a floating row
+- Profile: each `surface-card` section already has its own heading — add the hairline + tighten `p-6 space-y-6` → `p-5 sm:p-6 space-y-5`
 
-## Validation
-- Manual: open `/profile`, expand Advanced Settings, switch presets and a custom range; confirm `PatternChart` and the nudge list re-render with the filtered window.
-- Edge cases handled: `pattern_detection` consent off → controls disabled, prior selection retained but unused; custom range with `end < start` → swapped; no logs in range → existing PatternChart empty state shows.
+## DashboardLayout adjustments
+
+- `header h-14` stays (chrome height).
+- Content wrapper `px-4 md:px-8 py-6 md:py-8 pb-20` → `px-4 md:px-8 pt-5 md:pt-6 pb-16`.
+- Breadcrumb `mb-6` → `mb-4`, and add a subtle `pb-3 border-b border-border/40` so the breadcrumb anchors the top of the work area on every page (this is the single biggest "anchoring" win and is shared across all pages).
+
+## What stays untouched
+
+- Color tokens, typography scale, radius (`rounded-3xl`), shadows.
+- All component logic, props, i18n strings.
+- Sidebar, EmergencyExit, FeedbackSheet, modals.
+- Mobile breakpoints — only spacing values change, not breakpoint structure.
+
+## Verification
+
+After edits:
+1. Visually inspect `/journal`, `/checkin`, `/surveys`, `/library`, `/timeline`, `/profile` at 1280 and at mobile width.
+2. Confirm: top of page feels ~1 line tighter; every major section has either a hairline divider or sits inside a `surface-card` with an internal hairline header; no cramped pairs (icon+title still has breathing room).
+3. Run typecheck (auto by harness).
+
+## Out of scope
+
+- No new design tokens, no animation changes, no new layout primitives, no copy changes.
+- Public landing (`Index.tsx`) is not touched — request is about the app surface.

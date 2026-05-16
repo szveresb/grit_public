@@ -49,9 +49,9 @@ const Timeline = () => {
 
   return (
     <DashboardLayout>
-      <div className="max-w-2xl mx-auto space-y-6">
+      <div className="max-w-2xl mx-auto space-y-5">
         {/* Header */}
-        <div className="flex items-start gap-3">
+        <div className="flex items-start gap-3 pb-3 border-b border-border/50">
           <FTimeline className="h-6 w-6 text-primary mt-0.5 shrink-0" />
           <div>
             <h1 className="text-lg font-semibold text-foreground">{t.timeline.pageTitle}</h1>
@@ -107,7 +107,7 @@ const Timeline = () => {
             </div>
           ) : showCorrelation ? (
             <div className="space-y-5">
-              <div className="flex items-center justify-center gap-2">
+              <div className="flex items-center justify-center gap-2 pt-3 border-t border-border/50">
                 <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mr-1">
                   {t.timeline.dual.windowLabel}
                 </span>
