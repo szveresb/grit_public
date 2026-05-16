@@ -507,6 +507,7 @@ export const hu: Dictionary = {
     journalEntries: 'Naplóbejegyzések',
     questionnaireResponses: 'Kérdőív válaszok',
     observationsFhir: 'Megfigyelések (FHIR)',
+    moodPulses: 'Hangulat pulzus bejegyzések',
   },
 
   betaGate: {
