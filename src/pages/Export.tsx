@@ -331,13 +331,17 @@ const Export = () => {
                 {previewData.subjects.map((subject: any, si: number) => (
                   <div key={si} className="space-y-4">
                     <h2 className="text-lg font-semibold border-b pb-1">{subject.subject_label}</h2>
-                    {subject.bno_summary.map((bno: any, bi: number) => (
+                    {subject.bno_summary.map((bno: any, bi: number) => {
+                      const obsRows = bno.observations.filter((o: any) => inRange(o.logged_at));
+                      if (obsRows.length === 0) return null;
+                      const avg = Math.round((obsRows.reduce((a: number, b: any) => a + b.intensity, 0) / obsRows.length) * 100) / 100;
+                      return (
                       <div key={bi} className="space-y-2">
                         <h3 className="text-sm font-medium">
                           {bno.bno_code} - {bno.bno_label_localized}
                         </h3>
                         <div className="text-xs text-gray-500">
-                          {t.export.countLabel}: {bno.observation_count} | {t.export.avgIntensityLabel}: {bno.avg_intensity}
+                          {t.export.countLabel}: {obsRows.length} | {t.export.avgIntensityLabel}: {avg}
                         </div>
                         <table className="w-full text-xs border-collapse">
                           <thead>
@@ -349,7 +353,7 @@ const Export = () => {
                             </tr>
                           </thead>
                           <tbody>
-                            {bno.observations.map((obs: any, oi: number) => (
+                            {obsRows.map((obs: any, oi: number) => (
                               <tr key={oi}>
                                 <td className="border p-1">{new Date(obs.logged_at).toLocaleString()}</td>
                                 <td className="border p-1">{obs.concept_localized}</td>
@@ -360,7 +364,8 @@ const Export = () => {
                           </tbody>
                         </table>
                       </div>
-                    ))}
+                      );
+                    })}
                   </div>
                 ))}
               </div>
