@@ -19,6 +19,12 @@ interface QuestionnaireCardProps {
   description: string | null;
   repeatLabel: string;
   lastCompletedLabel?: string;
+  metaFrequencyLabel: string;
+  metaFrequencyValue: string;
+  metaLastCompletionLabel: string;
+  metaLastCompletionValue: string;
+  metaNextDueLabel: string;
+  metaNextDueValue: string;
   available: boolean;
   canReadMore: boolean;
   onStart: () => void;
@@ -39,6 +45,12 @@ const QuestionnaireCard = ({
   description,
   repeatLabel,
   lastCompletedLabel,
+  metaFrequencyLabel,
+  metaFrequencyValue,
+  metaLastCompletionLabel,
+  metaLastCompletionValue,
+  metaNextDueLabel,
+  metaNextDueValue,
   available,
   canReadMore,
   onStart,
@@ -54,6 +66,12 @@ const QuestionnaireCard = ({
   historyContent,
 }: QuestionnaireCardProps) => {
   const isMobile = useIsMobile();
+
+  const metadataRows: Array<{ label: string; value: string }> = [
+    { label: metaFrequencyLabel, value: metaFrequencyValue },
+    { label: metaLastCompletionLabel, value: metaLastCompletionValue },
+    { label: metaNextDueLabel, value: metaNextDueValue },
+  ];
 
   const renderPanelContent = (mode: Exclude<PanelMode, null>) => {
     const isHistory = mode === 'history';
@@ -183,23 +201,21 @@ const QuestionnaireCard = ({
         </div>
       </div>
 
-      <div className="mt-4 space-y-2">
-        {lastCompletedLabel ? (
-          <div className="flex items-center gap-1.5 text-xs text-muted-foreground">
-            <FClock className="h-3.5 w-3.5 shrink-0" />
-            <span>{lastCompletedLabel}</span>
+      <dl className="mt-4 grid grid-cols-3 gap-2 rounded-2xl border border-border/60 bg-background/40 p-3">
+        {metadataRows.map((row) => (
+          <div key={row.label} className="min-w-0 space-y-0.5">
+            <dt className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground/80">
+              {row.label}
+            </dt>
+            <dd className="truncate text-xs font-medium text-foreground" title={row.value}>
+              {row.value}
+            </dd>
           </div>
-        ) : (
-          <span className="text-xs font-medium text-muted-foreground">
-            {available ? availableNowLabel : completedLabel}
-          </span>
-        )}
-
-        {!available && (
-          <span className="block text-xs font-semibold uppercase tracking-wide text-muted-foreground">
-            {completedLabel}
-          </span>
-        )}
+        ))}
+      </dl>
+      <div className="mt-2 flex items-center gap-1.5 text-[11px] text-muted-foreground">
+        <FClock className="h-3 w-3 shrink-0" />
+        <span>{available ? availableNowLabel : completedLabel}</span>
       </div>
 
       <div className="mt-auto flex flex-col gap-2 pt-5 sm:flex-row sm:flex-wrap">

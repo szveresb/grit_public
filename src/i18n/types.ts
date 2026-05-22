@@ -51,6 +51,7 @@ export interface Dictionary {
     dataExport: string;
     account: string;
     navigate: string;
+    mySpace: string;
     explore: string;
     management: string;
     manageLibrary: string;
@@ -312,6 +313,22 @@ export interface Dictionary {
     supportedSelectionEmpty: string;
     detailPanelTitle: string;
     questionnaireJournalTitle: string;
+    // Scan helpers
+    filterAll: string;
+    filterDueNow: string;
+    filterCompleted: string;
+    filterByFrequency: string;
+    sortLabel: string;
+    sortMostUrgent: string;
+    sortRecentlyUsed: string;
+    sortAlphabetical: string;
+    metaFrequency: string;
+    metaLastCompletion: string;
+    metaNextDue: string;
+    metaNever: string;
+    metaDueNow: string;
+    metaNotScheduled: string;
+    noMatchingQuestionnaires: string;
     // Scoring
     scoringEnabled: string;
     scoringMode: string;
@@ -403,6 +420,11 @@ export interface Dictionary {
     entries: string;
     entry: string;
     timelineSlider: string;
+    rangeLabel: string;
+    legendDot: string;
+    legendTrend: string;
+    hintHover: string;
+    hintDense: string;
     pageTitle: string;
     pageSubtitle: string;
     noPatterns: string;
@@ -493,6 +515,7 @@ export interface Dictionary {
     journalEntries: string;
     questionnaireResponses: string;
     observationsFhir: string;
+    moodPulses: string;
   };
 
   betaGate: {

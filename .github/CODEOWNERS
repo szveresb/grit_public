@@ -1,0 +1,11 @@
+# Design system ownership
+/src/components/ui/ @szveresb
+/src/index.css @szveresb
+/tailwind.config.ts @szveresb
+/DESIGN_CODEX.md @szveresb
+
+# Codex-governed guardrails and policies
+/scripts/design-codex-guard.mjs @szveresb
+/.github/workflows/quality.yml @szveresb
+/.github/workflows/monthly-drift-audit.yml @szveresb
+/.github/pull_request_template.md @szveresb

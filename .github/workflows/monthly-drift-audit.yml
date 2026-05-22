@@ -1,0 +1,78 @@
+name: Monthly Drift Audit
+
+on:
+  schedule:
+    - cron: '0 7 1 * *'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  issues: write
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run drift audit scan
+        run: node scripts/design-codex-guard.mjs --report-json drift-audit-report.json --report-only
+
+      - name: Upload audit report
+        uses: actions/upload-artifact@v4
+        with:
+          name: drift-audit-report
+          path: drift-audit-report.json
+
+      - name: Create issue when violations found
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const fs = require('fs');
+            const report = JSON.parse(fs.readFileSync('drift-audit-report.json', 'utf8'));
+            const hasParity = (report.parity?.huOnly?.length ?? 0) > 0 || (report.parity?.enOnly?.length ?? 0) > 0;
+            if (!report.violationCount && !hasParity) {
+              core.info('No drift violations found.');
+              return;
+            }
+
+            const lines = [
+              `Automated monthly drift audit detected **${report.violationCount}** design-rule violations.`,
+              '',
+              `Generated at: ${report.generatedAt}`,
+              '',
+              '## Required Manual Flow Review',
+              '- Naplo',
+              '- Kerdivek',
+              '- Dashboard',
+              '',
+              '## Priorities',
+              '- Contrast',
+              '- Card hierarchy',
+              '- Status-state clarity',
+              '- Sidebar noise',
+              '',
+              'Please fix in small batches and close this issue once all violations are resolved.'
+            ];
+
+            if (hasParity) {
+              lines.push('', `HU/EN parity mismatch: HU-only ${report.parity.huOnly.length}, EN-only ${report.parity.enOnly.length}`);
+            }
+
+            await github.rest.issues.create({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              title: `Monthly design drift audit (${new Date().toISOString().slice(0, 10)})`,
+              body: lines.join('\n'),
+              labels: ['design-system', 'drift-audit']
+            });

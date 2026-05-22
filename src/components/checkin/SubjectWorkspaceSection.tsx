@@ -303,6 +303,33 @@ const SubjectWorkspaceSection = ({
 
                   {/* Sidebar-style content in Focus mode */}
                   <div className={cn("flex min-w-0 flex-col gap-6", !isParallel ? "md:col-span-4" : "w-full")}>
+                    {!isParallel && (
+                      <ErrorBoundary name="FeedCalendar">
+                        <div className="surface-card p-4 sm:p-6 animate-fade-in min-w-0">
+                          {calendarLoading ? (
+                            <div className="space-y-4">
+                              <div className="items-center justify-between flex">
+                                <Skeleton className="h-9 w-9 rounded-full" />
+                                <Skeleton className="h-4 w-28 rounded-full" />
+                                <Skeleton className="h-9 w-9 rounded-full" />
+                              </div>
+                              <Skeleton className="h-52 w-full rounded-3xl" />
+                            </div>
+                          ) : (
+                            <FeedCalendar
+                              items={calendarItems}
+                              currentMonth={calendarMonth}
+                              onMonthChange={setCalendarMonth}
+                              selectedDate={calendarSelectedDate}
+                              onSelectDate={setCalendarSelectedDate}
+                              onEntryClick={handleEntryClick}
+                              onCreateEntry={(date) => isSelfContext ? openEntryModal(date) : openObservationModal(date)}
+                            />
+                          )}
+                        </div>
+                      </ErrorBoundary>
+                    )}
+
                     {visibleNudges.length > 0 && (
                       <div className="flex flex-col gap-3">
                         {visibleNudges.map((nudge) => (
@@ -343,33 +370,6 @@ const SubjectWorkspaceSection = ({
                         </div>
                       </ErrorBoundary>
                     </ConsentGate>
-
-                    {!isParallel && (
-                      <ErrorBoundary name="FeedCalendar">
-                        <div className="surface-card p-4 sm:p-6 animate-fade-in min-w-0">
-                          {calendarLoading ? (
-                            <div className="space-y-4">
-                              <div className="items-center justify-between flex">
-                                <Skeleton className="h-9 w-9 rounded-full" />
-                                <Skeleton className="h-4 w-28 rounded-full" />
-                                <Skeleton className="h-9 w-9 rounded-full" />
-                              </div>
-                              <Skeleton className="h-52 w-full rounded-3xl" />
-                            </div>
-                          ) : (
-                            <FeedCalendar
-                              items={calendarItems}
-                              currentMonth={calendarMonth}
-                              onMonthChange={setCalendarMonth}
-                              selectedDate={calendarSelectedDate}
-                              onSelectDate={setCalendarSelectedDate}
-                              onEntryClick={handleEntryClick}
-                              onCreateEntry={(date) => isSelfContext ? openEntryModal(date) : openObservationModal(date)}
-                            />
-                          )}
-                        </div>
-                      </ErrorBoundary>
-                    )}
                   </div>
                 </div>
               </div>

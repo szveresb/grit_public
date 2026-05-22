@@ -212,21 +212,30 @@ Deno.serve(async (req) => {
       .map(([role, user_count]) => ({ role, user_count }))
       .sort((a, b) => b.user_count - a.user_count);
 
-    // Aggregate journal entries by date (only consented users)
-    const journalByDate: Record<string, { count: number; impacts: number[]; emotions: string[] }> = {};
+    // Aggregate journal entries by date (only consented users).
+    // - Replace raw free-text `emotional_states` arrays with a distribution map
+    //   (value -> count) to prevent re-identification of sensitive health data.
+    // - Suppress date rows that fall below the k-anonymity threshold to fully
+    //   guard against date-specific re-identification.
+    const DATE_MIN_ENTRIES = K_ANONYMITY_THRESHOLD;
+    const journalByDate: Record<string, { count: number; impacts: number[]; emotionCounts: Record<string, number> }> = {};
     for (const je of journalAgg.data ?? []) {
       const d = je.entry_date;
-      if (!journalByDate[d]) journalByDate[d] = { count: 0, impacts: [], emotions: [] };
+      if (!journalByDate[d]) journalByDate[d] = { count: 0, impacts: [], emotionCounts: {} };
       journalByDate[d].count++;
       if (je.impact_level) journalByDate[d].impacts.push(je.impact_level);
-      if (je.emotional_state) journalByDate[d].emotions.push(je.emotional_state);
+      if (je.emotional_state) {
+        const key = String(je.emotional_state);
+        journalByDate[d].emotionCounts[key] = (journalByDate[d].emotionCounts[key] ?? 0) + 1;
+      }
     }
     const journalAggResult = Object.entries(journalByDate)
+      .filter(([, v]) => v.count >= DATE_MIN_ENTRIES)
       .map(([entry_date, v]) => ({
         entry_date,
         entry_count: v.count,
         avg_impact_level: v.impacts.length > 0 ? Math.round((v.impacts.reduce((a, b) => a + b, 0) / v.impacts.length) * 100) / 100 : null,
-        emotional_states: v.emotions,
+        emotional_state_distribution: v.emotionCounts,
       }))
       .sort((a, b) => b.entry_date.localeCompare(a.entry_date));
 
