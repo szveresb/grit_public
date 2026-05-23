@@ -48,7 +48,7 @@ const Timeline = () => {
   const showCorrelation = viewMode === 'correlation' && subjectType === 'relative';
 
   return (
-    <DashboardLayout>
+    <DashboardLayout showContextToolPanel={false}>
       <div className="max-w-2xl mx-auto space-y-5">
         {/* Header */}
         <div className="flex items-start gap-3 pb-3 border-b border-border/50">

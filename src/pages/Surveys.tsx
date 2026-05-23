@@ -18,7 +18,7 @@ const Surveys = () => {
       : null;
 
   return (
-    <DashboardLayout>
+    <DashboardLayout showContextToolPanel={false}>
       <div className="mx-auto w-full max-w-6xl space-y-5">
         <div className="pb-3 border-b border-border/50">
           <h1 className="text-lg md:text-xl font-bold tracking-tight text-foreground">

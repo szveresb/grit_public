@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react';
+import { useCallback, useEffect, useState } from 'react';
 import { Navigate } from 'react-router-dom';
 import { formatDistanceToNow } from 'date-fns';
 import DashboardLayout from '@/components/DashboardLayout';
@@ -43,11 +43,12 @@ const Monitoring = () => {
   const [loading, setLoading] = useState(true);
   const [targetFilter, setTargetFilter] = useState<string>('all');
   const [statusFilter, setStatusFilter] = useState<string>('all');
+  const [pageSize, setPageSize] = useState<10 | 20 | 50 | 100>(10);
 
-  const fetchData = async () => {
+  const fetchData = useCallback(async (limit = pageSize) => {
     setLoading(true);
     const [{ data: checkRows, error: checkErr }, { data: stateRow }] = await Promise.all([
-      supabase.from('monitor_checks' as any).select('*').order('checked_at', { ascending: false }).limit(200),
+      supabase.from('monitor_checks' as any).select('*').order('checked_at', { ascending: false }).limit(limit),
       supabase.from('monitor_state' as any).select('*').eq('id', 1).maybeSingle(),
     ]);
     if (checkErr) {
@@ -57,11 +58,11 @@ const Monitoring = () => {
     }
     if (stateRow) setState(stateRow as unknown as MonitorState);
     setLoading(false);
-  };
+  }, [pageSize]);
 
   useEffect(() => {
-    if (user && isAdmin) fetchData();
-  }, [user, isAdmin]);
+    if (user && isAdmin) fetchData(pageSize);
+  }, [user, isAdmin, pageSize, fetchData]);
 
   if (roleLoading) {
     return <DashboardLayout><p className="text-sm text-muted-foreground">Loading...</p></DashboardLayout>;
@@ -151,6 +152,15 @@ const Monitoring = () => {
           <CardHeader>
             <CardTitle className="text-base">Check history</CardTitle>
             <div className="flex gap-2 flex-wrap pt-2">
+              <Select value={String(pageSize)} onValueChange={(value) => setPageSize(Number(value) as 10 | 20 | 50 | 100)}>
+                <SelectTrigger className="w-[110px]"><SelectValue placeholder="10" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="10">10</SelectItem>
+                  <SelectItem value="20">20</SelectItem>
+                  <SelectItem value="50">50</SelectItem>
+                  <SelectItem value="100">100</SelectItem>
+                </SelectContent>
+              </Select>
               <Select value={targetFilter} onValueChange={setTargetFilter}>
                 <SelectTrigger className="w-[200px]"><SelectValue placeholder="Target" /></SelectTrigger>
                 <SelectContent>
