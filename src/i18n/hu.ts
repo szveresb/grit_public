@@ -62,6 +62,7 @@ export const hu: Dictionary = {
     manageLanding: 'Tartalomkezelés',
     feedback: 'Visszajelzés',
     manageFeedback: 'Visszajelzések kezelése',
+    monitoring: 'Monitorozás',
   },
 
   landing: {
