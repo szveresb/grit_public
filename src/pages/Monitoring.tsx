@@ -93,7 +93,7 @@ const Monitoring = () => {
               Live health checks for grit.hu — runs every 5 minutes.
             </p>
           </div>
-          <Button variant="outline" onClick={fetchData} disabled={loading}>
+          <Button variant="outline" onClick={() => fetchData()} disabled={loading}>
             {loading ? 'Refreshing…' : 'Refresh'}
           </Button>
         </header>
