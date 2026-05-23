@@ -34,6 +34,7 @@ const Article = lazy(() => import("./pages/Article"));
 const SelfChecks = lazy(() => import("./pages/SelfChecks"));
 const Surveys = lazy(() => import("./pages/Surveys"));
 const ManageLanding = lazy(() => import("./pages/ManageLanding"));
+const Monitoring = lazy(() => import("./pages/Monitoring"));
 const ConsentOnboarding = lazy(() => import("./pages/ConsentOnboarding"));
 const Timeline = lazy(() => import("./pages/Timeline"));
 const CategoryPage = lazy(() => import("./pages/CategoryPage"));
@@ -70,6 +71,8 @@ const AppRoutes = () => (
       <Route path="/analyst-export" element={<ProtectedRoute><AnalystExport /></ProtectedRoute>} />
       <Route path="/manage-landing" element={<ProtectedRoute><ManageLanding /></ProtectedRoute>} />
       <Route path="/consent" element={<ProtectedRoute skipConsentCheck><ConsentOnboarding /></ProtectedRoute>} />
+      <Route path="/admin/monitoring" element={<ProtectedRoute skipConsentCheck><Monitoring /></ProtectedRoute>} />
+      <Route path="/en/admin/monitoring" element={<ProtectedRoute skipConsentCheck><Monitoring /></ProtectedRoute>} />
       
       <Route path="/library" element={<ProtectedRoute><Library /></ProtectedRoute>} />
       <Route path="/library/:id" element={<ProtectedRoute><Article /></ProtectedRoute>} />
