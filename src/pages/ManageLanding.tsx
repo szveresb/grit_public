@@ -16,6 +16,7 @@ import { hu } from '@/i18n/hu';
 import { en } from '@/i18n/en';
 import ContentCategoriesEditor, { CategoryItem } from '@/components/admin/ContentCategoriesEditor';
 import TopMenuEditor, { TopMenuItem } from '@/components/admin/TopMenuEditor';
+import NewsItemsEditor from '@/components/admin/NewsItemsEditor';
 
 interface LandingSection {
   id: string;
@@ -187,7 +188,7 @@ const ManageLanding = () => {
 
   return (
     <DashboardLayout>
-      <div className="max-w-2xl mx-auto w-full space-y-6">
+      <div className="max-w-3xl mx-auto w-full space-y-6">
         <div>
           <h1 className="text-xl font-bold tracking-tight text-foreground">{t.admin.manageLanding.title}</h1>
           <p className="mt-1 text-sm text-muted-foreground">{t.admin.manageLanding.subtitle}</p>
@@ -197,7 +198,15 @@ const ManageLanding = () => {
           <div className="flex items-center gap-2 text-muted-foreground text-sm">
             <FLoader className="h-4 w-4 animate-spin" /> {t.admin.manageLanding.loading}
           </div>
-        ) : sections.map(section => (
+        ) : (
+          <>
+          <div className="surface-card p-6 space-y-5">
+            <h2 className="text-sm font-semibold text-foreground uppercase tracking-widest">
+              {t.admin.manageNews.title}
+            </h2>
+            <NewsItemsEditor />
+          </div>
+          {sections.map(section => (
           <div key={section.id} className="surface-card p-6 space-y-5">
             <div 
               className="flex items-center justify-between cursor-pointer" 
@@ -408,6 +417,8 @@ const ManageLanding = () => {
             )}
           </div>
         ))}
+        </>
+        )}
       </div>
     </DashboardLayout>
   );

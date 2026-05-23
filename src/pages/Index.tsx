@@ -6,6 +6,7 @@ import { FLock, FArrowRight } from '@/components/icons/FreudIcons';
 import { Button } from '@/components/ui/button';
 import PublicHeader from '@/components/PublicHeader';
 import SystemPreview from '@/components/SystemPreview';
+import NewsFeed from '@/components/landing/NewsFeed';
 
 const Index = () => {
   const { user } = useAuth();
@@ -79,6 +80,9 @@ const Index = () => {
 
       {/* Embedded System Previews (Inert) */}
       <SystemPreview />
+
+      {/* What's New feed */}
+      <NewsFeed />
 
       {/* Footer */}
       <footer className="relative z-10 border-t border-border bg-card">
