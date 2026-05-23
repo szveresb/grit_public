@@ -85,7 +85,7 @@ const Monitoring = () => {
         <header className="flex items-center justify-between gap-4 flex-wrap">
           <div>
             <h1 className="text-2xl font-semibold text-foreground flex items-center gap-2">
-              <FActivity className="h-6 w-6 text-primary" />
+              <FHeartPulse className="h-6 w-6 text-primary" />
               Uptime monitoring
             </h1>
             <p className="text-sm text-muted-foreground mt-1">
@@ -103,7 +103,7 @@ const Monitoring = () => {
               {overallOk ? (
                 <FCheck className="h-5 w-5 text-emerald-600" />
               ) : (
-                <FAlert className="h-5 w-5 text-destructive" />
+                <FShield className="h-5 w-5 text-destructive" />
               )}
               Current status: {state ? state.last_status.toUpperCase() : 'unknown'}
             </CardTitle>
