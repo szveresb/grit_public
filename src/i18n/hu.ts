@@ -66,7 +66,7 @@ export const hu: Dictionary = {
 
   landing: {
     heroTitle: 'Grit.hu — Zárt Béta',
-    heroSubtitle: 'A magas konfliktusú élethelyzetek navigálását segítő értelmezési könyvtárunk és strukturált eszközeink jelenleg zárt béta fázisban vannak. Kérj hozzáférést alább.',
+    heroSubtitle: 'A konfliktuskezelést támogató tudástárunk és strukturált eszközeink jelenleg zárt béta fázisban érhetők el.',
     heroTitleBeta: 'A Grit.hu jelenleg zárt béta fázisban van.',
     betaAccess: 'Béta hozzáférés',
     joinWaitlist: 'Várólistára jelentkezés',
