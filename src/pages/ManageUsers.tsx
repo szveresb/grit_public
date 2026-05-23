@@ -19,7 +19,6 @@ interface UserWithRoles { user_id: string; display_name: string | null; email: s
 const ALL_ROLES: AppRole[] = [...ADMIN_ONLY_ROLES, ...SELF_SELECT_ROLES];
 
 export interface InviteCode { id: string; code: string; is_active: boolean; created_at: string; used_by: string | null }
-interface WaitlistRow { id: string; email: string; name: string | null; locale: string; status: string; created_at: string; invited_at: string | null; invite_code_id: string | null }
 
 const ManageUsers = () => {
   const { user } = useAuth();
@@ -27,8 +26,6 @@ const ManageUsers = () => {
   const { hasRole, loading: roleLoading } = useUserRole();
   const [users, setUsers] = useState<UserWithRoles[]>([]);
   const [codes, setCodes] = useState<InviteCode[]>([]);
-  const [waitlist, setWaitlist] = useState<WaitlistRow[]>([]);
-  const [sendingId, setSendingId] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
   const isAdmin = hasRole('admin');
 
@@ -45,32 +42,10 @@ const ManageUsers = () => {
     const { data: codesData } = await supabase.from('invite_codes' as any).select('*').order('created_at', { ascending: false });
     setCodes((codesData as unknown as InviteCode[] | null) ?? []);
 
-    const { data: waitlistData } = await supabase.from('waitlist_emails' as any).select('*').order('created_at', { ascending: false });
-    setWaitlist((waitlistData as unknown as WaitlistRow[] | null) ?? []);
-
     setLoading(false);
   };
 
-  const sendInvite = async (waitlistId: string) => {
-    setSendingId(waitlistId);
-    const { data, error } = await supabase.functions.invoke('send-beta-invite', { body: { waitlistId } });
-    if (error || (data as any)?.error) {
-      toast.error('Failed to send invite. ' + (((data as any)?.error) ?? error?.message ?? ''));
-    } else {
-      toast.success(`Invite sent (${(data as any)?.code ?? 'code generated'})`);
-      fetchUsers();
-    }
-    setSendingId(null);
-  };
-
   useEffect(() => { if (user && isAdmin) fetchUsers(); }, [user, isAdmin]);
-  useEffect(() => {
-    if (typeof window === 'undefined') return;
-    const hash = window.location.hash.replace('#', '');
-    if (!hash || loading) return;
-    const el = document.getElementById(hash);
-    if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
-  }, [loading]);
 
   if (roleLoading) return <DashboardLayout><p className="text-sm text-muted-foreground">{t.loading}</p></DashboardLayout>;
   if (!isAdmin) return <Navigate to="/journal" replace />;
@@ -118,42 +93,6 @@ const ManageUsers = () => {
                 <Badge key={c.id} variant={c.is_active ? "default" : "outline"} className={`rounded-md font-mono text-xs ${c.is_active ? '' : 'opacity-50'}`}>
                   {c.code} {c.used_by && t.manageUsers.usedSuffix}
                 </Badge>
-              ))}
-            </div>
-          )}
-        </div>
-
-        <div id="beta-signups" className="surface-card p-5 space-y-4 border-primary/20 scroll-mt-24">
-          <h2 className="text-sm font-semibold uppercase tracking-widest text-primary">Beta Signups</h2>
-          {waitlist.length === 0 ? (
-            <p className="text-xs text-muted-foreground italic">No applications yet.</p>
-          ) : (
-            <div className="space-y-2">
-              {waitlist.map(w => (
-                <div key={w.id} className="flex items-center justify-between gap-3 py-2 border-b border-border/40 last:border-0">
-                  <div className="min-w-0 flex-1">
-                    <div className="flex items-center gap-2">
-                      <span className="text-sm font-medium text-foreground truncate">{w.email}</span>
-                      <Badge variant="outline" className="rounded-full text-[10px] uppercase">{w.locale}</Badge>
-                      {w.status === 'invited' && (
-                        <Badge className="rounded-full text-[10px] uppercase bg-primary/15 text-primary border-0">Invited</Badge>
-                      )}
-                    </div>
-                    <p className="text-[11px] text-muted-foreground mt-0.5">
-                      {new Date(w.created_at).toLocaleDateString()}
-                      {w.name && ` · ${w.name}`}
-                    </p>
-                  </div>
-                  <Button
-                    size="sm"
-                    variant={w.status === 'invited' ? 'outline' : 'default'}
-                    className="rounded-full h-8 text-[11px] font-bold whitespace-nowrap"
-                    disabled={sendingId === w.id}
-                    onClick={() => sendInvite(w.id)}
-                  >
-                    {sendingId === w.id ? '…' : (w.status === 'invited' ? 'Resend' : 'Send invite')}
-                  </Button>
-                </div>
               ))}
             </div>
           )}

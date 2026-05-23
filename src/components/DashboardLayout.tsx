@@ -43,6 +43,22 @@ const DashboardShell = ({
   const currentPath = stripLangPrefix(pathname);
   const segments = currentPath.split('/').filter(Boolean);
 
+  // Admin/manage routes never render the context tool panel (journal/questionnaire
+  // shortcut cards). Hard-coded so the cards can never flash on these pages even
+  // if a caller forgets to opt out via the prop.
+  const HIDE_TOOL_PANEL_ROUTES = [
+    '/analyst-export',
+    '/manage-feedback',
+    '/manage-users',
+    '/manage-landing',
+    '/manage-questionnaires',
+    '/manage-library',
+  ];
+  const toolPanelHiddenByRoute = HIDE_TOOL_PANEL_ROUTES.some(
+    (r) => currentPath === r || currentPath.startsWith(`${r}/`),
+  );
+  const shouldRenderToolPanel = showContextToolPanel && !toolPanelHiddenByRoute;
+
   const getBreadcrumbLabel = (segment: string) => {
     switch (segment) {
       case 'manage-questionnaires': return t.nav.manageQuestionnaires;
@@ -140,7 +156,7 @@ const DashboardShell = ({
                 </Breadcrumb>
               )}
               {user && showSubjectRegistry && <SubjectCardRegistry />}
-              {user && showContextToolPanel && <ContextAwareToolPanel />}
+              {user && shouldRenderToolPanel && <ContextAwareToolPanel />}
               {children}
             </div>
           </div>
