@@ -62,6 +62,7 @@ export const en: Dictionary = {
     manageLanding: 'Content Management',
     feedback: 'Feedback',
     manageFeedback: 'Manage Feedback',
+    monitoring: 'Monitoring',
   },
 
   landing: {
