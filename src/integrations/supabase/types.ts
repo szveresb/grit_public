@@ -394,6 +394,48 @@ export type Database = {
           },
         ]
       }
+      news_items: {
+        Row: {
+          body: string
+          body_localized: Json | null
+          category: string
+          created_at: string
+          id: string
+          is_published: boolean
+          published_at: string
+          sort_order: number
+          title: string
+          title_localized: Json | null
+          updated_at: string
+        }
+        Insert: {
+          body: string
+          body_localized?: Json | null
+          category: string
+          created_at?: string
+          id?: string
+          is_published?: boolean
+          published_at?: string
+          sort_order?: number
+          title: string
+          title_localized?: Json | null
+          updated_at?: string
+        }
+        Update: {
+          body?: string
+          body_localized?: Json | null
+          category?: string
+          created_at?: string
+          id?: string
+          is_published?: boolean
+          published_at?: string
+          sort_order?: number
+          title?: string
+          title_localized?: Json | null
+          updated_at?: string
+        }
+        Relationships: []
+      }
       observation_categories: {
         Row: {
           created_at: string
