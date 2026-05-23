@@ -17,3 +17,5 @@ project_id = "dgymkgeulpaavnqavnrw"
     verify_jwt = false
   [functions.send-beta-invite]
     verify_jwt = true
+  [functions.health-monitor]
+    verify_jwt = false

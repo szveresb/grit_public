@@ -1,87 +1,70 @@
-## Goal
+## Uptime monitoring via email alerts (Option C)
 
-Refine the app's spacing rhythm so top sections feel tighter, section boundaries read clearly, and whitespace anchors content rather than drifting. Keep the calm Soft‑UI Bamboo aesthetic — no color, font, or layout overhaul.
+Use the existing Lovable email infrastructure to send alerts when the site goes down or build/health checks fail. Runs entirely inside Lovable Cloud, no external services.
 
-## Scope
+### What gets built
 
-Frontend / presentation only. No business logic, no i18n keys, no data changes.
+**1. New edge function: `health-monitor`**
+- Path: `supabase/functions/health-monitor/index.ts`
+- `verify_jwt = false` (called by cron, gated by a shared secret in the request body)
+- Checks performed on each run:
+  - `HEAD https://grit.hu` → expect 200, measure latency
+  - `HEAD https://www.grit.hu` → expect 200
+  - `HEAD https://grit-hu.lovable.app` → expect 200
+  - Lightweight DB ping: `SELECT 1` via service-role client
+  - Optional: check `email_send_log` for a spike in `failed` / `dlq` in the last hour
+- On failure: enqueue an admin alert email via `send-transactional-email` (template `uptime-alert`) to `szveresb@gmail.com`
+- Debounce: write last-status to a new single-row table `monitor_state` so we only alert on state transitions (OK→DOWN and DOWN→OK), not every 5 minutes while still down
+- Always log the check result to a new `monitor_checks` table for history
 
-Pages and shared chrome touched:
-- `src/components/DashboardLayout.tsx` (header + content frame, breadcrumb gap)
-- `src/pages/Journal.tsx`
-- `src/pages/CheckIn.tsx`
-- `src/pages/Surveys.tsx`
-- `src/pages/Library.tsx`
-- `src/pages/Timeline.tsx`
-- `src/pages/Profile.tsx`
-- `src/pages/Export.tsx`
-- Section header pattern used inside `SubjectWorkspaceSection`, `QuestionnaireFiller`, `JournalCalendar` headers (heading + thin divider treatment, no content change)
+**2. New table: `monitor_state`** (single row)
+- `last_status` (`ok` | `down`), `last_status_at`, `last_failure_reason`, `consecutive_failures`
+- Service-role only RLS
 
-## Spacing rhythm (the rules)
+**3. New table: `monitor_checks`** (history, append-only)
+- `id`, `checked_at`, `target`, `status`, `latency_ms`, `error_message`
+- Service-role insert; admin read
 
-Establish one consistent vertical scale per page:
+**4. New email templates**
+- `uptime-alert.tsx` — "🚨 grit.hu is DOWN" with target, error, timestamp
+- `uptime-recovered.tsx` — "✅ grit.hu is back up" with downtime duration
+- Registered in `registry.ts`
 
-```text
-page top padding   py-6 md:py-8   →  py-5 md:py-6
-breadcrumb → title mb-6           →  mb-4
-title block (h1 + subtitle)       →  space-y-1 (already), but
-title block → first section       →  mt-5 (was implicit space-y-6/8)
-section → section (major)         →  space-y-6  (was 6–8 mixed)
-section → section (minor inside)  →  space-y-3
-card inner padding                 →  p-5 sm:p-6 (was p-6 / p-8 mix)
-```
+**5. Cron schedule**
+- `pg_cron` job runs `health-monitor` every 5 minutes
+- Uses `pg_net` to POST to the function with a shared secret in the body
+- Secret stored in Supabase Vault as `health_monitor_secret` (created during setup, similar to existing `email_queue_service_role_key` pattern)
 
-Result: top of every page sits ~12–16px higher, and inner cards stop competing with page padding.
+**6. Admin UI page (optional, minimal): `/admin/monitoring`**
+- Shows last 100 checks from `monitor_checks`
+- Current status badge from `monitor_state`
+- Admin-only via `ProtectedRoute` + `has_role('admin')`
 
-## Section boundary pattern
+### Technical notes
 
-Introduce a single, reusable visual rhythm for section headings within a page (no new component required — just consistent markup):
+- All emails go through the existing queue (`auth_emails` priority not used; use `transactional_emails`) — inherits retry/DLQ safety
+- Alerts are idempotent via `idempotencyKey: monitor-${status}-${last_status_at}` so transient cron double-fires don't double-send
+- If `health-monitor` itself fails (e.g., DB unreachable), cron logs the error in `cron.job_run_details` — we can't email about email failures, but the next successful run will detect recovery
+- 5-minute interval = ~8,640 checks/month, well under any quota
+- Total cost: $0 (no third-party services)
 
-```tsx
-<header className="flex items-end justify-between gap-3 pb-2 border-b border-border/60">
-  <div>
-    <h2 className="text-xs font-bold uppercase tracking-[0.18em] text-muted-foreground">
-      {label}
-    </h2>
-    <p className="text-sm text-foreground/80 mt-0.5">{hint}</p>
-  </div>
-  {actions}
-</header>
-```
+### What this catches
+- Site down (5xx, timeout, DNS failure)
+- Database unreachable
+- Optional: email pipeline degradation (failed/dlq spike)
 
-- Replaces ad-hoc `<h3 class="text-xs uppercase…">` headers that float without an anchor.
-- The hairline `border-b border-border/60` is the "intentional emptiness" anchor — calm, not loud.
-- Where a card already has a border, use the same pattern *inside* the card with `border-b border-border/50 pb-3 mb-4` instead of full margins.
+### What this does NOT catch
+- Visual regressions or broken interactive flows (would need Playwright — that's Option D)
+- Sub-5-minute outages
+- Issues only visible to logged-in users behind auth
 
-Apply this pattern to:
-- Journal: "Filters", "AI Reflections" (existing PatternSummary header), "Entries"
-- CheckIn: "Workspace header" already exists — only adjust spacing (`space-y-8` → `space-y-6`, header gap-6 → gap-4)
-- Surveys: each `<section class="surface-card">` gets the inner-header treatment (replacing nested `space-y-1` blocks that have no divider)
-- Library: "Featured" and "Articles" get the divider header; collapse `mb-8` → `mb-5`
-- Timeline: range chip row gets `pt-3 border-t border-border/50` so it reads as a control band, not a floating row
-- Profile: each `surface-card` section already has its own heading — add the hairline + tighten `p-6 space-y-6` → `p-5 sm:p-6 space-y-5`
+### Files to create
+- `supabase/functions/health-monitor/index.ts`
+- `supabase/functions/_shared/transactional-email-templates/uptime-alert.tsx`
+- `supabase/functions/_shared/transactional-email-templates/uptime-recovered.tsx`
+- 1 migration: tables `monitor_state` + `monitor_checks`, RLS policies, vault secret, cron job
+- Update `supabase/functions/_shared/transactional-email-templates/registry.ts`
+- Update `supabase/config.toml` to add `[functions.health-monitor]` with `verify_jwt = false`
+- (Optional) `src/pages/admin/Monitoring.tsx` + route in `App.tsx`
 
-## DashboardLayout adjustments
-
-- `header h-14` stays (chrome height).
-- Content wrapper `px-4 md:px-8 py-6 md:py-8 pb-20` → `px-4 md:px-8 pt-5 md:pt-6 pb-16`.
-- Breadcrumb `mb-6` → `mb-4`, and add a subtle `pb-3 border-b border-border/40` so the breadcrumb anchors the top of the work area on every page (this is the single biggest "anchoring" win and is shared across all pages).
-
-## What stays untouched
-
-- Color tokens, typography scale, radius (`rounded-3xl`), shadows.
-- All component logic, props, i18n strings.
-- Sidebar, EmergencyExit, FeedbackSheet, modals.
-- Mobile breakpoints — only spacing values change, not breakpoint structure.
-
-## Verification
-
-After edits:
-1. Visually inspect `/journal`, `/checkin`, `/surveys`, `/library`, `/timeline`, `/profile` at 1280 and at mobile width.
-2. Confirm: top of page feels ~1 line tighter; every major section has either a hairline divider or sits inside a `surface-card` with an internal hairline header; no cramped pairs (icon+title still has breathing room).
-3. Run typecheck (auto by harness).
-
-## Out of scope
-
-- No new design tokens, no animation changes, no new layout primitives, no copy changes.
-- Public landing (`Index.tsx`) is not touched — request is about the app surface.
+Should I include the admin UI page, or skip it and just rely on emails + querying the table directly?

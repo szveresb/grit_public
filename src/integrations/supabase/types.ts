@@ -296,6 +296,63 @@ export type Database = {
         }
         Relationships: []
       }
+      monitor_checks: {
+        Row: {
+          checked_at: string
+          error_message: string | null
+          http_status: number | null
+          id: string
+          latency_ms: number | null
+          status: string
+          target: string
+        }
+        Insert: {
+          checked_at?: string
+          error_message?: string | null
+          http_status?: number | null
+          id?: string
+          latency_ms?: number | null
+          status: string
+          target: string
+        }
+        Update: {
+          checked_at?: string
+          error_message?: string | null
+          http_status?: number | null
+          id?: string
+          latency_ms?: number | null
+          status?: string
+          target?: string
+        }
+        Relationships: []
+      }
+      monitor_state: {
+        Row: {
+          consecutive_failures: number
+          id: number
+          last_failure_reason: string | null
+          last_status: string
+          last_status_at: string
+          updated_at: string
+        }
+        Insert: {
+          consecutive_failures?: number
+          id?: number
+          last_failure_reason?: string | null
+          last_status?: string
+          last_status_at?: string
+          updated_at?: string
+        }
+        Update: {
+          consecutive_failures?: number
+          id?: number
+          last_failure_reason?: string | null
+          last_status?: string
+          last_status_at?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
       mood_pulses: {
         Row: {
           created_at: string | null
