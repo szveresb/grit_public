@@ -68,14 +68,17 @@ const FeedbackSheet = ({ open, onOpenChange }: FeedbackSheetProps) => {
 
   const pageLabel = useMemo(() => {
     if (currentPath === '/journal') return t.nav.checkIn;
+    if (currentPath === '/admin') return t.nav.management;
     if (currentPath === '/surveys') return t.nav.surveys;
     if (currentPath === '/timeline') return t.timeline.pageTitle;
     if (currentPath === '/export') return t.nav.dataExport;
     if (currentPath === '/profile') return t.nav.account;
-    if (currentPath === '/manage-library') return t.nav.manageLibrary;
-    if (currentPath === '/manage-questionnaires') return t.nav.manageQuestionnaires;
-    if (currentPath === '/manage-landing') return t.nav.manageLanding;
-    if (currentPath === '/manage-users') return t.nav.manageUsers;
+    if (currentPath === '/admin/library' || currentPath === '/manage-library') return t.nav.manageLibrary;
+    if (currentPath === '/admin/questionnaires' || currentPath === '/manage-questionnaires') return t.nav.manageQuestionnaires;
+    if (currentPath === '/admin/landing' || currentPath === '/manage-landing') return t.nav.manageLanding;
+    if (currentPath === '/admin/users' || currentPath === '/manage-users') return t.nav.manageUsers;
+    if (currentPath === '/admin/feedback' || currentPath === '/manage-feedback') return t.nav.manageFeedback;
+    if (currentPath === '/admin/monitoring') return t.nav.monitoring;
     if (currentPath === '/analyst-export') return t.nav.analystExport;
     return currentPath === '/' ? t.nav.home : currentPath.replace('/', '');
   }, [currentPath, t]);

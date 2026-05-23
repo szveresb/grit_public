@@ -63,22 +63,28 @@ const QuickPulse = ({
   }, [lang]);
 
   const isObserved = activeSubject.type === 'relative';
+  const observedLabels = [
+    t.checkIn.moodStrugglingObserved,
+    t.checkIn.moodUneasyObserved,
+    t.checkIn.moodOkayObserved,
+    t.checkIn.moodGoodObserved,
+    t.checkIn.moodStrongObserved,
+  ];
+  const selfLabels = [
+    t.checkIn.moodStruggling,
+    t.checkIn.moodUneasy,
+    t.checkIn.moodOkay,
+    t.checkIn.moodGood,
+    t.checkIn.moodStrong,
+  ];
   const fallbackLabels = isObserved
     ? [
-        t.checkIn.moodStrugglingObserved,
-        t.checkIn.moodUneasyObserved,
-        t.checkIn.moodOkayObserved,
-        t.checkIn.moodGoodObserved,
-        t.checkIn.moodStrongObserved,
+        ...observedLabels,
       ]
     : [
-        t.checkIn.moodStruggling,
-        t.checkIn.moodUneasy,
-        t.checkIn.moodOkay,
-        t.checkIn.moodGood,
-        t.checkIn.moodStrong,
+        ...selfLabels,
       ];
-  const moodLabels = managedLabels ?? fallbackLabels;
+  const moodLabels = isObserved ? observedLabels : (managedLabels ?? fallbackLabels);
   const supportedName = activeSubject.type === 'relative' ? activeSubject.name.trim() : '';
   const profilePulseTitle = activeSubject.type === 'relative'
     ? (

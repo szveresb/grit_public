@@ -1,0 +1,76 @@
+name: Release Beta to Production
+on:
+  workflow_dispatch:
+
+jobs:
+  publish:
+    if: github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    # Explicitly opting into Node.js 24 to align with 2026 runner standards
+    env:
+      FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
+    steps:
+      - name: Checkout Beta
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Sync Beta to Production (preserve protected live files)
+        env:
+          PROD_TOKEN: ${{ secrets.PROD_REPO_TOKEN }}
+          TARGET_REPO: "szveresb/grit.hu"
+        run: |
+          set -euo pipefail
+
+          # Setup Git Identity
+          git config --global user.email "deploy@grit.hu"
+          git config --global user.name "Grit Deploy Bot"
+
+          # Fetch production main as a separate worktree
+          git remote add prod "https://x-access-token:${PROD_TOKEN}@github.com/${TARGET_REPO}.git"
+          git fetch --no-tags prod main
+          git worktree add ../live-main prod/main
+          trap 'git worktree remove -f ../live-main' EXIT
+
+          protected_paths=(
+            "src/pages/AuthCallback.tsx"
+            "supabase/functions/send-transactional-email/index.ts"
+            "supabase/functions/auth-email-hook/index.ts"
+            "supabase/functions/handle-email-suppression/index.ts"
+            "supabase/functions/handle-email-unsubscribe/index.ts"
+            "supabase/functions/preview-transactional-email/index.ts"
+            "supabase/functions/send-beta-invite/index.ts"
+            "supabase/functions/submit-beta-application/index.ts"
+            "supabase/config.toml"
+            "supabase/functions/health-monitor/index.ts"
+            "supabase/migrations/20260523145328_b4fcba80-25a5-4cc5-b866-2e08c81ca159.sql"
+          )
+
+          # Build rsync exclude args so protected live files are never overwritten/deleted.
+          rsync_excludes=(--exclude ".git")
+          for p in "${protected_paths[@]}"; do
+            rsync_excludes+=(--exclude "${p}")
+          done
+
+          # Mirror beta into live worktree, preserving protected paths from live.
+          rsync -a --delete "${rsync_excludes[@]}" ./ ../live-main/
+
+          # Safety check: protected files must remain unchanged.
+          if [ -n "$(git -C ../live-main diff --name-only -- "${protected_paths[@]}")" ]; then
+            echo "BLOCKED: protected live files were modified unexpectedly."
+            git -C ../live-main diff --name-only -- "${protected_paths[@]}"
+            exit 1
+          fi
+
+          cd ../live-main
+          if [ -z "$(git status --porcelain)" ]; then
+            echo "No production changes to push."
+            exit 0
+          fi
+
+          git add -A
+          git commit -m "chore: release beta to production (preserve protected live infra) [skip ci]"
+          git push "https://x-access-token:${PROD_TOKEN}@github.com/${TARGET_REPO}.git" HEAD:refs/heads/main
+
+          echo "Successfully promoted Beta to Production while preserving protected live files."

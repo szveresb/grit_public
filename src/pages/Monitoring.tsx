@@ -47,15 +47,15 @@ const Monitoring = () => {
   const fetchData = async () => {
     setLoading(true);
     const [{ data: checkRows, error: checkErr }, { data: stateRow }] = await Promise.all([
-      supabase.from('monitor_checks').select('*').order('checked_at', { ascending: false }).limit(200),
-      supabase.from('monitor_state').select('*').eq('id', 1).maybeSingle(),
+      supabase.from('monitor_checks' as any).select('*').order('checked_at', { ascending: false }).limit(200),
+      supabase.from('monitor_state' as any).select('*').eq('id', 1).maybeSingle(),
     ]);
     if (checkErr) {
       toast.error(friendlyDbError(checkErr));
     } else {
-      setChecks((checkRows ?? []) as MonitorCheck[]);
+      setChecks((checkRows ?? []) as unknown as MonitorCheck[]);
     }
-    if (stateRow) setState(stateRow as MonitorState);
+    if (stateRow) setState(stateRow as unknown as MonitorState);
     setLoading(false);
   };
 
@@ -64,7 +64,7 @@ const Monitoring = () => {
   }, [user, isAdmin]);
 
   if (roleLoading) {
-    return <DashboardLayout><p className="text-sm text-muted-foreground">{t.loading}</p></DashboardLayout>;
+    return <DashboardLayout><p className="text-sm text-muted-foreground">Loading...</p></DashboardLayout>;
   }
   if (!isAdmin) return <Navigate to="/journal" replace />;
 
@@ -155,7 +155,7 @@ const Monitoring = () => {
                 <SelectTrigger className="w-[200px]"><SelectValue placeholder="Target" /></SelectTrigger>
                 <SelectContent>
                   <SelectItem value="all">All targets</SelectItem>
-                  {targets.map(t => <SelectItem key={t} value={t}>{t}</SelectItem>)}
+                  {targets.map(tg => <SelectItem key={tg} value={tg}>{tg}</SelectItem>)}
                 </SelectContent>
               </Select>
               <Select value={statusFilter} onValueChange={setStatusFilter}>

@@ -56,7 +56,6 @@ export interface Dictionary {
     management: string;
     manageLibrary: string;
     manageUsers: string;
-    betaSignups: string;
     manageQuestionnaires: string;
     analystExport: string;
     checkIn: string;
@@ -112,6 +111,9 @@ export interface Dictionary {
     feature3: string;
     feature4: string;
     feature5: string;
+    newsTitle: string;
+    newsSubtitle: string;
+    newsCategory: { feature: string; upgrade: string; fix: string };
     heroLabelNew: string;
     heroLabelInvite: string;
     heroLabelCode: string;
@@ -537,6 +539,16 @@ export interface Dictionary {
   };
 
   admin: {
+    dashboard: {
+      title: string;
+      subtitle: string;
+      libraryDesc: string;
+      usersDesc: string;
+      feedbackDesc: string;
+      questionnairesDesc: string;
+      landingDesc: string;
+      monitoringDesc: string;
+    };
     manageLanding: {
       title: string;
       subtitle: string;
@@ -552,6 +564,31 @@ export interface Dictionary {
       ctaEn: string;
       moodLabelsHu: string;
       moodLabelsEn: string;
+    };
+    manageNews: {
+      title: string;
+      newItem: string;
+      titleHu: string;
+      titleEn: string;
+      bodyHu: string;
+      bodyEn: string;
+      category: string;
+      categoryFeature: string;
+      categoryUpgrade: string;
+      categoryFix: string;
+      published: string;
+      sortOrder: string;
+      save: string;
+      delete: string;
+      deleteConfirm: string;
+      empty: string;
+      saved: string;
+      created: string;
+      deleted: string;
+      editItem: string;
+      searchPlaceholder: string;
+      allCategories: string;
+      noMatch: string;
     };
   };
 

@@ -15,7 +15,6 @@ import OfflineStatus from "@/components/OfflineStatus";
 import ErrorBoundary from "@/components/ErrorBoundary";
 
 const Auth = lazy(() => import("./pages/Auth"));
-const AuthCallback = lazy(() => import("./pages/AuthCallback"));
 const CheckIn = lazy(() => import("./pages/CheckIn"));
 const Profile = lazy(() => import("./pages/Profile"));
 const Export = lazy(() => import("./pages/Export"));
@@ -35,6 +34,7 @@ const SelfChecks = lazy(() => import("./pages/SelfChecks"));
 const Surveys = lazy(() => import("./pages/Surveys"));
 const ManageLanding = lazy(() => import("./pages/ManageLanding"));
 const Monitoring = lazy(() => import("./pages/Monitoring"));
+const AdminDashboard = lazy(() => import("./pages/AdminDashboard"));
 const ConsentOnboarding = lazy(() => import("./pages/ConsentOnboarding"));
 const Timeline = lazy(() => import("./pages/Timeline"));
 const CategoryPage = lazy(() => import("./pages/CategoryPage"));
@@ -55,7 +55,6 @@ const AppRoutes = () => (
     <Routes>
       <Route path="/" element={<Index />} />
       <Route path="/auth" element={<Auth />} />
-      <Route path="/auth/callback" element={<AuthCallback />} />
       <Route path="/dashboard" element={<Navigate to="/journal" replace />} />
       <Route path="/journal" element={<ProtectedRoute><CheckIn /></ProtectedRoute>} />
       <Route path="/check-in" element={<Navigate to="/journal" replace />} />
@@ -64,15 +63,20 @@ const AppRoutes = () => (
       <Route path="/timeline" element={<ProtectedRoute><Timeline /></ProtectedRoute>} />
       <Route path="/profile" element={<ProtectedRoute skipConsentCheck><Profile /></ProtectedRoute>} />
       <Route path="/export" element={<ProtectedRoute skipConsentCheck><Export /></ProtectedRoute>} />
-      <Route path="/manage-library" element={<ProtectedRoute><ManageLibrary /></ProtectedRoute>} />
-      <Route path="/manage-users" element={<ProtectedRoute><ManageUsers /></ProtectedRoute>} />
-      <Route path="/manage-feedback" element={<ProtectedRoute><ManageFeedback /></ProtectedRoute>} />
-      <Route path="/manage-questionnaires" element={<ProtectedRoute><SelfChecks /></ProtectedRoute>} />
+      <Route path="/admin/library" element={<ProtectedRoute><ManageLibrary /></ProtectedRoute>} />
+      <Route path="/admin/users" element={<ProtectedRoute><ManageUsers /></ProtectedRoute>} />
+      <Route path="/admin/feedback" element={<ProtectedRoute><ManageFeedback /></ProtectedRoute>} />
+      <Route path="/admin/questionnaires" element={<ProtectedRoute><SelfChecks /></ProtectedRoute>} />
+      <Route path="/admin" element={<ProtectedRoute><AdminDashboard /></ProtectedRoute>} />
       <Route path="/analyst-export" element={<ProtectedRoute><AnalystExport /></ProtectedRoute>} />
-      <Route path="/manage-landing" element={<ProtectedRoute><ManageLanding /></ProtectedRoute>} />
+      <Route path="/admin/landing" element={<ProtectedRoute><ManageLanding /></ProtectedRoute>} />
       <Route path="/consent" element={<ProtectedRoute skipConsentCheck><ConsentOnboarding /></ProtectedRoute>} />
       <Route path="/admin/monitoring" element={<ProtectedRoute skipConsentCheck><Monitoring /></ProtectedRoute>} />
-      <Route path="/en/admin/monitoring" element={<ProtectedRoute skipConsentCheck><Monitoring /></ProtectedRoute>} />
+      <Route path="/manage-library" element={<Navigate to="/admin/library" replace />} />
+      <Route path="/manage-users" element={<Navigate to="/admin/users" replace />} />
+      <Route path="/manage-feedback" element={<Navigate to="/admin/feedback" replace />} />
+      <Route path="/manage-questionnaires" element={<Navigate to="/admin/questionnaires" replace />} />
+      <Route path="/manage-landing" element={<Navigate to="/admin/landing" replace />} />
       
       <Route path="/library" element={<ProtectedRoute><Library /></ProtectedRoute>} />
       <Route path="/library/:id" element={<ProtectedRoute><Article /></ProtectedRoute>} />
@@ -84,7 +88,6 @@ const AppRoutes = () => (
       <Route path="/impressum" element={<ProtectedRoute skipConsentCheck><Impressum /></ProtectedRoute>} />
       <Route path="/en" element={<Index />} />
       <Route path="/en/auth" element={<Auth />} />
-      <Route path="/en/auth/callback" element={<AuthCallback />} />
       <Route path="/en/dashboard" element={<Navigate to="/en/journal" replace />} />
       <Route path="/en/journal" element={<ProtectedRoute><CheckIn /></ProtectedRoute>} />
       <Route path="/en/check-in" element={<Navigate to="/en/journal" replace />} />
@@ -93,13 +96,20 @@ const AppRoutes = () => (
       <Route path="/en/timeline" element={<ProtectedRoute><Timeline /></ProtectedRoute>} />
       <Route path="/en/profile" element={<ProtectedRoute skipConsentCheck><Profile /></ProtectedRoute>} />
       <Route path="/en/export" element={<ProtectedRoute skipConsentCheck><Export /></ProtectedRoute>} />
-      <Route path="/en/manage-library" element={<ProtectedRoute><ManageLibrary /></ProtectedRoute>} />
-      <Route path="/en/manage-users" element={<ProtectedRoute><ManageUsers /></ProtectedRoute>} />
-      <Route path="/en/manage-feedback" element={<ProtectedRoute><ManageFeedback /></ProtectedRoute>} />
-      <Route path="/en/manage-questionnaires" element={<ProtectedRoute><SelfChecks /></ProtectedRoute>} />
+      <Route path="/en/admin/library" element={<ProtectedRoute><ManageLibrary /></ProtectedRoute>} />
+      <Route path="/en/admin/users" element={<ProtectedRoute><ManageUsers /></ProtectedRoute>} />
+      <Route path="/en/admin/feedback" element={<ProtectedRoute><ManageFeedback /></ProtectedRoute>} />
+      <Route path="/en/admin/questionnaires" element={<ProtectedRoute><SelfChecks /></ProtectedRoute>} />
+      <Route path="/en/admin" element={<ProtectedRoute><AdminDashboard /></ProtectedRoute>} />
       <Route path="/en/analyst-export" element={<ProtectedRoute><AnalystExport /></ProtectedRoute>} />
-      <Route path="/en/manage-landing" element={<ProtectedRoute><ManageLanding /></ProtectedRoute>} />
+      <Route path="/en/admin/landing" element={<ProtectedRoute><ManageLanding /></ProtectedRoute>} />
       <Route path="/en/consent" element={<ProtectedRoute skipConsentCheck><ConsentOnboarding /></ProtectedRoute>} />
+      <Route path="/en/admin/monitoring" element={<ProtectedRoute skipConsentCheck><Monitoring /></ProtectedRoute>} />
+      <Route path="/en/manage-library" element={<Navigate to="/en/admin/library" replace />} />
+      <Route path="/en/manage-users" element={<Navigate to="/en/admin/users" replace />} />
+      <Route path="/en/manage-feedback" element={<Navigate to="/en/admin/feedback" replace />} />
+      <Route path="/en/manage-questionnaires" element={<Navigate to="/en/admin/questionnaires" replace />} />
+      <Route path="/en/manage-landing" element={<Navigate to="/en/admin/landing" replace />} />
       
       <Route path="/en/library" element={<ProtectedRoute><Library /></ProtectedRoute>} />
       <Route path="/en/library/:id" element={<ProtectedRoute><Article /></ProtectedRoute>} />

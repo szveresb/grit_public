@@ -1,0 +1,36 @@
+name: Quality Checks
+
+on:
+  workflow_dispatch:
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run ESLint checks
+        run: npm run lint
+
+      - name: Run Stylelint checks
+        run: npm run lint:style
+
+      - name: Run design guard (PR diff only)
+        if: github.event_name == 'pull_request'
+        run: node scripts/design-codex-guard.mjs --diff-base origin/${{ github.base_ref }}
+
+      - name: Run design guard (push diff only)
+        if: github.event_name == 'push'
+        run: node scripts/design-codex-guard.mjs --diff-base HEAD~1

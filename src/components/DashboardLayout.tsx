@@ -44,23 +44,24 @@ const DashboardShell = ({
   const segments = currentPath.split('/').filter(Boolean);
 
   // Admin/manage routes never render the context tool panel (journal/questionnaire
-  // shortcut cards). Hard-coded so the cards can never flash on these pages even
-  // if a caller forgets to opt out via the prop.
-  const HIDE_TOOL_PANEL_ROUTES = [
-    '/analyst-export',
-    '/manage-feedback',
-    '/manage-users',
-    '/manage-landing',
-    '/manage-questionnaires',
-    '/manage-library',
-  ];
-  const toolPanelHiddenByRoute = HIDE_TOOL_PANEL_ROUTES.some(
+  // shortcut cards). This stays route-driven so new /admin/* pages are covered
+  // automatically, even if callers forget to opt out via props.
+  const HIDE_TOOL_PANEL_ROUTES = ['/analyst-export'];
+  const isAdminRoute = currentPath === '/admin' || currentPath.startsWith('/admin/');
+  const toolPanelHiddenByRoute = isAdminRoute || HIDE_TOOL_PANEL_ROUTES.some(
     (r) => currentPath === r || currentPath.startsWith(`${r}/`),
   );
   const shouldRenderToolPanel = showContextToolPanel && !toolPanelHiddenByRoute;
 
   const getBreadcrumbLabel = (segment: string) => {
     switch (segment) {
+      case 'admin': return t.nav.management;
+      case 'library': return t.nav.manageLibrary;
+      case 'questionnaires': return t.nav.manageQuestionnaires;
+      case 'landing': return t.nav.manageLanding;
+      case 'users': return t.nav.manageUsers || 'Manage Users';
+      case 'feedback': return t.nav.manageFeedback;
+      case 'monitoring': return t.nav.monitoring;
       case 'manage-questionnaires': return t.nav.manageQuestionnaires;
       case 'manage-users': return t.nav.manageUsers || 'Manage Users';
       case 'surveys': return t.nav.surveys;

@@ -1,5 +1,4 @@
 import * as React from 'react';
-import { useEffect, useState } from 'react';
 import { useLocation, Link } from 'react-router-dom';
 import { NavLink } from '@/components/NavLink';
 import { useUserRole } from '@/hooks/useUserRole';
@@ -7,15 +6,15 @@ import { useAuth } from '@/hooks/useAuth';
 import { useLanguage } from '@/hooks/useLanguage';
 import { stripLangPrefix } from '@/hooks/useLanguage';
 import { useIsMobile } from '@/hooks/use-mobile';
-import { supabase } from '@/integrations/supabase/client';
 import {
   FHome, FDashboard, FHeartPulse, FClock, FDownload, FUser,
-  FLibrary, FUsers, FBarChart, FFileText, FInfo, FLock, FTimeline, FMessageCircle,
+  FLibrary, FUsers, FBarChart, FFileText, FInfo, FLock, FTimeline, FMessageCircle, FChevronDown,
 } from '@/components/icons/FreudIcons';
 import {
   Sidebar, SidebarContent, SidebarGroup, SidebarGroupLabel, SidebarGroupContent,
   SidebarMenu, SidebarMenuItem, SidebarMenuButton, SidebarHeader,
 } from '@/components/ui/sidebar';
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 
 interface AppSidebarProps {
   onOpenFeedback: () => void;
@@ -54,31 +53,39 @@ const AppSidebar = ({ onOpenFeedback }: AppSidebarProps) => {
   const canManageQuestionnaires = hasAnyRole('admin', 'editor');
 
   const canManageLanding = hasAnyRole('admin', 'editor');
+  const [isMySpaceOpen, setIsMySpaceOpen] = React.useState(true);
+  const [isManagementOpen, setIsManagementOpen] = React.useState(true);
 
-  const [pendingSignups, setPendingSignups] = useState<number>(0);
-  useEffect(() => {
-    if (!isAdmin) { setPendingSignups(0); return; }
-    let cancelled = false;
-    (async () => {
-      const { count } = await supabase
-        .from('waitlist_emails' as any)
-        .select('id', { count: 'exact', head: true })
-        .eq('status', 'pending');
-      if (!cancelled) setPendingSignups(count ?? 0);
-    })();
-    return () => { cancelled = true; };
-  }, [isAdmin]);
-
-  const editorItems: Array<{ title: string; url: string; icon: typeof FUsers; badge?: number }> = [
-    ...(canManageLibrary ? [{ title: t.nav.manageLibrary, url: '/manage-library', icon: FLibrary }] : []),
-    ...(canManageQuestionnaires ? [{ title: t.nav.manageQuestionnaires, url: '/manage-questionnaires', icon: FFileText }] : []),
-    ...(canManageLanding ? [{ title: t.nav.manageLanding, url: '/manage-landing', icon: FHome }] : []),
-    ...(isAdmin ? [{ title: t.nav.betaSignups, url: '/manage-users#beta-signups', icon: FHeartPulse, badge: pendingSignups }] : []),
-    ...(isAdmin ? [{ title: t.nav.manageUsers, url: '/manage-users', icon: FUsers }] : []),
-    ...(isAdmin ? [{ title: t.nav.manageFeedback, url: '/manage-feedback', icon: FMessageCircle }] : []),
+  const editorItems = [
+    ...((isAdmin || canManageLibrary || canManageQuestionnaires || canManageLanding) ? [{ title: t.nav.management, url: '/admin', icon: FDashboard }] : []),
+    ...(canManageLibrary ? [{ title: t.nav.manageLibrary, url: '/admin/library', icon: FLibrary }] : []),
+    ...(canManageQuestionnaires ? [{ title: t.nav.manageQuestionnaires, url: '/admin/questionnaires', icon: FFileText }] : []),
+    ...(canManageLanding ? [{ title: t.nav.manageLanding, url: '/admin/landing', icon: FHome }] : []),
+    ...(isAdmin ? [{ title: t.nav.manageUsers, url: '/admin/users', icon: FUsers }] : []),
+    ...(isAdmin ? [{ title: t.nav.manageFeedback, url: '/admin/feedback', icon: FMessageCircle }] : []),
     ...(canAnalyse ? [{ title: t.nav.analystExport, url: '/analyst-export', icon: FBarChart }] : []),
-    ...(isAdmin ? [{ title: t.nav.monitoring ?? 'Monitoring', url: '/admin/monitoring', icon: FHeartPulse }] : []),
+    ...(isAdmin ? [{ title: t.nav.monitoring, url: '/admin/monitoring', icon: FHeartPulse }] : []),
   ];
+
+  const renderMenuItem = (item: { title: string; url: string; icon: React.ComponentType<{ className?: string }> }) => (
+    <SidebarMenuItem key={item.url}>
+      <SidebarMenuButton
+        asChild
+        isActive={currentPath === item.url}
+        tooltip={item.title}
+      >
+        <NavLink
+          to={localePath(item.url)}
+          end
+          className="hover:bg-accent rounded-xl"
+          activeClassName="bg-accent text-foreground font-semibold rounded-xl"
+        >
+          <item.icon className="h-4 w-4" />
+          <span>{item.title}</span>
+        </NavLink>
+      </SidebarMenuButton>
+    </SidebarMenuItem>
+  );
 
   return (
     <Sidebar collapsible="icon">
@@ -90,32 +97,19 @@ const AppSidebar = ({ onOpenFeedback }: AppSidebarProps) => {
 
       <SidebarContent>
         <SidebarGroup>
-          <SidebarGroupLabel className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
-            {t.nav.navigate}
-          </SidebarGroupLabel>
-          <SidebarGroupContent>
-            <SidebarMenu>
-              {navItems.map((item) => (
-                <SidebarMenuItem key={item.url}>
-                  <SidebarMenuButton
-                    asChild
-                    isActive={currentPath === item.url}
-                    tooltip={item.title}
-                  >
-                    <NavLink
-                      to={localePath(item.url)}
-                      end
-                      className="hover:bg-accent rounded-xl"
-                      activeClassName="bg-accent text-foreground font-semibold rounded-xl"
-                    >
-                      <item.icon className="h-4 w-4" />
-                      <span>{item.title}</span>
-                    </NavLink>
-                  </SidebarMenuButton>
-                </SidebarMenuItem>
-              ))}
-            </SidebarMenu>
-          </SidebarGroupContent>
+          <Collapsible open={isMySpaceOpen} onOpenChange={setIsMySpaceOpen}>
+            <CollapsibleTrigger className="flex w-full items-center justify-between rounded-md px-2 py-1 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground transition-colors hover:text-foreground">
+              <span>{t.nav.mySpace}</span>
+              <FChevronDown className={`h-3.5 w-3.5 transition-transform ${isMySpaceOpen ? 'rotate-180' : ''}`} />
+            </CollapsibleTrigger>
+            <CollapsibleContent>
+              <SidebarGroupContent>
+                <SidebarMenu>
+                  {navItems.map(renderMenuItem)}
+                </SidebarMenu>
+              </SidebarGroupContent>
+            </CollapsibleContent>
+          </Collapsible>
         </SidebarGroup>
 
         {isMobile && (
@@ -160,40 +154,19 @@ const AppSidebar = ({ onOpenFeedback }: AppSidebarProps) => {
 
         {editorItems.length > 0 && (
           <SidebarGroup>
-            <SidebarGroupLabel className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
-              {t.nav.management}
-            </SidebarGroupLabel>
-            <SidebarGroupContent>
-              <SidebarMenu>
-                {editorItems.map((item) => {
-                  const [pathOnly] = item.url.split('#');
-                  return (
-                    <SidebarMenuItem key={item.url}>
-                      <SidebarMenuButton
-                        asChild
-                        isActive={currentPath === pathOnly}
-                        tooltip={item.title}
-                      >
-                        <NavLink
-                          to={localePath(item.url)}
-                          end
-                          className="hover:bg-accent rounded-xl"
-                          activeClassName="bg-accent text-foreground font-semibold rounded-xl"
-                        >
-                          <item.icon className="h-4 w-4" />
-                          <span className="flex-1">{item.title}</span>
-                          {item.badge && item.badge > 0 ? (
-                            <span className="ml-auto inline-flex h-5 min-w-5 items-center justify-center rounded-full bg-primary px-1.5 text-[10px] font-bold text-primary-foreground">
-                              {item.badge}
-                            </span>
-                          ) : null}
-                        </NavLink>
-                      </SidebarMenuButton>
-                    </SidebarMenuItem>
-                  );
-                })}
-              </SidebarMenu>
-            </SidebarGroupContent>
+            <Collapsible open={isManagementOpen} onOpenChange={setIsManagementOpen}>
+              <CollapsibleTrigger className="flex w-full items-center justify-between rounded-md px-2 py-1 text-[10px] font-semibold uppercase tracking-widest text-muted-foreground transition-colors hover:text-foreground">
+                <span>{t.nav.management}</span>
+                <FChevronDown className={`h-3.5 w-3.5 transition-transform ${isManagementOpen ? 'rotate-180' : ''}`} />
+              </CollapsibleTrigger>
+              <CollapsibleContent>
+                <SidebarGroupContent>
+                  <SidebarMenu>
+                    {editorItems.map(renderMenuItem)}
+                  </SidebarMenu>
+                </SidebarGroupContent>
+              </CollapsibleContent>
+            </Collapsible>
           </SidebarGroup>
         )}
 
