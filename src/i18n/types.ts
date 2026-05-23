@@ -64,6 +64,7 @@ export interface Dictionary {
     manageLanding: string;
     feedback: string;
     manageFeedback: string;
+    monitoring: string;
   };
 
   // Index / Landing
