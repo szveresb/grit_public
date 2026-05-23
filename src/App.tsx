@@ -71,6 +71,8 @@ const AppRoutes = () => (
       <Route path="/analyst-export" element={<ProtectedRoute><AnalystExport /></ProtectedRoute>} />
       <Route path="/manage-landing" element={<ProtectedRoute><ManageLanding /></ProtectedRoute>} />
       <Route path="/consent" element={<ProtectedRoute skipConsentCheck><ConsentOnboarding /></ProtectedRoute>} />
+      <Route path="/admin/monitoring" element={<ProtectedRoute skipConsentCheck><Monitoring /></ProtectedRoute>} />
+      <Route path="/en/admin/monitoring" element={<ProtectedRoute skipConsentCheck><Monitoring /></ProtectedRoute>} />
       
       <Route path="/library" element={<ProtectedRoute><Library /></ProtectedRoute>} />
       <Route path="/library/:id" element={<ProtectedRoute><Article /></ProtectedRoute>} />
