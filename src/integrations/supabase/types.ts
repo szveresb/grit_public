@@ -14,69 +14,6 @@ export type Database = {
   }
   public: {
     Tables: {
-      analyst_export_audit: {
-        Row: {
-          active_user_count: number
-          analyst_email: string | null
-          analyst_user_id: string
-          consent_key_applied: string
-          consented_user_count: number
-          created_at: string
-          export_format: string
-          id: string
-          journal_aggregate_count: number
-          k_anonymity_threshold: number
-          notes: string | null
-          observation_aggregate_count: number
-          outcome: string
-          questionnaire_aggregate_count: number
-          request_ip: string | null
-          role_distribution_count: number
-          threshold_met: boolean
-          user_agent: string | null
-        }
-        Insert: {
-          active_user_count?: number
-          analyst_email?: string | null
-          analyst_user_id: string
-          consent_key_applied?: string
-          consented_user_count?: number
-          created_at?: string
-          export_format?: string
-          id?: string
-          journal_aggregate_count?: number
-          k_anonymity_threshold?: number
-          notes?: string | null
-          observation_aggregate_count?: number
-          outcome: string
-          questionnaire_aggregate_count?: number
-          request_ip?: string | null
-          role_distribution_count?: number
-          threshold_met?: boolean
-          user_agent?: string | null
-        }
-        Update: {
-          active_user_count?: number
-          analyst_email?: string | null
-          analyst_user_id?: string
-          consent_key_applied?: string
-          consented_user_count?: number
-          created_at?: string
-          export_format?: string
-          id?: string
-          journal_aggregate_count?: number
-          k_anonymity_threshold?: number
-          notes?: string | null
-          observation_aggregate_count?: number
-          outcome?: string
-          questionnaire_aggregate_count?: number
-          request_ip?: string | null
-          role_distribution_count?: number
-          threshold_met?: boolean
-          user_agent?: string | null
-        }
-        Relationships: []
-      }
       consent_history_logs: {
         Row: {
           changed_at: string
@@ -714,67 +651,6 @@ export type Database = {
           },
         ]
       }
-      questionnaire_score_trends: {
-        Row: {
-          id: string
-          last_updated_at: string
-          latest_response_id: string
-          latest_score: number
-          previous_score: number | null
-          questionnaire_id: string
-          subject_id: string | null
-          subject_type: Database["public"]["Enums"]["subject_type"]
-          trend_delta: number
-          user_id: string
-        }
-        Insert: {
-          id?: string
-          last_updated_at?: string
-          latest_response_id: string
-          latest_score?: number
-          previous_score?: number | null
-          questionnaire_id: string
-          subject_id?: string | null
-          subject_type?: Database["public"]["Enums"]["subject_type"]
-          trend_delta?: number
-          user_id: string
-        }
-        Update: {
-          id?: string
-          last_updated_at?: string
-          latest_response_id?: string
-          latest_score?: number
-          previous_score?: number | null
-          questionnaire_id?: string
-          subject_id?: string | null
-          subject_type?: Database["public"]["Enums"]["subject_type"]
-          trend_delta?: number
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "questionnaire_score_trends_latest_response_id_fkey"
-            columns: ["latest_response_id"]
-            isOneToOne: false
-            referencedRelation: "questionnaire_responses"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "questionnaire_score_trends_questionnaire_id_fkey"
-            columns: ["questionnaire_id"]
-            isOneToOne: false
-            referencedRelation: "questionnaires"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "questionnaire_score_trends_subject_id_fkey"
-            columns: ["subject_id"]
-            isOneToOne: false
-            referencedRelation: "subjects"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       questionnaires: {
         Row: {
           created_at: string
@@ -1013,13 +889,6 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      admin_list_user_emails: {
-        Args: never
-        Returns: {
-          email: string
-          user_id: string
-        }[]
-      }
       analyst_consented_user_ids: {
         Args: { _consent_key: string }
         Returns: string[]
@@ -1067,7 +936,6 @@ export type Database = {
         Args: { payload: Json; queue_name: string }
         Returns: number
       }
-      generate_invite_code: { Args: never; Returns: string }
       has_any_role: {
         Args: {
           _roles: Database["public"]["Enums"]["app_role"][]
