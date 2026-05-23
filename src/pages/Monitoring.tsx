@@ -12,7 +12,7 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
-import { FActivity, FCheck, FAlert, FClock } from '@/components/icons/FreudIcons';
+import { FHeartPulse, FCheck, FShield, FClock } from '@/components/icons/FreudIcons';
 
 interface MonitorCheck {
   id: string;
