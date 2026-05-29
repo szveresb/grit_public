@@ -1,0 +1,602 @@
+﻿[
+    {
+        "card_id":  "seed-symptom-001",
+        "lane":  "symptom",
+        "label_en":  "Racing thoughts",
+        "snomed_code":  "285303006",
+        "icd_code":  "R41.8",
+        "icd_description":  "Other and unspecified symptoms and signs involving cognitive functions and awareness",
+        "chapter_tag":  "R",
+        "source_map_type":  "ALWAYS R41.8"
+    },
+    {
+        "card_id":  "seed-symptom-002",
+        "lane":  "symptom",
+        "label_en":  "[X]Attention deficit disorder",
+        "snomed_code":  "35253001",
+        "icd_code":  "F90.0",
+        "icd_description":  "Disturbance of activity and attention",
+        "chapter_tag":  "F",
+        "source_map_type":  "ALWAYS F90.0"
+    },
+    {
+        "card_id":  "seed-symptom-003",
+        "lane":  "symptom",
+        "label_en":  "AAMI - Age-associated memory impairment",
+        "snomed_code":  "231448004",
+        "icd_code":  "R41.8",
+        "icd_description":  "Other and unspecified symptoms and signs involving cognitive functions and awareness",
+        "chapter_tag":  "R",
+        "source_map_type":  "ALWAYS R41.8"
+    },
+    {
+        "card_id":  "seed-symptom-004",
+        "lane":  "symptom",
+        "label_en":  "Abdominal distension",
+        "snomed_code":  "41931001",
+        "icd_code":  "R14",
+        "icd_description":  "Flatulence and related conditions",
+        "chapter_tag":  "R",
+        "source_map_type":  "ALWAYS R14"
+    },
+    {
+        "card_id":  "seed-symptom-005",
+        "lane":  "symptom",
+        "label_en":  "Abdominal distension symptom",
+        "snomed_code":  "162068007",
+        "icd_code":  "R14",
+        "icd_description":  "Flatulence and related conditions",
+        "chapter_tag":  "R",
+        "source_map_type":  "ALWAYS R14"
+    },
+    {
+        "card_id":  "seed-symptom-006",
+        "lane":  "symptom",
+        "label_en":  "Abdominal distension, gaseous",
+        "snomed_code":  "271835004",
+        "icd_code":  "R14",
+        "icd_description":  "Flatulence and related conditions",
+        "chapter_tag":  "R",
+        "source_map_type":  "ALWAYS R14"
+    },
+    {
+        "card_id":  "seed-symptom-007",
+        "lane":  "symptom",
+        "label_en":  "Able to control anger",
+        "snomed_code":  "285848000",
+        "icd_code":  "R45.4",
+        "icd_description":  "Irritability and anger",
+        "chapter_tag":  "R",
+        "source_map_type":  "ALWAYS R45.4"
+    },
+    {
+        "card_id":  "seed-symptom-008",
+        "lane":  "symptom",
+        "label_en":  "Abnormal anal Papanicolaou smear",
+        "snomed_code":  "439855007",
+        "icd_code":  "R85.6",
+        "icd_description":  "Abnormal findings in specimens from digestive organs and abdominal cavity: Abnormal cytological findings",
+        "chapter_tag":  "R",
+        "source_map_type":  "ALWAYS R85.6"
+    },
+    {
+        "card_id":  "seed-symptom-009",
+        "lane":  "symptom",
+        "label_en":  "Abnormal anxiety related behavior",
+        "snomed_code":  "1141959006",
+        "icd_code":  "R46.2",
+        "icd_description":  "Strange and inexplicable behaviour",
+        "chapter_tag":  "R",
+        "source_map_type":  "ALWAYS R46.2 | POSSIBLE REQUIREMENT FOR ADDITIONAL CODE TO FULLY DESCRIBE DISEASE OR CONDITION"
+    },
+    {
+        "card_id":  "seed-symptom-010",
+        "lane":  "symptom",
+        "label_en":  "Abnormal cardiotochogram tracing",
+        "snomed_code":  "735205007",
+        "icd_code":  "R94.3",
+        "icd_description":  "Abnormal results of cardiovascular function studies",
+        "chapter_tag":  "R",
+        "source_map_type":  "ALWAYS R94.3"
+    },
+    {
+        "card_id":  "seed-symptom-011",
+        "lane":  "symptom",
+        "label_en":  "Abnormal cervical Papanicolaou smear",
+        "snomed_code":  "439888000",
+        "icd_code":  "R87.6",
+        "icd_description":  "Abnormal findings in specimens from female genital organs: Abnormal cytological findings",
+        "chapter_tag":  "R",
+        "source_map_type":  "ALWAYS R87.6"
+    },
+    {
+        "card_id":  "seed-symptom-012",
+        "lane":  "symptom",
+        "label_en":  "Abnormal cervical Papanicolaou smear with human papillomavirus deoxyribonucleic acid detected",
+        "snomed_code":  "441667007",
+        "icd_code":  "R87.6",
+        "icd_description":  "Abnormal findings in specimens from female genital organs: Abnormal cytological findings",
+        "chapter_tag":  "R",
+        "source_map_type":  "ALWAYS R87.6"
+    },
+    {
+        "card_id":  "seed-symptom-013",
+        "lane":  "symptom",
+        "label_en":  "Abnormal extension",
+        "snomed_code":  "19212008",
+        "icd_code":  "R29.8",
+        "icd_description":  "Other and unspecified symptoms and signs involving the nervous and musculoskeletal systems",
+        "chapter_tag":  "R",
+        "source_map_type":  "ALWAYS R29.8"
+    },
+    {
+        "card_id":  "seed-symptom-014",
+        "lane":  "symptom",
+        "label_en":  "Abnormal fear",
+        "snomed_code":  "386808001",
+        "icd_code":  "F40.9",
+        "icd_description":  "Phobic anxiety disorder, unspecified",
+        "chapter_tag":  "F",
+        "source_map_type":  "ALWAYS F40.9 | DESCENDANTS NOT EXHAUSTIVELY MAPPED"
+    },
+    {
+        "card_id":  "seed-symptom-015",
+        "lane":  "symptom",
+        "label_en":  "Abnormal food appetite",
+        "snomed_code":  "51575000",
+        "icd_code":  "F50.9",
+        "icd_description":  "Eating disorder, unspecified",
+        "chapter_tag":  "F",
+        "source_map_type":  "ALWAYS F50.9"
+    },
+    {
+        "card_id":  "seed-symptom-016",
+        "lane":  "symptom",
+        "label_en":  "Abnormal vaginal Papanicolaou smear",
+        "snomed_code":  "439856008",
+        "icd_code":  "R87.6",
+        "icd_description":  "Abnormal findings in specimens from female genital organs: Abnormal cytological findings",
+        "chapter_tag":  "R",
+        "source_map_type":  "ALWAYS R87.6"
+    },
+    {
+        "card_id":  "seed-symptom-017",
+        "lane":  "symptom",
+        "label_en":  "Abuse of antidepressant drug",
+        "snomed_code":  "191928000",
+        "icd_code":  "F55",
+        "icd_description":  "Abuse of non-dependence-producing substances",
+        "chapter_tag":  "F",
+        "source_map_type":  "ALWAYS F55"
+    },
+    {
+        "card_id":  "seed-symptom-018",
+        "lane":  "symptom",
+        "label_en":  "Aching headache",
+        "snomed_code":  "162307009",
+        "icd_code":  "R51",
+        "icd_description":  "Headache",
+        "chapter_tag":  "R",
+        "source_map_type":  "ALWAYS R51"
+    },
+    {
+        "card_id":  "seed-symptom-019",
+        "lane":  "symptom",
+        "label_en":  "Acute depression",
+        "snomed_code":  "712823008",
+        "icd_code":  "F32.9",
+        "icd_description":  "Depressive episode, unspecified",
+        "chapter_tag":  "F",
+        "source_map_type":  "ALWAYS F32.9"
+    },
+    {
+        "card_id":  "seed-symptom-020",
+        "lane":  "symptom",
+        "label_en":  "Acute edema - cutaneous distension syndrome",
+        "snomed_code":  "403176008",
+        "icd_code":  "R60.9",
+        "icd_description":  "Oedema, unspecified",
+        "chapter_tag":  "R",
+        "source_map_type":  "ALWAYS R60.9"
+    },
+    {
+        "card_id":  "seed-symptom-021",
+        "lane":  "symptom",
+        "label_en":  "Acute fugue state due to acute stress reaction",
+        "snomed_code":  "192038005",
+        "icd_code":  "F43.0",
+        "icd_description":  "Acute stress reaction",
+        "chapter_tag":  "F",
+        "source_map_type":  "ALWAYS F43.0"
+    },
+    {
+        "card_id":  "seed-symptom-022",
+        "lane":  "symptom",
+        "label_en":  "Acute headache",
+        "snomed_code":  "735938006",
+        "icd_code":  "R51",
+        "icd_description":  "Headache",
+        "chapter_tag":  "R",
+        "source_map_type":  "ALWAYS R51"
+    },
+    {
+        "card_id":  "seed-symptom-023",
+        "lane":  "symptom",
+        "label_en":  "Acute headache due to craniotomy",
+        "snomed_code":  "1259065003",
+        "icd_code":  "R51",
+        "icd_description":  "Headache",
+        "chapter_tag":  "R",
+        "source_map_type":  "ALWAYS R51"
+    },
+    {
+        "card_id":  "seed-symptom-024",
+        "lane":  "symptom",
+        "label_en":  "Acute headache due to traumatic injury of head",
+        "snomed_code":  "762353009",
+        "icd_code":  "R51",
+        "icd_description":  "Headache",
+        "chapter_tag":  "R",
+        "source_map_type":  "ALWAYS R51"
+    },
+    {
+        "card_id":  "seed-symptom-025",
+        "lane":  "symptom",
+        "label_en":  "Acute headache due to whiplash injury",
+        "snomed_code":  "1259064004",
+        "icd_code":  "R51",
+        "icd_description":  "Headache",
+        "chapter_tag":  "R",
+        "source_map_type":  "ALWAYS R51"
+    },
+    {
+        "card_id":  "seed-symptom-026",
+        "lane":  "symptom",
+        "label_en":  "Acute panic state due to acute stress reaction",
+        "snomed_code":  "192037000",
+        "icd_code":  "F43.0",
+        "icd_description":  "Acute stress reaction",
+        "chapter_tag":  "F",
+        "source_map_type":  "ALWAYS F43.0"
+    },
+    {
+        "card_id":  "seed-symptom-027",
+        "lane":  "symptom",
+        "label_en":  "Acute post traumatic stress disorder following military combat",
+        "snomed_code":  "446175003",
+        "icd_code":  "F43.1",
+        "icd_description":  "Post-traumatic stress disorder",
+        "chapter_tag":  "F",
+        "source_map_type":  "ALWAYS F43.1"
+    },
+    {
+        "card_id":  "seed-symptom-028",
+        "lane":  "symptom",
+        "label_en":  "Acute post-trauma stress state",
+        "snomed_code":  "192042008",
+        "icd_code":  "F43.1",
+        "icd_description":  "Post-traumatic stress disorder",
+        "chapter_tag":  "F",
+        "source_map_type":  "ALWAYS F43.1"
+    },
+    {
+        "card_id":  "seed-symptom-029",
+        "lane":  "symptom",
+        "label_en":  "Acute reaction to stress",
+        "snomed_code":  "67195008",
+        "icd_code":  "F43.0",
+        "icd_description":  "Acute stress reaction",
+        "chapter_tag":  "F",
+        "source_map_type":  "ALWAYS F43.0"
+    },
+    {
+        "card_id":  "seed-symptom-030",
+        "lane":  "symptom",
+        "label_en":  "Acute respiratory distress",
+        "snomed_code":  "373895009",
+        "icd_code":  "R06.0",
+        "icd_description":  "Dyspnoea",
+        "chapter_tag":  "R",
+        "source_map_type":  "ALWAYS R06.0"
+    },
+    {
+        "card_id":  "seed-symptom-031",
+        "lane":  "symptom",
+        "label_en":  "Acute stupor state due to acute stress reaction",
+        "snomed_code":  "192039002",
+        "icd_code":  "F43.0",
+        "icd_description":  "Acute stress reaction",
+        "chapter_tag":  "F",
+        "source_map_type":  "ALWAYS F43.0"
+    },
+    {
+        "card_id":  "seed-symptom-032",
+        "lane":  "symptom",
+        "label_en":  "AD7c neuronal thread protein concentration in cerebrospinal fluid above reference range",
+        "snomed_code":  "439032005",
+        "icd_code":  "R83.2",
+        "icd_description":  "Abnormal findings in cerebrospinal fluid: Abnormal level of other drugs, medicaments and biological substances",
+        "chapter_tag":  "R",
+        "source_map_type":  "ALWAYS R83.2"
+    },
+    {
+        "card_id":  "seed-symptom-033",
+        "lane":  "symptom",
+        "label_en":  "AD7c neuronal thread protein concentration in urine above reference range",
+        "snomed_code":  "439033000",
+        "icd_code":  "R82.9",
+        "icd_description":  "Other and unspecified abnormal findings in urine",
+        "chapter_tag":  "R",
+        "source_map_type":  "ALWAYS R82.9"
+    },
+    {
+        "card_id":  "seed-symptom-034",
+        "lane":  "symptom",
+        "label_en":  "Adductor spastic dysphonia of musculoskeletal tension reaction",
+        "snomed_code":  "83759003",
+        "icd_code":  "R49.0",
+        "icd_description":  "Dysphonia",
+        "chapter_tag":  "R",
+        "source_map_type":  "ALWAYS R49.0"
+    },
+    {
+        "card_id":  "seed-symptom-035",
+        "lane":  "symptom",
+        "label_en":  "ADHD - Attention deficit disorder with hyperactivity",
+        "snomed_code":  "406506008",
+        "icd_code":  "F90.0",
+        "icd_description":  "Disturbance of activity and attention",
+        "chapter_tag":  "F",
+        "source_map_type":  "ALWAYS F90.0"
+    },
+    {
+        "card_id":  "seed-symptom-036",
+        "lane":  "symptom",
+        "label_en":  "Adjustment disorder with anxiety",
+        "snomed_code":  "47372000",
+        "icd_code":  "F43.2",
+        "icd_description":  "Adjustment disorders",
+        "chapter_tag":  "F",
+        "source_map_type":  "ALWAYS F43.2"
+    },
+    {
+        "card_id":  "seed-symptom-037",
+        "lane":  "symptom",
+        "label_en":  "Adjustment disorder with depressed mood",
+        "snomed_code":  "57194009",
+        "icd_code":  "F43.2",
+        "icd_description":  "Adjustment disorders",
+        "chapter_tag":  "F",
+        "source_map_type":  "ALWAYS F43.2"
+    },
+    {
+        "card_id":  "seed-symptom-038",
+        "lane":  "symptom",
+        "label_en":  "Adjustment disorder with depressed mood in remission",
+        "snomed_code":  "698696007",
+        "icd_code":  "F43.2",
+        "icd_description":  "Adjustment disorders",
+        "chapter_tag":  "F",
+        "source_map_type":  "ALWAYS F43.2"
+    },
+    {
+        "card_id":  "seed-symptom-039",
+        "lane":  "symptom",
+        "label_en":  "Adjustment disorder with mixed anxiety and depressed mood",
+        "snomed_code":  "782501005",
+        "icd_code":  "F41.2",
+        "icd_description":  "Mixed anxiety and depressive disorder",
+        "chapter_tag":  "F",
+        "source_map_type":  "ALWAYS F41.2"
+    },
+    {
+        "card_id":  "seed-symptom-040",
+        "lane":  "symptom",
+        "label_en":  "Adolescent onset conduct-dissocial disorder",
+        "snomed_code":  "724740006",
+        "icd_code":  "F91.8",
+        "icd_description":  "Other conduct disorders",
+        "chapter_tag":  "F",
+        "source_map_type":  "ALWAYS F91.8"
+    },
+    {
+        "card_id":  "seed-context-001",
+        "lane":  "context_event",
+        "label_en":  "A/N care: H/O child abuse",
+        "snomed_code":  "169595006",
+        "icd_code":  "Z35.7",
+        "icd_description":  "Supervision of high-risk pregnancy due to social problems",
+        "chapter_tag":  "Z",
+        "source_map_type":  "ALWAYS Z35.7"
+    },
+    {
+        "card_id":  "seed-context-002",
+        "lane":  "context_event",
+        "label_en":  "A/N care: H/O trophoblastic disease",
+        "snomed_code":  "169585004",
+        "icd_code":  "Z87.5",
+        "icd_description":  "Personal history of complications of pregnancy, childbirth and the puerperium",
+        "chapter_tag":  "Z",
+        "source_map_type":  "ALWAYS Z87.5"
+    },
+    {
+        "card_id":  "seed-context-003",
+        "lane":  "context_event",
+        "label_en":  "Abnormal glucose tolerance test during pregnancy, childbirth and puerperium",
+        "snomed_code":  "372046001",
+        "icd_code":  "R73.0",
+        "icd_description":  "Abnormal glucose tolerance test",
+        "chapter_tag":  "R",
+        "source_map_type":  "ALWAYS R73.0"
+    },
+    {
+        "card_id":  "seed-context-004",
+        "lane":  "context_event",
+        "label_en":  "Abstinent from drug misuse in normal environment",
+        "snomed_code":  "712543006",
+        "icd_code":  "Z72.2",
+        "icd_description":  "Drug use",
+        "chapter_tag":  "Z",
+        "source_map_type":  "ALWAYS Z72.2"
+    },
+    {
+        "card_id":  "seed-context-005",
+        "lane":  "context_event",
+        "label_en":  "Abstinent from drug misuse in protected environment",
+        "snomed_code":  "712544000",
+        "icd_code":  "Z86.4",
+        "icd_description":  "Personal history of psychoactive substance abuse",
+        "chapter_tag":  "Z",
+        "source_map_type":  "ALWAYS Z86.4"
+    },
+    {
+        "card_id":  "seed-context-006",
+        "lane":  "context_event",
+        "label_en":  "Abuses animals",
+        "snomed_code":  "765438006",
+        "icd_code":  "R45.6",
+        "icd_description":  "Physical violence",
+        "chapter_tag":  "R",
+        "source_map_type":  "ALWAYS R45.6"
+    },
+    {
+        "card_id":  "seed-context-007",
+        "lane":  "context_event",
+        "label_en":  "Abuses other people",
+        "snomed_code":  "765437001",
+        "icd_code":  "R46.8",
+        "icd_description":  "Other symptoms and signs involving appearance and behaviour",
+        "chapter_tag":  "R",
+        "source_map_type":  "ALWAYS R46.8"
+    },
+    {
+        "card_id":  "seed-context-008",
+        "lane":  "context_event",
+        "label_en":  "Abusive emotional relationship with child",
+        "snomed_code":  "102904004",
+        "icd_code":  "Z63.8",
+        "icd_description":  "Other specified problems related to primary support group",
+        "chapter_tag":  "Z",
+        "source_map_type":  "ALWAYS Z63.8"
+    },
+    {
+        "card_id":  "seed-context-009",
+        "lane":  "context_event",
+        "label_en":  "Abusive emotional relationship with husband",
+        "snomed_code":  "102902000",
+        "icd_code":  "Z63.0",
+        "icd_description":  "Problems in relationship with spouse or partner",
+        "chapter_tag":  "Z",
+        "source_map_type":  "ALWAYS Z63.0"
+    },
+    {
+        "card_id":  "seed-context-010",
+        "lane":  "context_event",
+        "label_en":  "Abusive emotional relationship with parents",
+        "snomed_code":  "102900008",
+        "icd_code":  "Z63.1",
+        "icd_description":  "Problems in relationship with parents and in-laws",
+        "chapter_tag":  "Z",
+        "source_map_type":  "ALWAYS Z63.1"
+    },
+    {
+        "card_id":  "seed-context-011",
+        "lane":  "context_event",
+        "label_en":  "Abusive emotional relationship with partner",
+        "snomed_code":  "423794002",
+        "icd_code":  "Z63.0",
+        "icd_description":  "Problems in relationship with spouse or partner",
+        "chapter_tag":  "Z",
+        "source_map_type":  "ALWAYS Z63.0"
+    },
+    {
+        "card_id":  "seed-context-012",
+        "lane":  "context_event",
+        "label_en":  "Abusive emotional relationship with spouse",
+        "snomed_code":  "102901007",
+        "icd_code":  "Z63.0",
+        "icd_description":  "Problems in relationship with spouse or partner",
+        "chapter_tag":  "Z",
+        "source_map_type":  "ALWAYS Z63.0"
+    },
+    {
+        "card_id":  "seed-context-013",
+        "lane":  "context_event",
+        "label_en":  "Abusive emotional relationship with wife",
+        "snomed_code":  "102903005",
+        "icd_code":  "Z63.0",
+        "icd_description":  "Problems in relationship with spouse or partner",
+        "chapter_tag":  "Z",
+        "source_map_type":  "ALWAYS Z63.0"
+    },
+    {
+        "card_id":  "seed-context-014",
+        "lane":  "context_event",
+        "label_en":  "Abusive sexual relationship with partner",
+        "snomed_code":  "102951002",
+        "icd_code":  "Z63.0",
+        "icd_description":  "Problems in relationship with spouse or partner",
+        "chapter_tag":  "Z",
+        "source_map_type":  "ALWAYS Z63.0"
+    },
+    {
+        "card_id":  "seed-context-015",
+        "lane":  "context_event",
+        "label_en":  "Academic problem",
+        "snomed_code":  "3677008",
+        "icd_code":  "Z55.8",
+        "icd_description":  "Other problems related to education and literacy",
+        "chapter_tag":  "Z",
+        "source_map_type":  "ALWAYS Z55.8"
+    },
+    {
+        "card_id":  "seed-context-016",
+        "lane":  "context_event",
+        "label_en":  "Academic underachievement",
+        "snomed_code":  "105419003",
+        "icd_code":  "Z55.3",
+        "icd_description":  "Underachievement in school",
+        "chapter_tag":  "Z",
+        "source_map_type":  "ALWAYS Z55.3"
+    },
+    {
+        "card_id":  "seed-context-017",
+        "lane":  "context_event",
+        "label_en":  "Accommodation unsuitable",
+        "snomed_code":  "81877007",
+        "icd_code":  "Z59.1",
+        "icd_description":  "Inadequate housing",
+        "chapter_tag":  "Z",
+        "source_map_type":  "ALWAYS Z59.1"
+    },
+    {
+        "card_id":  "seed-context-018",
+        "lane":  "context_event",
+        "label_en":  "Accommodation unsuitable",
+        "snomed_code":  "105531004",
+        "icd_code":  "Z59.1",
+        "icd_description":  "Inadequate housing",
+        "chapter_tag":  "Z",
+        "source_map_type":  "ALWAYS Z59.1 | DESCENDANTS NOT EXHAUSTIVELY MAPPED"
+    },
+    {
+        "card_id":  "seed-context-019",
+        "lane":  "context_event",
+        "label_en":  "Accommodation without heating sources",
+        "snomed_code":  "1366335002",
+        "icd_code":  "Z59.1",
+        "icd_description":  "Inadequate housing",
+        "chapter_tag":  "Z",
+        "source_map_type":  "ALWAYS Z59.1"
+    },
+    {
+        "card_id":  "seed-context-020",
+        "lane":  "context_event",
+        "label_en":  "ACE - adverse childhood experience",
+        "snomed_code":  "1380320004",
+        "icd_code":  "Z61.9",
+        "icd_description":  "Negative life event in childhood, unspecified",
+        "chapter_tag":  "Z",
+        "source_map_type":  "ALWAYS Z61.9"
+    }
+]

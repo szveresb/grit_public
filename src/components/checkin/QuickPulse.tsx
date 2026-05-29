@@ -28,6 +28,8 @@ interface QuickPulseProps {
   onMoodSelected?: (mood: MoodSelection) => void;
   compact?: boolean;
   subjectId?: string | null;
+  entryDate?: Date;
+  onEntryDateChange?: (date: Date) => void;
 }
 
 const QuickPulse = ({
@@ -35,17 +37,26 @@ const QuickPulse = ({
   onMoodSelected,
   compact = false,
   subjectId = null,
+  entryDate: controlledDate,
+  onEntryDateChange,
 }: QuickPulseProps) => {
   const { user } = useAuth();
   const { t, lang } = useLanguage();
   const { activeSubject, subjectType, selectedSubjectId } = useStance();
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
-  const [entryDate, setEntryDate] = useState<Date>(() => startOfDay(new Date()));
+  const [internalDate, setInternalDate] = useState<Date>(() => startOfDay(new Date()));
+  const entryDate = controlledDate ?? internalDate;
+  const setEntryDate = (d: Date) => {
+    const normalized = startOfDay(d);
+    if (onEntryDateChange) onEntryDateChange(normalized);
+    else setInternalDate(normalized);
+  };
   const [dateOpen, setDateOpen] = useState(false);
   const dateLabelId = useId();
   const [managedTitle, setManagedTitle] = useState<string | null>(null);
   const [managedLabels, setManagedLabels] = useState<string[] | null>(null);
+  const [existingPulse, setExistingPulse] = useState<{ id: string; level: number } | null>(null);
   const effectiveSubjectId = subjectId ?? selectedSubjectId;
   const effectiveSubjectType = effectiveSubjectId ? 'relative' : subjectType;
 
@@ -61,6 +72,37 @@ const QuickPulse = ({
         if (labels.length === 5) setManagedLabels(labels);
       });
   }, [lang]);
+
+  // Load any existing pulse for the chosen date + subject so the user can edit/remove it.
+  useEffect(() => {
+    if (!user) {
+      setExistingPulse(null);
+      return;
+    }
+    let cancelled = false;
+    const dateStr = format(entryDate, 'yyyy-MM-dd');
+    let query = (supabase.from as any)('mood_pulses')
+      .select('id, level')
+      .eq('user_id', user.id)
+      .eq('entry_date', dateStr)
+      .eq('subject_type', effectiveSubjectType);
+    if (effectiveSubjectType === 'relative' && effectiveSubjectId) {
+      query = query.eq('subject_id', effectiveSubjectId);
+    } else {
+      query = query.is('subject_id', null);
+    }
+    query
+      .order('created_at', { ascending: false })
+      .limit(1)
+      .maybeSingle()
+      .then(({ data }: { data: { id: string; level: number } | null }) => {
+        if (cancelled) return;
+        setExistingPulse(data ?? null);
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [user, entryDate, effectiveSubjectType, effectiveSubjectId, saved]);
 
   const isObserved = activeSubject.type === 'relative';
   const observedLabels = [
@@ -110,29 +152,85 @@ const QuickPulse = ({
     }
 
     setSaving(true);
-    const insertPayload: Record<string, unknown> = {
-      user_id: user.id,
-      level,
-      label,
-      entry_date: format(entryDate, 'yyyy-MM-dd'),
-      subject_type: effectiveSubjectType,
-    };
-    if (effectiveSubjectType === 'relative' && effectiveSubjectId) {
-      insertPayload.subject_id = effectiveSubjectId;
-    }
 
-    const { error } = await (supabase.from as any)('mood_pulses').insert(insertPayload);
+    const isUpdate = !!existingPulse;
+    let resultId: string | undefined;
+    let error: unknown = null;
+
+    if (isUpdate && existingPulse) {
+      const { data, error: updErr } = await (supabase.from as any)('mood_pulses')
+        .update({ level, label })
+        .eq('id', existingPulse.id)
+        .select('id')
+        .single();
+      error = updErr;
+      resultId = (data as { id?: string } | null)?.id;
+    } else {
+      const insertPayload: Record<string, unknown> = {
+        user_id: user.id,
+        level,
+        label,
+        entry_date: format(entryDate, 'yyyy-MM-dd'),
+        subject_type: effectiveSubjectType,
+      };
+      if (effectiveSubjectType === 'relative' && effectiveSubjectId) {
+        insertPayload.subject_id = effectiveSubjectId;
+      }
+      const { data, error: insErr } = await (supabase.from as any)('mood_pulses')
+        .insert(insertPayload)
+        .select('id')
+        .single();
+      error = insErr;
+      resultId = (data as { id?: string } | null)?.id;
+    }
 
     if (error) {
       toast.error(friendlyDbError(error));
     } else {
-      toast.success(t.checkIn.pulseSaved);
+      if (resultId) setExistingPulse({ id: resultId, level });
+      toast.success(isUpdate ? t.checkIn.pulseUpdated : t.checkIn.pulseSaved, {
+        duration: 5000,
+        action: !isUpdate && resultId
+          ? {
+              label: t.checkIn.pulseUndo,
+              onClick: async () => {
+                const { error: delErr } = await (supabase.from as any)('mood_pulses')
+                  .delete()
+                  .eq('id', resultId);
+                if (delErr) {
+                  toast.error(friendlyDbError(delErr));
+                } else {
+                  toast.success(t.checkIn.pulseUndone);
+                  setSaved(false);
+                  setExistingPulse(null);
+                  onPulseSaved?.();
+                }
+              },
+            }
+          : undefined,
+      });
       setSaved(true);
       onPulseSaved?.();
       if (onMoodSelected) {
         onMoodSelected({ impact_level: level, emotional_state: label });
       }
       setTimeout(() => setSaved(false), 3000);
+    }
+    setSaving(false);
+  };
+
+  const handleRemove = async () => {
+    if (!user || saving || !existingPulse) return;
+    setSaving(true);
+    const { error } = await (supabase.from as any)('mood_pulses')
+      .delete()
+      .eq('id', existingPulse.id);
+    if (error) {
+      toast.error(friendlyDbError(error));
+    } else {
+      toast.success(t.checkIn.pulseRemoved);
+      setExistingPulse(null);
+      onPulseSaved?.();
     }
     setSaving(false);
   };
@@ -179,7 +277,7 @@ const QuickPulse = ({
                 selected={entryDate}
                 onSelect={(d) => {
                   if (d) {
-                    setEntryDate(startOfDay(d));
+                    setEntryDate(d);
                     setDateOpen(false);
                   }
                 }}
@@ -195,15 +293,17 @@ const QuickPulse = ({
       <div className="flex justify-center gap-1.5 sm:gap-2 md:gap-3 lg:gap-4 overflow-hidden">
         {moodIcons.map((Icon, i) => {
           const opacityLevels = ['opacity-30', 'opacity-50', 'opacity-70', 'opacity-85', 'opacity-100'];
+          const isSelected = existingPulse?.level === i + 1;
           return (
             <div key={i} className="flex flex-col items-center gap-1.5">
               <button
                 onClick={() => handleMoodTap(i)}
                 disabled={saving}
                 aria-label={moodLabels[i]}
+                aria-pressed={isSelected}
                 className={`flex items-center justify-center w-11 sm:w-12 md:w-14 h-11 sm:h-12 md:h-14 rounded-2xl border transition-all hover:scale-105 hover:shadow-md active:scale-95 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background ${
                   saved ? 'opacity-50 pointer-events-none' : 'hover:border-primary/50'
-                } border-border bg-card/60 backdrop-blur`}
+                } ${isSelected ? 'border-primary ring-2 ring-primary/40 bg-primary/5' : 'border-border bg-card/60'} backdrop-blur`}
               >
                 <span className={`text-primary ${opacityLevels[i]}`} aria-hidden="true">
                   <Icon className="w-6 h-6" />
@@ -214,6 +314,20 @@ const QuickPulse = ({
           );
         })}
       </div>
+
+      {existingPulse && user && (
+        <div className="flex items-center justify-center gap-2 text-[10px] text-muted-foreground">
+          <span>{t.checkIn.pulseExistingHint}</span>
+          <button
+            type="button"
+            onClick={handleRemove}
+            disabled={saving}
+            className="underline underline-offset-2 hover:text-foreground transition-colors disabled:opacity-50"
+          >
+            {t.checkIn.pulseRemove}
+          </button>
+        </div>
+      )}
     </div>
   );
 };

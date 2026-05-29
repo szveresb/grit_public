@@ -25,6 +25,8 @@ interface MoodTrendChartProps {
   onPremiumClick?: () => void;
   t: Dictionary;
   compact?: boolean;
+  onDateSelect?: (date: string) => void;
+  selectedDate?: string | null;
 }
 
 type RangePreset = '7d' | '30d' | 'all';
@@ -64,7 +66,7 @@ function aggregateByDay(data: MoodDataPoint[]): AggregatedPoint[] {
     .sort((a, b) => a.ts - b.ts);
 }
 
-const MoodTrendChart = ({ data, lang, isPremium = false, onPremiumClick, t, compact = false }: MoodTrendChartProps) => {
+const MoodTrendChart = ({ data, lang, isPremium = false, onPremiumClick, t, compact = false, onDateSelect, selectedDate }: MoodTrendChartProps) => {
   const aggregated = useMemo(() => aggregateByDay(data), [data]);
   const strokeColor = 'hsl(var(--primary))';
   const [preset, setPreset] = useState<RangePreset>('all');
@@ -159,6 +161,12 @@ const MoodTrendChart = ({ data, lang, isPremium = false, onPremiumClick, t, comp
           key={preset}
           data={filtered}
           margin={{ top: 8, right: 8, bottom: 24, left: 4 }}
+          onClick={(state: any) => {
+            if (!onDateSelect) return;
+            const point = state?.activePayload?.[0]?.payload as AggregatedPoint | undefined;
+            if (point?.date) onDateSelect(point.date);
+          }}
+          style={onDateSelect ? { cursor: 'pointer' } : undefined}
         >
           <defs>
             <linearGradient id="moodGradient" x1="0" y1="0" x2="0" y2="1">
@@ -202,8 +210,32 @@ const MoodTrendChart = ({ data, lang, isPremium = false, onPremiumClick, t, comp
             stroke={strokeColor}
             strokeWidth={2.5}
             fill="url(#moodGradient)"
-            dot={{ r: 4, fill: strokeColor, strokeWidth: 0 }}
-            activeDot={{ r: 6, fill: strokeColor }}
+            dot={(props: any) => {
+              const { cx, cy, payload, index } = props;
+              const isSelected = selectedDate && payload?.date === selectedDate;
+              return (
+                <circle
+                  key={`dot-${index}`}
+                  cx={cx}
+                  cy={cy}
+                  r={isSelected ? 6 : 4}
+                  fill={strokeColor}
+                  stroke={isSelected ? 'hsl(var(--background))' : 'none'}
+                  strokeWidth={isSelected ? 2 : 0}
+                  style={onDateSelect ? { cursor: 'pointer' } : undefined}
+                  onClick={() => onDateSelect?.(payload.date)}
+                />
+              );
+            }}
+            activeDot={{
+              r: 6,
+              fill: strokeColor,
+              style: onDateSelect ? { cursor: 'pointer' } : undefined,
+              onClick: (_: unknown, payload: any) => {
+                const d = payload?.payload?.date ?? payload?.date;
+                if (d) onDateSelect?.(d);
+              },
+            }}
           />
           {filtered.length > 3 && isPremium && (
             <Brush

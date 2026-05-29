@@ -1,6 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
 import { RECAP_INACTIVITY_DAYS } from '@/lib/constants';
-import { format, isFuture, startOfDay } from 'date-fns';
+import { format, isFuture, parseISO, startOfDay } from 'date-fns';
 import { useLanguage } from '@/hooks/useLanguage';
 import { useAuth } from '@/hooks/useAuth';
 import { useMoodTrendData } from '@/hooks/useMoodTrendData';
@@ -63,6 +63,7 @@ const SubjectWorkspaceSection = ({
   const [observationOpen, setObservationOpen] = useState(true);
   const [calendarMonth, setCalendarMonth] = useState(new Date());
   const [calendarSelectedDate, setCalendarSelectedDate] = useState<Date | null>(null);
+  const [pulseDate, setPulseDate] = useState<Date>(() => startOfDay(new Date()));
   const [reflectEntryId, setReflectEntryId] = useState<string | null>(null);
   const [reflectObsId, setReflectObsId] = useState<string | null>(null);
   const [recapDismissed, setRecapDismissed] = useState(false);
@@ -225,6 +226,8 @@ const SubjectWorkspaceSection = ({
                       subjectId={subject.type === 'relative' ? subject.id : null}
                       onPulseSaved={refresh}
                       compact={isParallel}
+                      entryDate={pulseDate}
+                      onEntryDateChange={setPulseDate}
                     />
                   </div>
                 </ConsentGate>
@@ -247,6 +250,8 @@ const SubjectWorkspaceSection = ({
                           onPremiumClick={onPremiumClick}
                           t={t}
                           compact={isParallel}
+                          selectedDate={format(pulseDate, 'yyyy-MM-dd')}
+                          onDateSelect={(d) => setPulseDate(startOfDay(parseISO(d)))}
                         />
                       )}
                     </div>

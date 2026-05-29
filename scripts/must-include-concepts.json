@@ -1,0 +1,12 @@
+{
+  "version": 1,
+  "description": "Must-include concept guards for journal card catalog generation.",
+  "requiredConcepts": [
+    {
+      "snomed_code": "285303006",
+      "expected_labels_en": ["Racing thoughts", "Racing thoughts (finding)"],
+      "icd_hint": ["R41.8"],
+      "reason": "Critical intuitive cognition symptom for card-first flow"
+    }
+  ]
+}

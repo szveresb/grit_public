@@ -7,7 +7,7 @@ import { useLanguage } from '@/hooks/useLanguage';
 import { stripLangPrefix } from '@/hooks/useLanguage';
 import { useIsMobile } from '@/hooks/use-mobile';
 import {
-  FHome, FDashboard, FHeartPulse, FClock, FDownload, FUser,
+  FHome, FDashboard, FHeartPulse, FDownload, FUser,
   FLibrary, FUsers, FBarChart, FFileText, FInfo, FLock, FTimeline, FMessageCircle, FChevronDown,
 } from '@/components/icons/FreudIcons';
 import {
@@ -64,7 +64,7 @@ const AppSidebar = ({ onOpenFeedback }: AppSidebarProps) => {
     ...(isAdmin ? [{ title: t.nav.manageUsers, url: '/admin/users', icon: FUsers }] : []),
     ...(isAdmin ? [{ title: t.nav.manageFeedback, url: '/admin/feedback', icon: FMessageCircle }] : []),
     ...(canAnalyse ? [{ title: t.nav.analystExport, url: '/analyst-export', icon: FBarChart }] : []),
-    ...(isAdmin ? [{ title: t.nav.monitoring, url: '/admin/monitoring', icon: FHeartPulse }] : []),
+    
   ];
 
   const renderMenuItem = (item: { title: string; url: string; icon: React.ComponentType<{ className?: string }> }) => (

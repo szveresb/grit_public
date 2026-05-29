@@ -68,34 +68,12 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
       setLoading(false);
     });
 
-    (async () => {
-      const { data: { session } } = await supabase.auth.getSession();
-
-      // Detect stale tokens (e.g. after JWT signing-key rotation): the local
-      // session looks valid but the server rejects it with bad_jwt / missing
-      // sub claim, leaving the UI authenticated while every API call returns
-      // 403. Verify with getUser() and clear the session if it's invalid.
-      if (session) {
-        const { error } = await supabase.auth.getUser();
-        if (error) {
-          const msg = `${error.message ?? ''} ${(error as { code?: string }).code ?? ''}`.toLowerCase();
-          if (msg.includes('jwt') || msg.includes('sub claim') || msg.includes('403')) {
-            console.warn('[auth] stale session detected, clearing', error);
-            await supabase.auth.signOut();
-            setSession(null);
-            setUser(null);
-            setDisplayName(null);
-            setLoading(false);
-            return;
-          }
-        }
-      }
-
+    supabase.auth.getSession().then(({ data: { session } }) => {
       setSession(session);
       setUser(session?.user ?? null);
       void fetchDisplayName(session?.user ?? null);
       setLoading(false);
-    })();
+    });
 
     return () => subscription.unsubscribe();
   }, [fetchDisplayName]);

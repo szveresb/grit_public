@@ -257,6 +257,12 @@ export interface Dictionary {
     moodGoodObserved: string;
     moodStrongObserved: string;
     pulseSaved: string;
+    pulseUndo: string;
+    pulseUndone: string;
+    pulseUpdated: string;
+    pulseRemove: string;
+    pulseRemoved: string;
+    pulseExistingHint: string;
     pulseDateLabel: string;
     pulseDateToday: string;
     goDeeper: string;

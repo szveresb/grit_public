@@ -11,6 +11,7 @@
     "lint:style": "stylelint \"src/**/*.css\"",
     "lint:design": "node scripts/design-codex-guard.mjs",
     "lint:design:diff": "node scripts/design-codex-guard.mjs --diff-base origin/main",
+    "guard:required-concepts": "node scripts/validate-required-concepts.mjs --csv tmp_frz_mapping_export.csv --manifest scripts/must-include-concepts.json",
     "preview": "vite preview",
     "test": "vitest run",
     "test:watch": "vitest"

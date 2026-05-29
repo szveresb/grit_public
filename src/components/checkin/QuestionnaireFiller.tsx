@@ -3,7 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useLanguage } from '@/hooks/useLanguage';
 import { useStance } from '@/hooks/useStance';
-import { useUserRole } from '@/hooks/useUserRole';
+
 import { Button } from '@/components/ui/button';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
@@ -80,7 +80,7 @@ const QuestionnaireFiller: React.FC<QuestionnaireFillerProps> = ({ onCompleted, 
   const { user } = useAuth();
   const { t, lang } = useLanguage();
   const { activeSubject } = useStance();
-  const { hasAnyRole } = useUserRole();
+  
   const [questionnaires, setQuestionnaires] = useState<Questionnaire[]>([]);
   const [lastResponses, setLastResponses] = useState<LastResponse[]>([]);
   const [selectedQ, setSelectedQ] = useState<string | null>(null);
@@ -103,9 +103,7 @@ const QuestionnaireFiller: React.FC<QuestionnaireFillerProps> = ({ onCompleted, 
   type SortMode = 'urgent' | 'recent' | 'alpha';
   const [filter, setFilter] = useState<FilterMode>('all');
   const [sortMode, setSortMode] = useState<SortMode>('urgent');
-
   const dateLocale = getDateLocale(lang);
-  const isAdminOrEditor = hasAnyRole('admin', 'editor');
 
   const qName = (questionnaire: Questionnaire | undefined | null) => {
     if (!questionnaire) return '';
@@ -169,10 +167,11 @@ const QuestionnaireFiller: React.FC<QuestionnaireFillerProps> = ({ onCompleted, 
       const questionnaireQuery = supabase
         .from('questionnaires')
         .select('id, title, title_localized, description, description_localized, repeat_interval, scoring_enabled, scoring_mode, score_ranges, is_published, created_at, updated_at, created_by, snomed_code')
+        .eq('is_published', true)
         .order('created_at', { ascending: false });
 
       const [questionnaireResult, responseResult] = await Promise.all([
-        readOnly || isAdminOrEditor ? questionnaireQuery : questionnaireQuery.eq('is_published', true),
+        readOnly ? supabase.from('questionnaires').select('id, title, title_localized, description, description_localized, repeat_interval, scoring_enabled, scoring_mode, score_ranges, is_published, created_at, updated_at, created_by, snomed_code').order('created_at', { ascending: false }) : questionnaireQuery,
         responsePromise,
       ]);
 
@@ -192,7 +191,7 @@ const QuestionnaireFiller: React.FC<QuestionnaireFillerProps> = ({ onCompleted, 
     };
 
     load();
-  }, [activeSubject.id, activeSubject.type, isAdminOrEditor, readOnly, user?.id]);
+  }, [activeSubject.id, activeSubject.type, readOnly, user?.id]);
 
   const getLastCompletion = (questionnaireId: string) =>
     lastResponses.find((response) => response.questionnaire_id === questionnaireId);

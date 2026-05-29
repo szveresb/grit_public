@@ -1,0 +1,61 @@
+﻿card_id,lane,label_en,snomed_code,icd_code,icd_description,chapter_tag,source_map_type
+seed-symptom-001,symptom,Racing thoughts,285303006,R41.8,Other and unspecified symptoms and signs involving cognitive functions and awareness,R,ALWAYS R41.8
+seed-symptom-002,symptom,[X]Attention deficit disorder,35253001,F90.0,Disturbance of activity and attention,F,ALWAYS F90.0
+seed-symptom-003,symptom,AAMI - Age-associated memory impairment,231448004,R41.8,Other and unspecified symptoms and signs involving cognitive functions and awareness,R,ALWAYS R41.8
+seed-symptom-004,symptom,Abdominal distension,41931001,R14,Flatulence and related conditions,R,ALWAYS R14
+seed-symptom-005,symptom,Abdominal distension symptom,162068007,R14,Flatulence and related conditions,R,ALWAYS R14
+seed-symptom-006,symptom,"Abdominal distension, gaseous",271835004,R14,Flatulence and related conditions,R,ALWAYS R14
+seed-symptom-007,symptom,Able to control anger,285848000,R45.4,Irritability and anger,R,ALWAYS R45.4
+seed-symptom-008,symptom,Abnormal anal Papanicolaou smear,439855007,R85.6,Abnormal findings in specimens from digestive organs and abdominal cavity: Abnormal cytological findings,R,ALWAYS R85.6
+seed-symptom-009,symptom,Abnormal anxiety related behavior,1141959006,R46.2,Strange and inexplicable behaviour,R,ALWAYS R46.2 | POSSIBLE REQUIREMENT FOR ADDITIONAL CODE TO FULLY DESCRIBE DISEASE OR CONDITION
+seed-symptom-010,symptom,Abnormal cardiotochogram tracing,735205007,R94.3,Abnormal results of cardiovascular function studies,R,ALWAYS R94.3
+seed-symptom-011,symptom,Abnormal cervical Papanicolaou smear,439888000,R87.6,Abnormal findings in specimens from female genital organs: Abnormal cytological findings,R,ALWAYS R87.6
+seed-symptom-012,symptom,Abnormal cervical Papanicolaou smear with human papillomavirus deoxyribonucleic acid detected,441667007,R87.6,Abnormal findings in specimens from female genital organs: Abnormal cytological findings,R,ALWAYS R87.6
+seed-symptom-013,symptom,Abnormal extension,19212008,R29.8,Other and unspecified symptoms and signs involving the nervous and musculoskeletal systems,R,ALWAYS R29.8
+seed-symptom-014,symptom,Abnormal fear,386808001,F40.9,"Phobic anxiety disorder, unspecified",F,ALWAYS F40.9 | DESCENDANTS NOT EXHAUSTIVELY MAPPED
+seed-symptom-015,symptom,Abnormal food appetite,51575000,F50.9,"Eating disorder, unspecified",F,ALWAYS F50.9
+seed-symptom-016,symptom,Abnormal vaginal Papanicolaou smear,439856008,R87.6,Abnormal findings in specimens from female genital organs: Abnormal cytological findings,R,ALWAYS R87.6
+seed-symptom-017,symptom,Abuse of antidepressant drug,191928000,F55,Abuse of non-dependence-producing substances,F,ALWAYS F55
+seed-symptom-018,symptom,Aching headache,162307009,R51,Headache,R,ALWAYS R51
+seed-symptom-019,symptom,Acute depression,712823008,F32.9,"Depressive episode, unspecified",F,ALWAYS F32.9
+seed-symptom-020,symptom,Acute edema - cutaneous distension syndrome,403176008,R60.9,"Oedema, unspecified",R,ALWAYS R60.9
+seed-symptom-021,symptom,Acute fugue state due to acute stress reaction,192038005,F43.0,Acute stress reaction,F,ALWAYS F43.0
+seed-symptom-022,symptom,Acute headache,735938006,R51,Headache,R,ALWAYS R51
+seed-symptom-023,symptom,Acute headache due to craniotomy,1259065003,R51,Headache,R,ALWAYS R51
+seed-symptom-024,symptom,Acute headache due to traumatic injury of head,762353009,R51,Headache,R,ALWAYS R51
+seed-symptom-025,symptom,Acute headache due to whiplash injury,1259064004,R51,Headache,R,ALWAYS R51
+seed-symptom-026,symptom,Acute panic state due to acute stress reaction,192037000,F43.0,Acute stress reaction,F,ALWAYS F43.0
+seed-symptom-027,symptom,Acute post traumatic stress disorder following military combat,446175003,F43.1,Post-traumatic stress disorder,F,ALWAYS F43.1
+seed-symptom-028,symptom,Acute post-trauma stress state,192042008,F43.1,Post-traumatic stress disorder,F,ALWAYS F43.1
+seed-symptom-029,symptom,Acute reaction to stress,67195008,F43.0,Acute stress reaction,F,ALWAYS F43.0
+seed-symptom-030,symptom,Acute respiratory distress,373895009,R06.0,Dyspnoea,R,ALWAYS R06.0
+seed-symptom-031,symptom,Acute stupor state due to acute stress reaction,192039002,F43.0,Acute stress reaction,F,ALWAYS F43.0
+seed-symptom-032,symptom,AD7c neuronal thread protein concentration in cerebrospinal fluid above reference range,439032005,R83.2,"Abnormal findings in cerebrospinal fluid: Abnormal level of other drugs, medicaments and biological substances",R,ALWAYS R83.2
+seed-symptom-033,symptom,AD7c neuronal thread protein concentration in urine above reference range,439033000,R82.9,Other and unspecified abnormal findings in urine,R,ALWAYS R82.9
+seed-symptom-034,symptom,Adductor spastic dysphonia of musculoskeletal tension reaction,83759003,R49.0,Dysphonia,R,ALWAYS R49.0
+seed-symptom-035,symptom,ADHD - Attention deficit disorder with hyperactivity,406506008,F90.0,Disturbance of activity and attention,F,ALWAYS F90.0
+seed-symptom-036,symptom,Adjustment disorder with anxiety,47372000,F43.2,Adjustment disorders,F,ALWAYS F43.2
+seed-symptom-037,symptom,Adjustment disorder with depressed mood,57194009,F43.2,Adjustment disorders,F,ALWAYS F43.2
+seed-symptom-038,symptom,Adjustment disorder with depressed mood in remission,698696007,F43.2,Adjustment disorders,F,ALWAYS F43.2
+seed-symptom-039,symptom,Adjustment disorder with mixed anxiety and depressed mood,782501005,F41.2,Mixed anxiety and depressive disorder,F,ALWAYS F41.2
+seed-symptom-040,symptom,Adolescent onset conduct-dissocial disorder,724740006,F91.8,Other conduct disorders,F,ALWAYS F91.8
+seed-context-001,context_event,A/N care: H/O child abuse,169595006,Z35.7,Supervision of high-risk pregnancy due to social problems,Z,ALWAYS Z35.7
+seed-context-002,context_event,A/N care: H/O trophoblastic disease,169585004,Z87.5,"Personal history of complications of pregnancy, childbirth and the puerperium",Z,ALWAYS Z87.5
+seed-context-003,context_event,"Abnormal glucose tolerance test during pregnancy, childbirth and puerperium",372046001,R73.0,Abnormal glucose tolerance test,R,ALWAYS R73.0
+seed-context-004,context_event,Abstinent from drug misuse in normal environment,712543006,Z72.2,Drug use,Z,ALWAYS Z72.2
+seed-context-005,context_event,Abstinent from drug misuse in protected environment,712544000,Z86.4,Personal history of psychoactive substance abuse,Z,ALWAYS Z86.4
+seed-context-006,context_event,Abuses animals,765438006,R45.6,Physical violence,R,ALWAYS R45.6
+seed-context-007,context_event,Abuses other people,765437001,R46.8,Other symptoms and signs involving appearance and behaviour,R,ALWAYS R46.8
+seed-context-008,context_event,Abusive emotional relationship with child,102904004,Z63.8,Other specified problems related to primary support group,Z,ALWAYS Z63.8
+seed-context-009,context_event,Abusive emotional relationship with husband,102902000,Z63.0,Problems in relationship with spouse or partner,Z,ALWAYS Z63.0
+seed-context-010,context_event,Abusive emotional relationship with parents,102900008,Z63.1,Problems in relationship with parents and in-laws,Z,ALWAYS Z63.1
+seed-context-011,context_event,Abusive emotional relationship with partner,423794002,Z63.0,Problems in relationship with spouse or partner,Z,ALWAYS Z63.0
+seed-context-012,context_event,Abusive emotional relationship with spouse,102901007,Z63.0,Problems in relationship with spouse or partner,Z,ALWAYS Z63.0
+seed-context-013,context_event,Abusive emotional relationship with wife,102903005,Z63.0,Problems in relationship with spouse or partner,Z,ALWAYS Z63.0
+seed-context-014,context_event,Abusive sexual relationship with partner,102951002,Z63.0,Problems in relationship with spouse or partner,Z,ALWAYS Z63.0
+seed-context-015,context_event,Academic problem,3677008,Z55.8,Other problems related to education and literacy,Z,ALWAYS Z55.8
+seed-context-016,context_event,Academic underachievement,105419003,Z55.3,Underachievement in school,Z,ALWAYS Z55.3
+seed-context-017,context_event,Accommodation unsuitable,81877007,Z59.1,Inadequate housing,Z,ALWAYS Z59.1
+seed-context-018,context_event,Accommodation unsuitable,105531004,Z59.1,Inadequate housing,Z,ALWAYS Z59.1 | DESCENDANTS NOT EXHAUSTIVELY MAPPED
+seed-context-019,context_event,Accommodation without heating sources,1366335002,Z59.1,Inadequate housing,Z,ALWAYS Z59.1
+seed-context-020,context_event,ACE - adverse childhood experience,1380320004,Z61.9,"Negative life event in childhood, unspecified",Z,ALWAYS Z61.9
