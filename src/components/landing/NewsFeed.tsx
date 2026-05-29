@@ -53,8 +53,8 @@ const NewsFeed = () => {
   if (!loading && items.length === 0) return null;
 
   return (
-    <section className="relative z-10 px-4 md:px-8 py-16 max-w-3xl mx-auto">
-      <div className="text-center mb-10">
+    <section className="relative z-10">
+      <div className="text-center mb-12">
         <h2 className="text-xl md:text-2xl font-bold tracking-tight text-foreground uppercase tracking-[0.2em] opacity-80">
           {t.landing.newsTitle}
         </h2>
