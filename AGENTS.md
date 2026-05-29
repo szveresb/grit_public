@@ -71,3 +71,13 @@ When resuming from a previous agent:
 - Check the most recent `implementation_plan.md` and `task.md` artifacts
 - Verify code compiles before making new changes
 - Update `BLUEPRINT.md` → "State of Play" after completing work
+
+## State of Play Command Rule
+
+Any user request containing **"understand state of play"** or **"read state of play"** must be interpreted as requiring a **thorough code check** every time.
+
+Minimum required actions for these requests:
+- Read `BLUEPRINT.md` and relevant recent artifacts
+- Inspect current Git status/history for same-day changes
+- Run available verification commands (build/lint/test) when tooling is available
+- Report concrete findings, blockers, and functionality-impact summary
