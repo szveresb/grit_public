@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate } from 'react-router-dom';
 import { toast } from 'sonner';
 import LanguageToggle from '@/components/LanguageToggle';
 import { Button } from '@/components/ui/button';
@@ -10,12 +10,14 @@ import { useAuth } from '@/hooks/useAuth';
 import { useLanguage } from '@/hooks/useLanguage';
 import { lovable } from '@/integrations/lovable/index';
 import { supabase } from '@/integrations/supabase/client';
+import { FEye, FEyeOff } from '@/components/icons/FreudIcons';
 
 const Auth = () => {
   const [isSignUp, setIsSignUp] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [displayName, setDisplayName] = useState('');
+  const [showPassword, setShowPassword] = useState(false);
   const role = 'affected_person' as const;
   const [loading, setLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
@@ -23,6 +25,12 @@ const Auth = () => {
   const { signUp, signIn, user, loading: authLoading } = useAuth();
   const { t, localePath } = useLanguage();
   const navigate = useNavigate();
+  const location = useLocation();
+
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    setIsSignUp(params.get('mode') === 'signup');
+  }, [location.search]);
 
   useEffect(() => {
     if (user && !authLoading) {
@@ -134,16 +142,30 @@ const Auth = () => {
             <Label htmlFor="password" className="px-1 text-[11px] font-semibold uppercase tracking-[0.18em] text-muted-foreground">
               {t.auth.password}
             </Label>
-            <Input
-              id="password"
-              type="password"
-              required
-              minLength={6}
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="........"
-              className="reference-auth-field h-10 rounded-full px-4 text-sm sm:h-11"
-            />
+            <div className="relative">
+              <Input
+                id="password"
+                type={showPassword ? 'text' : 'password'}
+                required
+                minLength={6}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="........"
+                className="reference-auth-field h-10 rounded-full px-4 pr-11 text-sm sm:h-11"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPassword(!showPassword)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground transition-colors"
+                aria-label={showPassword ? t.auth.hidePassword : t.auth.showPassword}
+              >
+                {showPassword ? (
+                  <FEyeOff className="h-4 w-4" />
+                ) : (
+                  <FEye className="h-4 w-4" />
+                )}
+              </button>
+            </div>
           </div>
 
 

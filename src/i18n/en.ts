@@ -157,6 +157,8 @@ export const en: Dictionary = {
     alreadyHaveAccount: 'Already have an account? Sign in',
     noAccount: "Don't have an account? Register",
     welcomeToast: 'Welcome to Grit.hu',
+    showPassword: 'Show password',
+    hidePassword: 'Hide password',
   },
 
   dash: {
@@ -283,6 +285,7 @@ export const en: Dictionary = {
     newQuestionnaire: 'New Questionnaire',
     questionnaireTitle: 'Questionnaire title',
     description: 'Brief description',
+    textFormattingHint: 'Supports basic formatting (Markdown): **bold**, *italic*, lists, and line breaks.',
     questions: 'Questions',
     addQuestion: 'Add Question',
     questionnaireUpdated: 'Questionnaire updated',
@@ -326,6 +329,8 @@ export const en: Dictionary = {
     metaDueNow: 'Now',
     metaNotScheduled: 'Not scheduled',
     noMatchingQuestionnaires: 'No questionnaires match the current filter.',
+    previewSelectPrompt: 'Select a questionnaire to preview its questions.',
+    previewAuthPrompt: 'Sign in or sign up to continue and fill this questionnaire.',
     // Scoring
     scoringEnabled: 'Enable scoring',
     scoringMode: 'Scoring mode',

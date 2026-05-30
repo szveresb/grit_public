@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react';
+import ReactMarkdown from 'react-markdown';
 import { Button } from '@/components/ui/button';
 import {
   Drawer,
@@ -88,7 +89,9 @@ const QuestionnaireCard = ({
           {isHistory ? (
             <p className="text-sm text-muted-foreground">{detailPanelTitle}</p>
           ) : description ? (
-            <p className="text-sm leading-relaxed text-muted-foreground">{description}</p>
+            <div className="prose prose-sm max-w-none text-sm leading-relaxed text-muted-foreground [&_p]:my-0 [&_ul]:my-1 [&_ol]:my-1">
+              <ReactMarkdown>{description}</ReactMarkdown>
+            </div>
           ) : null}
         </div>
 
@@ -180,9 +183,9 @@ const QuestionnaireCard = ({
 
           {description && (
             <div className="space-y-2">
-              <p className="text-sm leading-relaxed text-muted-foreground line-clamp-4">
-                {description}
-              </p>
+              <div className="prose prose-sm max-w-none text-sm leading-relaxed text-muted-foreground line-clamp-4 [&_p]:my-0 [&_ul]:my-1 [&_ol]:my-1">
+                <ReactMarkdown>{description}</ReactMarkdown>
+              </div>
               {isMobile ? (
                 canReadMore ? (
                   <button

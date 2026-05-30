@@ -70,10 +70,9 @@ const PublicHeader = () => {
               <Link to={localePath('/library')} className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
                 {t.nav.library}
               </Link>
-              <button onClick={() => handleGatedClick('/surveys')} className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1.5">
+              <Link to={localePath('/surveys')} className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
                 {t.nav.surveys}
-                {!user && <FLock className="h-3 w-3" />}
-              </button>
+              </Link>
               <button onClick={() => handleGatedClick('/journal')} className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1.5">
                 {t.nav.checkIn}
                 {!user && <FLock className="h-3 w-3" />}
@@ -120,10 +119,9 @@ const PublicHeader = () => {
                 <Link to={localePath('/library')} onClick={() => setMobileMenuOpen(false)} className="block py-2.5 px-3 rounded-2xl text-sm font-medium text-foreground hover:bg-accent/50 transition-colors">
                   {t.nav.library}
                 </Link>
-                <button onClick={() => { handleGatedClick('/surveys'); setMobileMenuOpen(false); }} className="w-full text-left py-2.5 px-3 rounded-2xl text-sm font-medium text-foreground hover:bg-accent/50 transition-colors flex items-center gap-1.5">
+                <Link to={localePath('/surveys')} onClick={() => setMobileMenuOpen(false)} className="block py-2.5 px-3 rounded-2xl text-sm font-medium text-foreground hover:bg-accent/50 transition-colors">
                   {t.nav.surveys}
-                  {!user && <FLock className="h-3 w-3" />}
-                </button>
+                </Link>
                 <button onClick={() => { handleGatedClick('/journal'); setMobileMenuOpen(false); }} className="w-full text-left py-2.5 px-3 rounded-2xl text-sm font-medium text-foreground hover:bg-accent/50 transition-colors flex items-center gap-1.5">
                   {t.nav.checkIn}
                   {!user && <FLock className="h-3 w-3" />}

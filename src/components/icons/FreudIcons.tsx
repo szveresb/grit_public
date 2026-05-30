@@ -256,6 +256,15 @@ export const FEye = icon(
   'FEye'
 );
 
+/** Eye Off – eye shape with a diagonal slash */
+export const FEyeOff = icon(
+  <>
+    <path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z" />
+    <path d="M4 4l16 16" />
+  </>,
+  'FEyeOff'
+);
+
 /** Shield – rounded shield */
 export const FShield = icon(
   <path d="M12 2l8 4v5c0 5.5-3.8 10.7-8 12-4.2-1.3-8-6.5-8-12V6l8-4z" />,

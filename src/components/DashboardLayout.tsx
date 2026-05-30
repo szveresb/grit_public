@@ -95,12 +95,12 @@ const DashboardShell = ({
             <Link to={localePath('/')} className="md:hidden text-sm font-bold tracking-tight text-foreground">
               Grit.hu
             </Link>
-            <nav className="hidden md:flex items-center justify-center flex-1 gap-8">
-              <Link to={localePath('/library')} className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">{t.nav.library}</Link>
-              <button onClick={() => handleGatedClick('/surveys')} className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1.5">
+            <nav className="flex items-center justify-center flex-1 gap-4 md:gap-8">
+              <Link to={localePath('/library')} className="hidden lg:inline-flex text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">{t.nav.library}</Link>
+              <Link to={localePath('/surveys')} className="hidden lg:inline-flex text-sm font-medium text-muted-foreground hover:text-foreground transition-colors items-center gap-1.5">
                 {t.nav.surveys}
-              </button>
-              <button onClick={() => handleGatedClick('/journal')} className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1.5">
+              </Link>
+              <button onClick={() => handleGatedClick('/journal')} className="hidden lg:inline-flex text-sm font-medium text-muted-foreground hover:text-foreground transition-colors items-center gap-1.5">
                 {t.nav.checkIn}
               </button>
               <a href={`${localePath('/')}#about`} className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">{t.nav.about}</a>

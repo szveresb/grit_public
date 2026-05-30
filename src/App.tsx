@@ -59,7 +59,7 @@ const AppRoutes = () => (
       <Route path="/journal" element={<ProtectedRoute><CheckIn /></ProtectedRoute>} />
       <Route path="/check-in" element={<Navigate to="/journal" replace />} />
       <Route path="/self-checks" element={<Navigate to="/surveys" replace />} />
-      <Route path="/surveys" element={<ProtectedRoute><Surveys /></ProtectedRoute>} />
+      <Route path="/surveys" element={<Surveys />} />
       <Route path="/timeline" element={<ProtectedRoute><Timeline /></ProtectedRoute>} />
       <Route path="/profile" element={<ProtectedRoute skipConsentCheck><Profile /></ProtectedRoute>} />
       <Route path="/export" element={<ProtectedRoute skipConsentCheck><Export /></ProtectedRoute>} />
@@ -92,7 +92,7 @@ const AppRoutes = () => (
       <Route path="/en/journal" element={<ProtectedRoute><CheckIn /></ProtectedRoute>} />
       <Route path="/en/check-in" element={<Navigate to="/en/journal" replace />} />
       <Route path="/en/self-checks" element={<Navigate to="/en/surveys" replace />} />
-      <Route path="/en/surveys" element={<ProtectedRoute><Surveys /></ProtectedRoute>} />
+      <Route path="/en/surveys" element={<Surveys />} />
       <Route path="/en/timeline" element={<ProtectedRoute><Timeline /></ProtectedRoute>} />
       <Route path="/en/profile" element={<ProtectedRoute skipConsentCheck><Profile /></ProtectedRoute>} />
       <Route path="/en/export" element={<ProtectedRoute skipConsentCheck><Export /></ProtectedRoute>} />

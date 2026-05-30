@@ -1,21 +1,31 @@
 ## Goal
 
-Remove the "Privát napló" / "Önellenőrző kérdőívek" cards that currently appear at the top of `/manage-content` (ManageLanding). They are admin-irrelevant — a content editor shouldn't see personal journal shortcuts on a content management page.
+On tablet/mobile (below `md`), the authenticated app header currently hides its whole nav (`hidden md:flex`). On `md` (tablet) it shows Library, Surveys, Check-in, and About — but Library, Surveys, and Check-in are already in the AppSidebar. Only **About (Rólunk)** has no sidebar equivalent.
 
-## Root cause
-
-`DashboardLayout` renders `<ContextAwareToolPanel />` whenever its `showContextToolPanel` prop is truthy. The prop defaults to `true`, and `src/pages/ManageLanding.tsx` does not override it, so the self/observer journal+questionnaire cards bleed into the admin view.
+Per request: at tablet/mobile widths, the top header nav should show only those items that are NOT already linked in the side menu — i.e. just **Rólunk**.
 
 ## Change
 
-Single edit in `src/pages/ManageLanding.tsx`:
+**`src/components/DashboardLayout.tsx`** — header `<nav>` block (lines 98–107):
 
+- Always render the nav (drop `hidden md:flex`; use `flex`).
+- Show Library / Surveys / Check-in only at `lg+` (they live in the sidebar, which is what's available on smaller widths).
+- Always show the About link.
+
+Effectively:
 ```tsx
-<DashboardLayout showContextToolPanel={false}>
+<nav className="flex items-center justify-center flex-1 gap-4 md:gap-8">
+  <Link ... className="hidden lg:inline-flex ...">{t.nav.library}</Link>
+  <button ... className="hidden lg:inline-flex ...">{t.nav.surveys}</button>
+  <button ... className="hidden lg:inline-flex ...">{t.nav.checkIn}</button>
+  <a href={`${localePath('/')}#about`} className="...">{t.nav.about}</a>
+</nav>
 ```
 
-No other admin pages are touched — `ManageLibrary`, `ManageUsers`, `ManageFeedback`, `ManageQuestionnaires` are out of scope for this request and can be addressed separately if the user wants the same cleanup there.
+The `lg` breakpoint (1024px) matches `useIsMobile`'s threshold, so the rule reads: while the sidebar is the primary navigation surface (mobile + tablet), the top bar exposes only the items the sidebar lacks.
 
-## Files
+## Out of scope
 
-- `src/pages/ManageLanding.tsx` (edit)
+- `PublicHeader` (unauthenticated pages) — unchanged.
+- AppSidebar — already contains Library/Surveys/Check-in.
+- No i18n or business-logic changes.

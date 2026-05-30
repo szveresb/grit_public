@@ -27,14 +27,14 @@
     --surface-soft-border: 120 17% 84%;
     --surface-soft-muted: 140 8% 52%;
 
-    --observer-primary: 34 26% 42%;
-    --observer-primary-foreground: 48 20% 97%;
-    --observer-accent: 40 24% 94%;
-    --observer-accent-foreground: 34 20% 24%;
-    --surface-observer: 48 22% 96%;
-    --surface-observer-foreground: 34 20% 24%;
-    --surface-observer-border: 38 18% 82%;
-    --surface-observer-muted: 34 10% 48%;
+    --observer-primary: 218 38% 52%;
+    --observer-primary-foreground: 220 30% 98%;
+    --observer-accent: 215 38% 95%;
+    --observer-accent-foreground: 220 30% 22%;
+    --surface-observer: 215 40% 97%;
+    --surface-observer-foreground: 220 30% 22%;
+    --surface-observer-border: 215 28% 86%;
+    --surface-observer-muted: 218 14% 50%;
 
     --card: 60 14% 98%;
     --card-foreground: 146 15% 24%;
@@ -100,14 +100,14 @@
     --surface-soft-border: 150 10% 24%;
     --surface-soft-muted: 140 8% 62%;
 
-    --observer-primary: 38 42% 66%;
-    --observer-primary-foreground: 34 24% 10%;
-    --observer-accent: 38 18% 20%;
-    --observer-accent-foreground: 42 26% 90%;
-    --surface-observer: 38 18% 16%;
-    --surface-observer-foreground: 42 22% 90%;
-    --surface-observer-border: 38 14% 28%;
-    --surface-observer-muted: 38 10% 68%;
+    --observer-primary: 215 60% 70%;
+    --observer-primary-foreground: 220 30% 10%;
+    --observer-accent: 218 20% 20%;
+    --observer-accent-foreground: 215 30% 92%;
+    --surface-observer: 218 22% 16%;
+    --surface-observer-foreground: 215 28% 92%;
+    --surface-observer-border: 218 16% 30%;
+    --surface-observer-muted: 215 14% 68%;
 
     --card: 150 15% 11%;
     --card-foreground: 100 15% 90%;

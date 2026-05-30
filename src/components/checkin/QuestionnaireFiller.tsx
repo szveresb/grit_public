@@ -1,4 +1,5 @@
 import React, { useEffect, useRef, useState } from 'react';
+import ReactMarkdown from 'react-markdown';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useLanguage } from '@/hooks/useLanguage';
@@ -420,9 +421,14 @@ const QuestionnaireFiller: React.FC<QuestionnaireFillerProps> = ({ onCompleted, 
               ))}
             </div>
             {Object.keys(labels).length > 0 && (
-              <div className="flex justify-between px-1 text-[10px] text-muted-foreground">
-                {labels[String(scaleMin)] && <span>{scaleMin} = {labels[String(scaleMin)]}</span>}
-                {labels[String(scaleMax)] && <span>{scaleMax} = {labels[String(scaleMax)]}</span>}
+              <div className="flex flex-wrap items-center gap-x-3 gap-y-1 px-1 text-[10px] text-muted-foreground">
+                {points
+                  .filter((point) => labels[String(point)])
+                  .map((point) => (
+                    <span key={`${question.id}-scale-label-${point}`}>
+                      {point} = {labels[String(point)]}
+                    </span>
+                  ))}
               </div>
             )}
           </div>
@@ -568,9 +574,14 @@ const QuestionnaireFiller: React.FC<QuestionnaireFillerProps> = ({ onCompleted, 
                   </div>
                 ) : currentQuestion ? (
                   <div key={currentQuestion.id} className="space-y-3 animate-fade-in">
-                    <Label className="text-sm font-medium">
-                      {questions.indexOf(currentQuestion) + 1}. {currentQuestion.question_text}
-                    </Label>
+                    <div className="space-y-1">
+                      <span className="text-sm font-medium text-foreground">
+                        {questions.indexOf(currentQuestion) + 1}.
+                      </span>
+                      <div className="prose prose-sm max-w-none text-sm text-foreground [&_p]:my-0 [&_ul]:my-1 [&_ol]:my-1">
+                        <ReactMarkdown>{currentQuestion.question_text}</ReactMarkdown>
+                      </div>
+                    </div>
                     {renderInput(currentQuestion)}
                   </div>
                 ) : null}
@@ -606,9 +617,12 @@ const QuestionnaireFiller: React.FC<QuestionnaireFillerProps> = ({ onCompleted, 
 
               {questions.map((question, index) => (
                 <div key={question.id} className="space-y-2">
-                  <Label className="text-sm font-medium">
-                    {index + 1}. {question.question_text}
-                  </Label>
+                  <div className="space-y-1">
+                    <span className="text-sm font-medium text-foreground">{index + 1}.</span>
+                    <div className="prose prose-sm max-w-none text-sm text-foreground [&_p]:my-0 [&_ul]:my-1 [&_ol]:my-1">
+                      <ReactMarkdown>{question.question_text}</ReactMarkdown>
+                    </div>
+                  </div>
                   {renderInput(question)}
                 </div>
               ))}

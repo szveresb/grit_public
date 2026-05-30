@@ -12,6 +12,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Switch } from '@/components/ui/switch';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import ReactMarkdown from 'react-markdown';
 import { toast } from 'sonner';
 import { friendlyDbError } from '@/lib/db-error';
 import { FPlus, FTrash, FPencil, FClose, FSave } from '@/components/icons/FreudIcons';
@@ -283,6 +284,7 @@ const SelfChecks = () => {
           <div className="space-y-2">
             <Label className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">{t.questionnaires_manage.description}</Label>
             <Textarea value={formDesc} onChange={e => setFormDesc(e.target.value)} placeholder={t.questionnaires_manage.description} rows={2} className="rounded-2xl" />
+            <p className="text-[11px] text-muted-foreground">{t.questionnaires_manage.textFormattingHint}</p>
           </div>
           <div className="flex items-center gap-3">
             <Switch checked={formPublished} onCheckedChange={setFormPublished} />
@@ -333,6 +335,11 @@ const SelfChecks = () => {
               </>
             )}
           </div>
+          <div className="flex items-center justify-end border-t border-border/50 pt-3">
+            <Button size="sm" className="rounded-2xl" onClick={handleSave} disabled={saving}>
+              <FSave className="h-4 w-4 mr-1" /> {saving ? t.saving : editingId ? t.update : t.create}
+            </Button>
+          </div>
           <div className="space-y-3">
             <Label className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">{t.questionnaires_manage.questions}</Label>
             {formQuestions.map((nq, i) => (
@@ -349,7 +356,7 @@ const SelfChecks = () => {
                       <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" className="h-3 w-3"><path d="m6 9 6 6 6-6"/></svg>
                     </button>
                   </div>
-                  <Input value={nq.text} onChange={e => { const c = [...formQuestions]; c[i].text = e.target.value; setFormQuestions(c); }} placeholder={`${t.questionnaires_manage.questions} ${i + 1}`} className="flex-1 rounded-2xl" />
+                  <Textarea value={nq.text} onChange={e => { const c = [...formQuestions]; c[i].text = e.target.value; setFormQuestions(c); }} placeholder={`${t.questionnaires_manage.questions} ${i + 1}`} rows={2} className="flex-1 rounded-2xl" />
                   <select value={nq.type} onChange={e => { const c = [...formQuestions]; c[i].type = e.target.value; setFormQuestions(c); }}
                     className="border border-input rounded-2xl px-3 text-sm bg-background">
                     <option value="text">{t.questionnaires_manage.typeText}</option>
@@ -539,7 +546,12 @@ const SelfChecks = () => {
           <h2 className="text-sm font-semibold text-foreground">{questionnaires.find(q => q.id === selectedQ)?.title}</h2>
           {questions.map((q, i) => (
             <div key={q.id} className="space-y-2">
-              <Label className="text-sm font-medium">{i + 1}. {q.question_text}</Label>
+              <div className="space-y-1">
+                <span className="text-sm font-medium text-foreground">{i + 1}.</span>
+                <div className="prose prose-sm max-w-none text-sm text-foreground [&_p]:my-0 [&_ul]:my-1 [&_ol]:my-1">
+                  <ReactMarkdown>{q.question_text}</ReactMarkdown>
+                </div>
+              </div>
               {renderQuestionInput(q)}
             </div>
           ))}

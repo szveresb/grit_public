@@ -157,6 +157,8 @@ export const hu: Dictionary = {
     alreadyHaveAccount: 'Már van fiókod? Jelentkezz be',
     noAccount: 'Nincs fiókod? Regisztrálj',
     welcomeToast: 'Üdvözlünk a Grit.hu-n',
+    showPassword: 'Jelszó megjelenítése',
+    hidePassword: 'Jelszó elrejtése',
   },
 
   dash: {
@@ -283,6 +285,7 @@ export const hu: Dictionary = {
     newQuestionnaire: 'Új kérdőív',
     questionnaireTitle: 'Kérdőív címe',
     description: 'Rövid leírás',
+    textFormattingHint: 'Alap formázás támogatott (Markdown): **félkövér**, *dőlt*, listák és sortörések.',
     questions: 'Kérdések',
     addQuestion: 'Kérdés hozzáadása',
     questionnaireUpdated: 'Kérdőív frissítve',
@@ -326,6 +329,8 @@ export const hu: Dictionary = {
     metaDueNow: 'Most',
     metaNotScheduled: 'Nincs ütemezve',
     noMatchingQuestionnaires: 'Nincs a szűrésnek megfelelő kérdőív.',
+    previewSelectPrompt: 'Válassz egy kérdőívet az előnézet megnyitásához.',
+    previewAuthPrompt: 'A folytatáshoz és a kitöltéshez jelentkezz be vagy hozz létre fiókot.',
     scoringEnabled: 'Pontozás engedélyezése',
     scoringMode: 'Pontozás módja',
     scoringModeSum: 'Értékek összege',

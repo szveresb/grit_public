@@ -163,6 +163,8 @@ export interface Dictionary {
     alreadyHaveAccount: string;
     noAccount: string;
     welcomeToast: string;
+    showPassword: string;
+    hidePassword: string;
   };
 
   // Dashboard
@@ -294,6 +296,7 @@ export interface Dictionary {
     newQuestionnaire: string;
     questionnaireTitle: string;
     description: string;
+    textFormattingHint: string;
     questions: string;
     addQuestion: string;
     questionnaireUpdated: string;
@@ -338,6 +341,8 @@ export interface Dictionary {
     metaDueNow: string;
     metaNotScheduled: string;
     noMatchingQuestionnaires: string;
+    previewSelectPrompt: string;
+    previewAuthPrompt: string;
     // Scoring
     scoringEnabled: string;
     scoringMode: string;
