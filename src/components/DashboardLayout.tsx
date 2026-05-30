@@ -42,6 +42,8 @@ const DashboardShell = ({
   
   const currentPath = stripLangPrefix(pathname);
   const segments = currentPath.split('/').filter(Boolean);
+  const isActive = (path: string) =>
+    currentPath === path || currentPath.startsWith(`${path}/`);
 
   // Admin/manage routes never render the context tool panel (journal/questionnaire
   // shortcut cards). This stays route-driven so new /admin/* pages are covered
@@ -88,7 +90,7 @@ const DashboardShell = ({
       <div className="fixed inset-0 z-0 bg-background/85" />
 
       <div className={`min-h-screen flex w-full relative z-10 overflow-x-hidden ${themeClass}`}>
-        <AppSidebar onOpenFeedback={() => setFeedbackOpen(true)} />
+        {user && <AppSidebar onOpenFeedback={() => setFeedbackOpen(true)} />}
         <main className="flex-1 flex flex-col min-w-0">
           <header className="h-14 flex items-center border-b border-context-border/70 px-3 sm:px-4 md:px-6 bg-context-surface gap-2 sm:gap-3 overflow-x-auto">
             <SidebarTrigger />
@@ -96,11 +98,25 @@ const DashboardShell = ({
               Grit.hu
             </Link>
             <nav className="flex items-center justify-center flex-1 gap-4 md:gap-8">
-              <Link to={localePath('/library')} className="hidden lg:inline-flex text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">{t.nav.library}</Link>
-              <Link to={localePath('/surveys')} className="hidden lg:inline-flex text-sm font-medium text-muted-foreground hover:text-foreground transition-colors items-center gap-1.5">
+              <Link
+                to={localePath('/library')}
+                aria-current={isActive('/library') ? 'page' : undefined}
+                className={`hidden lg:inline-flex text-sm font-medium transition-colors hover:text-foreground ${isActive('/library') ? 'text-foreground font-semibold' : 'text-muted-foreground'}`}
+              >
+                {t.nav.library}
+              </Link>
+              <Link
+                to={localePath('/surveys')}
+                aria-current={isActive('/surveys') ? 'page' : undefined}
+                className={`hidden lg:inline-flex text-sm font-medium transition-colors hover:text-foreground items-center gap-1.5 ${isActive('/surveys') ? 'text-foreground font-semibold' : 'text-muted-foreground'}`}
+              >
                 {t.nav.surveys}
               </Link>
-              <button onClick={() => handleGatedClick('/journal')} className="hidden lg:inline-flex text-sm font-medium text-muted-foreground hover:text-foreground transition-colors items-center gap-1.5">
+              <button
+                onClick={() => handleGatedClick('/journal')}
+                aria-current={isActive('/journal') ? 'page' : undefined}
+                className={`hidden lg:inline-flex text-sm font-medium transition-colors hover:text-foreground items-center gap-1.5 ${isActive('/journal') ? 'text-foreground font-semibold' : 'text-muted-foreground'}`}
+              >
                 {t.nav.checkIn}
               </button>
               <a href={`${localePath('/')}#about`} className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">{t.nav.about}</a>

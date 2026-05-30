@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/hooks/useAuth';
@@ -7,11 +7,16 @@ import { useLanguage } from '@/hooks/useLanguage';
 import { FLock, FMenu } from '@/components/icons/FreudIcons';
 import LanguageToggle from '@/components/LanguageToggle';
 import { useTopMenu } from '@/hooks/useTopMenu';
+import { stripLangPrefix } from '@/hooks/useLanguage';
 
 const PublicHeader = () => {
   const { user } = useAuth();
   const { t, lang, localePath } = useLanguage();
   const navigate = useNavigate();
+  const { pathname } = useLocation();
+  const currentPath = stripLangPrefix(pathname);
+  const isActive = (path: string) =>
+    currentPath === path || currentPath.startsWith(`${path}/`);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const customMenu = useTopMenu();
 
@@ -67,10 +72,10 @@ const PublicHeader = () => {
             customMenu!.map((item) => renderItem(item))
           ) : (
             <>
-              <Link to={localePath('/library')} className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
+              <Link to={localePath('/library')} aria-current={isActive('/library') ? 'page' : undefined} className={`text-sm font-medium transition-colors hover:text-foreground ${isActive('/library') ? 'text-foreground font-semibold' : 'text-muted-foreground'}`}>
                 {t.nav.library}
               </Link>
-              <Link to={localePath('/surveys')} className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors">
+              <Link to={localePath('/surveys')} aria-current={isActive('/surveys') ? 'page' : undefined} className={`text-sm font-medium transition-colors hover:text-foreground ${isActive('/surveys') ? 'text-foreground font-semibold' : 'text-muted-foreground'}`}>
                 {t.nav.surveys}
               </Link>
               <button onClick={() => handleGatedClick('/journal')} className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors flex items-center gap-1.5">
@@ -116,10 +121,10 @@ const PublicHeader = () => {
               customMenu!.map((item) => renderItem(item, true))
             ) : (
               <>
-                <Link to={localePath('/library')} onClick={() => setMobileMenuOpen(false)} className="block py-2.5 px-3 rounded-2xl text-sm font-medium text-foreground hover:bg-accent/50 transition-colors">
+                <Link to={localePath('/library')} onClick={() => setMobileMenuOpen(false)} aria-current={isActive('/library') ? 'page' : undefined} className={`block py-2.5 px-3 rounded-2xl text-sm font-medium text-foreground hover:bg-accent/50 transition-colors ${isActive('/library') ? 'bg-accent/40 font-semibold' : ''}`}>
                   {t.nav.library}
                 </Link>
-                <Link to={localePath('/surveys')} onClick={() => setMobileMenuOpen(false)} className="block py-2.5 px-3 rounded-2xl text-sm font-medium text-foreground hover:bg-accent/50 transition-colors">
+                <Link to={localePath('/surveys')} onClick={() => setMobileMenuOpen(false)} aria-current={isActive('/surveys') ? 'page' : undefined} className={`block py-2.5 px-3 rounded-2xl text-sm font-medium text-foreground hover:bg-accent/50 transition-colors ${isActive('/surveys') ? 'bg-accent/40 font-semibold' : ''}`}>
                   {t.nav.surveys}
                 </Link>
                 <button onClick={() => { handleGatedClick('/journal'); setMobileMenuOpen(false); }} className="w-full text-left py-2.5 px-3 rounded-2xl text-sm font-medium text-foreground hover:bg-accent/50 transition-colors flex items-center gap-1.5">

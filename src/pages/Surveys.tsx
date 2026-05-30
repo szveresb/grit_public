@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Link, useNavigate, useParams } from 'react-router-dom';
 import DashboardLayout from '@/components/DashboardLayout';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
@@ -7,9 +7,8 @@ import { useLanguage } from '@/hooks/useLanguage';
 import { ScopedStanceProvider, useStance } from '@/hooks/useStance';
 import ConsentGate from '@/components/consent/ConsentGate';
 import QuestionnaireFiller from '@/components/checkin/QuestionnaireFiller';
-import { FClipboardCheck, FUsers } from '@/components/icons/FreudIcons';
+import { FArrowLeft, FClipboardCheck, FUsers } from '@/components/icons/FreudIcons';
 import { Button } from '@/components/ui/button';
-import ReactMarkdown from 'react-markdown';
 import type { Database } from '@/integrations/supabase/types';
 
 type QuestionnaireRow = Pick<
@@ -19,21 +18,21 @@ type QuestionnaireRow = Pick<
 
 type QuestionRow = Pick<
   Database['public']['Tables']['questionnaire_questions']['Row'],
-  'id' | 'questionnaire_id' | 'question_text' | 'question_type' | 'options' | 'sort_order'
-> & {
-  options: string[] | null;
-};
+  'id' | 'questionnaire_id' | 'question_text' | 'sort_order'
+>;
 
 const Surveys = () => {
   const { user } = useAuth();
   const { t, lang, localePath } = useLanguage();
   const navigate = useNavigate();
+  const { id: questionnaireId } = useParams<{ id?: string }>();
   const { activeSubject } = useStance();
-  const [publicLoading, setPublicLoading] = useState(false);
+  const [publicListLoading, setPublicListLoading] = useState(false);
   const [publicQuestionnaires, setPublicQuestionnaires] = useState<QuestionnaireRow[]>([]);
-  const [previewQuestionnaire, setPreviewQuestionnaire] = useState<QuestionnaireRow | null>(null);
-  const [previewQuestions, setPreviewQuestions] = useState<QuestionRow[]>([]);
-  const [previewLoading, setPreviewLoading] = useState(false);
+  const [publicDetailLoading, setPublicDetailLoading] = useState(false);
+  const [publicDetailQuestionnaire, setPublicDetailQuestionnaire] = useState<QuestionnaireRow | null>(null);
+  const [publicDetailQuestions, setPublicDetailQuestions] = useState<QuestionRow[]>([]);
+  const [publicDetailNotFound, setPublicDetailNotFound] = useState(false);
   const supportedSubject =
     activeSubject.type === 'relative'
       ? {
@@ -44,9 +43,9 @@ const Surveys = () => {
       : null;
 
   useEffect(() => {
-    if (user) return;
+    if (user || questionnaireId) return;
     const loadPublishedQuestionnaires = async () => {
-      setPublicLoading(true);
+      setPublicListLoading(true);
       const { data } = await supabase
         .from('questionnaires')
         .select('id, title, description, is_published, title_localized, description_localized')
@@ -54,10 +53,46 @@ const Surveys = () => {
         .order('created_at', { ascending: true });
 
       setPublicQuestionnaires((data ?? []) as QuestionnaireRow[]);
-      setPublicLoading(false);
+      setPublicListLoading(false);
     };
     loadPublishedQuestionnaires();
-  }, [user]);
+  }, [questionnaireId, user]);
+
+  useEffect(() => {
+    if (user || !questionnaireId) return;
+    const loadPublicDetail = async () => {
+      setPublicDetailLoading(true);
+      setPublicDetailNotFound(false);
+      setPublicDetailQuestionnaire(null);
+      setPublicDetailQuestions([]);
+
+      const { data: questionnaire } = await supabase
+        .from('questionnaires')
+        .select('id, title, description, is_published, title_localized, description_localized')
+        .eq('id', questionnaireId)
+        .eq('is_published', true)
+        .maybeSingle();
+
+      if (!questionnaire) {
+        setPublicDetailNotFound(true);
+        setPublicDetailLoading(false);
+        return;
+      }
+
+      setPublicDetailQuestionnaire(questionnaire as QuestionnaireRow);
+
+      const { data: questions } = await supabase
+        .from('questionnaire_questions')
+        .select('id, questionnaire_id, question_text, sort_order')
+        .eq('questionnaire_id', questionnaireId)
+        .order('sort_order');
+
+      setPublicDetailQuestions((questions ?? []) as QuestionRow[]);
+      setPublicDetailLoading(false);
+    };
+
+    loadPublicDetail();
+  }, [questionnaireId, user]);
 
   const questionnaireTitle = (questionnaire: QuestionnaireRow) => {
     const localizedTitle = questionnaire.title_localized as Record<string, string> | null;
@@ -73,30 +108,81 @@ const Surveys = () => {
       : localizedDescription?.hu ?? questionnaire.description;
   };
 
-  const openPublicPreview = async (questionnaire: QuestionnaireRow) => {
-    setPreviewQuestionnaire(questionnaire);
-    setPreviewQuestions([]);
-    setPreviewLoading(true);
-    const { data } = await supabase
-      .from('questionnaire_questions')
-      .select('id, questionnaire_id, question_text, question_type, options, sort_order')
-      .eq('questionnaire_id', questionnaire.id)
-      .order('sort_order');
-
-    setPreviewQuestions(
-      ((data ?? []) as Database['public']['Tables']['questionnaire_questions']['Row'][]).map((question) => ({
-        id: question.id,
-        questionnaire_id: question.questionnaire_id,
-        question_text: question.question_text,
-        question_type: question.question_type,
-        options: question.options as string[] | null,
-        sort_order: question.sort_order,
-      })),
-    );
-    setPreviewLoading(false);
-  };
-
   if (!user) {
+    if (questionnaireId) {
+      return (
+        <DashboardLayout showContextToolPanel={false}>
+          <div className="mx-auto w-full max-w-5xl space-y-5 pb-28">
+            <div className="pb-3 border-b border-border/50">
+              <h1 className="text-lg md:text-xl font-bold tracking-tight text-foreground">
+                {t.nav.surveys}
+              </h1>
+              <p className="mt-1 text-sm text-muted-foreground leading-relaxed">
+                {t.questionnaires_manage.subtitle}
+              </p>
+            </div>
+
+            <section className="surface-card space-y-4 p-5 sm:p-6">
+              <Link
+                to={localePath('/surveys')}
+                className="inline-flex items-center gap-1.5 text-sm text-muted-foreground hover:text-foreground transition-colors"
+              >
+                <FArrowLeft className="h-4 w-4" />
+                {t.observations.back}
+              </Link>
+
+              {publicDetailLoading ? (
+                <p className="text-sm text-muted-foreground">{t.loading}</p>
+              ) : publicDetailNotFound || !publicDetailQuestionnaire ? (
+                <p className="text-sm text-muted-foreground">{t.questionnaires_manage.noAvailable}</p>
+              ) : (
+                <>
+                  <h2 className="text-base font-semibold text-foreground">
+                    {questionnaireTitle(publicDetailQuestionnaire)}
+                  </h2>
+                  {questionnaireDescription(publicDetailQuestionnaire) ? (
+                    <p className="text-sm text-muted-foreground leading-relaxed">
+                      {questionnaireDescription(publicDetailQuestionnaire)}
+                    </p>
+                  ) : null}
+
+                  <div className="space-y-2">
+                    {publicDetailQuestions.length === 0 ? (
+                      <p className="text-sm text-muted-foreground">{t.questionnaires_manage.noAvailable}</p>
+                    ) : (
+                      publicDetailQuestions
+                        .slice(0, Math.max(1, Math.floor(publicDetailQuestions.length / 2)))
+                        .map((question, index) => (
+                        <div key={question.id} className="rounded-xl border border-border/70 p-3">
+                          <p className="text-sm font-medium text-foreground">
+                            {index + 1}. {question.question_text}
+                          </p>
+                        </div>
+                        ))
+                    )}
+                  </div>
+                </>
+              )}
+            </section>
+          </div>
+
+          <div className="fixed inset-x-0 bottom-0 z-30 border-t border-border/70 bg-background/95 backdrop-blur">
+            <div className="mx-auto flex w-full max-w-5xl items-center justify-between gap-3 px-4 py-3 sm:px-6">
+              <p className="text-sm text-muted-foreground">{t.questionnaires_manage.previewAuthPrompt}</p>
+              <div className="flex shrink-0 gap-2">
+                <Button size="sm" className="rounded-2xl" onClick={() => navigate(localePath('/auth'))}>
+                  {t.auth.signIn}
+                </Button>
+                <Button size="sm" variant="outline" className="rounded-2xl" onClick={() => navigate(localePath('/auth?mode=signup'))}>
+                  {t.auth.createAccount}
+                </Button>
+              </div>
+            </div>
+          </div>
+        </DashboardLayout>
+      );
+    }
+
     return (
       <DashboardLayout showContextToolPanel={false}>
         <div className="mx-auto w-full max-w-5xl space-y-5">
@@ -109,85 +195,32 @@ const Surveys = () => {
             </p>
           </div>
 
-          {publicLoading ? (
+          {publicListLoading ? (
             <div className="surface-card p-6 text-sm text-muted-foreground">{t.loading}</div>
           ) : (
-            <div className="grid gap-4 lg:grid-cols-[1.1fr_1fr]">
-              <section className="surface-card space-y-4 p-5 sm:p-6">
-                <h2 className="text-sm font-semibold text-foreground">{t.subjects.selfQuestionnaireTitle}</h2>
-                {publicQuestionnaires.length === 0 ? (
-                  <p className="text-sm text-muted-foreground">{t.questionnaires_manage.noAvailable}</p>
-                ) : (
-                  <div className="space-y-3">
-                    {publicQuestionnaires.map((questionnaire) => (
-                      <button
-                        key={questionnaire.id}
-                        type="button"
-                        onClick={() => openPublicPreview(questionnaire)}
-                        className={`w-full rounded-2xl border p-4 text-left transition-colors ${
-                          previewQuestionnaire?.id === questionnaire.id
-                            ? 'border-primary bg-primary/5'
-                            : 'border-border hover:border-primary/40'
-                        }`}
-                      >
-                        <p className="text-sm font-semibold text-foreground">{questionnaireTitle(questionnaire)}</p>
-                        {questionnaireDescription(questionnaire) ? (
-                          <p className="mt-1 text-xs text-muted-foreground line-clamp-2">
-                            {questionnaireDescription(questionnaire)}
-                          </p>
-                        ) : null}
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </section>
-
-              <section className="surface-card space-y-4 p-5 sm:p-6">
-                {!previewQuestionnaire ? (
-                  <p className="text-sm text-muted-foreground">{t.questionnaires_manage.previewSelectPrompt}</p>
-                ) : (
-                  <>
-                    <h2 className="text-sm font-semibold text-foreground">{questionnaireTitle(previewQuestionnaire)}</h2>
-                    {questionnaireDescription(previewQuestionnaire) ? (
-                      <div className="prose prose-sm max-w-none text-sm text-muted-foreground [&_p]:my-0 [&_ul]:my-1 [&_ol]:my-1">
-                        <ReactMarkdown>{questionnaireDescription(previewQuestionnaire) ?? ''}</ReactMarkdown>
-                      </div>
-                    ) : null}
-
-                    <div className="space-y-3">
-                      {previewLoading ? (
-                        <p className="text-sm text-muted-foreground">{t.loading}</p>
-                      ) : previewQuestions.length === 0 ? (
-                        <p className="text-sm text-muted-foreground">{t.questionnaires_manage.noAvailable}</p>
-                      ) : (
-                        previewQuestions.map((question, index) => (
-                          <div key={question.id} className="rounded-2xl border border-border p-3">
-                            <div className="space-y-1">
-                              <span className="text-sm font-medium text-foreground">{index + 1}.</span>
-                              <div className="prose prose-sm max-w-none text-sm text-foreground [&_p]:my-0 [&_ul]:my-1 [&_ol]:my-1">
-                                <ReactMarkdown>{question.question_text}</ReactMarkdown>
-                              </div>
-                            </div>
-                          </div>
-                        ))
-                      )}
-                    </div>
-
-                    <div className="rounded-[1.75rem] border border-dashed border-border/60 bg-accent/20 p-4">
-                      <p className="text-sm text-muted-foreground">{t.questionnaires_manage.previewAuthPrompt}</p>
-                      <div className="mt-3 flex flex-wrap gap-2">
-                        <Button size="sm" className="rounded-2xl" onClick={() => navigate(localePath('/auth'))}>
-                          {t.auth.signIn}
-                        </Button>
-                        <Button size="sm" variant="outline" className="rounded-2xl" onClick={() => navigate(localePath('/auth?mode=signup'))}>
-                          {t.auth.createAccount}
-                        </Button>
-                      </div>
-                    </div>
-                  </>
-                )}
-              </section>
-            </div>
+            <section className="surface-card space-y-4 p-5 sm:p-6">
+              <h2 className="text-sm font-semibold text-foreground">{t.subjects.selfQuestionnaireTitle}</h2>
+              {publicQuestionnaires.length === 0 ? (
+                <p className="text-sm text-muted-foreground">{t.questionnaires_manage.noAvailable}</p>
+              ) : (
+                <div className="space-y-3">
+                  {publicQuestionnaires.map((questionnaire) => (
+                    <Link
+                      key={questionnaire.id}
+                      to={localePath(`/surveys/${questionnaire.id}`)}
+                      className="block w-full rounded-2xl border border-border p-4 text-left transition-colors hover:border-primary/40"
+                    >
+                      <p className="text-sm font-semibold text-foreground">{questionnaireTitle(questionnaire)}</p>
+                      {questionnaireDescription(questionnaire) ? (
+                        <p className="mt-1 text-xs text-muted-foreground line-clamp-2">
+                          {questionnaireDescription(questionnaire)}
+                        </p>
+                      ) : null}
+                    </Link>
+                  ))}
+                </div>
+              )}
+            </section>
           )}
         </div>
       </DashboardLayout>
