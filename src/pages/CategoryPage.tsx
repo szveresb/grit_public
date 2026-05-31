@@ -101,6 +101,8 @@ const CategoryPage = () => {
   const label = (lang === 'en' ? category?.label_en : category?.label_hu) || category?.article_category || slug;
   const description = (lang === 'en' ? category?.description_en : category?.description_hu) || '';
 
+  const canonicalUrl = slug ? `https://grit.hu${localePath(`/category/${slug}`)}` : undefined;
+
   const localizedExcerpt = (a: LibraryArticle) => (lang === 'en' && a.excerpt_localized?.en) || a.excerpt;
 
   const sortOptions: { value: SortMode; label: string }[] = [
