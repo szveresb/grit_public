@@ -33,7 +33,11 @@ const cleanupDevServiceWorkers = async (): Promise<boolean> => {
 };
 
 const renderApp = (): void => {
-  createRoot(document.getElementById("root")!).render(<App />);
+  createRoot(document.getElementById("root")!).render(
+    <HelmetProvider>
+      <App />
+    </HelmetProvider>
+  );
 };
 
 void cleanupDevServiceWorkers().then((shouldRender) => {
