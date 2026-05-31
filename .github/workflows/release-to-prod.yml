@@ -45,6 +45,12 @@ jobs:
             "supabase/config.toml"
             "supabase/functions/health-monitor/index.ts"
             "supabase/migrations/20260523145328_b4fcba80-25a5-4cc5-b866-2e08c81ca159.sql"
+            # Live SEO surface — prod-only (GSC verification, canonical domain,
+            # sitemap, robots, JSON-LD, og:* fallbacks). Never overwrite from beta.
+            "index.html"
+            "public/robots.txt"
+            "public/sitemap.xml"
+            "public/llms.txt"
           )
 
           # Build rsync exclude args so protected live files are never overwritten/deleted.
