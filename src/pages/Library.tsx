@@ -171,6 +171,7 @@ const Library = () => {
         )}
       </section>
     </DashboardLayout>
+    </>
   );
 };
 
