@@ -66,9 +66,21 @@ const Library = () => {
   const localizedExcerpt = (a: LibraryArticle) =>
     (lang === 'en' && a.excerpt_localized?.en) || a.excerpt;
 
+  const canonicalUrl = `https://grit.hu${localePath('/library')}`;
+
   return (
-    <DashboardLayout showContextToolPanel={false}>
-      <section>
+    <>
+      <Helmet>
+        <title>{`${t.landing.libraryTitle} — Grit.hu`}</title>
+        <meta name="description" content={t.landing.librarySubtitle} />
+        <link rel="canonical" href={canonicalUrl} />
+        <meta property="og:type" content="website" />
+        <meta property="og:title" content={`${t.landing.libraryTitle} — Grit.hu`} />
+        <meta property="og:description" content={t.landing.librarySubtitle} />
+        <meta property="og:url" content={canonicalUrl} />
+      </Helmet>
+      <DashboardLayout showContextToolPanel={false}>
+        <section>
         <div className="mb-5 pb-3 border-b border-border/50">
           <h1 className="text-xl md:text-2xl font-bold tracking-tight text-foreground">{t.landing.libraryTitle}</h1>
           <p className="mt-1 text-sm text-muted-foreground">{t.landing.librarySubtitle}</p>
