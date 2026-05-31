@@ -1,5 +1,6 @@
 import { Link, useParams, Navigate } from 'react-router-dom';
 import { useEffect, useState, useMemo } from 'react';
+import { Helmet } from 'react-helmet-async';
 import { useLanguage } from '@/hooks/useLanguage';
 import { supabase } from '@/integrations/supabase/client';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -100,6 +101,8 @@ const CategoryPage = () => {
   const label = (lang === 'en' ? category?.label_en : category?.label_hu) || category?.article_category || slug;
   const description = (lang === 'en' ? category?.description_en : category?.description_hu) || '';
 
+  const canonicalUrl = slug ? `https://grit.hu${localePath(`/category/${slug}`)}` : undefined;
+
   const localizedExcerpt = (a: LibraryArticle) => (lang === 'en' && a.excerpt_localized?.en) || a.excerpt;
 
   const sortOptions: { value: SortMode; label: string }[] = [
@@ -112,6 +115,17 @@ const CategoryPage = () => {
 
   return (
     <div className="min-h-screen relative w-full overflow-x-hidden">
+      {canonicalUrl && (
+        <Helmet>
+          <title>{`${label} — Grit.hu`}</title>
+          {description && <meta name="description" content={description.slice(0, 200)} />}
+          <link rel="canonical" href={canonicalUrl} />
+          <meta property="og:type" content="website" />
+          <meta property="og:title" content={`${label} — Grit.hu`} />
+          {description && <meta property="og:description" content={description.slice(0, 200)} />}
+          <meta property="og:url" content={canonicalUrl} />
+        </Helmet>
+      )}
       <div className="fixed inset-0 z-0 bg-cover bg-center" style={{ backgroundImage: `url(${bambooBg})`, opacity: 0.12 }} />
       <div className="fixed inset-0 z-0 bg-background/80" />
       <PublicHeader />
