@@ -115,6 +115,17 @@ const CategoryPage = () => {
 
   return (
     <div className="min-h-screen relative w-full overflow-x-hidden">
+      {canonicalUrl && (
+        <Helmet>
+          <title>{`${label} — Grit.hu`}</title>
+          {description && <meta name="description" content={description.slice(0, 200)} />}
+          <link rel="canonical" href={canonicalUrl} />
+          <meta property="og:type" content="website" />
+          <meta property="og:title" content={`${label} — Grit.hu`} />
+          {description && <meta property="og:description" content={description.slice(0, 200)} />}
+          <meta property="og:url" content={canonicalUrl} />
+        </Helmet>
+      )}
       <div className="fixed inset-0 z-0 bg-cover bg-center" style={{ backgroundImage: `url(${bambooBg})`, opacity: 0.12 }} />
       <div className="fixed inset-0 z-0 bg-background/80" />
       <PublicHeader />
