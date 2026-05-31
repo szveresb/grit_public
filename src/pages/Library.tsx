@@ -21,7 +21,7 @@ interface LibraryArticle {
 }
 
 const Library = () => {
-  const { t, lang } = useLanguage();
+  const { t, lang, localePath } = useLanguage();
   const [articles, setArticles] = useState<LibraryArticle[]>([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState('');
