@@ -52,8 +52,37 @@ const Article = () => {
     ? (lang === 'en' && (article.excerpt_localized as Record<string, string>)?.en) || article.excerpt
     : '';
 
+  const canonicalUrl = article ? `https://grit.hu${localePath(`/library/${article.id}`)}` : undefined;
+  const socialDescription = (localizedExcerpt || '').toString().slice(0, 200);
+
   return (
     <div className="min-h-screen relative w-full overflow-x-hidden">
+      {article && (
+        <Helmet>
+          <title>{`${localizedTitle} — Grit.hu`}</title>
+          {socialDescription && <meta name="description" content={socialDescription} />}
+          {canonicalUrl && <link rel="canonical" href={canonicalUrl} />}
+          <meta property="og:type" content="article" />
+          <meta property="og:title" content={`${localizedTitle} — Grit.hu`} />
+          {socialDescription && <meta property="og:description" content={socialDescription} />}
+          {canonicalUrl && <meta property="og:url" content={canonicalUrl} />}
+          {article.image_url && <meta property="og:image" content={article.image_url} />}
+          <meta name="twitter:card" content="summary_large_image" />
+          <meta name="twitter:title" content={`${localizedTitle} — Grit.hu`} />
+          {socialDescription && <meta name="twitter:description" content={socialDescription} />}
+          {article.image_url && <meta name="twitter:image" content={article.image_url} />}
+          <script type="application/ld+json">{JSON.stringify({
+            '@context': 'https://schema.org',
+            '@type': 'Article',
+            headline: localizedTitle,
+            author: article.author ? { '@type': 'Person', name: article.author } : undefined,
+            datePublished: article.created_at,
+            image: article.image_url || undefined,
+            mainEntityOfPage: canonicalUrl,
+            publisher: { '@type': 'Organization', name: 'Grit.hu', logo: { '@type': 'ImageObject', url: 'https://grit.hu/icons/apple-touch-icon.png' } },
+          })}</script>
+        </Helmet>
+      )}
       <div className="fixed inset-0 z-0 bg-cover bg-center" style={{ backgroundImage: `url(${bambooBg})`, opacity: 0.12 }} />
       <div className="fixed inset-0 z-0 bg-background/80" />
 
