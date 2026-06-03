@@ -2,14 +2,13 @@ import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from './useAuth';
 
-export type AppRole = 'admin' | 'editor' | 'analyst' | 'guest_editor' | 'observer' | 'affected_person';
+export type AppRole = 'admin' | 'editor' | 'analyst' | 'guest_editor' | 'affected_person';
 
 export const ROLE_LABELS: Record<AppRole, string> = {
   admin: 'Admin',
   editor: 'Editor',
   analyst: 'Analyst',
   guest_editor: 'Guest Editor',
-  observer: 'Observer',
   affected_person: 'Affected Person',
 };
 
@@ -17,7 +16,7 @@ export const ROLE_LABELS: Record<AppRole, string> = {
 export const SELF_SELECT_ROLES: AppRole[] = ['affected_person'];
 
 // Roles only an admin can assign
-export const ADMIN_ONLY_ROLES: AppRole[] = ['admin', 'editor', 'analyst', 'guest_editor', 'observer'];
+export const ADMIN_ONLY_ROLES: AppRole[] = ['admin', 'editor', 'analyst', 'guest_editor'];
 
 export const useUserRole = () => {
   const { user } = useAuth();

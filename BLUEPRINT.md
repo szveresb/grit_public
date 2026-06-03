@@ -33,5 +33,7 @@ This task has been **paused** because the underlying SNOMED CT logic and clinica
 
 **PWA & Branding finalized.** The platform is now a Progressive Web App with a "Safety First" discreet identity (Short name: "G", minimalist monogram icons). Service worker caching is operational in production with an emergency exit bypass; development preview now unregisters stale service workers to prevent mixed Vite/React chunks.
 
+**Questionnaire Admin & Observer Role.** The `observer` role has been completely removed from the database and frontend logic. Database RLS policies for questionnaires and their questions have been consolidated under `admin` and `editor` roles. The Admin UI now includes strict validation to prevent publishing empty questionnaires.
+
 ## Next Priority
 The project pivot to the **Clinical Entity Architecture (SNOMED CT / BNO-10)** is now the primary focus. AI Sensemaking remains suspended until this foundational structural mapping is implemented.

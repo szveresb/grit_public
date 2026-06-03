@@ -38,7 +38,7 @@ export const useBetaAccess = () => {
         .select('role')
         .eq('user_id', user.id);
 
-      const privilegedRoles = ['admin', 'editor', 'analyst', 'observer', 'guest_editor'];
+      const privilegedRoles = ['admin', 'editor', 'analyst', 'guest_editor'];
       const hasPrivilegedRole = roles?.some(r => privilegedRoles.includes(r.role));
 
       setHasAccess(hasPrivilegedRole || false);
