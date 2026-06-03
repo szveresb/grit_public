@@ -1,6 +1,5 @@
 import { Link, useParams } from 'react-router-dom';
 import { useEffect, useState } from 'react';
-import { Helmet } from 'react-helmet-async';
 import { useLanguage } from '@/hooks/useLanguage';
 import { supabase } from '@/integrations/supabase/client';
 import { Badge } from '@/components/ui/badge';
@@ -10,6 +9,23 @@ import { FArrowRight } from '@/components/icons/FreudIcons';
 import PublicHeader from '@/components/PublicHeader';
 import bambooBg from '@/assets/bamboo-bg.jpg';
 import { renderSimpleMarkdown } from '@/lib/simple-markdown';
+
+const SITE_ORIGIN = 'https://grithu-beta.lovable.app';
+const NON_DIAGNOSTIC_NOTE =
+  'Educational, non-diagnostic content from the Grit.hu sensemaking library.';
+
+/** Strip markdown/HTML and clamp to a meta-description-safe length. */
+const toPlainSnippet = (raw: string | null | undefined, max = 155): string => {
+  if (!raw) return '';
+  const plain = raw
+    .replace(/!\[[^\]]*]\([^)]*\)/g, '')
+    .replace(/\[([^\]]+)]\([^)]*\)/g, '$1')
+    .replace(/[`*_>#-]+/g, ' ')
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/\s+/g, ' ')
+    .trim();
+  return plain.length > max ? `${plain.slice(0, max - 1).trimEnd()}…` : plain;
+};
 
 interface ArticleData {
   id: string;
@@ -52,37 +68,111 @@ const Article = () => {
     ? (lang === 'en' && (article.excerpt_localized as Record<string, string>)?.en) || article.excerpt
     : '';
 
-  const canonicalUrl = article ? `https://grit.hu${localePath(`/library/${article.id}`)}` : undefined;
-  const socialDescription = (localizedExcerpt || '').toString().slice(0, 200);
+  /**
+   * Inject per-route title, meta description, canonical, and Article + BreadcrumbList
+   * JSON-LD into <head>. All copy is intentionally non-diagnostic — we describe
+   * the resource ("educational article"), not the reader.
+   */
+  useEffect(() => {
+    if (!article) return;
+
+    const canonical = `${SITE_ORIGIN}${lang === 'en' ? '/en' : ''}/library/${article.id}`;
+    const description = toPlainSnippet(localizedExcerpt) || NON_DIAGNOSTIC_NOTE;
+    const headline = localizedTitle;
+    const previousTitle = document.title;
+    document.title = `${headline} — ${t.landing.libraryTitle}`;
+
+    const tags: HTMLElement[] = [];
+    const upsertMeta = (selector: string, attr: 'name' | 'property', key: string, content: string) => {
+      let el = document.head.querySelector<HTMLMetaElement>(selector);
+      let owned = false;
+      if (!el) {
+        el = document.createElement('meta');
+        el.setAttribute(attr, key);
+        document.head.appendChild(el);
+        owned = true;
+      }
+      el.setAttribute('content', content);
+      if (owned) tags.push(el);
+    };
+    const upsertLink = (rel: string, href: string) => {
+      let el = document.head.querySelector<HTMLLinkElement>(`link[rel="${rel}"]`);
+      let owned = false;
+      if (!el) {
+        el = document.createElement('link');
+        el.setAttribute('rel', rel);
+        document.head.appendChild(el);
+        owned = true;
+      }
+      el.setAttribute('href', href);
+      if (owned) tags.push(el);
+    };
+
+    upsertMeta('meta[name="description"]', 'name', 'description', description);
+    upsertMeta('meta[property="og:title"]', 'property', 'og:title', headline);
+    upsertMeta('meta[property="og:description"]', 'property', 'og:description', description);
+    upsertMeta('meta[property="og:type"]', 'property', 'og:type', 'article');
+    upsertMeta('meta[property="og:url"]', 'property', 'og:url', canonical);
+    if (article.image_url) {
+      upsertMeta('meta[property="og:image"]', 'property', 'og:image', article.image_url);
+    }
+    upsertLink('canonical', canonical);
+
+    const articleLd = {
+      '@context': 'https://schema.org',
+      '@type': 'Article',
+      headline,
+      description,
+      inLanguage: lang === 'en' ? 'en' : 'hu',
+      datePublished: article.created_at,
+      author: article.author ? { '@type': 'Person', name: article.author } : undefined,
+      publisher: {
+        '@type': 'Organization',
+        name: 'Grit.hu',
+        url: SITE_ORIGIN,
+      },
+      isPartOf: {
+        '@type': 'CollectionPage',
+        name: t.landing.libraryTitle,
+        url: `${SITE_ORIGIN}${lang === 'en' ? '/en' : ''}/library`,
+      },
+      mainEntityOfPage: canonical,
+      articleSection: article.category,
+      image: article.image_url || undefined,
+      isAccessibleForFree: true,
+      // Non-diagnostic disclosure surfaced to crawlers.
+      disambiguatingDescription: NON_DIAGNOSTIC_NOTE,
+      ...(article.url ? { citation: article.url } : {}),
+    };
+    const breadcrumbLd = {
+      '@context': 'https://schema.org',
+      '@type': 'BreadcrumbList',
+      itemListElement: [
+        { '@type': 'ListItem', position: 1, name: t.nav.home, item: `${SITE_ORIGIN}${lang === 'en' ? '/en' : ''}/` },
+        { '@type': 'ListItem', position: 2, name: t.landing.libraryTitle, item: `${SITE_ORIGIN}${lang === 'en' ? '/en' : ''}/library` },
+        { '@type': 'ListItem', position: 3, name: headline, item: canonical },
+      ],
+    };
+
+    const mountLd = (id: string, payload: unknown) => {
+      const node = document.createElement('script');
+      node.type = 'application/ld+json';
+      node.id = id;
+      node.textContent = JSON.stringify(payload);
+      document.head.appendChild(node);
+      tags.push(node);
+    };
+    mountLd(`ld-article-${article.id}`, articleLd);
+    mountLd(`ld-breadcrumb-${article.id}`, breadcrumbLd);
+
+    return () => {
+      tags.forEach((n) => n.parentNode?.removeChild(n));
+      document.title = previousTitle;
+    };
+  }, [article, lang, localizedTitle, localizedExcerpt, t.landing.libraryTitle, t.nav.home]);
 
   return (
     <div className="min-h-screen relative w-full overflow-x-hidden">
-      {article && (
-        <Helmet>
-          <title>{`${localizedTitle} — Grit.hu`}</title>
-          {socialDescription && <meta name="description" content={socialDescription} />}
-          {canonicalUrl && <link rel="canonical" href={canonicalUrl} />}
-          <meta property="og:type" content="article" />
-          <meta property="og:title" content={`${localizedTitle} — Grit.hu`} />
-          {socialDescription && <meta property="og:description" content={socialDescription} />}
-          {canonicalUrl && <meta property="og:url" content={canonicalUrl} />}
-          {article.image_url && <meta property="og:image" content={article.image_url} />}
-          <meta name="twitter:card" content="summary_large_image" />
-          <meta name="twitter:title" content={`${localizedTitle} — Grit.hu`} />
-          {socialDescription && <meta name="twitter:description" content={socialDescription} />}
-          {article.image_url && <meta name="twitter:image" content={article.image_url} />}
-          <script type="application/ld+json">{JSON.stringify({
-            '@context': 'https://schema.org',
-            '@type': 'Article',
-            headline: localizedTitle,
-            author: article.author ? { '@type': 'Person', name: article.author } : undefined,
-            datePublished: article.created_at,
-            image: article.image_url || undefined,
-            mainEntityOfPage: canonicalUrl,
-            publisher: { '@type': 'Organization', name: 'Grit.hu', logo: { '@type': 'ImageObject', url: 'https://grit.hu/icons/apple-touch-icon.png' } },
-          })}</script>
-        </Helmet>
-      )}
       <div className="fixed inset-0 z-0 bg-cover bg-center" style={{ backgroundImage: `url(${bambooBg})`, opacity: 0.12 }} />
       <div className="fixed inset-0 z-0 bg-background/80" />
 

@@ -2,7 +2,7 @@ import { Link } from 'react-router-dom';
 import { useEffect, useState } from 'react';
 import { useAuth } from '@/hooks/useAuth';
 import { useLanguage } from '@/hooks/useLanguage';
-import { FLock, FArrowRight } from '@/components/icons/FreudIcons';
+import { FLock, FArrowRight, FBookOpen, FClipboardCheck, FFileText } from '@/components/icons/FreudIcons';
 import { Button } from '@/components/ui/button';
 import PublicHeader from '@/components/PublicHeader';
 import SystemPreview from '@/components/SystemPreview';
@@ -85,6 +85,63 @@ const Index = () => {
 
       {/* Embedded System Previews (Inert) */}
       <SystemPreview />
+
+      {/* Explore — internal links to discoverable public hubs (SEO + a11y) */}
+      <section
+        aria-labelledby="explore-heading"
+        className="relative z-10 px-4 md:px-8 py-16 max-w-7xl mx-auto"
+      >
+        <div className="text-center mb-10">
+          <h2
+            id="explore-heading"
+            className="text-xl md:text-2xl font-bold tracking-tight text-foreground uppercase tracking-[0.2em] opacity-80"
+          >
+            {t.landing.exploreTitle}
+          </h2>
+        </div>
+        <nav aria-label={t.landing.exploreTitle}>
+          <ul className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            {[
+              {
+                to: localePath('/library'),
+                icon: <FBookOpen className="w-5 h-5" />,
+                label: t.nav.library,
+                desc: t.landing.exploreLibraryDesc,
+              },
+              {
+                to: localePath('/surveys'),
+                icon: <FClipboardCheck className="w-5 h-5" />,
+                label: t.nav.surveys,
+                desc: t.landing.exploreSurveysDesc,
+              },
+              {
+                to: localePath(user ? '/journal' : '/auth'),
+                icon: <FFileText className="w-5 h-5" />,
+                label: t.nav.journal,
+                desc: t.landing.exploreJournalDesc,
+              },
+            ].map((card) => (
+              <li key={card.to}>
+                <Link
+                  to={card.to}
+                  className="group flex h-full flex-col gap-3 rounded-2xl border border-border bg-card/60 p-5 hover:border-primary/50 hover:bg-card transition-colors"
+                >
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-accent/50 text-primary group-hover:scale-105 transition-transform">
+                      {card.icon}
+                    </div>
+                    <span className="text-base font-semibold text-foreground">{card.label}</span>
+                  </div>
+                  <p className="text-sm text-muted-foreground leading-relaxed">{card.desc}</p>
+                  <span className="mt-auto inline-flex items-center gap-1 text-xs font-semibold uppercase tracking-wider text-primary">
+                    {t.landing.exploreCta} <FArrowRight className="h-3 w-3" />
+                  </span>
+                </Link>
+              </li>
+            ))}
+          </ul>
+        </nav>
+      </section>
 
       {/* Footer */}
       <footer className="relative z-10 border-t border-border bg-card">

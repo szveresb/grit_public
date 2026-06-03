@@ -111,6 +111,11 @@ export interface Dictionary {
     feature3: string;
     feature4: string;
     feature5: string;
+    exploreTitle: string;
+    exploreLibraryDesc: string;
+    exploreSurveysDesc: string;
+    exploreJournalDesc: string;
+    exploreCta: string;
     newsTitle: string;
     newsSubtitle: string;
     newsCategory: { feature: string; upgrade: string; fix: string };
@@ -360,6 +365,8 @@ export interface Dictionary {
     scaleLabels: string;
     scaleLabelsPlaceholder: string;
     reverseScoring: string;
+    excludeFromScoring: string;
+    excludeFromScoringHint: string;
     typeText: string;
     typeMultipleChoice: string;
     optionsPlaceholder: string;

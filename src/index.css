@@ -18,7 +18,7 @@
     --background: 48 19% 96%;
     --foreground: 146 15% 24%;
 
-    --self-primary: 143 28% 44%;
+    --self-primary: 143 38% 36%;
     --self-primary-foreground: 48 20% 97%;
     --self-accent: 120 17% 95%;
     --self-accent-foreground: 146 15% 24%;
@@ -49,7 +49,11 @@
     --secondary-foreground: 146 15% 24%;
 
     --muted: 60 10% 96%;
-    --muted-foreground: 140 8% 56%;
+    --muted-foreground: 140 10% 42%;
+
+    /* Journal paper tokens (hero illustration) */
+    --journal-bg: 42 36% 92%;
+    --journal-text: 220 28% 28%;
 
     --accent: var(--self-accent);
     --accent-foreground: var(--self-accent-foreground);

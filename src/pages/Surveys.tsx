@@ -7,7 +7,8 @@ import { useLanguage } from '@/hooks/useLanguage';
 import { ScopedStanceProvider, useStance } from '@/hooks/useStance';
 import ConsentGate from '@/components/consent/ConsentGate';
 import QuestionnaireFiller from '@/components/checkin/QuestionnaireFiller';
-import { FArrowLeft, FClipboardCheck, FUsers } from '@/components/icons/FreudIcons';
+import { FArrowLeft, FClipboardCheck, FUsers, FBookOpen, FArrowRight } from '@/components/icons/FreudIcons';
+import Breadcrumbs from '@/components/Breadcrumbs';
 import { Button } from '@/components/ui/button';
 import type { Database } from '@/integrations/supabase/types';
 
@@ -186,6 +187,7 @@ const Surveys = () => {
     return (
       <DashboardLayout showContextToolPanel={false}>
         <div className="mx-auto w-full max-w-5xl space-y-5">
+          <Breadcrumbs items={[{ label: t.nav.surveys }]} />
           <div className="pb-3 border-b border-border/50">
             <h1 className="text-lg md:text-xl font-bold tracking-tight text-foreground">
               {t.nav.surveys}
@@ -193,6 +195,14 @@ const Surveys = () => {
             <p className="mt-1 text-sm text-muted-foreground leading-relaxed">
               {t.questionnaires_manage.subtitle}
             </p>
+            <Link
+              to={localePath('/library')}
+              className="mt-3 inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-primary hover:text-foreground transition-colors"
+            >
+              <FBookOpen className="h-3.5 w-3.5" />
+              {t.nav.library}
+              <FArrowRight className="h-3 w-3" />
+            </Link>
           </div>
 
           {publicListLoading ? (
@@ -230,6 +240,7 @@ const Surveys = () => {
   return (
     <DashboardLayout showContextToolPanel={false}>
       <div className="mx-auto w-full max-w-6xl space-y-5">
+        <Breadcrumbs items={[{ label: t.nav.surveys }]} />
         <div className="pb-3 border-b border-border/50">
           <h1 className="text-lg md:text-xl font-bold tracking-tight text-foreground">
             {t.nav.surveys}
@@ -237,6 +248,14 @@ const Surveys = () => {
           <p className="mt-1 text-sm text-muted-foreground leading-relaxed">
             {t.questionnaires_manage.subtitle}
           </p>
+          <Link
+            to={localePath('/library')}
+            className="mt-3 inline-flex items-center gap-1.5 text-xs font-semibold uppercase tracking-wider text-primary hover:text-foreground transition-colors"
+          >
+            <FBookOpen className="h-3.5 w-3.5" />
+            {t.nav.library}
+            <FArrowRight className="h-3 w-3" />
+          </Link>
         </div>
 
         <ConsentGate consentKey="questionnaire_data">

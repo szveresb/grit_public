@@ -8,12 +8,4 @@
 /scripts/design-codex-guard.mjs @szveresb
 /.github/workflows/quality.yml @szveresb
 /.github/workflows/monthly-drift-audit.yml @szveresb
-/.github/workflows/release-to-prod.yml @szveresb
 /.github/pull_request_template.md @szveresb
-
-# Live SEO surface — prod-only. Beta pushes must not overwrite these.
-# GSC verification, canonical domain, sitemap, robots, JSON-LD, og:* fallbacks.
-/index.html @szveresb
-/public/robots.txt @szveresb
-/public/sitemap.xml @szveresb
-/public/llms.txt @szveresb

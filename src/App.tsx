@@ -79,8 +79,8 @@ const AppRoutes = () => (
       <Route path="/manage-questionnaires" element={<Navigate to="/admin/questionnaires" replace />} />
       <Route path="/manage-landing" element={<Navigate to="/admin/landing" replace />} />
       
-      <Route path="/library" element={<ProtectedRoute><Library /></ProtectedRoute>} />
-      <Route path="/library/:id" element={<ProtectedRoute><Article /></ProtectedRoute>} />
+      <Route path="/library" element={<Library />} />
+      <Route path="/library/:id" element={<Article />} />
       <Route path="/category/:slug" element={<CategoryPage />} />
       <Route path="/terms" element={<ProtectedRoute skipConsentCheck><Terms /></ProtectedRoute>} />
       <Route path="/cookies" element={<ProtectedRoute skipConsentCheck><Cookies /></ProtectedRoute>} />
@@ -113,8 +113,8 @@ const AppRoutes = () => (
       <Route path="/en/manage-questionnaires" element={<Navigate to="/en/admin/questionnaires" replace />} />
       <Route path="/en/manage-landing" element={<Navigate to="/en/admin/landing" replace />} />
       
-      <Route path="/en/library" element={<ProtectedRoute><Library /></ProtectedRoute>} />
-      <Route path="/en/library/:id" element={<ProtectedRoute><Article /></ProtectedRoute>} />
+      <Route path="/en/library" element={<Library />} />
+      <Route path="/en/library/:id" element={<Article />} />
       <Route path="/en/category/:slug" element={<CategoryPage />} />
       <Route path="/en/terms" element={<ProtectedRoute skipConsentCheck><Terms /></ProtectedRoute>} />
       <Route path="/en/cookies" element={<ProtectedRoute skipConsentCheck><Cookies /></ProtectedRoute>} />

@@ -1,5 +1,4 @@
 import { createRoot } from "react-dom/client";
-import { HelmetProvider } from "react-helmet-async";
 import App from "./App.tsx";
 import "./index.css";
 
@@ -33,11 +32,7 @@ const cleanupDevServiceWorkers = async (): Promise<boolean> => {
 };
 
 const renderApp = (): void => {
-  createRoot(document.getElementById("root")!).render(
-    <HelmetProvider>
-      <App />
-    </HelmetProvider>
-  );
+  createRoot(document.getElementById("root")!).render(<App />);
 };
 
 void cleanupDevServiceWorkers().then((shouldRender) => {

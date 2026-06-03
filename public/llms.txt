@@ -1,8 +1,0 @@
-# Grit.hu
-
-> A sensemaking and wellbeing platform for people affected by high-conflict relational dynamics, offering a curated knowledge library, structured self-reflection tools, and private pattern observation — presented with warm, human language while mapping inputs to clinical codes (SNOMED CT / BNO-10) in the background.
-
-## Pages
-
-- [/](/): Landing page with platform overview, feature highlights, and waitlist access.
-- [/surveys](/surveys): Public self-check questionnaires (published) available without an account.
