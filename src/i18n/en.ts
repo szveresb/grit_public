@@ -36,6 +36,7 @@ export const en: Dictionary = {
     patternsFailed: 'Failed to analyze patterns',
     offlineDescription: 'You are currently offline.',
     genericFailure: 'Operation failed',
+    validationError: 'Cannot publish a questionnaire without questions.',
   },
 
   nav: {
