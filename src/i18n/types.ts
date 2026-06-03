@@ -37,6 +37,7 @@ export interface Dictionary {
     patternsFailed: string;
     offlineDescription: string;
     genericFailure: string;
+    validationError: string;
   };
 
   // Nav

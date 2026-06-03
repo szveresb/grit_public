@@ -114,28 +114,42 @@ const SelfChecks = () => {
   const handleSave = async () => {
     if (!user || !formTitle.trim()) return;
     setSaving(true);
+    
+    const validQuestions = formQuestions.filter(nq => nq.text.trim());
+    if (formPublished && validQuestions.length === 0) {
+      toast.error(t.errors?.validationError || 'Cannot publish a questionnaire without questions.');
+      setSaving(false);
+      return;
+    }
+
     if (editingId) {
       const { error } = await supabase.from('questionnaires').update({ title: formTitle, description: formDesc || null, is_published: formPublished, repeat_interval: formRepeat || null, scoring_enabled: formScoringEnabled, scoring_mode: formScoringMode, score_ranges: (formScoreRanges.length ? formScoreRanges : null) as unknown as Json }).eq('id', editingId);
       if (error) { toast.error(friendlyDbError(error)); setSaving(false); return; }
       await supabase.from('questionnaire_questions').delete().eq('questionnaire_id', editingId);
-      const qRows = formQuestions.filter(nq => nq.text.trim()).map((nq, i) => {
+      const qRows = validQuestions.map((nq, i) => {
         let answerScores: Record<string, number> | null = null;
         if (formScoringEnabled && formScoringMode === 'weighted') answerScores = nq.answerScores;
         else if (formScoringEnabled && nq.reverseScored && nq.type === 'scale') answerScores = nq.answerScores;
         return { questionnaire_id: editingId, question_text: nq.text, question_type: nq.type, options: nq.type === 'multiple_choice' ? nq.options.split(',').map(s => s.trim()).filter(Boolean) : nq.type === 'scale' ? [String(nq.scaleMin), String(nq.scaleMax)] : null, sort_order: i, answer_scores: answerScores, options_localized: nq.type === 'scale' && Object.keys(nq.scaleLabels).length > 0 ? nq.scaleLabels : null, logic_rules: (nq.logicRules.length > 0 ? nq.logicRules : null) as unknown as Json, exclude_from_scoring: nq.excludeFromScoring };
       });
-      if (qRows.length) await supabase.from('questionnaire_questions').insert(qRows);
+      if (qRows.length) {
+        const { error: insertErr } = await supabase.from('questionnaire_questions').insert(qRows);
+        if (insertErr) { toast.error(friendlyDbError(insertErr)); setSaving(false); return; }
+      }
       toast.success(t.questionnaires_manage.questionnaireUpdated);
     } else {
       const { data: q, error } = await supabase.from('questionnaires').insert({ title: formTitle, description: formDesc || null, created_by: user.id, is_published: formPublished, repeat_interval: formRepeat || null, scoring_enabled: formScoringEnabled, scoring_mode: formScoringMode, score_ranges: (formScoreRanges.length ? formScoreRanges : null) as unknown as Json }).select('id').single();
       if (error || !q) { toast.error(error ? friendlyDbError(error) : t.errors.genericFailure); setSaving(false); return; }
-      const qRows = formQuestions.filter(nq => nq.text.trim()).map((nq, i) => {
+      const qRows = validQuestions.map((nq, i) => {
         let answerScores: Record<string, number> | null = null;
         if (formScoringEnabled && formScoringMode === 'weighted') answerScores = nq.answerScores;
         else if (formScoringEnabled && nq.reverseScored && nq.type === 'scale') answerScores = nq.answerScores;
         return { questionnaire_id: q.id, question_text: nq.text, question_type: nq.type, options: nq.type === 'multiple_choice' ? nq.options.split(',').map(s => s.trim()).filter(Boolean) : nq.type === 'scale' ? [String(nq.scaleMin), String(nq.scaleMax)] : null, sort_order: i, answer_scores: answerScores, options_localized: nq.type === 'scale' && Object.keys(nq.scaleLabels).length > 0 ? nq.scaleLabels : null, logic_rules: (nq.logicRules.length > 0 ? nq.logicRules : null) as unknown as Json, exclude_from_scoring: nq.excludeFromScoring };
       });
-      if (qRows.length) await supabase.from('questionnaire_questions').insert(qRows);
+      if (qRows.length) {
+        const { error: insertErr } = await supabase.from('questionnaire_questions').insert(qRows);
+        if (insertErr) { toast.error(friendlyDbError(insertErr)); setSaving(false); return; }
+      }
       toast.success(t.questionnaires_manage.questionnaireCreated);
     }
     setSaving(false); setShowForm(false); setEditingId(null); fetchQuestionnaires();
