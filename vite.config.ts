@@ -62,6 +62,9 @@ export default defineConfig(({ mode }) => ({
         ]
       },
       workbox: {
+        cleanupOutdatedCaches: true,
+        skipWaiting: true,
+        clientsClaim: true,
         runtimeCaching: [
           {
             urlPattern: /^https:\/\/fonts\.googleapis\.com\/.*/i,
@@ -99,9 +102,11 @@ export default defineConfig(({ mode }) => ({
           },
         ],
         navigateFallbackDenylist: [
-          /\/emergency-exit/, 
-          ...(mode === 'production' ? [/^\/~oauth/] : []), 
-          /\/supabase\//
+          /\/emergency-exit/,
+          /^\/~oauth/,
+          /\/auth\/callback/,
+          /\/auth(\/|$)/,
+          /\/supabase\//,
         ],
       },
       devOptions: { enabled: true },
