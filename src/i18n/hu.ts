@@ -36,6 +36,7 @@ export const hu: Dictionary = {
     patternsFailed: 'A mintázatok elemzése sikertelen',
     offlineDescription: 'Jelenleg offline állapotban vagy.',
     genericFailure: 'A művelet sikertelen',
+    validationError: 'Nem tehetsz közzé kérdőívet kérdések nélkül.',
   },
 
   nav: {
