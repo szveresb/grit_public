@@ -659,6 +659,7 @@ export type Database = {
         Row: {
           answer_scores: Json | null
           created_at: string
+          exclude_from_scoring: boolean
           id: string
           logic_rules: Json | null
           options: Json | null
@@ -672,6 +673,7 @@ export type Database = {
         Insert: {
           answer_scores?: Json | null
           created_at?: string
+          exclude_from_scoring?: boolean
           id?: string
           logic_rules?: Json | null
           options?: Json | null
@@ -685,6 +687,7 @@ export type Database = {
         Update: {
           answer_scores?: Json | null
           created_at?: string
+          exclude_from_scoring?: boolean
           id?: string
           logic_rules?: Json | null
           options?: Json | null
