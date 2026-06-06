@@ -1,12 +1,3 @@
-# Save Longitudinal Memory plan to `docs/longitudinal-memory.md`
-
-Single, non-code action: create the file below. No app code, no DB, no routes touched.
-
-## File to create
-
-**`docs/longitudinal-memory.md`**
-
-````markdown
 # Longitudinal Memory — Plan (saved)
 
 Stay 100% inside Lovable Cloud (Supabase Postgres). No new tables, no second
@@ -98,8 +89,3 @@ Goal: roll observations up to BNO-10 / SNOMED parents.
 1. Final manifesto copy.
 2. Sidebar label: "Patterns / Minták" vs "Across time / Időben".
 3. Ship Phase 1 only, or scaffold all three tabs with placeholders for visibility.
-````
-
-## Out of scope
-
-No code, schema, route, or memory changes — only this one doc is written.
