@@ -29,18 +29,13 @@ const NewsFeed = () => {
   useEffect(() => {
     let cancelled = false;
     (async () => {
-      const { data, error } = await supabase
+      const { data } = await supabase
         .from('news_items')
         .select('id,title,title_localized,body,body_localized,category,published_at')
         .eq('is_published', true)
         .order('sort_order', { ascending: false })
         .order('published_at', { ascending: false })
         .limit(6);
-
-      if (error) {
-        console.error('Error fetching news:', error);
-      }
-
       if (!cancelled) {
         setItems((data ?? []) as unknown as NewsItem[]);
         setLoading(false);
@@ -55,7 +50,7 @@ const NewsFeed = () => {
     return base;
   };
 
-  // Always show the section, even if empty or loading
+  if (!loading && items.length === 0) return null;
 
   return (
     <section className="relative z-10">

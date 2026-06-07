@@ -246,7 +246,6 @@ const QuestionnaireFiller: React.FC<QuestionnaireFillerProps> = ({ onCompleted, 
     for (const question of questions) {
       const answer = answers[question.id];
       if (!answer || question.question_type === 'text') continue;
-      if (question.exclude_from_scoring) continue;
 
       let score = 0;
       let maxScore = 0;

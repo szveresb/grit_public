@@ -1,105 +1,89 @@
-# Save Longitudinal Memory plan to `docs/longitudinal-memory.md`
+# Review: `release-to-prod.yml` — Risk to Live Grit.hu Content
 
-Single, non-code action: create the file below. No app code, no DB, no routes touched.
+## TL;DR — User Data is Safe From This Workflow
 
-## File to create
+This workflow only syncs **source code** (a git rsync between two repos). It does **not** touch the Supabase database, storage, or auth tables. Therefore:
 
-**`docs/longitudinal-memory.md`**
+- ✅ **Surveys / questionnaires** (DB rows) — untouched
+- ✅ **Journal entries, observations, mood pulses** — untouched
+- ✅ **Profiles, consents, user_roles** — untouched
+- ✅ **Library articles, news, landing sections** (DB content) — untouched
+- ✅ **Email queues / logs** — untouched
 
-````markdown
-# Longitudinal Memory — Plan (saved)
+The workflow cannot directly delete or overwrite any row in the database.
 
-Stay 100% inside Lovable Cloud (Supabase Postgres). No new tables, no second
-datastore. Build a **query layer** of `SECURITY INVOKER` SQL functions (so
-per-user RLS is preserved automatically), then a dedicated `/patterns` page
-that surfaces three lenses in phases. A small manifesto block makes the
-distinction legible to users.
+---
 
-## Manifesto (draft — to refine)
+## Critical Architectural Note
 
-Header of `/patterns`, short version on landing:
+Both `supabase/config.toml` (beta) and `supabase/config.prod.toml` (live) reference the **same** project ID: `dgymkgeulpaavnqavnrw`. **Beta and Prod share one Supabase backend.** That means:
 
-> **"We don't diagnose. We remember — with you, across time."**
-> *Grit őrzi az időt veled. Mintákat mutat, nem ítéletet.*
+- Any migration merged on beta has already run against the live database before this workflow ever runs.
+- Any destructive SQL on beta (DROP TABLE, DELETE, ALTER) already affected live users.
+- This workflow is a **code-only promotion**; data safety is enforced upstream in the migration process, not here.
 
-Three sub-claims:
-1. **Longitudinal, not snapshot** — every entry stays linked to its context, week over week.
-2. **Relational, not isolated** — patterns include what you noticed in others, with consent.
-3. **Yours, not extracted** — queries run under your row-level security; nothing leaves your account without your export.
+If true isolation between beta/prod data is ever required, that's a separate architectural change.
 
-## Architecture (pure query layer)
+---
 
-```text
-/patterns page
-  Manifesto block
-  ├─ Tab: Sequences  (Phase 1)
-  ├─ Tab: Relations  (Phase 2)
-  └─ Tab: Ontology   (Phase 3)
-        │ supabase.rpc(...)
-        ▼
-  SECURITY INVOKER SQL functions
-  (RLS on observation_logs / journal_entries /
-   questionnaire_responses applies unchanged)
-        │
-        ▼
-  Recursive CTEs + window funcs over existing tables
+## Risks the Workflow Itself Introduces
+
+### 1. `rsync --delete` removes any live-only file not in `protected_paths`
+Current protected list covers email infra functions, `health-monitor`, `AuthCallback.tsx`, both `config.toml`s, and ONE migration file (`20260523145328_…sql`).
+
+**Anything else that exists only on live will be deleted from the prod repo on push.** If live ever accumulates files that beta lacks (hotfix migrations, extra edge functions, deploy scripts), they vanish silently.
+
+**Recommendation:** add a wildcard for all migrations to prevent prod-only migration files from being deleted:
+```
+"supabase/migrations/*"
+```
+Live migrations are append-only; losing the file from the repo causes drift between the DB and source-of-truth.
+
+### 2. `supabase/config.prod.toml` is not protected
+It currently lives only in prod (not visible in beta workspace). If a future beta edit ever touches it, rsync overwrites the prod version. Add it to `protected_paths` defensively.
+
+### 3. Edge function code is overwritten wholesale
+Functions like `process-email-queue`, `analyst-export`, `journal-reflect`, `journal-patterns` are pushed from beta as-is. A bug merged to beta = same bug live the next deploy. The protected list only shields the email transactional/auth functions.
+
+**Note:** the push is to `main`; whether functions auto-deploy depends on a separate Supabase deploy step (not in this workflow). Confirm whether prod auto-deploys on push.
+
+### 4. The "safety check" diff is narrow
+`git diff --name-only -- "${protected_paths[@]}"` only checks the protected files. It does not warn about large deletions elsewhere. Consider adding a guard like "abort if rsync would delete more than N files" to catch accidental wipes.
+
+### 5. Lockfile / build config drift
+`package.json`, `bun.lockb`, `vite.config.ts`, `tailwind.config.ts` are all freely overwritten. A beta dependency change ships immediately. Acceptable, but worth noting.
+
+### 6. `.env` / secrets
+`.env` is in the repo (visible in file listing). If beta's `.env` ever differs from live's, it gets overwritten. Verify `.env` contains only public `VITE_SUPABASE_URL` / publishable key (which are identical across envs since the project is shared) — if so, no risk. Confirm no real secrets live in `.env`.
+
+---
+
+## Suggested Hardening (Optional, Non-Destructive)
+
+Add to `protected_paths`:
+```
+"supabase/config.prod.toml"
+"supabase/migrations/*"
+".env"
 ```
 
-No new tables, no matviews, no edge functions in Phase 1.
+And consider a deletion-count guard before push:
+```bash
+deleted=$(git -C ../live-main status --porcelain | grep -c '^ D')
+if [ "$deleted" -gt 20 ]; then
+  echo "BLOCKED: refusing to delete $deleted files in one release."
+  exit 1
+fi
+```
 
-## Phase 1 — Sequences
+---
 
-Goal: "After concept A, concept B tends to follow within N days."
+## Verdict
 
-- Migration: `rpc_concept_sequences(p_window_days int default 7, p_min_support int default 3)` — `SECURITY INVOKER`. Self-join `observation_logs` for `auth.uid()` within window; returns `(antecedent_id, consequent_id, n, avg_lag_days, lift)`.
-- Migration: `rpc_concept_weekly_load()` — per-ISO-week count + avg intensity per concept (moves logic from `PatternChart.tsx` into SQL).
-- UI: `src/pages/Patterns.tsx`, `src/components/patterns/{SequenceList,WeeklyHeatstrip,PatternsManifesto}.tsx`. Reuses `surface-card`, FreudIcons, i18n.
-- Route: add `/patterns` and `/en/patterns` in `App.tsx`; sidebar entry with `FTimeline` icon.
+The workflow **cannot** harm user-generated content (surveys answered, journal entries, profiles, library DB rows). The real risks are:
 
-## Phase 2 — Relations
+1. **Shared DB** — destructive migrations affect live the moment they're merged, regardless of this workflow.
+2. **rsync --delete** — could quietly drop prod-only migration files or future prod-only assets.
+3. **Edge function overwrite** — beta bugs propagate.
 
-Goal: correlate self-observations with subject observations on a shared timeline.
-
-- Migration: `rpc_self_vs_subject_correlation(p_subject_id uuid, p_concept_id uuid, p_lag_days int default 0)` — Pearson over daily aggregates (port `pearsonAtLag` from `src/lib/correlation.ts`).
-- Migration: `rpc_subject_pattern_summary(p_subject_id uuid)` — top co-occurring (subject concept, self concept) pairs.
-- UI: `RelationsTab.tsx` — subject picker, concept pair matrix, lag slider, reuses `CorrelationScatter`.
-
-## Phase 3 — Ontology
-
-Goal: roll observations up to BNO-10 / SNOMED parents.
-
-- Migration: `rpc_concept_rollup_by_category()` — group `observation_logs` by `observation_concepts.category_id`, weekly counts.
-- UI: `OntologyTab.tsx` — category load treemap + drilldown.
-- Recursive parent traversal deferred until a `parent_id` column exists on concepts.
-
-## Safety + compliance
-
-- All RPCs `SECURITY INVOKER`, `SET search_path = public`, explicit `GRANT EXECUTE ... TO authenticated`.
-- RLS on `observation_logs`, `journal_entries`, `questionnaire_responses`, `subjects` enforced unchanged — every RPC scoped to `auth.uid()`.
-- `/patterns` header carries the standard non-diagnostic disclaimer; exports keep the `Non-Diagnostic Data` watermark.
-- No social/community surfaces. No cross-user reads.
-
-## Out of scope
-
-- No new tables, no `clinical_entity_relations`, no materialized views, no graph DB, no nightly jobs.
-- No AI on `/patterns` in Phase 1 (deterministic SQL only). AI narration can come later, reusing `journal-patterns`.
-- No changes to `/journal` or `/timeline`; `/patterns` is purely additive.
-
-## Deliverables per phase
-
-| Phase | Migration | UI files | Sidebar |
-|------|-----------|----------|---------|
-| 1 | `rpc_concept_sequences`, `rpc_concept_weekly_load` | `Patterns.tsx`, `SequenceList.tsx`, `WeeklyHeatstrip.tsx`, `PatternsManifesto.tsx` | yes |
-| 2 | `rpc_self_vs_subject_correlation`, `rpc_subject_pattern_summary` | `RelationsTab.tsx` | tab |
-| 3 | `rpc_concept_rollup_by_category` | `OntologyTab.tsx` | tab |
-
-## Open questions for pickup
-
-1. Final manifesto copy.
-2. Sidebar label: "Patterns / Minták" vs "Across time / Időben".
-3. Ship Phase 1 only, or scaffold all three tabs with placeholders for visibility.
-````
-
-## Out of scope
-
-No code, schema, route, or memory changes — only this one doc is written.
+I recommend the protected-path additions above before the next release. Want me to apply them?

@@ -1,3 +1,0 @@
-# Prevent Lovable from overwriting landing page manual changes
-src/pages/Index.tsx
-src/components/landing/NewsFeed.tsx
