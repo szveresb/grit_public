@@ -178,7 +178,6 @@ const SelfChecks = () => {
       scoring_enabled: q.scoring_enabled,
       scoring_mode: q.scoring_mode,
       score_ranges: q.score_ranges,
-      interpretation_profile: q.interpretation_profile,
     }).select('id').single();
     if (error || !cloned) { toast.error(error ? friendlyDbError(error) : t.errors.genericFailure); return; }
     // Clone questions
