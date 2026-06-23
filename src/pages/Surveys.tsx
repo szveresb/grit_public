@@ -245,7 +245,7 @@ const Surveys = () => {
           <h1 className="text-lg md:text-xl font-bold tracking-tight text-foreground">
             {t.nav.surveys}
           </h1>
-          <p className="mt-1 text-sm text-muted-foreground leading-relaxed">
+          <p className="mt-1 text-sm text-muted-foreground leading-relaxed whitespace-pre-wrap">
             {t.questionnaires_manage.subtitle}
           </p>
           <Link
