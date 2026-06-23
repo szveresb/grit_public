@@ -69,7 +69,7 @@ const Surveys = () => {
 
       const { data: questionnaire } = await supabase
         .from('questionnaires')
-        .select('id, title, description, is_published, title_localized, description_localized, interpretation_profile')
+        .select('id, title, description, is_published, title_localized, description_localized')
         .eq('id', questionnaireId)
         .eq('is_published', true)
         .maybeSingle();
