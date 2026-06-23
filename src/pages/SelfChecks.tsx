@@ -59,7 +59,7 @@ const SelfChecks = () => {
   const [formScoringEnabled, setFormScoringEnabled] = useState(false);
   const [formScoringMode, setFormScoringMode] = useState<string>('sum');
   const [formScoreRanges, setFormScoreRanges] = useState<ScoreRange[]>([]);
-  const [formInterpretationProfile, setFormInterpretationProfile] = useState<string>('');
+  
 
   const [saving, setSaving] = useState(false);
 
