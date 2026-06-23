@@ -11,6 +11,7 @@ import { FClock, FChevronDown, FTrendingUp } from '@/components/icons/FreudIcons
 import { Progress } from '@/components/ui/progress';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { useQuestionnaireTrends } from '@/hooks/useQuestionnaireTrends';
+import { getScoreInterpretation, type ScoreRange } from '@/lib/score-interpretation';
 
 interface ScoreEntry {
   id: string;
@@ -25,13 +26,6 @@ interface AnswerDetail {
   answer: string;
 }
 
-interface ScoreRange {
-  min: number;
-  max: number;
-  label: string;
-  description?: string;
-}
-
 interface GroupedScores {
   questionnaire_id: string;
   title: string;
@@ -39,12 +33,15 @@ interface GroupedScores {
   scoreRanges: ScoreRange[];
   maxPossibleScore: number;
   scoringEnabled: boolean;
+  interpretationProfile: string | null;
 }
 
 interface LocalizedQuestionnaireRow {
   id: string;
   title: string;
   title_localized: Record<string, string> | null;
+  snomed_code: string | null;
+  interpretation_profile: string | null;
   score_ranges: ScoreRange[] | null;
   scoring_enabled: boolean;
   scoring_mode: string;
@@ -129,7 +126,7 @@ const ScoreHistory = ({
       const qIds = [...new Set(responses.map((response) => response.questionnaire_id))];
       const { data: questionnaires } = await supabase
         .from('questionnaires')
-        .select('id, title, title_localized, score_ranges, scoring_enabled, scoring_mode')
+        .select('id, title, title_localized, snomed_code, interpretation_profile, score_ranges, scoring_enabled, scoring_mode')
         .in('id', qIds);
 
       const { data: questions } = await supabase
@@ -177,13 +174,18 @@ const ScoreHistory = ({
       for (const response of responses) {
         if (!grouped.has(response.questionnaire_id)) {
           const questionnaire = titleMap.get(response.questionnaire_id);
+          const interpretation = getScoreInterpretation({
+            interpretationProfile: questionnaire?.interpretation_profile ?? null,
+          });
+          const configuredRanges = questionnaire?.score_ranges ?? [];
           grouped.set(response.questionnaire_id, {
             questionnaire_id: response.questionnaire_id,
             title: questionnaireName(questionnaire),
             entries: [],
-            scoreRanges: questionnaire?.score_ranges ?? [],
+            scoreRanges: configuredRanges.length > 0 ? configuredRanges : interpretation?.scoreRanges ?? [],
             maxPossibleScore: maxScoreMap.get(response.questionnaire_id) ?? 0,
             scoringEnabled: questionnaire?.scoring_enabled ?? false,
+            interpretationProfile: questionnaire?.interpretation_profile ?? null,
           });
         }
 
@@ -292,6 +294,13 @@ interface ScoreHistoryGroupProps {
   getMatchedRange: (score: number, ranges: ScoreRange[]) => ScoreRange | undefined;
 }
 
+const renderRangeLabel = (range: ScoreRange, t: any): string => {
+  if (range.label) return range.label;
+  if (range.labelKey === 'low') return t.questionnaires_manage.interpretationRangeLow;
+  if (range.labelKey === 'medium') return t.questionnaires_manage.interpretationRangeMedium;
+  return t.questionnaires_manage.interpretationRangeHigh;
+};
+
 const ScoreHistoryGroup = ({
   group,
   compact,
@@ -305,6 +314,9 @@ const ScoreHistoryGroup = ({
   toggleEntry,
   getMatchedRange,
 }: ScoreHistoryGroupProps) => {
+  const interpretation = getScoreInterpretation({
+    interpretationProfile: group.interpretationProfile,
+  });
   const chartData = group.entries.map((entry) => ({
     date: safeFormat(entry.completed_at, 'MM/dd', lang),
     score: entry.total_score,
@@ -379,10 +391,17 @@ const ScoreHistoryGroup = ({
                   </span>
                   {latestRange && (
                     <span className="rounded-full bg-primary/10 px-2 py-0.5 text-[11px] font-medium text-primary">
-                      {latestRange.label}
+                      {renderRangeLabel(latestRange, t)}
                     </span>
                   )}
                 </div>
+                {interpretation && (
+                  <p className="text-[11px] leading-relaxed text-muted-foreground">
+                    {interpretation.noteKey === 'pvs'
+                      ? t.questionnaires_manage.interpretationNotePvs
+                      : t.questionnaires_manage.interpretationNoteBrcs}
+                  </p>
+                )}
               </div>
             )}
 
@@ -451,7 +470,7 @@ const ScoreHistoryGroup = ({
                           <span>{safeFormat(entry.completed_at, 'PPp', lang)}</span>
                           {entryRange && (
                             <span className="rounded-full border border-border px-1.5 py-0.5 text-[10px]">
-                              {entryRange.label}
+                              {renderRangeLabel(entryRange, t)}
                             </span>
                           )}
                         </div>

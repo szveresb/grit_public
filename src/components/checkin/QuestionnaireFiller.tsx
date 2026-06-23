@@ -26,6 +26,7 @@ import ScoreHistory from './ScoreHistory';
 import QuestionnaireCard from './QuestionnaireCard';
 import { evaluateLogicRules, computeVisiblePath, getSkippedQuestionIds, hasBranchingLogic } from '@/lib/logic-engine';
 import type { QuestionWithLogic, LogicRule } from '@/lib/logic-engine';
+import { getScoreInterpretation, type ScoreRange } from '@/lib/score-interpretation';
 import type { Database } from '@/integrations/supabase/types';
 
 type Questionnaire = Database['public']['Tables']['questionnaires']['Row'] & {
@@ -33,13 +34,6 @@ type Questionnaire = Database['public']['Tables']['questionnaires']['Row'] & {
   title_localized: Record<string, string> | null;
   description_localized: Record<string, string> | null;
 };
-
-interface ScoreRange {
-  min: number;
-  max: number;
-  label: string;
-  description?: string;
-}
 
 type Question = Omit<
   Database['public']['Tables']['questionnaire_questions']['Row'],
@@ -167,12 +161,12 @@ const QuestionnaireFiller: React.FC<QuestionnaireFillerProps> = ({ onCompleted, 
 
       const questionnaireQuery = supabase
         .from('questionnaires')
-        .select('id, title, title_localized, description, description_localized, repeat_interval, scoring_enabled, scoring_mode, score_ranges, is_published, created_at, updated_at, created_by, snomed_code')
+        .select('id, title, title_localized, description, description_localized, repeat_interval, scoring_enabled, scoring_mode, score_ranges, interpretation_profile, is_published, created_at, updated_at, created_by, snomed_code')
         .eq('is_published', true)
         .order('created_at', { ascending: false });
 
       const [questionnaireResult, responseResult] = await Promise.all([
-        readOnly ? supabase.from('questionnaires').select('id, title, title_localized, description, description_localized, repeat_interval, scoring_enabled, scoring_mode, score_ranges, is_published, created_at, updated_at, created_by, snomed_code').order('created_at', { ascending: false }) : questionnaireQuery,
+        readOnly ? supabase.from('questionnaires').select('id, title, title_localized, description, description_localized, repeat_interval, scoring_enabled, scoring_mode, score_ranges, interpretation_profile, is_published, created_at, updated_at, created_by, snomed_code').order('created_at', { ascending: false }) : questionnaireQuery,
         responsePromise,
       ]);
 
@@ -304,10 +298,14 @@ const QuestionnaireFiller: React.FC<QuestionnaireFillerProps> = ({ onCompleted, 
     const questionnaire = questionnaires.find((candidate) => candidate.id === selectedQ);
 
     if (questionnaire?.scoring_enabled) {
+      const interpretation = getScoreInterpretation({
+        interpretationProfile: questionnaire.interpretation_profile,
+      });
+      const configuredRanges = questionnaire.score_ranges ?? [];
       const score = calculateScore(questionnaire);
       setScoreResult({
         ...score,
-        scoreRanges: questionnaire.score_ranges ?? [],
+        scoreRanges: configuredRanges.length > 0 ? configuredRanges : interpretation?.scoreRanges ?? [],
       });
     }
 
@@ -479,6 +477,15 @@ const QuestionnaireFiller: React.FC<QuestionnaireFillerProps> = ({ onCompleted, 
     }
   };
 
+  const selectedQuestionnaire = selectedQ
+    ? questionnaires.find((candidate) => candidate.id === selectedQ) ?? null
+    : null;
+  const selectedQuestionnaireInterpretationTarget = selectedQuestionnaire
+    ? {
+        interpretationProfile: selectedQuestionnaire.interpretation_profile,
+      }
+    : null;
+
   if (loading) return <p className="text-sm text-muted-foreground">{t.loading}</p>;
   if (questionnaires.length === 0) return <p className="text-sm text-muted-foreground">{t.questionnaires_manage.noAvailable}</p>;
 
@@ -490,6 +497,7 @@ const QuestionnaireFiller: React.FC<QuestionnaireFillerProps> = ({ onCompleted, 
           maxPossibleScore={scoreResult.maxPossibleScore}
           questionScores={scoreResult.questionScores}
           scoreRanges={scoreResult.scoreRanges}
+          questionnaireInterpretationTarget={selectedQuestionnaireInterpretationTarget}
           onClose={() => {
             const completedQuestionnaireId = selectedQ;
             setSelectedQ(null);

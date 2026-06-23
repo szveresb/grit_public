@@ -14,7 +14,7 @@ import type { Database } from '@/integrations/supabase/types';
 
 type QuestionnaireRow = Pick<
   Database['public']['Tables']['questionnaires']['Row'],
-  'id' | 'title' | 'description' | 'is_published' | 'title_localized' | 'description_localized'
+  'id' | 'title' | 'description' | 'is_published' | 'title_localized' | 'description_localized' | 'interpretation_profile'
 >;
 
 type QuestionRow = Pick<
@@ -49,7 +49,7 @@ const Surveys = () => {
       setPublicListLoading(true);
       const { data } = await supabase
         .from('questionnaires')
-        .select('id, title, description, is_published, title_localized, description_localized')
+        .select('id, title, description, is_published, title_localized, description_localized, interpretation_profile')
         .eq('is_published', true)
         .order('created_at', { ascending: true });
 
@@ -69,7 +69,7 @@ const Surveys = () => {
 
       const { data: questionnaire } = await supabase
         .from('questionnaires')
-        .select('id, title, description, is_published, title_localized, description_localized')
+        .select('id, title, description, is_published, title_localized, description_localized, interpretation_profile')
         .eq('id', questionnaireId)
         .eq('is_published', true)
         .maybeSingle();

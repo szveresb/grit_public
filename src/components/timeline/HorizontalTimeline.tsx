@@ -1,9 +1,9 @@
-import { useState, useRef, useMemo, useCallback, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { FBookOpen, FClipboardCheck, FEye, FChevronRight } from '@/components/icons/FreudIcons';
-import { safeFormat } from '@/lib/date-safe';
+import { useState, useMemo } from 'react';
+import { format, parseISO, subDays, isSameDay } from 'date-fns';
+import { FBookOpen, FClipboardCheck, FEye, FChevronRight, FChevronLeft } from '@/components/icons/FreudIcons';
 import { getDateLocale } from '@/lib/date-locale';
 import { useLanguage } from '@/hooks/useLanguage';
+import { cn } from '@/lib/utils';
 
 interface TimelineItem {
   id: string;
@@ -17,175 +17,158 @@ interface Props {
   items: TimelineItem[];
   lang: string;
   t: any;
+  selectedDate?: string | null;
+  onDateSelect?: (date: string) => void;
 }
 
-const MIN_SCALE = 1;
-const MAX_SCALE = 3;
-
-const getTouchDist = (e: React.TouchEvent) => {
-  const [a, b] = [e.touches[0], e.touches[1]];
-  return Math.hypot(a.clientX - b.clientX, a.clientY - b.clientY);
+const dotBg = (type: string) => {
+  if (type === 'journal') return 'bg-primary';
+  if (type === 'observation') return 'bg-orange-500';
+  return 'bg-purple-600';
 };
 
-const iconFor = (type: string, selected: boolean) => {
-  const cls = `h-4 w-4 ${selected ? 'text-primary-foreground' : type === 'journal' ? 'text-primary' : type === 'observation' ? 'text-accent-foreground/60' : 'text-muted-foreground'}`;
+const iconFor = (type: string) => {
+  const cls = "h-3.5 w-3.5 text-white";
   if (type === 'journal') return <FBookOpen className={cls} />;
   if (type === 'observation') return <FEye className={cls} />;
   return <FClipboardCheck className={cls} />;
 };
 
-const dotBg = (type: string) => {
-  if (type === 'journal') return 'bg-primary';
-  if (type === 'observation') return 'bg-accent-foreground/60';
-  return 'bg-muted-foreground';
-};
-
-const HorizontalTimeline = ({ items, lang, t }: Props) => {
+const HorizontalTimeline = ({ items, lang, t, selectedDate, onDateSelect }: Props) => {
   const locale = getDateLocale(lang as any);
-  const navigate = useNavigate();
   const { localePath } = useLanguage();
   const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [scale, setScale] = useState(1);
-  const containerRef = useRef<HTMLDivElement>(null);
-  const pinchRef = useRef<{ startDist: number; startScale: number } | null>(null);
+  const [weekOffset, setWeekOffset] = useState(0);
 
-  // Group items by date - items come sorted newest-first from the hook
-  const grouped = useMemo(() => {
-    const map = new Map<string, TimelineItem[]>();
-    for (const item of items) {
-      const key = item.date.slice(0, 10);
-      if (!map.has(key)) map.set(key, []);
-      map.get(key)!.push(item);
-    }
-    // Reverse so timeline reads left-to-right: oldest on the left, latest on the right
-    return Array.from(map.entries()).reverse();
-  }, [items]);
-
-  // Detect month boundaries for separators
-  const monthBoundaries = useMemo(() => {
-    const set = new Set<number>();
-    let prevMonth = '';
-    grouped.forEach(([dateKey], idx) => {
-      const m = dateKey.slice(0, 7);
-      if (prevMonth && m !== prevMonth) set.add(idx);
-      prevMonth = m;
+  // Compute 7 days to display based on pagination offset
+  const displayDays = useMemo(() => {
+    return Array.from({ length: 7 }, (_, i) => {
+      return subDays(new Date(), (6 - i) - (weekOffset * 7));
     });
-    return set;
-  }, [grouped]);
+  }, [weekOffset]);
 
-  // Auto-scroll to the right edge so the latest entry is visible on load
-  useEffect(() => {
-    const el = containerRef.current;
-    if (!el) return;
-    el.scrollLeft = el.scrollWidth;
-  }, [grouped]);
-
-  // Pinch-to-zoom handlers
-  const onTouchStart = useCallback((e: React.TouchEvent) => {
-    if (e.touches.length === 2) {
-      pinchRef.current = { startDist: getTouchDist(e), startScale: scale };
-    }
-  }, [scale]);
-
-  const onTouchMove = useCallback((e: React.TouchEvent) => {
-    if (e.touches.length === 2 && pinchRef.current) {
-      const dist = getTouchDist(e);
-      const ratio = dist / pinchRef.current.startDist;
-      const newScale = Math.min(MAX_SCALE, Math.max(MIN_SCALE, pinchRef.current.startScale * ratio));
-      setScale(newScale);
-    }
-  }, []);
-
-  const onTouchEnd = useCallback(() => {
-    pinchRef.current = null;
-  }, []);
-
-  // Find the selected item for detail card
   const selectedItem = selectedId ? items.find(i => i.id === selectedId) : null;
 
-  // Let short timelines fill the card on mobile, but still allow horizontal scroll
-  // once the number of date groups would become too dense.
-  const trackWidthRem = Math.max(grouped.length * 2.75, 18);
-  const trackStyle = { 
-    minWidth: '100%', 
-    width: `${trackWidthRem}rem`,
-    minHeight: 80 
-  };
-
   return (
-    <div className="space-y-3">
-      {/* Legend */}
-      <div className="flex items-center gap-4 flex-wrap">
-        <div className="flex items-center gap-1.5">
-          <span className="h-2.5 w-2.5 rounded-full bg-primary" />
-          <span className="text-[10px] text-muted-foreground">{t.timeline.journalLabel}</span>
+    <div className="space-y-4">
+      {/* Header and Pagination Controls */}
+      <div className="flex items-center justify-between">
+        {/* Legend */}
+        <div className="flex items-center gap-4 flex-wrap">
+          <div className="flex items-center gap-1.5">
+            <span className="h-2.5 w-2.5 rounded-full bg-primary" />
+            <span className="text-[10px] font-medium text-muted-foreground">{t.timeline.journalLabel}</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <span className="h-2.5 w-2.5 rounded-full bg-purple-600" />
+            <span className="text-[10px] font-medium text-muted-foreground">{t.timeline.questionnaireLabel}</span>
+          </div>
+          <div className="flex items-center gap-1.5">
+            <span className="h-2.5 w-2.5 rounded-full bg-orange-500" />
+            <span className="text-[10px] font-medium text-muted-foreground">{t.observations.tabObservations}</span>
+          </div>
         </div>
-        <div className="flex items-center gap-1.5">
-          <span className="h-2.5 w-2.5 rounded-full bg-accent-foreground/60" />
-          <span className="text-[10px] text-muted-foreground">{t.observations.tabObservations}</span>
-        </div>
-        <div className="flex items-center gap-1.5">
-          <span className="h-2.5 w-2.5 rounded-full bg-muted-foreground" />
-          <span className="text-[10px] text-muted-foreground">{t.timeline.questionnaireLabel}</span>
+
+        {/* Pagination Chevrons */}
+        <div className="flex items-center gap-1">
+          <button
+            type="button"
+            onClick={() => setWeekOffset(prev => prev - 1)}
+            className="p-1 rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground transition-colors"
+            title="Előző hét"
+          >
+            <FChevronLeft className="h-4 w-4" />
+          </button>
+          <button
+            type="button"
+            onClick={() => setWeekOffset(prev => Math.min(0, prev + 1))}
+            disabled={weekOffset === 0}
+            className="p-1 rounded-lg hover:bg-muted text-muted-foreground hover:text-foreground transition-colors disabled:opacity-35"
+            title="Következő hét"
+          >
+            <FChevronRight className="h-4 w-4" />
+          </button>
         </div>
       </div>
 
-      <div
-        ref={containerRef}
-        className="overflow-x-auto overflow-y-visible pb-2 pt-2"
-        style={{ touchAction: scale > 1 ? 'pan-x pan-y' : 'manipulation', scrollbarWidth: 'none', msOverflowStyle: 'none' } as any}
-        onTouchStart={onTouchStart}
-        onTouchMove={onTouchMove}
-        onTouchEnd={onTouchEnd}
-      >
-        <style>{`.timeline-scroll::-webkit-scrollbar { display: none; }`}</style>
-        <div
-          className="timeline-scroll relative"
-          style={trackStyle}
-        >
-          {/* Horizontal line */}
-          <div className="absolute left-0 right-0 top-[24px] h-px bg-border" />
+      {/* Matrix Table container */}
+      <div className="flex w-full overflow-x-auto pb-1 select-none">
+        <div className="flex w-full min-w-[500px]">
+          {/* Row Labels (Left Column) */}
+          <div className="w-24 shrink-0 flex flex-col justify-end text-left pr-4">
+            <div className="h-10" /> {/* header spacer */}
+            <div className="h-10 flex items-center text-[10px] font-bold uppercase tracking-wider text-muted-foreground/80">
+              {t.timeline.journalLabel}
+            </div>
+            <div className="h-10 flex items-center text-[10px] font-bold uppercase tracking-wider text-muted-foreground/80">
+              {t.timeline.questionnaireLabel}
+            </div>
+            <div className="h-10 flex items-center text-[10px] font-bold uppercase tracking-wider text-muted-foreground/80">
+              {t.observations.tabObservations}
+            </div>
+          </div>
 
-          {/* Date groups */}
-          <div className="relative flex gap-x-4 gap-y-4 px-2 pb-2 sm:gap-x-6 sm:px-4 md:gap-x-8">
-            {grouped.map(([dateKey, dayItems], groupIdx) => {
-              const isMonthBoundary = monthBoundaries.has(groupIdx);
+          {/* Grid Columns (Days) */}
+          <div className="flex-1 grid grid-cols-7 gap-1">
+            {displayDays.map((day) => {
+              const dateKey = format(day, 'yyyy-MM-dd');
+              const isSelectedCol = selectedDate ? isSameDay(day, parseISO(selectedDate)) : false;
+              
+              const dayName = format(day, 'EEEEEE', { locale }); // "H", "K"
+              const dayLabel = format(day, 'MMM d', { locale }); // "jún. 20."
+
               return (
-                <div key={dateKey} className="relative flex min-w-0 flex-col items-center" style={{ minWidth: 24 }}>
-                  {/* Month separator */}
-                  {isMonthBoundary && (
-                    <div className="absolute -left-3 top-0 bottom-0 w-px bg-primary/20" />
+                <div
+                  key={dateKey}
+                  onClick={() => onDateSelect?.(dateKey)}
+                  className={cn(
+                    "flex flex-col items-center py-2 px-1 rounded-2xl transition-all cursor-pointer border border-transparent",
+                    isSelectedCol
+                      ? "bg-muted/60 border-border/60 shadow-sm"
+                      : "hover:bg-muted/30"
                   )}
-
-                  {/* Entry dots stacked vertically at this date position */}
-                  <div className="flex flex-col items-center gap-1">
-                    {dayItems.map(item => {
-                      const isSelected = selectedId === item.id;
-                      return (
-                        <button
-                          key={item.id}
-                          onClick={() => setSelectedId(isSelected ? null : item.id)}
-                          className={`relative flex items-center justify-center rounded-full transition-all duration-200
-                            ${isSelected
-                              ? 'h-6 w-6 sm:h-7 sm:w-7 ' + dotBg(item.type) + ' ring-2 ring-primary/30 shadow-md scale-110'
-                              : 'h-[18px] w-[18px] sm:h-5 sm:w-5 ' + dotBg(item.type) + ' hover:scale-125 hover:shadow-sm'
-                            }`}
-                          title={item.title}
-                        >
-                          {isSelected ? (
-                            iconFor(item.type, true)
-                          ) : (
-                            <span className="h-2 w-2 rounded-full bg-primary-foreground/80" />
-                          )}
-                        </button>
-                      );
-                    })}
+                >
+                  {/* Column Header */}
+                  <div className="h-10 flex flex-col items-center justify-center text-center leading-none mb-1">
+                    <span className="text-[10px] font-bold text-foreground capitalize">
+                      {dayName}
+                    </span>
+                    <span className="text-[9px] text-muted-foreground mt-0.5 whitespace-nowrap">
+                      {dayLabel}
+                    </span>
                   </div>
 
-                  {/* Date label below */}
-                  <span className="mt-2 text-[8px] text-muted-foreground whitespace-nowrap leading-none sm:text-[9px]">
-                    {safeFormat(dateKey, 'MMM d', lang as any)}
-                  </span>
+                  {/* Row Cells */}
+                  {([ 'journal', 'questionnaire', 'observation' ] as const).map((type) => {
+                    const cellItems = items.filter(
+                      (item) => item.date.slice(0, 10) === dateKey && item.type === type
+                    );
+                    const hasItem = cellItems.length > 0;
+
+                    return (
+                      <div key={type} className="h-10 flex items-center justify-center w-full">
+                        {hasItem ? (
+                          <button
+                            type="button"
+                            onClick={(e) => {
+                              e.stopPropagation(); // Avoid triggering column selection
+                              setSelectedId(selectedId === cellItems[0].id ? null : cellItems[0].id);
+                            }}
+                            className={cn(
+                              "h-5 w-5 rounded-full flex items-center justify-center transition-transform hover:scale-125 hover:shadow-sm",
+                              dotBg(type),
+                              selectedId === cellItems[0].id && "ring-2 ring-primary/40 scale-110 shadow"
+                            )}
+                            title={cellItems[0].title}
+                          >
+                            {iconFor(type)}
+                          </button>
+                        ) : (
+                          <div className="h-1 w-1 rounded-full bg-border/40" />
+                        )}
+                      </div>
+                    );
+                  })}
                 </div>
               );
             })}
@@ -193,40 +176,29 @@ const HorizontalTimeline = ({ items, lang, t }: Props) => {
         </div>
       </div>
 
-      {/* Zoom hint for mobile */}
-      <p className="text-[10px] text-muted-foreground text-center md:hidden">
-        {t.timeline.pinchToZoom}
-      </p>
-
-      {/* Detail card */}
+      {/* Detail Card below matrix */}
       {selectedItem && (
-        <button
-          onClick={() => {
-            const basePath = selectedItem.type === 'journal' ? '/journal' : selectedItem.type === 'questionnaire' ? '/surveys' : '/journal';
-            const dateParam = selectedItem.date.slice(0, 10);
-            navigate(`${localePath(basePath)}?date=${dateParam}`);
-          }}
-          className="w-full text-left bg-card/80 backdrop-blur border border-border rounded-2xl p-4 animate-fade-in hover:bg-accent/50 transition-colors group"
-        >
+        <div className="bg-card/85 backdrop-blur border border-border rounded-2xl p-4 animate-fade-in relative">
           <div className="flex items-start gap-3">
-            <div className="mt-0.5">{iconFor(selectedItem.type, false)}</div>
+            <div className={cn("h-7 w-7 rounded-full flex items-center justify-center shrink-0", dotBg(selectedItem.type))}>
+              {iconFor(selectedItem.type)}
+            </div>
             <div className="flex-1 min-w-0">
               <div className="flex items-baseline gap-2 flex-wrap">
                 <span className="text-sm font-semibold text-foreground">{selectedItem.title}</span>
-                <span className="text-[10px] text-muted-foreground capitalize shrink-0">
+                <span className="text-[10px] text-muted-foreground capitalize shrink-0 font-medium">
                   {selectedItem.type === 'journal' ? t.timeline.journalLabel : selectedItem.type === 'observation' ? t.observations.tabObservations : t.timeline.questionnaireLabel}
                 </span>
               </div>
               <p className="text-xs text-muted-foreground mt-0.5">
-                {safeFormat(selectedItem.date.slice(0, 10), 'EEEE, MMM d', lang as any)}
+                {format(parseISO(selectedItem.date), 'EEEE, MMMM d.', { locale })}
               </p>
               {selectedItem.detail && (
-                <p className="text-xs text-muted-foreground mt-1">{selectedItem.detail}</p>
+                <p className="text-xs text-foreground/90 mt-2 leading-relaxed whitespace-pre-wrap">{selectedItem.detail}</p>
               )}
             </div>
-            <FChevronRight className="h-4 w-4 text-muted-foreground group-hover:text-foreground transition-colors mt-1 shrink-0" />
           </div>
-        </button>
+        </div>
       )}
     </div>
   );

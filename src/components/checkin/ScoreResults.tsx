@@ -2,13 +2,11 @@ import { useLanguage } from '@/hooks/useLanguage';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { FClose } from '@/components/icons/FreudIcons';
-
-interface ScoreRange {
-  min: number;
-  max: number;
-  label: string;
-  description?: string;
-}
+import {
+  getScoreInterpretation,
+  type QuestionnaireInterpretationTarget,
+  type ScoreRange,
+} from '@/lib/score-interpretation';
 
 interface QuestionScore {
   questionText: string;
@@ -21,13 +19,23 @@ interface ScoreResultsProps {
   maxPossibleScore: number;
   questionScores: QuestionScore[];
   scoreRanges: ScoreRange[];
+  questionnaireInterpretationTarget?: QuestionnaireInterpretationTarget | null;
   onClose: () => void;
 }
 
-const ScoreResults = ({ totalScore, maxPossibleScore, questionScores, scoreRanges, onClose }: ScoreResultsProps) => {
+const ScoreResults = ({
+  totalScore,
+  maxPossibleScore,
+  questionScores,
+  scoreRanges,
+  questionnaireInterpretationTarget,
+  onClose,
+}: ScoreResultsProps) => {
   const { t } = useLanguage();
 
-  const matchedRange = scoreRanges.find(r => totalScore >= r.min && totalScore <= r.max);
+  const profile = getScoreInterpretation(questionnaireInterpretationTarget);
+  const effectiveRanges = scoreRanges.length > 0 ? scoreRanges : profile?.scoreRanges ?? [];
+  const matchedRange = effectiveRanges.find((r) => totalScore >= r.min && totalScore <= r.max);
   const pct = maxPossibleScore > 0 ? Math.round(Math.max(0, (totalScore / maxPossibleScore) * 100)) : 0;
 
   return (
@@ -46,10 +54,48 @@ const ScoreResults = ({ totalScore, maxPossibleScore, questionScores, scoreRange
         <p className="text-xs text-muted-foreground">
           {t.questionnaires_manage.totalScore}: {totalScore} / {maxPossibleScore}
         </p>
+        {profile && (
+          <div className="rounded-2xl border border-border/60 bg-background px-3 py-2 text-left">
+            <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+              {t.questionnaires_manage.interpretation}
+            </p>
+            <p className="mt-1 text-xs text-muted-foreground">
+              {profile.noteKey === 'pvs'
+                ? t.questionnaires_manage.interpretationNotePvs
+                : t.questionnaires_manage.interpretationNoteBrcs}
+            </p>
+            {effectiveRanges.length > 0 && (
+              <div className="mt-2 flex flex-wrap gap-2">
+                {effectiveRanges.map((range) => (
+                  <span
+                    key={`${range.min}-${range.max}`}
+                    className="rounded-full bg-accent/30 px-2 py-0.5 text-[11px] font-medium text-foreground"
+                  >
+                    {range.label
+                      ? range.label
+                      : range.labelKey === 'low'
+                      ? t.questionnaires_manage.interpretationRangeLow
+                      : range.labelKey === 'medium'
+                        ? t.questionnaires_manage.interpretationRangeMedium
+                        : t.questionnaires_manage.interpretationRangeHigh}
+                    {' '}
+                    {range.min}-{range.max}
+                  </span>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
         {matchedRange && (
           <div className="mt-2 space-y-1">
             <span className="inline-block text-sm font-semibold px-3 py-1 rounded-full bg-primary/10 text-primary">
-              {matchedRange.label}
+              {matchedRange.label
+                ? matchedRange.label
+                : matchedRange.labelKey === 'low'
+                ? t.questionnaires_manage.interpretationRangeLow
+                : matchedRange.labelKey === 'medium'
+                  ? t.questionnaires_manage.interpretationRangeMedium
+                  : t.questionnaires_manage.interpretationRangeHigh}
             </span>
             {matchedRange.description && (
               <p className="text-xs text-muted-foreground leading-relaxed">{matchedRange.description}</p>

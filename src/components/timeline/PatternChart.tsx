@@ -1,20 +1,8 @@
-import { useMemo, useState } from 'react';
-import {
-  getISOWeek,
-  parseISO,
-  startOfWeek,
-  subWeeks,
-  isAfter,
-  format,
-  addWeeks,
-  isBefore,
-  startOfDay,
-  endOfDay,
-} from 'date-fns';
+import { useMemo } from 'react';
+import { format } from 'date-fns';
 import { Link } from 'react-router-dom';
-import { getDateLocale } from '@/lib/date-locale';
 import { useLanguage } from '@/hooks/useLanguage';
-import { FTimeline, FChevronDown, FChevronUp, FArrowRight } from '@/components/icons/FreudIcons';
+import { FTimeline, FArrowRight } from '@/components/icons/FreudIcons';
 import { Button } from '@/components/ui/button';
 
 interface ObsLog {
@@ -36,164 +24,87 @@ interface PatternChartProps {
   rangeEnd?: Date;
 }
 
-interface WeekBucket {
-  weekNum: number;
-  weekStart: Date;
-  counts: Record<string, number>;
-  details: Record<string, { date: string; narrative?: string | null; intensity: number }[]>;
-}
-
 const PatternChart = ({ logs, conceptMap, compact = false, rangeStart, rangeEnd }: PatternChartProps) => {
   const { t, lang, localePath } = useLanguage();
-  const [expanded, setExpanded] = useState<string | null>(null); // "cid-weekIdx"
 
-
-  const { weeks, flaggedConcepts, maxCount } = useMemo(() => {
-    const now = new Date();
-    const buckets: WeekBucket[] = [];
-
-    if (rangeStart && rangeEnd) {
-      let ws = startOfWeek(rangeStart, { weekStartsOn: 1 });
-      const endWeek = startOfWeek(rangeEnd, { weekStartsOn: 1 });
-      let guard = 0;
-      while (!isAfter(ws, endWeek) && guard++ < 104) {
-        buckets.push({ weekNum: getISOWeek(ws), weekStart: ws, counts: {}, details: {} });
-        ws = addWeeks(ws, 1);
-      }
-    } else {
-      for (let i = 7; i >= 0; i--) {
-        const ws = startOfWeek(subWeeks(now, i), { weekStartsOn: 1 });
-        buckets.push({ weekNum: getISOWeek(ws), weekStart: ws, counts: {}, details: {} });
-      }
-    }
-
-    const lower = rangeStart ? startOfDay(rangeStart) : buckets[0].weekStart;
-    const upper = rangeEnd ? endOfDay(rangeEnd) : null;
+  // Calculate cumulative concept occurrence counts in the selected range
+  const conceptCounts = useMemo(() => {
+    const counts: Record<string, number> = {};
+    const startISO = rangeStart ? format(rangeStart, 'yyyy-MM-dd') : null;
+    const endISO = rangeEnd ? format(rangeEnd, 'yyyy-MM-dd') : null;
 
     for (const log of logs) {
-      const d = parseISO(log.logged_at);
-      if (isBefore(d, lower)) continue;
-      if (upper && isAfter(d, upper)) continue;
-      const wn = getISOWeek(d);
-      const bucket = buckets.find((b) => b.weekNum === wn);
-      if (bucket) {
-        bucket.counts[log.concept_id] = (bucket.counts[log.concept_id] || 0) + 1;
-        if (!bucket.details[log.concept_id]) bucket.details[log.concept_id] = [];
-        bucket.details[log.concept_id].push({ date: log.logged_at, narrative: log.user_narrative, intensity: log.intensity });
-      }
+      if (startISO && log.logged_at < startISO) continue;
+      if (endISO && log.logged_at > endISO) continue;
+      counts[log.concept_id] = (counts[log.concept_id] ?? 0) + 1;
     }
 
-    const conceptHits = new Set<string>();
-    let max = 1;
-    for (const b of buckets) {
-      for (const [cid, count] of Object.entries(b.counts)) {
-        if (count >= 3) conceptHits.add(cid);
-        if (count > max) max = count;
-      }
-    }
+    return Object.entries(counts)
+      .map(([id, count]) => {
+        const concept = conceptMap[id];
+        const name = concept ? (lang === 'en' ? concept.name_en : concept.name_hu) : '';
+        return { id, name, count };
+      })
+      .filter((c) => c.name && c.count > 0)
+      .sort((a, b) => b.count - a.count);
+  }, [logs, conceptMap, rangeStart, rangeEnd, lang]);
 
-    return { weeks: buckets, flaggedConcepts: Array.from(conceptHits), maxCount: max };
-  }, [logs, rangeStart, rangeEnd]);
+  // Max occurrence count to scale the progress bars
+  const maxCount = useMemo(() => {
+    return conceptCounts.length > 0 ? Math.max(...conceptCounts.map((c) => c.count)) : 1;
+  }, [conceptCounts]);
 
-  if (flaggedConcepts.length === 0) return null;
+  // If no concepts are flagged or logged, hide the chart completely
+  if (conceptCounts.length === 0) return null;
 
-  const locale = getDateLocale(lang);
-
-  const toggleExpand = (key: string) => setExpanded(prev => prev === key ? null : key);
+  // Show up to 5 concepts in the right rail preview
+  const displayConcepts = conceptCounts.slice(0, 5);
 
   return (
-    <div className="surface-card p-5 space-y-4">
-      <div className="flex items-center justify-between gap-2">
+    <div className="surface-card p-5 space-y-4 animate-fade-in">
+      {/* Header */}
+      <div className="flex items-center justify-between gap-2 border-b border-border/40 pb-3">
         <div className="flex items-center gap-2">
           <FTimeline className="h-4 w-4 text-primary" />
-          <div>
-            <h2 className="text-sm font-semibold text-foreground">{t.timeline.patternChartTitle}</h2>
-            <p className="text-xs text-muted-foreground">{t.timeline.patternChartSubtitle}</p>
-          </div>
+          <h2 className="text-xs font-bold uppercase tracking-widest text-foreground">
+            {t.timeline.patternChartTitle}
+          </h2>
         </div>
-        {!compact && (
-          <Button variant="ghost" size="sm" asChild className="text-primary hover:text-primary hover:bg-primary/10 gap-1 text-[10px] uppercase tracking-wider font-semibold h-7 px-2">
-            <Link to={localePath('/timeline')}>
-              {t.timeline.viewFullTimeline}
-              <FArrowRight className="h-3 w-3" />
-            </Link>
-          </Button>
-        )}
-
+        <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider bg-muted/50 px-2 py-0.5 rounded-full">
+          {t.timeline.patternChartPeriod30}
+        </span>
       </div>
 
-      <div className="space-y-3">
-        {flaggedConcepts.map(cid => {
-          const concept = conceptMap[cid];
-          const name = concept ? (lang === 'en' ? concept.name_en : concept.name_hu) : '—';
-          return (
-            <div key={cid} className="space-y-1.5">
-              <span className="text-xs font-semibold text-foreground">{name}</span>
-              <div className="flex items-end gap-1">
-                {weeks.map((w, wi) => {
-                  const count = w.counts[cid] || 0;
-                  const heightPct = count > 0 ? Math.max(20, (count / maxCount) * 100) : 0;
-                  const isHot = count >= 3;
-                  const expandKey = `${cid}-${wi}`;
-                  const isExpanded = expanded === expandKey;
-                  const details = w.details[cid] || [];
-
-                  return (
-                    <div key={wi} className="flex flex-col items-center flex-1 gap-0.5">
-                      <div className="w-full h-12 flex items-end justify-center">
-                        {count > 0 && (
-                          <button
-                            onClick={() => toggleExpand(expandKey)}
-                            className={`w-full max-w-[28px] rounded-t-lg transition-all cursor-pointer hover:opacity-80 ${isHot ? 'bg-primary ring-2 ring-primary/30' : 'bg-primary/40'} ${isExpanded ? 'ring-2 ring-accent-foreground/40' : ''}`}
-                            style={{ height: `${heightPct}%` }}
-                            title={t.timeline.timesPerWeek.replace('{count}', String(count))}
-                          />
-                        )}
-                      </div>
-                      <span className="text-[10px] text-muted-foreground leading-none">
-                        {t.timeline.weekLabel.replace('{n}', String(w.weekNum))}
-                      </span>
-
-                      {/* Expanded detail panel */}
-                      {isExpanded && details.length > 0 && (
-                        <div className="absolute left-0 right-0 z-10 mt-1">
-                          {/* Rendered below in a separate row */}
-                        </div>
-                      )}
-                    </div>
-                  );
-                })}
+      {/* Horizontal Progress Bars */}
+      <div className="space-y-3.5">
+        {displayConcepts.map((c) => (
+          <div key={c.id} className="flex items-center justify-between gap-3">
+            <span className="text-xs font-semibold text-foreground truncate max-w-[140px]" title={c.name}>
+              {c.name}
+            </span>
+            <div className="flex items-center gap-2 flex-1 justify-end">
+              <div className="w-full max-w-[100px] sm:max-w-[120px] h-1.5 rounded-full bg-muted/60 overflow-hidden">
+                <div
+                  className="h-full bg-primary rounded-full transition-all duration-500"
+                  style={{ width: `${(c.count / maxCount) * 100}%` }}
+                />
               </div>
-
-              {/* Expanded detail row — shown below the bar chart for the active week */}
-              {weeks.map((w, wi) => {
-                const expandKey = `${cid}-${wi}`;
-                if (expanded !== expandKey) return null;
-                const details = w.details[cid] || [];
-                if (details.length === 0) return null;
-                return (
-                  <div key={expandKey} className="bg-accent/30 border border-border/50 rounded-2xl p-3 space-y-1.5 animate-fade-in">
-                    <div className="flex items-center justify-between">
-                      <span className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
-                        {t.timeline.weekLabel.replace('{n}', String(w.weekNum))} — {t.timeline.timesPerWeek.replace('{count}', String(details.length))}
-                      </span>
-                      <button onClick={() => setExpanded(null)} className="text-muted-foreground hover:text-foreground">
-                        <FChevronUp className="h-3 w-3" />
-                      </button>
-                    </div>
-                    {details.sort((a, b) => a.date.localeCompare(b.date)).map((d, di) => (
-                      <div key={di} className="flex items-start gap-2 text-xs">
-                        <span className="text-muted-foreground shrink-0 tabular-nums">{format(parseISO(d.date), 'MMM d', { locale })}</span>
-                        <span className="text-muted-foreground shrink-0">({d.intensity}/5)</span>
-                        {d.narrative && <span className="text-foreground italic">{d.narrative}</span>}
-                      </div>
-                    ))}
-                  </div>
-                );
-              })}
+              <span className="text-xs font-bold text-foreground min-w-[16px] text-right tabular-nums">
+                {c.count}
+              </span>
             </div>
-          );
-        })}
+          </div>
+        ))}
+      </div>
+
+      {/* Bottom Link to Full Analysis */}
+      <div className="border-t border-border/40 pt-3 flex justify-end">
+        <Button variant="ghost" size="sm" asChild className="text-primary hover:text-primary hover:bg-primary/10 gap-1 text-[10px] uppercase tracking-wider font-semibold h-7 px-2">
+          <Link to={localePath('/timeline')}>
+            {t.timeline.patternChartViewFullAnalysis}
+            <FArrowRight className="h-3 w-3" />
+          </Link>
+        </Button>
       </div>
     </div>
   );

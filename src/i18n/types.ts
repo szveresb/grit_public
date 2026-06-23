@@ -361,6 +361,17 @@ export interface Dictionary {
     scoreRangeDescription: string;
     addScoreRange: string;
     answerScores: string;
+    interpretation: string;
+    interpretationProfile: string;
+    interpretationProfileHint: string;
+    interpretationProfileNone: string;
+    interpretationProfilePvs: string;
+    interpretationProfileBrcs: string;
+    interpretationNotePvs: string;
+    interpretationNoteBrcs: string;
+    interpretationRangeLow: string;
+    interpretationRangeMedium: string;
+    interpretationRangeHigh: string;
     scaleType: string;
     scaleRange: string;
     scaleLabels: string;
@@ -452,6 +463,16 @@ export interface Dictionary {
     noPatterns: string;
     pulseDotLabel: string;
     viewFullTimeline: string;
+    patternsGroupedTitle: string;
+    patternsViewAll: string;
+    patternsRecurringTitle: string;
+    patternsRecurringDesc: string;
+    patternsFrequentTitle: string;
+    patternsFrequentDesc: string;
+    patternsIncompleteTitle: string;
+    patternsIncompleteDesc: string;
+    patternChartPeriod30: string;
+    patternChartViewFullAnalysis: string;
     individualMode: string;
     correlationMode: string;
     correlationTitle: string;
@@ -772,6 +793,9 @@ export interface Dictionary {
     stepWhatsGoing: string;
     stepHowHeavy: string;
     stepAnythingElse: string;
+    // Pulse-seeded intensity hints
+    intensityFromPulse: string;
+    intensityCustom: string;
   };
 
   // Disclaimers

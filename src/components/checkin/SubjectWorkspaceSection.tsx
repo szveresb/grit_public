@@ -1,6 +1,7 @@
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { Link } from 'react-router-dom';
 import { RECAP_INACTIVITY_DAYS } from '@/lib/constants';
-import { format, isFuture, parseISO, startOfDay } from 'date-fns';
+import { format, isFuture, parseISO, startOfDay, subDays } from 'date-fns';
 import { useLanguage } from '@/hooks/useLanguage';
 import { useAuth } from '@/hooks/useAuth';
 import { useMoodTrendData } from '@/hooks/useMoodTrendData';
@@ -20,7 +21,7 @@ import type { EntryModalPrefill } from '@/components/checkin/EntryModal';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Button } from '@/components/ui/button';
-import { FChevronDown, FClose, FTrendingUp, FUser, FUsers } from '@/components/icons/FreudIcons';
+import { FChevronDown, FClose, FTrendingUp, FUser, FUsers, FChevronRight, FSearch, FTimeline } from '@/components/icons/FreudIcons';
 import RecapBanner from '@/components/checkin/RecapBanner';
 import MoodTrendChart from '@/components/timeline/MoodTrendChart';
 import PatternChart from '@/components/timeline/PatternChart';
@@ -51,7 +52,7 @@ const SubjectWorkspaceSection = ({
   highlightedDate,
   mode = 'standalone',
 }: SubjectWorkspaceSectionProps) => {
-  const { t, lang } = useLanguage();
+  const { t, lang, localePath } = useLanguage();
   const { user } = useAuth();
   const feedRef = useRef<HTMLDivElement>(null);
   const [refreshKey, setRefreshKey] = useState(0);
@@ -60,7 +61,10 @@ const SubjectWorkspaceSection = ({
   const [entryModalPrefill, setEntryModalPrefill] = useState<EntryModalPrefill | null>(null);
   const [observationModalOpen, setObservationModalOpen] = useState(false);
   const [observationModalDate, setObservationModalDate] = useState(safeFormat(new Date(), 'yyyy-MM-dd', lang));
-  const [observationOpen, setObservationOpen] = useState(true);
+  const [isIncompleteDismissed, setIsIncompleteDismissed] = useState(() => {
+    const saved = localStorage.getItem(`grit_dismissed_incomplete_${subject.id ?? 'self'}`);
+    return saved === 'true';
+  });
   const [calendarMonth, setCalendarMonth] = useState(new Date());
   const [calendarSelectedDate, setCalendarSelectedDate] = useState<Date | null>(null);
   const [pulseDate, setPulseDate] = useState<Date>(() => startOfDay(new Date()));
@@ -134,7 +138,33 @@ const SubjectWorkspaceSection = ({
     localStorage.setItem(`grit_dismissed_patterns_${subject.id ?? 'self'}`, JSON.stringify(updated));
   };
 
+  const handleDismissIncomplete = () => {
+    setIsIncompleteDismissed(true);
+    localStorage.setItem(`grit_dismissed_incomplete_${subject.id ?? 'self'}`, 'true');
+  };
+
   const { resolved: patternRange } = usePatternDetectionRange();
+
+  const isIncreasing = (conceptId: string) => {
+    const midPoint = (patternRange.start.getTime() + patternRange.end.getTime()) / 2;
+    const firstHalfLogs = obsLogs.filter(
+      (log) => log.concept_id === conceptId && parseISO(log.logged_at).getTime() < midPoint
+    );
+    const secondHalfLogs = obsLogs.filter(
+      (log) => log.concept_id === conceptId && parseISO(log.logged_at).getTime() >= midPoint
+    );
+    return secondHalfLogs.length > firstHalfLogs.length;
+  };
+
+  const missingDaysCount = (() => {
+    const last7Days = Array.from({ length: 7 }, (_, i) => {
+      const d = subDays(new Date(), i);
+      return safeFormat(d, 'yyyy-MM-dd', lang);
+    });
+    const activeDays = new Set(timelineItems.map((item) => item.date.slice(0, 10)));
+    const missing = last7Days.filter((day) => !activeDays.has(day));
+    return missing.length;
+  })();
 
   const rangedNudges = (() => {
     const startISO = safeFormat(patternRange.start, 'yyyy-MM-dd', lang);
@@ -155,6 +185,8 @@ const SubjectWorkspaceSection = ({
   })();
 
   const visibleNudges = rangedNudges.filter((n) => !dismissedPatterns.includes(n.id));
+  const showIncompleteNudge = missingDaysCount >= 2 && !isIncompleteDismissed;
+  const showGroupedPatterns = visibleNudges.length > 0 || showIncompleteNudge;
 
   return (
     <ScopedStanceProvider
@@ -212,11 +244,11 @@ const SubjectWorkspaceSection = ({
           <CollapsibleContent className="space-y-6" forceMount={mode !== 'standalone' ? true : undefined}>
             <div className={cn(
               "w-full",
-              !isParallel && "md:grid md:grid-cols-12 md:gap-8 space-y-6 md:space-y-0"
+              !isParallel && "lg:grid lg:grid-cols-12 lg:gap-8 space-y-6 lg:space-y-0"
             )}>
               
-              {/* Subject Content: Action -> Result -> Context */}
-              <div className={cn("flex min-w-0 flex-col gap-6 w-full", !isParallel && "md:col-span-12")}>
+              {/* Left Column: QuickPulse, MoodTrendChart, ObservationStepper, HorizontalTimeline */}
+              <div className={cn("flex min-w-0 flex-col gap-6 w-full", !isParallel && "lg:col-span-8")}>
                 
                 {/* 1. QuickPulse Entry (The Action) */}
                 <ConsentGate consentKey="mood_tracking">
@@ -259,125 +291,186 @@ const SubjectWorkspaceSection = ({
                 </ConsentGate>
 
                 {/* 3. Detailed Actions & Patterns */}
-                <div className={cn(
-                  "w-full grid gap-6 items-start",
-                  !isParallel ? "md:grid-cols-12" : "grid-cols-1"
-                )}>
-                  {/* Left-leaning content in Focus mode */}
-                  <div className={cn("flex min-w-0 flex-col gap-6", !isParallel ? "md:col-span-8" : "w-full")}>
-                    {isSelfContext && daysSinceGlobalActivity !== null && daysSinceGlobalActivity >= RECAP_INACTIVITY_DAYS && !recapDismissed && !isParallel && (
-                      <RecapBanner
-                        days={daysSinceGlobalActivity}
-                        onCatchUp={() => openEntryModal()}
-                        onDismiss={() => setRecapDismissed(true)}
-                      />
-                    )}
+                {isSelfContext && daysSinceGlobalActivity !== null && daysSinceGlobalActivity >= RECAP_INACTIVITY_DAYS && !recapDismissed && !isParallel && (
+                  <RecapBanner
+                    days={daysSinceGlobalActivity}
+                    onCatchUp={() => openEntryModal()}
+                    onDismiss={() => setRecapDismissed(true)}
+                  />
+                )}
 
-                    <Collapsible open={observationOpen} onOpenChange={setObservationOpen}>
-                      <CollapsibleTrigger className={cn("surface-card w-full flex items-center justify-between hover:border-primary/30 transition-colors", isParallel ? "p-4" : "p-5")}>
-                        <h2 className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground">
-                          {t.checkIn.whatHappenedTitle}
-                        </h2>
-                        <FChevronDown className={cn('h-4 w-4 text-muted-foreground transition-transform', observationOpen && 'rotate-180')} />
-                      </CollapsibleTrigger>
-                      <CollapsibleContent className={cn("surface-card border-t-0 rounded-t-none -mt-3", isParallel ? "p-4" : "p-6")}>
-                        <ObservationStepper onLogged={refresh} />
-                      </CollapsibleContent>
-                    </Collapsible>
+                <div className={cn("surface-card", isParallel ? "p-4" : "p-6")}>
+                  <h2 className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground mb-4">
+                    {t.checkIn.whatHappenedTitle}
+                  </h2>
+                  <ObservationStepper onLogged={refresh} />
+                </div>
 
-                    {!isParallel && (
-                      <ErrorBoundary name="HorizontalTimeline">
-                        <div className="surface-card p-4 sm:p-5 animate-fade-in min-w-0">
-                          <h2 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-4">
-                            {t.timeline.allActivity}
-                          </h2>
-                          {calendarLoading ? (
-                            <div className="space-y-3">
-                              <Skeleton className="h-4 w-36 rounded-full" />
-                              <Skeleton className="h-24 w-full rounded-3xl" />
-                            </div>
-                          ) : timelineItems.length === 0 ? (
-                            <p className="text-sm text-muted-foreground">{t.timeline.noActivity}</p>
-                          ) : (
-                            <HorizontalTimeline items={timelineItems} lang={lang} t={t} />
-                          )}
+                {!isParallel && (
+                  <ErrorBoundary name="HorizontalTimeline">
+                    <div className="surface-card p-4 sm:p-5 animate-fade-in min-w-0">
+                      <h2 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground mb-4">
+                        {t.timeline.allActivity}
+                      </h2>
+                      {calendarLoading ? (
+                        <div className="space-y-3">
+                          <Skeleton className="h-4 w-36 rounded-full" />
+                          <Skeleton className="h-24 w-full rounded-3xl" />
                         </div>
-                      </ErrorBoundary>
-                    )}
-                  </div>
+                      ) : timelineItems.length === 0 ? (
+                        <p className="text-sm text-muted-foreground">{t.timeline.noActivity}</p>
+                      ) : (
+                        <HorizontalTimeline
+                          items={timelineItems}
+                          lang={lang}
+                          t={t}
+                          selectedDate={format(pulseDate, 'yyyy-MM-dd')}
+                          onDateSelect={(d) => setPulseDate(startOfDay(parseISO(d)))}
+                        />
+                      )}
+                    </div>
+                  </ErrorBoundary>
+                )}
+              </div>
 
-                  {/* Sidebar-style content in Focus mode */}
-                  <div className={cn("flex min-w-0 flex-col gap-6", !isParallel ? "md:col-span-4" : "w-full")}>
-                    {!isParallel && (
-                      <ErrorBoundary name="FeedCalendar">
-                        <div className="surface-card p-4 sm:p-6 animate-fade-in min-w-0">
-                          {calendarLoading ? (
-                            <div className="space-y-4">
-                              <div className="items-center justify-between flex">
-                                <Skeleton className="h-9 w-9 rounded-full" />
-                                <Skeleton className="h-4 w-28 rounded-full" />
-                                <Skeleton className="h-9 w-9 rounded-full" />
-                              </div>
-                              <Skeleton className="h-52 w-full rounded-3xl" />
-                            </div>
-                          ) : (
-                            <FeedCalendar
-                              items={calendarItems}
-                              currentMonth={calendarMonth}
-                              onMonthChange={setCalendarMonth}
-                              selectedDate={calendarSelectedDate}
-                              onSelectDate={setCalendarSelectedDate}
-                              onEntryClick={handleEntryClick}
-                              onCreateEntry={(date) => isSelfContext ? openEntryModal(date) : openObservationModal(date)}
-                            />
-                          )}
+              {/* Right Column: FeedCalendar, Grouped Nudges, PatternChart */}
+              {!isParallel && (
+                <div className="flex min-w-0 flex-col gap-6 lg:col-span-4 w-full">
+                  <ErrorBoundary name="FeedCalendar">
+                    <div className="surface-card p-4 sm:p-6 animate-fade-in min-w-0">
+                      {calendarLoading ? (
+                        <div className="space-y-4">
+                          <div className="items-center justify-between flex">
+                            <Skeleton className="h-9 w-9 rounded-full" />
+                            <Skeleton className="h-4 w-28 rounded-full" />
+                            <Skeleton className="h-9 w-9 rounded-full" />
+                          </div>
+                          <Skeleton className="h-52 w-full rounded-3xl" />
                         </div>
-                      </ErrorBoundary>
-                    )}
+                      ) : (
+                        <FeedCalendar
+                          items={calendarItems}
+                          currentMonth={calendarMonth}
+                          onMonthChange={setCalendarMonth}
+                          selectedDate={calendarSelectedDate}
+                          onSelectDate={setCalendarSelectedDate}
+                          onEntryClick={handleEntryClick}
+                          onCreateEntry={(date) => isSelfContext ? openEntryModal(date) : openObservationModal(date)}
+                        />
+                      )}
+                    </div>
+                  </ErrorBoundary>
 
-                    {visibleNudges.length > 0 && (
-                      <div className="flex flex-col gap-3">
-                        {visibleNudges.map((nudge) => (
-                          <div key={nudge.id} className="surface-card p-5 pr-10 flex items-start gap-4 animate-slide-in shadow-sm relative group">
-                            <button 
-                              onClick={() => handleDismissPattern(nudge.id)}
-                              className="absolute top-3 right-3 p-1.5 rounded-full hover:bg-muted transition-colors opacity-0 group-hover:opacity-100 focus:opacity-100"
-                              aria-label={t.ui?.close || 'Close'}
-                            >
-                              <FClose className="h-3.5 w-3.5 text-muted-foreground" />
-                            </button>
-                            <div className="h-8 w-8 rounded-full bg-primary/10 flex items-center justify-center shrink-0">
-                              <FTrendingUp className="h-4 w-4 text-primary" />
+                  {showGroupedPatterns && (
+                    <div className="surface-card p-5 sm:p-6 space-y-4 animate-fade-in">
+                      <div className="flex items-center justify-between">
+                        <div className="flex items-center gap-2">
+                          <FTimeline className="h-4 w-4 text-primary" />
+                          <span className="text-xs font-bold uppercase tracking-widest text-foreground">
+                            {t.timeline.patternsGroupedTitle}
+                          </span>
+                        </div>
+                        <Button variant="ghost" size="sm" asChild className="text-primary hover:text-primary hover:bg-primary/10 gap-1 text-[10px] uppercase tracking-wider font-semibold h-7 px-2">
+                          <Link to={localePath('/timeline')}>
+                            {t.timeline.patternsViewAll}
+                            <FChevronRight className="h-3.5 w-3.5" />
+                          </Link>
+                        </Button>
+                      </div>
+
+                      <div className="divide-y divide-border/40">
+                        {/* Missing Data Nudge */}
+                        {showIncompleteNudge && (
+                          <div className="py-3 flex items-start gap-3 relative group/nudge first:pt-0 last:pb-0">
+                            <div className="h-8 w-8 rounded-full bg-orange-50 dark:bg-orange-950/20 text-orange-600 dark:text-orange-400 flex items-center justify-center shrink-0">
+                              <FSearch className="h-4 w-4" />
                             </div>
-                            <div className="space-y-1">
-                              <p className="text-sm font-medium text-foreground leading-snug">
-                                {t.timeline.patternNudge.replace('{name}', nudge.name).replace('{count}', String(nudge.count))}
+                            <div className="flex-1 min-w-0">
+                              <p className="text-xs font-bold text-foreground leading-snug">
+                                {t.timeline.patternsIncompleteTitle}
                               </p>
-                              <p className="text-[10px] text-muted-foreground uppercase tracking-widest font-semibold">
-                                {t.timeline.patternDetected}
+                              <p className="text-[11px] text-muted-foreground mt-0.5 leading-normal">
+                                {t.timeline.patternsIncompleteDesc}
                               </p>
+                            </div>
+                            <div className="flex items-center gap-2 shrink-0 self-center">
+                              <span className="text-[10px] font-bold px-2 py-0.5 rounded-full bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300">
+                                {missingDaysCount}x
+                              </span>
+                              <button
+                                onClick={handleDismissIncomplete}
+                                className="p-1 rounded-full hover:bg-muted transition-colors"
+                                aria-label={t.ui?.close || 'Dismiss'}
+                              >
+                                <FClose className="h-3.5 w-3.5 text-muted-foreground/60 hover:text-foreground" />
+                              </button>
+                              <FChevronRight className="h-3.5 w-3.5 text-muted-foreground/30" />
                             </div>
                           </div>
-                        ))}
-                      </div>
-                    )}
+                        )}
 
-                    <ConsentGate consentKey="pattern_detection">
-                      <ErrorBoundary name="PatternChart">
-                        <div className="animate-fade-in">
-                          <PatternChart
-                            logs={obsLogs}
-                            conceptMap={conceptMap}
-                            compact={isParallel}
-                            rangeStart={patternRange.start}
-                            rangeEnd={patternRange.end}
-                          />
-                        </div>
-                      </ErrorBoundary>
-                    </ConsentGate>
-                  </div>
+                        {/* Concept-based Nudges */}
+                        {visibleNudges.map((nudge) => {
+                          const isFrequent = isIncreasing(nudge.id);
+                          const Icon = isFrequent ? FTrendingUp : FTimeline;
+                          const title = isFrequent ? t.timeline.patternsFrequentTitle : t.timeline.patternsRecurringTitle;
+                          const descTemplate = isFrequent ? t.timeline.patternsFrequentDesc : t.timeline.patternsRecurringDesc;
+                          const desc = descTemplate.replace('{name}', nudge.name);
+                          const pillClass = isFrequent
+                            ? "bg-purple-100 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300"
+                            : "bg-primary/10 text-primary";
+                          const iconBgClass = isFrequent
+                            ? "bg-purple-50 dark:bg-purple-950/20 text-purple-600 dark:text-purple-400"
+                            : "bg-primary/10 text-primary";
+
+                          return (
+                            <div key={nudge.id} className="py-3 flex items-start gap-3 relative group/nudge first:pt-0 last:pb-0">
+                              <div className={cn("h-8 w-8 rounded-full flex items-center justify-center shrink-0", iconBgClass)}>
+                                <Icon className="h-4 w-4" />
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <p className="text-xs font-bold text-foreground leading-snug">
+                                  {title}
+                                </p>
+                                <p className="text-[11px] text-muted-foreground mt-0.5 leading-normal">
+                                  {desc}
+                                </p>
+                              </div>
+                              <div className="flex items-center gap-2 shrink-0 self-center">
+                                <span className={cn("text-[10px] font-bold px-2 py-0.5 rounded-full", pillClass)}>
+                                  {nudge.count}x
+                                </span>
+                                <button
+                                  onClick={() => handleDismissPattern(nudge.id)}
+                                  className="p-1 rounded-full hover:bg-muted transition-colors"
+                                  aria-label={t.ui?.close || 'Dismiss'}
+                                >
+                                  <FClose className="h-3.5 w-3.5 text-muted-foreground/60 hover:text-foreground" />
+                                </button>
+                                <FChevronRight className="h-3.5 w-3.5 text-muted-foreground/30" />
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  )}
+
+                  <ConsentGate consentKey="pattern_detection">
+                    <ErrorBoundary name="PatternChart">
+                      <div className="animate-fade-in">
+                        <PatternChart
+                          logs={obsLogs}
+                          conceptMap={conceptMap}
+                          compact={isParallel}
+                          rangeStart={patternRange.start}
+                          rangeEnd={patternRange.end}
+                        />
+                      </div>
+                    </ErrorBoundary>
+                  </ConsentGate>
                 </div>
-              </div>
+              )}
             </div>
           </CollapsibleContent>
         </section>
