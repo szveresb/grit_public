@@ -14,7 +14,7 @@ import type { Database } from '@/integrations/supabase/types';
 
 type QuestionnaireRow = Pick<
   Database['public']['Tables']['questionnaires']['Row'],
-  'id' | 'title' | 'description' | 'is_published' | 'title_localized' | 'description_localized' | 'interpretation_profile'
+  'id' | 'title' | 'description' | 'is_published' | 'title_localized' | 'description_localized'
 >;
 
 type QuestionRow = Pick<
