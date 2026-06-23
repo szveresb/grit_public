@@ -49,7 +49,7 @@ const Surveys = () => {
       setPublicListLoading(true);
       const { data } = await supabase
         .from('questionnaires')
-        .select('id, title, description, is_published, title_localized, description_localized, interpretation_profile')
+        .select('id, title, description, is_published, title_localized, description_localized')
         .eq('is_published', true)
         .order('created_at', { ascending: true });
 
