@@ -59,7 +59,7 @@ const SelfChecks = () => {
   const [formScoringEnabled, setFormScoringEnabled] = useState(false);
   const [formScoringMode, setFormScoringMode] = useState<string>('sum');
   const [formScoreRanges, setFormScoreRanges] = useState<ScoreRange[]>([]);
-  const [formInterpretationProfile, setFormInterpretationProfile] = useState<string>('');
+  
 
   const [saving, setSaving] = useState(false);
 
@@ -81,12 +81,12 @@ const SelfChecks = () => {
     })));
   };
 
-  const openCreate = () => { setEditingId(null); setFormTitle(''); setFormDesc(''); setFormPublished(false); setFormRepeat(''); setFormScoringEnabled(false); setFormScoringMode('sum'); setFormScoreRanges([]); setFormInterpretationProfile(''); setFormQuestions([{ text: '', type: 'text', options: '', answerScores: {}, scaleMin: 1, scaleMax: 5, scaleLabels: {}, reverseScored: false, excludeFromScoring: false, logicRules: [] }]); setShowForm(true); };
+  const openCreate = () => { setEditingId(null); setFormTitle(''); setFormDesc(''); setFormPublished(false); setFormRepeat(''); setFormScoringEnabled(false); setFormScoringMode('sum'); setFormScoreRanges([]); setFormQuestions([{ text: '', type: 'text', options: '', answerScores: {}, scaleMin: 1, scaleMax: 5, scaleLabels: {}, reverseScored: false, excludeFromScoring: false, logicRules: [] }]); setShowForm(true); };
 
   const openEdit = async (q: Questionnaire) => {
     setEditingId(q.id); setFormTitle(q.title); setFormDesc(q.description ?? ''); setFormPublished(q.is_published); setFormRepeat(q.repeat_interval ?? '');
     setFormScoringEnabled(q.scoring_enabled ?? false); setFormScoringMode(q.scoring_mode ?? 'sum'); setFormScoreRanges((q.score_ranges as ScoreRange[]) ?? []);
-    setFormInterpretationProfile(q.interpretation_profile ?? '');
+    
     const { data } = await supabase.from('questionnaire_questions').select('*').eq('questionnaire_id', q.id).order('sort_order');
     setFormQuestions((data ?? []).map(qq => {
       const opts = qq.options as string[] | null;
@@ -121,7 +121,7 @@ const SelfChecks = () => {
     }
 
     if (editingId) {
-      const { error } = await supabase.from('questionnaires').update({ title: formTitle, description: formDesc || null, is_published: formPublished, repeat_interval: formRepeat || null, scoring_enabled: formScoringEnabled, scoring_mode: formScoringMode, score_ranges: (formScoreRanges.length ? formScoreRanges : null) as unknown as Json, interpretation_profile: formInterpretationProfile || null }).eq('id', editingId);
+      const { error } = await supabase.from('questionnaires').update({ title: formTitle, description: formDesc || null, is_published: formPublished, repeat_interval: formRepeat || null, scoring_enabled: formScoringEnabled, scoring_mode: formScoringMode, score_ranges: (formScoreRanges.length ? formScoreRanges : null) as unknown as Json }).eq('id', editingId);
       if (error) { toast.error(friendlyDbError(error)); setSaving(false); return; }
       await supabase.from('questionnaire_questions').delete().eq('questionnaire_id', editingId);
       const qRows = validQuestions.map((nq, i) => {
@@ -136,7 +136,7 @@ const SelfChecks = () => {
       }
       toast.success(t.questionnaires_manage.questionnaireUpdated);
     } else {
-      const { data: q, error } = await supabase.from('questionnaires').insert({ title: formTitle, description: formDesc || null, created_by: user.id, is_published: formPublished, repeat_interval: formRepeat || null, scoring_enabled: formScoringEnabled, scoring_mode: formScoringMode, score_ranges: (formScoreRanges.length ? formScoreRanges : null) as unknown as Json, interpretation_profile: formInterpretationProfile || null }).select('id').single();
+      const { data: q, error } = await supabase.from('questionnaires').insert({ title: formTitle, description: formDesc || null, created_by: user.id, is_published: formPublished, repeat_interval: formRepeat || null, scoring_enabled: formScoringEnabled, scoring_mode: formScoringMode, score_ranges: (formScoreRanges.length ? formScoreRanges : null) as unknown as Json }).select('id').single();
       if (error || !q) { toast.error(error ? friendlyDbError(error) : t.errors.genericFailure); setSaving(false); return; }
       const qRows = validQuestions.map((nq, i) => {
         let answerScores: Record<string, number> | null = null;
@@ -178,7 +178,6 @@ const SelfChecks = () => {
       scoring_enabled: q.scoring_enabled,
       scoring_mode: q.scoring_mode,
       score_ranges: q.score_ranges,
-      interpretation_profile: q.interpretation_profile,
     }).select('id').single();
     if (error || !cloned) { toast.error(error ? friendlyDbError(error) : t.errors.genericFailure); return; }
     // Clone questions
@@ -345,19 +344,6 @@ const SelfChecks = () => {
                     </div>
                   ))}
                   <Button type="button" variant="outline" size="sm" className="rounded-2xl text-xs" onClick={() => setFormScoreRanges(r => [...r, { min: 0, max: 0, label: '', description: '' }])}><FPlus className="h-3 w-3 mr-1" /> {t.questionnaires_manage.addScoreRange}</Button>
-                </div>
-                <div className="space-y-2">
-                  <Label className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">{t.questionnaires_manage.interpretationProfile}</Label>
-                  <select value={formInterpretationProfile} onChange={e => setFormInterpretationProfile(e.target.value)}
-                    className="w-full border border-input rounded-2xl px-3 py-2 text-sm bg-background">
-                    <option value="">{t.questionnaires_manage.interpretationProfileNone}</option>
-                    {INTERPRETATION_REGISTRY.map((profile) => (
-                      <option key={profile.key} value={profile.key}>
-                        {t.questionnaires_manage[profile.labelKey]}
-                      </option>
-                    ))}
-                  </select>
-                  <p className="text-[11px] text-muted-foreground">{t.questionnaires_manage.interpretationProfileHint}</p>
                 </div>
               </>
             )}

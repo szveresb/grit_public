@@ -14,7 +14,7 @@ import type { Database } from '@/integrations/supabase/types';
 
 type QuestionnaireRow = Pick<
   Database['public']['Tables']['questionnaires']['Row'],
-  'id' | 'title' | 'description' | 'is_published' | 'title_localized' | 'description_localized' | 'interpretation_profile'
+  'id' | 'title' | 'description' | 'is_published' | 'title_localized' | 'description_localized'
 >;
 
 type QuestionRow = Pick<
@@ -49,7 +49,7 @@ const Surveys = () => {
       setPublicListLoading(true);
       const { data } = await supabase
         .from('questionnaires')
-        .select('id, title, description, is_published, title_localized, description_localized, interpretation_profile')
+        .select('id, title, description, is_published, title_localized, description_localized')
         .eq('is_published', true)
         .order('created_at', { ascending: true });
 
@@ -69,7 +69,7 @@ const Surveys = () => {
 
       const { data: questionnaire } = await supabase
         .from('questionnaires')
-        .select('id, title, description, is_published, title_localized, description_localized, interpretation_profile')
+        .select('id, title, description, is_published, title_localized, description_localized')
         .eq('id', questionnaireId)
         .eq('is_published', true)
         .maybeSingle();
@@ -245,7 +245,7 @@ const Surveys = () => {
           <h1 className="text-lg md:text-xl font-bold tracking-tight text-foreground">
             {t.nav.surveys}
           </h1>
-          <p className="mt-1 text-sm text-muted-foreground leading-relaxed">
+          <p className="mt-1 text-sm text-muted-foreground leading-relaxed whitespace-pre-wrap">
             {t.questionnaires_manage.subtitle}
           </p>
           <Link

@@ -10,73 +10,10 @@ export type Database = {
   // Allows to automatically instantiate createClient with right options
   // instead of createClient<Database, { PostgrestVersion: 'XX' }>(URL, KEY)
   __InternalSupabase: {
-    PostgrestVersion: "14.5"
+    PostgrestVersion: "14.1"
   }
   public: {
     Tables: {
-      analyst_export_audit: {
-        Row: {
-          active_user_count: number
-          analyst_email: string | null
-          analyst_user_id: string
-          consent_key_applied: string
-          consented_user_count: number
-          created_at: string
-          export_format: string
-          id: string
-          journal_aggregate_count: number
-          k_anonymity_threshold: number
-          notes: string | null
-          observation_aggregate_count: number
-          outcome: string
-          questionnaire_aggregate_count: number
-          request_ip: string | null
-          role_distribution_count: number
-          threshold_met: boolean
-          user_agent: string | null
-        }
-        Insert: {
-          active_user_count?: number
-          analyst_email?: string | null
-          analyst_user_id: string
-          consent_key_applied?: string
-          consented_user_count?: number
-          created_at?: string
-          export_format?: string
-          id?: string
-          journal_aggregate_count?: number
-          k_anonymity_threshold?: number
-          notes?: string | null
-          observation_aggregate_count?: number
-          outcome: string
-          questionnaire_aggregate_count?: number
-          request_ip?: string | null
-          role_distribution_count?: number
-          threshold_met?: boolean
-          user_agent?: string | null
-        }
-        Update: {
-          active_user_count?: number
-          analyst_email?: string | null
-          analyst_user_id?: string
-          consent_key_applied?: string
-          consented_user_count?: number
-          created_at?: string
-          export_format?: string
-          id?: string
-          journal_aggregate_count?: number
-          k_anonymity_threshold?: number
-          notes?: string | null
-          observation_aggregate_count?: number
-          outcome?: string
-          questionnaire_aggregate_count?: number
-          request_ip?: string | null
-          role_distribution_count?: number
-          threshold_met?: boolean
-          user_agent?: string | null
-        }
-        Relationships: []
-      }
       consent_history_logs: {
         Row: {
           changed_at: string
@@ -389,51 +326,6 @@ export type Database = {
         }
         Relationships: []
       }
-      monitor_checks_daily_summary: {
-        Row: {
-          avg_latency_ms: number | null
-          created_at: string
-          down_checks: number
-          first_check_at: string | null
-          last_check_at: string | null
-          max_latency_ms: number | null
-          min_latency_ms: number | null
-          ok_checks: number
-          summary_date: string
-          target: string
-          total_checks: number
-          updated_at: string
-        }
-        Insert: {
-          avg_latency_ms?: number | null
-          created_at?: string
-          down_checks?: number
-          first_check_at?: string | null
-          last_check_at?: string | null
-          max_latency_ms?: number | null
-          min_latency_ms?: number | null
-          ok_checks?: number
-          summary_date: string
-          target: string
-          total_checks?: number
-          updated_at?: string
-        }
-        Update: {
-          avg_latency_ms?: number | null
-          created_at?: string
-          down_checks?: number
-          first_check_at?: string | null
-          last_check_at?: string | null
-          max_latency_ms?: number | null
-          min_latency_ms?: number | null
-          ok_checks?: number
-          summary_date?: string
-          target?: string
-          total_checks?: number
-          updated_at?: string
-        }
-        Relationships: []
-      }
       monitor_state: {
         Row: {
           consecutive_failures: number
@@ -505,7 +397,7 @@ export type Database = {
       news_items: {
         Row: {
           body: string
-          body_localized: Json
+          body_localized: Json | null
           category: string
           created_at: string
           id: string
@@ -513,25 +405,25 @@ export type Database = {
           published_at: string
           sort_order: number
           title: string
-          title_localized: Json
+          title_localized: Json | null
           updated_at: string
         }
         Insert: {
-          body?: string
-          body_localized?: Json
-          category?: string
+          body: string
+          body_localized?: Json | null
+          category: string
           created_at?: string
           id?: string
           is_published?: boolean
           published_at?: string
           sort_order?: number
-          title?: string
-          title_localized?: Json
+          title: string
+          title_localized?: Json | null
           updated_at?: string
         }
         Update: {
           body?: string
-          body_localized?: Json
+          body_localized?: Json | null
           category?: string
           created_at?: string
           id?: string
@@ -539,7 +431,7 @@ export type Database = {
           published_at?: string
           sort_order?: number
           title?: string
-          title_localized?: Json
+          title_localized?: Json | null
           updated_at?: string
         }
         Relationships: []
@@ -861,67 +753,6 @@ export type Database = {
           },
         ]
       }
-      questionnaire_score_trends: {
-        Row: {
-          id: string
-          last_updated_at: string
-          latest_response_id: string
-          latest_score: number
-          previous_score: number | null
-          questionnaire_id: string
-          subject_id: string | null
-          subject_type: Database["public"]["Enums"]["subject_type"]
-          trend_delta: number
-          user_id: string
-        }
-        Insert: {
-          id?: string
-          last_updated_at?: string
-          latest_response_id: string
-          latest_score?: number
-          previous_score?: number | null
-          questionnaire_id: string
-          subject_id?: string | null
-          subject_type?: Database["public"]["Enums"]["subject_type"]
-          trend_delta?: number
-          user_id: string
-        }
-        Update: {
-          id?: string
-          last_updated_at?: string
-          latest_response_id?: string
-          latest_score?: number
-          previous_score?: number | null
-          questionnaire_id?: string
-          subject_id?: string | null
-          subject_type?: Database["public"]["Enums"]["subject_type"]
-          trend_delta?: number
-          user_id?: string
-        }
-        Relationships: [
-          {
-            foreignKeyName: "questionnaire_score_trends_latest_response_id_fkey"
-            columns: ["latest_response_id"]
-            isOneToOne: false
-            referencedRelation: "questionnaire_responses"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "questionnaire_score_trends_questionnaire_id_fkey"
-            columns: ["questionnaire_id"]
-            isOneToOne: false
-            referencedRelation: "questionnaires"
-            referencedColumns: ["id"]
-          },
-          {
-            foreignKeyName: "questionnaire_score_trends_subject_id_fkey"
-            columns: ["subject_id"]
-            isOneToOne: false
-            referencedRelation: "subjects"
-            referencedColumns: ["id"]
-          },
-        ]
-      }
       questionnaires: {
         Row: {
           created_at: string
@@ -929,7 +760,6 @@ export type Database = {
           description: string | null
           description_localized: Json | null
           id: string
-          interpretation_profile: string | null
           is_published: boolean
           repeat_interval: string | null
           score_ranges: Json | null
@@ -946,7 +776,6 @@ export type Database = {
           description?: string | null
           description_localized?: Json | null
           id?: string
-          interpretation_profile?: string | null
           is_published?: boolean
           repeat_interval?: string | null
           score_ranges?: Json | null
@@ -963,7 +792,6 @@ export type Database = {
           description?: string | null
           description_localized?: Json | null
           id?: string
-          interpretation_profile?: string | null
           is_published?: boolean
           repeat_interval?: string | null
           score_ranges?: Json | null
@@ -1122,31 +950,47 @@ export type Database = {
           created_at: string
           email: string
           id: string
+          invite_code_id: string | null
+          invited_at: string | null
+          locale: string
+          name: string | null
+          status: string
         }
         Insert: {
           created_at?: string
           email: string
           id?: string
+          invite_code_id?: string | null
+          invited_at?: string | null
+          locale?: string
+          name?: string | null
+          status?: string
         }
         Update: {
           created_at?: string
           email?: string
           id?: string
+          invite_code_id?: string | null
+          invited_at?: string | null
+          locale?: string
+          name?: string | null
+          status?: string
         }
-        Relationships: []
+        Relationships: [
+          {
+            foreignKeyName: "waitlist_emails_invite_code_id_fkey"
+            columns: ["invite_code_id"]
+            isOneToOne: false
+            referencedRelation: "invite_codes"
+            referencedColumns: ["id"]
+          },
+        ]
       }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      admin_list_user_emails: {
-        Args: never
-        Returns: {
-          email: string
-          user_id: string
-        }[]
-      }
       analyst_consented_user_ids: {
         Args: { _consent_key: string }
         Returns: string[]
@@ -1194,7 +1038,6 @@ export type Database = {
         Args: { payload: Json; queue_name: string }
         Returns: number
       }
-      generate_invite_code: { Args: never; Returns: string }
       has_any_role: {
         Args: {
           _roles: Database["public"]["Enums"]["app_role"][]
@@ -1227,10 +1070,6 @@ export type Database = {
         }[]
       }
       redeem_invite_access: { Args: { invite_code: string }; Returns: boolean }
-      rollup_and_purge_monitor_checks: {
-        Args: { retention_days?: number }
-        Returns: undefined
-      }
     }
     Enums: {
       app_role:

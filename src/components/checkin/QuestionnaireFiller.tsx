@@ -161,12 +161,12 @@ const QuestionnaireFiller: React.FC<QuestionnaireFillerProps> = ({ onCompleted, 
 
       const questionnaireQuery = supabase
         .from('questionnaires')
-        .select('id, title, title_localized, description, description_localized, repeat_interval, scoring_enabled, scoring_mode, score_ranges, interpretation_profile, is_published, created_at, updated_at, created_by, snomed_code')
+        .select('id, title, title_localized, description, description_localized, repeat_interval, scoring_enabled, scoring_mode, score_ranges, is_published, created_at, updated_at, created_by, snomed_code')
         .eq('is_published', true)
         .order('created_at', { ascending: false });
 
       const [questionnaireResult, responseResult] = await Promise.all([
-        readOnly ? supabase.from('questionnaires').select('id, title, title_localized, description, description_localized, repeat_interval, scoring_enabled, scoring_mode, score_ranges, interpretation_profile, is_published, created_at, updated_at, created_by, snomed_code').order('created_at', { ascending: false }) : questionnaireQuery,
+        readOnly ? supabase.from('questionnaires').select('id, title, title_localized, description, description_localized, repeat_interval, scoring_enabled, scoring_mode, score_ranges, is_published, created_at, updated_at, created_by, snomed_code').order('created_at', { ascending: false }) : questionnaireQuery,
         responsePromise,
       ]);
 
@@ -299,7 +299,7 @@ const QuestionnaireFiller: React.FC<QuestionnaireFillerProps> = ({ onCompleted, 
 
     if (questionnaire?.scoring_enabled) {
       const interpretation = getScoreInterpretation({
-        interpretationProfile: questionnaire.interpretation_profile,
+        interpretationProfile: '',
       });
       const configuredRanges = questionnaire.score_ranges ?? [];
       const score = calculateScore(questionnaire);
@@ -482,7 +482,7 @@ const QuestionnaireFiller: React.FC<QuestionnaireFillerProps> = ({ onCompleted, 
     : null;
   const selectedQuestionnaireInterpretationTarget = selectedQuestionnaire
     ? {
-        interpretationProfile: selectedQuestionnaire.interpretation_profile,
+        interpretationProfile: '',
       }
     : null;
 
