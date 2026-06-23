@@ -482,7 +482,7 @@ const QuestionnaireFiller: React.FC<QuestionnaireFillerProps> = ({ onCompleted, 
     : null;
   const selectedQuestionnaireInterpretationTarget = selectedQuestionnaire
     ? {
-        interpretationProfile: selectedQuestionnaire.interpretation_profile,
+        interpretationProfile: '',
       }
     : null;
 
