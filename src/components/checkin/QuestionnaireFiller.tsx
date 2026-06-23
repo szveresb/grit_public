@@ -299,7 +299,7 @@ const QuestionnaireFiller: React.FC<QuestionnaireFillerProps> = ({ onCompleted, 
 
     if (questionnaire?.scoring_enabled) {
       const interpretation = getScoreInterpretation({
-        interpretationProfile: questionnaire.interpretation_profile,
+        interpretationProfile: '',
       });
       const configuredRanges = questionnaire.score_ranges ?? [];
       const score = calculateScore(questionnaire);
