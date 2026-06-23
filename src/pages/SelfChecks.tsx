@@ -345,19 +345,6 @@ const SelfChecks = () => {
                   ))}
                   <Button type="button" variant="outline" size="sm" className="rounded-2xl text-xs" onClick={() => setFormScoreRanges(r => [...r, { min: 0, max: 0, label: '', description: '' }])}><FPlus className="h-3 w-3 mr-1" /> {t.questionnaires_manage.addScoreRange}</Button>
                 </div>
-                <div className="space-y-2">
-                  <Label className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">{t.questionnaires_manage.interpretationProfile}</Label>
-                  <select value={formInterpretationProfile} onChange={e => setFormInterpretationProfile(e.target.value)}
-                    className="w-full border border-input rounded-2xl px-3 py-2 text-sm bg-background">
-                    <option value="">{t.questionnaires_manage.interpretationProfileNone}</option>
-                    {INTERPRETATION_REGISTRY.map((profile) => (
-                      <option key={profile.key} value={profile.key}>
-                        {t.questionnaires_manage[profile.labelKey]}
-                      </option>
-                    ))}
-                  </select>
-                  <p className="text-[11px] text-muted-foreground">{t.questionnaires_manage.interpretationProfileHint}</p>
-                </div>
               </>
             )}
           </div>
