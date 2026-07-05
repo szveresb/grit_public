@@ -11,6 +11,8 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Switch } from '@/components/ui/switch';
+import SurveyStudiesManager from '@/components/checkin/SurveyStudiesManager';
+import SurveyInterpretationManager from '@/components/checkin/SurveyInterpretationManager';
 import ReactMarkdown from 'react-markdown';
 import { toast } from 'sonner';
 import { friendlyDbError } from '@/lib/db-error';
@@ -21,7 +23,6 @@ import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
-import { INTERPRETATION_REGISTRY } from '@/lib/score-interpretation';
 
 type Questionnaire = Database['public']['Tables']['questionnaires']['Row'] & { score_ranges: ScoreRange[] | null };
 type Question = Database['public']['Tables']['questionnaire_questions']['Row'] & { 
@@ -59,7 +60,7 @@ const SelfChecks = () => {
   const [formScoringEnabled, setFormScoringEnabled] = useState(false);
   const [formScoringMode, setFormScoringMode] = useState<string>('sum');
   const [formScoreRanges, setFormScoreRanges] = useState<ScoreRange[]>([]);
-  
+  const [formInterpretationProfile, setFormInterpretationProfile] = useState<string>('');
 
   const [saving, setSaving] = useState(false);
 
@@ -81,12 +82,12 @@ const SelfChecks = () => {
     })));
   };
 
-  const openCreate = () => { setEditingId(null); setFormTitle(''); setFormDesc(''); setFormPublished(false); setFormRepeat(''); setFormScoringEnabled(false); setFormScoringMode('sum'); setFormScoreRanges([]); setFormQuestions([{ text: '', type: 'text', options: '', answerScores: {}, scaleMin: 1, scaleMax: 5, scaleLabels: {}, reverseScored: false, excludeFromScoring: false, logicRules: [] }]); setShowForm(true); };
+  const openCreate = () => { setEditingId(null); setFormTitle(''); setFormDesc(''); setFormPublished(false); setFormRepeat(''); setFormScoringEnabled(false); setFormScoringMode('sum'); setFormScoreRanges([]); setFormInterpretationProfile(''); setFormQuestions([{ text: '', type: 'text', options: '', answerScores: {}, scaleMin: 1, scaleMax: 5, scaleLabels: {}, reverseScored: false, excludeFromScoring: false, logicRules: [] }]); setShowForm(true); };
 
   const openEdit = async (q: Questionnaire) => {
     setEditingId(q.id); setFormTitle(q.title); setFormDesc(q.description ?? ''); setFormPublished(q.is_published); setFormRepeat(q.repeat_interval ?? '');
     setFormScoringEnabled(q.scoring_enabled ?? false); setFormScoringMode(q.scoring_mode ?? 'sum'); setFormScoreRanges((q.score_ranges as ScoreRange[]) ?? []);
-    
+    setFormInterpretationProfile(q.interpretation_profile ?? '');
     const { data } = await supabase.from('questionnaire_questions').select('*').eq('questionnaire_id', q.id).order('sort_order');
     setFormQuestions((data ?? []).map(qq => {
       const opts = qq.options as string[] | null;
@@ -121,7 +122,7 @@ const SelfChecks = () => {
     }
 
     if (editingId) {
-      const { error } = await supabase.from('questionnaires').update({ title: formTitle, description: formDesc || null, is_published: formPublished, repeat_interval: formRepeat || null, scoring_enabled: formScoringEnabled, scoring_mode: formScoringMode, score_ranges: (formScoreRanges.length ? formScoreRanges : null) as unknown as Json }).eq('id', editingId);
+      const { error } = await supabase.from('questionnaires').update({ title: formTitle, description: formDesc || null, is_published: formPublished, repeat_interval: formRepeat || null, scoring_enabled: formScoringEnabled, scoring_mode: formScoringMode, score_ranges: (formScoreRanges.length ? formScoreRanges : null) as unknown as Json, interpretation_profile: formInterpretationProfile || null }).eq('id', editingId);
       if (error) { toast.error(friendlyDbError(error)); setSaving(false); return; }
       await supabase.from('questionnaire_questions').delete().eq('questionnaire_id', editingId);
       const qRows = validQuestions.map((nq, i) => {
@@ -136,7 +137,7 @@ const SelfChecks = () => {
       }
       toast.success(t.questionnaires_manage.questionnaireUpdated);
     } else {
-      const { data: q, error } = await supabase.from('questionnaires').insert({ title: formTitle, description: formDesc || null, created_by: user.id, is_published: formPublished, repeat_interval: formRepeat || null, scoring_enabled: formScoringEnabled, scoring_mode: formScoringMode, score_ranges: (formScoreRanges.length ? formScoreRanges : null) as unknown as Json }).select('id').single();
+      const { data: q, error } = await supabase.from('questionnaires').insert({ title: formTitle, description: formDesc || null, created_by: user.id, is_published: formPublished, repeat_interval: formRepeat || null, scoring_enabled: formScoringEnabled, scoring_mode: formScoringMode, score_ranges: (formScoreRanges.length ? formScoreRanges : null) as unknown as Json, interpretation_profile: formInterpretationProfile || null }).select('id').single();
       if (error || !q) { toast.error(error ? friendlyDbError(error) : t.errors.genericFailure); setSaving(false); return; }
       const qRows = validQuestions.map((nq, i) => {
         let answerScores: Record<string, number> | null = null;
@@ -178,6 +179,7 @@ const SelfChecks = () => {
       scoring_enabled: q.scoring_enabled,
       scoring_mode: q.scoring_mode,
       score_ranges: q.score_ranges,
+      interpretation_profile: q.interpretation_profile,
     }).select('id').single();
     if (error || !cloned) { toast.error(error ? friendlyDbError(error) : t.errors.genericFailure); return; }
     // Clone questions
@@ -345,6 +347,45 @@ const SelfChecks = () => {
                   ))}
                   <Button type="button" variant="outline" size="sm" className="rounded-2xl text-xs" onClick={() => setFormScoreRanges(r => [...r, { min: 0, max: 0, label: '', description: '' }])}><FPlus className="h-3 w-3 mr-1" /> {t.questionnaires_manage.addScoreRange}</Button>
                 </div>
+                <div className="space-y-2">
+                  <div className="flex items-center gap-3">
+                    <Switch
+                      id="interpretation-enabled"
+                      checked={formInterpretationProfile !== ''}
+                      onCheckedChange={(checked) =>
+                        setFormInterpretationProfile(checked ? 'enabled' : '')
+                      }
+                    />
+                    <div className="flex flex-col gap-0.5">
+                      <Label
+                        htmlFor="interpretation-enabled"
+                        className="text-xs font-semibold uppercase tracking-widest text-muted-foreground"
+                      >
+                        {t.questionnaires_manage.interpretationProfile}
+                      </Label>
+                      <span className="text-[11px] text-muted-foreground">
+                        {t.questionnaires_manage.interpretationProfileHint}
+                      </span>
+                    </div>
+                  </div>
+                </div>
+
+                {formInterpretationProfile !== '' && (
+                  <div className="pt-2">
+                    {editingId ? (
+                      <div className="space-y-4">
+                        <SurveyStudiesManager surveyId={editingId} />
+                        <SurveyInterpretationManager surveyId={editingId} />
+                      </div>
+                    ) : (
+                      <div className="rounded-2xl border border-dashed border-border/80 p-4 text-center bg-muted/10">
+                        <p className="text-xs text-muted-foreground">
+                          {t.questionnaires_manage.studySaveFirst}
+                        </p>
+                      </div>
+                    )}
+                  </div>
+                )}
               </>
             )}
           </div>

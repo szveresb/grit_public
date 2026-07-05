@@ -26,7 +26,7 @@ import ScoreHistory from './ScoreHistory';
 import QuestionnaireCard from './QuestionnaireCard';
 import { evaluateLogicRules, computeVisiblePath, getSkippedQuestionIds, hasBranchingLogic } from '@/lib/logic-engine';
 import type { QuestionWithLogic, LogicRule } from '@/lib/logic-engine';
-import { getScoreInterpretation, type ScoreRange } from '@/lib/score-interpretation';
+import { type ScoreRange } from '@/lib/score-interpretation';
 import type { Database } from '@/integrations/supabase/types';
 
 type Questionnaire = Database['public']['Tables']['questionnaires']['Row'] & {
@@ -124,17 +124,6 @@ const QuestionnaireFiller: React.FC<QuestionnaireFillerProps> = ({ onCompleted, 
   }, [subjectScopeKey]);
 
   useEffect(() => {
-    // Scroll to the container when scoreResult is set or when we return to history after completion
-    if (scoreResult || (activePanel?.mode === 'history' && !selectedQ && !loading)) {
-      // Use a small timeout to ensure the DOM has updated and rendered the new view
-      const timer = setTimeout(() => {
-        containerRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
-      }, 100);
-      return () => clearTimeout(timer);
-    }
-  }, [scoreResult, activePanel?.mode, selectedQ, loading]);
-
-  useEffect(() => {
     const load = async () => {
       setLoading(true);
 
@@ -161,12 +150,12 @@ const QuestionnaireFiller: React.FC<QuestionnaireFillerProps> = ({ onCompleted, 
 
       const questionnaireQuery = supabase
         .from('questionnaires')
-        .select('id, title, title_localized, description, description_localized, repeat_interval, scoring_enabled, scoring_mode, score_ranges, is_published, created_at, updated_at, created_by, snomed_code')
+        .select('id, title, title_localized, description, description_localized, repeat_interval, scoring_enabled, scoring_mode, score_ranges, interpretation_profile, is_published, created_at, updated_at, created_by, snomed_code')
         .eq('is_published', true)
         .order('created_at', { ascending: false });
 
       const [questionnaireResult, responseResult] = await Promise.all([
-        readOnly ? supabase.from('questionnaires').select('id, title, title_localized, description, description_localized, repeat_interval, scoring_enabled, scoring_mode, score_ranges, is_published, created_at, updated_at, created_by, snomed_code').order('created_at', { ascending: false }) : questionnaireQuery,
+        readOnly ? supabase.from('questionnaires').select('id, title, title_localized, description, description_localized, repeat_interval, scoring_enabled, scoring_mode, score_ranges, interpretation_profile, is_published, created_at, updated_at, created_by, snomed_code').order('created_at', { ascending: false }) : questionnaireQuery,
         responsePromise,
       ]);
 
@@ -298,14 +287,10 @@ const QuestionnaireFiller: React.FC<QuestionnaireFillerProps> = ({ onCompleted, 
     const questionnaire = questionnaires.find((candidate) => candidate.id === selectedQ);
 
     if (questionnaire?.scoring_enabled) {
-      const interpretation = getScoreInterpretation({
-        interpretationProfile: '',
-      });
-      const configuredRanges = questionnaire.score_ranges ?? [];
       const score = calculateScore(questionnaire);
       setScoreResult({
         ...score,
-        scoreRanges: configuredRanges.length > 0 ? configuredRanges : interpretation?.scoreRanges ?? [],
+        scoreRanges: (questionnaire.score_ranges ?? []) as ScoreRange[],
       });
     }
 
@@ -480,11 +465,7 @@ const QuestionnaireFiller: React.FC<QuestionnaireFillerProps> = ({ onCompleted, 
   const selectedQuestionnaire = selectedQ
     ? questionnaires.find((candidate) => candidate.id === selectedQ) ?? null
     : null;
-  const selectedQuestionnaireInterpretationTarget = selectedQuestionnaire
-    ? {
-        interpretationProfile: '',
-      }
-    : null;
+
 
   if (loading) return <p className="text-sm text-muted-foreground">{t.loading}</p>;
   if (questionnaires.length === 0) return <p className="text-sm text-muted-foreground">{t.questionnaires_manage.noAvailable}</p>;
@@ -493,11 +474,11 @@ const QuestionnaireFiller: React.FC<QuestionnaireFillerProps> = ({ onCompleted, 
     <div ref={containerRef} className="scroll-mt-20">
       {selectedQ && scoreResult ? (
         <ScoreResults
+          surveyId={selectedQ}
           totalScore={scoreResult.totalScore}
           maxPossibleScore={scoreResult.maxPossibleScore}
           questionScores={scoreResult.questionScores}
           scoreRanges={scoreResult.scoreRanges}
-          questionnaireInterpretationTarget={selectedQuestionnaireInterpretationTarget}
           onClose={() => {
             const completedQuestionnaireId = selectedQ;
             setSelectedQ(null);

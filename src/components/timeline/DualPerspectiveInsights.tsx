@@ -11,7 +11,7 @@ interface Props {
 const formatTpl = (tpl: string, vars: Record<string, string | number>) =>
   tpl.replace(/\{(\w+)\}/g, (_, k) => String(vars[k] ?? ''));
 
-const strengthBand = (r: number, t: Dictionary) => {
+export const strengthBand = (r: number, t: Dictionary) => {
   const a = Math.abs(r);
   if (a < 0.15) return t.timeline.dual.strengthNone;
   if (r < 0) {

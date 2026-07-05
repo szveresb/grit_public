@@ -1,3 +1,9 @@
+/**
+ * Score range definition used by survey editors and result renderers.
+ * Score ranges are survey-owned (stored in questionnaires.score_ranges).
+ * Literature-backed ranges and interpretation notes will come from the
+ * study corpus attached to each survey (Epic 2).
+ */
 export interface ScoreRange {
   min: number;
   max: number;
@@ -6,66 +12,14 @@ export interface ScoreRange {
   description?: string | null;
 }
 
-export type InterpretationProfileKey = 'pvs' | 'brcs';
-
-export interface InterpretationProfileDefinition {
-  key: InterpretationProfileKey;
-  scoreMin: number;
-  scoreMax: number;
-  scoreRanges: ScoreRange[];
-  noteKey: InterpretationProfileKey;
-  labelKey: 'interpretationProfilePvs' | 'interpretationProfileBrcs';
-}
-
-export interface ScoreInterpretation {
-  scoreMin: number;
-  scoreMax: number;
-  scoreRanges: ScoreRange[];
-  noteKey: InterpretationProfileKey;
-}
-
-export const INTERPRETATION_REGISTRY = [
-  {
-    key: 'pvs',
-    scoreMin: 6,
-    scoreMax: 30,
-    scoreRanges: [],
-    noteKey: 'pvs',
-    labelKey: 'interpretationProfilePvs',
-  },
-  {
-    key: 'brcs',
-    scoreMin: 4,
-    scoreMax: 20,
-    scoreRanges: [
-      { min: 4, max: 13, labelKey: 'low', description: null },
-      { min: 14, max: 16, labelKey: 'medium', description: null },
-      { min: 17, max: 20, labelKey: 'high', description: null },
-    ],
-    noteKey: 'brcs',
-    labelKey: 'interpretationProfileBrcs',
-  },
-] as const satisfies readonly InterpretationProfileDefinition[];
-
-export interface QuestionnaireInterpretationTarget {
-  interpretationProfile?: string | null;
-}
-
-export const getScoreInterpretation = (
-  target: QuestionnaireInterpretationTarget | null | undefined
-): ScoreInterpretation | null => {
-  if (!target) return null;
-
-  const profileKey = target.interpretationProfile?.trim().toLowerCase();
-  if (!profileKey) return null;
-
-  const profile = INTERPRETATION_REGISTRY.find((candidate) => candidate.key === profileKey);
-  if (!profile) return null;
-
-  return {
-    scoreMin: profile.scoreMin,
-    scoreMax: profile.scoreMax,
-    scoreRanges: profile.scoreRanges,
-    noteKey: profile.noteKey,
-  };
+/**
+ * Returns true when the survey has interpretation explicitly enabled.
+ * A non-null, non-empty interpretation_profile value is the signal.
+ * The actual interpretation content (notes, citations) is sourced from
+ * the survey's study corpus and will be wired in Epic 2.
+ */
+export const isInterpretationEnabled = (
+  interpretationProfile: string | null | undefined
+): boolean => {
+  return !!interpretationProfile?.trim();
 };

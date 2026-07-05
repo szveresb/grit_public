@@ -10,18 +10,30 @@ Grit.hu is a sensemaking platform designed for individuals in high-conflict rela
 - **State/API:** TanStack Query (React Query v5), Zod.
 - **Design:** Custom "Freud" icon set, "Clinical Core, Human Surface" philosophy.
 
+## Deployment Topology
+
+| Repo | Purpose |
+|------|---------|
+| `grit.hu-beta` | Feature development and staging. All new code lands here first. Test/dummy data only. |
+| `grit.hu` (live) | Production. Real psychometric studies and validation documents are uploaded here by survey managers. Never upload real studies to beta. |
+
+**Promotion path:** Build and test in `grit.hu-beta` → apply migrations to live Supabase → create matching Storage bucket on live project → merge code → survey managers upload real documents in the live app.
+
+> [!IMPORTANT]
+> The `survey_studies` Storage bucket on the **live** project is the source of truth for real study content. The beta bucket is disposable test data.
+
 ## Current Task
 **In progress:** Survey Study Corpus (Epic 2 of 3)
 Survey managers can attach source studies (PDF upload, DOI/URL link, or manual data entry) to any survey that has interpretation enabled. The corpus will feed Epic 3's interpretation generation.
 
 *Epic 2 sub-tasks:*
-- [ ] `survey_studies` table migration
-- [ ] Supabase Storage bucket setup (name, retention, access control, size quota)
-- [ ] PDF upload UI in the survey editor (visible when interpretation is enabled)
-- [ ] DOI/URL entry form + CrossRef Edge Function for metadata auto-population
-- [ ] Manual entry form (`key_findings`, citation fields)
-- [ ] Study list view with status labels and delete/confirm flow
-- [ ] Warning when deleting the last indexed study while interpretation content exists
+- [x] `survey_studies` table migration
+- [x] Supabase Storage bucket setup (name, retention, access control, size quota)
+- [x] PDF upload UI in the survey editor (visible when interpretation is enabled)
+- [x] DOI/URL entry form + CrossRef Edge Function/Direct fetch for metadata auto-population
+- [x] Manual entry form (`key_findings`, citation fields)
+- [x] Study list view with status labels and delete/confirm flow
+- [ ] Warning when deleting the last indexed study while interpretation content exists (deferred to Epic 3)
 
 ## Component Map
 1.  [`src/pages/CheckIn.tsx`](file:///c:/Users/veres.sz/Documents/GitHub/grit.hu/src/pages/CheckIn.tsx) — Unified Emotional Hub: Hub for journals, observations, trends, and charts. Replaces legacy Dashboard/Journal pages.
@@ -34,13 +46,16 @@ Survey managers can attach source studies (PDF upload, DOI/URL link, or manual d
 
 **Feedback Review UI implemented.** Admins can now review and filter user feedback at `/manage-feedback` with context panel hidden for a cleaner view.
 
-**Survey interpretation layer extended.** Questionnaire results now support built-in literature-backed interpretation profiles for the Psychological Vulnerability Scale and the Brief Resilient Coping Scale. PVS remains directional only because the source literature does not define validated clinical cutoffs.
+**Survey interpretation toggle live.** Survey managers can enable knowledge-based interpretation per survey via a boolean toggle in the editor. Interpretation display is now purely driven by `questionnaire.score_ranges` — no named profiles, no hardcoded survey references.
 
 **PWA & Branding finalized.** The platform is now a Progressive Web App with a "Safety First" discreet identity (Short name: "G", minimalist monogram icons). Service worker caching is operational in production with an emergency exit bypass; development preview now unregisters stale service workers to prevent mixed Vite/React chunks.
 
-**Survey interpretation foundation complete (Epic 1).** The title-matching heuristic and `INTERPRETATION_PROFILES` constant have been replaced with a survey-owned `interpretation_profile` key. All callers (`ScoreResults`, `ScoreHistory`, `QuestionnaireFiller`) read from the survey record directly. No backfill was needed — zero production rows matched the old regex. The system is now fully survey-agnostic.
+**Survey interpretation foundation complete (Epic 1 — all stories done, committed).** `INTERPRETATION_REGISTRY`, `getScoreInterpretation`, and all PVS/BRCS-specific i18n keys have been removed. `ScoreResults`, `ScoreHistory`, and `QuestionnaireFiller` now source ranges purely from `questionnaire.score_ranges`. The editor profile dropdown is replaced by a boolean toggle that writes to `interpretation_profile`. Zero legacy references remain in the TypeScript build. No backfill SQL was needed.
 
 **Questionnaire Admin & Observer Role.** The `observer` role has been completely removed from the database and frontend logic. Database RLS policies for questionnaires and their questions have been consolidated under `admin` and `editor` roles. The Admin UI now includes strict validation to prevent publishing empty questionnaires.
 
+**Survey Study Corpus & AI Interpretations (Epic 2 & 3 — completed).** Attached study files (PDF upload, DOIs, manual entries) ground client-facing interpretations. Added an AI Edge function that triggers Gemini-grounded pre-generation of EN/HU score range descriptions mapping to study citations. Results and History screens display cited interpretations.
+
 ## Next Priority
-**Epic 3 — Interpretation Content:** Use the study corpus to generate score-specific, cited interpretation text. Two paths: pre-generated (admin-triggered, stored) and on-demand (fired at result time). Requires AI/Edge Function infrastructure to be decided before execution.
+- Promoted schema changes to live database
+- Configure Lovable/Supabase backend Edge Function secrets (`GEMINI_API_KEY`)

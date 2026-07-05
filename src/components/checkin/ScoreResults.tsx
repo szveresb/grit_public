@@ -1,12 +1,10 @@
+import { useState, useEffect } from 'react';
 import { useLanguage } from '@/hooks/useLanguage';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { FClose } from '@/components/icons/FreudIcons';
-import {
-  getScoreInterpretation,
-  type QuestionnaireInterpretationTarget,
-  type ScoreRange,
-} from '@/lib/score-interpretation';
+import { type ScoreRange } from '@/lib/score-interpretation';
+import { supabase } from '@/integrations/supabase/client';
 
 interface QuestionScore {
   questionText: string;
@@ -15,27 +13,67 @@ interface QuestionScore {
 }
 
 interface ScoreResultsProps {
+  surveyId?: string | null;
   totalScore: number;
   maxPossibleScore: number;
   questionScores: QuestionScore[];
   scoreRanges: ScoreRange[];
-  questionnaireInterpretationTarget?: QuestionnaireInterpretationTarget | null;
   onClose: () => void;
 }
 
 const ScoreResults = ({
+  surveyId,
   totalScore,
   maxPossibleScore,
   questionScores,
   scoreRanges,
-  questionnaireInterpretationTarget,
   onClose,
 }: ScoreResultsProps) => {
-  const { t } = useLanguage();
+  const { t, lang } = useLanguage();
+  const [interpretation, setInterpretation] = useState<{ body: string; citationIds: string[] } | null>(null);
+  const [citationsList, setCitationsList] = useState<any[]>([]);
 
-  const profile = getScoreInterpretation(questionnaireInterpretationTarget);
-  const effectiveRanges = scoreRanges.length > 0 ? scoreRanges : profile?.scoreRanges ?? [];
-  const matchedRange = effectiveRanges.find((r) => totalScore >= r.min && totalScore <= r.max);
+  useEffect(() => {
+    if (!surveyId) return;
+
+    const loadInterpretation = async () => {
+      const { data, error } = await supabase
+        .from('survey_interpretations')
+        .select('*')
+        .eq('survey_id', surveyId);
+
+      if (error || !data || data.length === 0) return;
+
+      const matched = data.find(i => 
+        i.score_min !== null && 
+        i.score_max !== null && 
+        totalScore >= i.score_min && 
+        totalScore <= i.score_max
+      ) || data.find(i => i.score_min === null && i.score_max === null);
+
+      if (matched) {
+        setInterpretation({
+          body: lang === 'hu' ? matched.body_hu : matched.body_en,
+          citationIds: matched.citations || []
+        });
+
+        if (matched.citations && matched.citations.length > 0) {
+          const { data: studyData } = await supabase
+            .from('survey_studies')
+            .select('title, authors, year, citation_string, url, doi')
+            .in('id', matched.citations);
+
+          if (studyData) {
+            setCitationsList(studyData);
+          }
+        }
+      }
+    };
+
+    loadInterpretation();
+  }, [surveyId, totalScore, lang]);
+
+  const matchedRange = scoreRanges.find((r) => totalScore >= r.min && totalScore <= r.max);
   const pct = maxPossibleScore > 0 ? Math.round(Math.max(0, (totalScore / maxPossibleScore) * 100)) : 0;
 
   return (
@@ -54,36 +92,24 @@ const ScoreResults = ({
         <p className="text-xs text-muted-foreground">
           {t.questionnaires_manage.totalScore}: {totalScore} / {maxPossibleScore}
         </p>
-        {profile && (
-          <div className="rounded-2xl border border-border/60 bg-background px-3 py-2 text-left">
-            <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
-              {t.questionnaires_manage.interpretation}
-            </p>
-            <p className="mt-1 text-xs text-muted-foreground">
-              {profile.noteKey === 'pvs'
-                ? t.questionnaires_manage.interpretationNotePvs
-                : t.questionnaires_manage.interpretationNoteBrcs}
-            </p>
-            {effectiveRanges.length > 0 && (
-              <div className="mt-2 flex flex-wrap gap-2">
-                {effectiveRanges.map((range) => (
-                  <span
-                    key={`${range.min}-${range.max}`}
-                    className="rounded-full bg-accent/30 px-2 py-0.5 text-[11px] font-medium text-foreground"
-                  >
-                    {range.label
-                      ? range.label
-                      : range.labelKey === 'low'
-                      ? t.questionnaires_manage.interpretationRangeLow
-                      : range.labelKey === 'medium'
-                        ? t.questionnaires_manage.interpretationRangeMedium
-                        : t.questionnaires_manage.interpretationRangeHigh}
-                    {' '}
-                    {range.min}-{range.max}
-                  </span>
-                ))}
-              </div>
-            )}
+        {scoreRanges.length > 0 && (
+          <div className="mt-2 flex flex-wrap gap-2 justify-center">
+            {scoreRanges.map((range) => (
+              <span
+                key={`${range.min}-${range.max}`}
+                className="rounded-full bg-accent/30 px-2 py-0.5 text-[11px] font-medium text-foreground"
+              >
+                {range.label
+                  ? range.label
+                  : range.labelKey === 'low'
+                  ? t.questionnaires_manage.interpretationRangeLow
+                  : range.labelKey === 'medium'
+                    ? t.questionnaires_manage.interpretationRangeMedium
+                    : t.questionnaires_manage.interpretationRangeHigh}
+                {' '}
+                {range.min}–{range.max}
+              </span>
+            ))}
           </div>
         )}
         {matchedRange && (
@@ -99,6 +125,43 @@ const ScoreResults = ({
             </span>
             {matchedRange.description && (
               <p className="text-xs text-muted-foreground leading-relaxed">{matchedRange.description}</p>
+            )}
+          </div>
+        )}
+        {interpretation && (
+          <div className="rounded-2xl border border-border/60 bg-background px-4 py-3.5 text-left space-y-2.5 mt-3">
+            <p className="text-[11px] font-semibold uppercase tracking-wide text-muted-foreground">
+              {t.questionnaires_manage.interpretation}
+            </p>
+            <p className="text-xs text-muted-foreground leading-relaxed">
+              {interpretation.body}
+            </p>
+            {citationsList.length > 0 && (
+              <div className="border-t border-border/40 pt-2.5 space-y-1.5">
+                <span className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground block">
+                  {t.questionnaires_manage.citationTitle}
+                </span>
+                <ul className="space-y-1.5 list-none pl-0">
+                  {citationsList.map((cite, i) => (
+                    <li key={i} className="text-[10px] text-muted-foreground leading-snug">
+                      {cite.url || cite.doi ? (
+                        <a
+                          href={cite.url || `https://doi.org/${cite.doi}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="hover:underline hover:text-primary transition-colors block font-medium"
+                        >
+                          {cite.citation_string || `${cite.authors || 'Unknown'} (${cite.year || 'n.d.'}). ${cite.title}`}
+                        </a>
+                      ) : (
+                        <span>
+                          {cite.citation_string || `${cite.authors || 'Unknown'} (${cite.year || 'n.d.'}). ${cite.title}`}
+                        </span>
+                      )}
+                    </li>
+                  ))}
+                </ul>
+              </div>
             )}
           </div>
         )}

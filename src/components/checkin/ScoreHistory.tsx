@@ -11,7 +11,7 @@ import { FClock, FChevronDown, FTrendingUp } from '@/components/icons/FreudIcons
 import { Progress } from '@/components/ui/progress';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { useQuestionnaireTrends } from '@/hooks/useQuestionnaireTrends';
-import { getScoreInterpretation, type ScoreRange } from '@/lib/score-interpretation';
+import { type ScoreRange } from '@/lib/score-interpretation';
 
 interface ScoreEntry {
   id: string;
@@ -174,15 +174,12 @@ const ScoreHistory = ({
       for (const response of responses) {
         if (!grouped.has(response.questionnaire_id)) {
           const questionnaire = titleMap.get(response.questionnaire_id);
-          const interpretation = getScoreInterpretation({
-            interpretationProfile: questionnaire?.interpretation_profile ?? null,
-          });
-          const configuredRanges = questionnaire?.score_ranges ?? [];
+          const configuredRanges = (questionnaire?.score_ranges ?? []) as ScoreRange[];
           grouped.set(response.questionnaire_id, {
             questionnaire_id: response.questionnaire_id,
             title: questionnaireName(questionnaire),
             entries: [],
-            scoreRanges: configuredRanges.length > 0 ? configuredRanges : interpretation?.scoreRanges ?? [],
+            scoreRanges: configuredRanges,
             maxPossibleScore: maxScoreMap.get(response.questionnaire_id) ?? 0,
             scoringEnabled: questionnaire?.scoring_enabled ?? false,
             interpretationProfile: questionnaire?.interpretation_profile ?? null,
@@ -314,9 +311,6 @@ const ScoreHistoryGroup = ({
   toggleEntry,
   getMatchedRange,
 }: ScoreHistoryGroupProps) => {
-  const interpretation = getScoreInterpretation({
-    interpretationProfile: group.interpretationProfile,
-  });
   const chartData = group.entries.map((entry) => ({
     date: safeFormat(entry.completed_at, 'MM/dd', lang),
     score: entry.total_score,
@@ -337,6 +331,50 @@ const ScoreHistoryGroup = ({
     group.scoringEnabled && group.maxPossibleScore > 0
       ? Math.round((latest.total_score / group.maxPossibleScore) * 100)
       : 0;
+
+  const [interpretation, setInterpretation] = useState<{ body: string; citations: any[] } | null>(null);
+
+  useEffect(() => {
+    if (!group.questionnaire_id || latest?.total_score === undefined) return;
+
+    const loadInterpretation = async () => {
+      const { data, error } = await supabase
+        .from('survey_interpretations')
+        .select('*')
+        .eq('survey_id', group.questionnaire_id);
+
+      if (error || !data || data.length === 0) return;
+
+      const matched = data.find(i => 
+        i.score_min !== null && 
+        i.score_max !== null && 
+        latest.total_score >= i.score_min && 
+        latest.total_score <= i.score_max
+      ) || data.find(i => i.score_min === null && i.score_max === null);
+
+      if (matched) {
+        let citationsList: any[] = [];
+        if (matched.citations && matched.citations.length > 0) {
+          const { data: studyData } = await supabase
+            .from('survey_studies')
+            .select('title, authors, year, citation_string, url, doi')
+            .in('id', matched.citations);
+          if (studyData) {
+            citationsList = studyData;
+          }
+        }
+
+        setInterpretation({
+          body: lang === 'hu' ? matched.body_hu : matched.body_en,
+          citations: citationsList
+        });
+      } else {
+        setInterpretation(null);
+      }
+    };
+
+    loadInterpretation();
+  }, [group.questionnaire_id, latest?.total_score, lang]);
 
   return (
     <div className={`rounded-[1.5rem] border border-border/60 ${compact ? 'p-3 space-y-3' : 'p-4 space-y-4'}`}>
@@ -396,11 +434,41 @@ const ScoreHistoryGroup = ({
                   )}
                 </div>
                 {interpretation && (
-                  <p className="text-[11px] leading-relaxed text-muted-foreground">
-                    {interpretation.noteKey === 'pvs'
-                      ? t.questionnaires_manage.interpretationNotePvs
-                      : t.questionnaires_manage.interpretationNoteBrcs}
-                  </p>
+                  <div className="rounded-xl border border-border/50 bg-background/50 p-2.5 text-left space-y-1.5 mt-2">
+                    <p className="text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
+                      {t.questionnaires_manage.interpretation}
+                    </p>
+                    <p className="text-[11px] text-muted-foreground leading-relaxed">
+                      {interpretation.body}
+                    </p>
+                    {interpretation.citations.length > 0 && (
+                      <div className="border-t border-border/30 pt-1.5 space-y-1">
+                        <span className="text-[9px] font-semibold uppercase tracking-wider text-muted-foreground block">
+                          {t.questionnaires_manage.citationTitle}
+                        </span>
+                        <ul className="space-y-1 pl-0 list-none">
+                          {interpretation.citations.map((cite, i) => (
+                            <li key={i} className="text-[9px] text-muted-foreground leading-snug">
+                              {cite.url || cite.doi ? (
+                                <a
+                                  href={cite.url || `https://doi.org/${cite.doi}`}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="hover:underline hover:text-primary transition-colors block font-medium"
+                                >
+                                  {cite.citation_string || `${cite.authors || 'Unknown'} (${cite.year || 'n.d.'}). ${cite.title}`}
+                                </a>
+                              ) : (
+                                <span>
+                                  {cite.citation_string || `${cite.authors || 'Unknown'} (${cite.year || 'n.d.'}). ${cite.title}`}
+                                </span>
+                              )}
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                  </div>
                 )}
               </div>
             )}
@@ -469,7 +537,7 @@ const ScoreHistoryGroup = ({
                           <FClock className="h-3 w-3" />
                           <span>{safeFormat(entry.completed_at, 'PPp', lang)}</span>
                           {entryRange && (
-                            <span className="rounded-full border border-border px-1.5 py-0.5 text-[10px]">
+                            <span className="rounded-full bg-accent/30 px-1.5 py-0.5 text-[10px]">
                               {renderRangeLabel(entryRange, t)}
                             </span>
                           )}
