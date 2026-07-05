@@ -56,6 +56,10 @@ Survey managers can attach source studies (PDF upload, DOI/URL link, or manual d
 
 **Survey Study Corpus & AI Interpretations (Epic 2 & 3 — completed).** Attached study files (PDF upload, DOIs, manual entries) ground client-facing interpretations. Added an AI Edge function that triggers Gemini-grounded pre-generation of EN/HU score range descriptions mapping to study citations. Results and History screens display cited interpretations.
 
+**Timeline mood comparison chart refactored.** The top chart on the relative timeline view now plots user's daily average mood alongside selected observed people's daily average mood using a clean multi-select component. Faded dashed states are shown for observed people with no data.
+
+**Timeline observation intensity comparison chart implemented.** In individual self mode, a dedicated line chart compares daily intensities across selected concepts (up to 3). Repeated daily logs for the same concept are aggregated by highest intensity, unlogged days are represented as gaps, and the selected chips default to concepts with the most recent activity.
+
 ## Next Priority
 - Promoted schema changes to live database
 - Configure Lovable/Supabase backend Edge Function secrets (`GEMINI_API_KEY`)

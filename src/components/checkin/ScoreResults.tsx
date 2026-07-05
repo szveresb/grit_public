@@ -30,8 +30,48 @@ const ScoreResults = ({
   onClose,
 }: ScoreResultsProps) => {
   const { t, lang } = useLanguage();
-  const [interpretation] = useState<{ body: string; citationIds: string[] } | null>(null);
-  const [citationsList] = useState<any[]>([]);
+  const [interpretation, setInterpretation] = useState<{ body: string; citationIds: string[] } | null>(null);
+  const [citationsList, setCitationsList] = useState<any[]>([]);
+
+  useEffect(() => {
+    if (!surveyId) return;
+
+    const loadInterpretation = async () => {
+      const { data, error } = await supabase
+        .from('survey_interpretations')
+        .select('*')
+        .eq('survey_id', surveyId);
+
+      if (error || !data || data.length === 0) return;
+
+      const matched = data.find(i => 
+        i.score_min !== null && 
+        i.score_max !== null && 
+        totalScore >= i.score_min && 
+        totalScore <= i.score_max
+      ) || data.find(i => i.score_min === null && i.score_max === null);
+
+      if (matched) {
+        setInterpretation({
+          body: lang === 'hu' ? matched.body_hu : matched.body_en,
+          citationIds: matched.citations || []
+        });
+
+        if (matched.citations && matched.citations.length > 0) {
+          const { data: studyData } = await supabase
+            .from('survey_studies')
+            .select('title, authors, year, citation_string, url, doi')
+            .in('id', matched.citations);
+
+          if (studyData) {
+            setCitationsList(studyData);
+          }
+        }
+      }
+    };
+
+    loadInterpretation();
+  }, [surveyId, totalScore, lang]);
 
   const matchedRange = scoreRanges.find((r) => totalScore >= r.min && totalScore <= r.max);
   const pct = maxPossibleScore > 0 ? Math.round(Math.max(0, (totalScore / maxPossibleScore) * 100)) : 0;

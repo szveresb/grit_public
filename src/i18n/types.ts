@@ -513,10 +513,18 @@ export interface Dictionary {
     selfNotEnoughOverlap: string;
     selfNotEnoughOverlapDesc: string;
     selfCoOccurrenceDesc: string;
+    compareSubjectsTitle: string;
+    compareSubjectsSubtitle: string;
+    noDataMarker: string;
     questionnaireTrendsTitle: string;
     questionnaireTrendsSubtitle: string;
     latestScore: string;
     previousScore: string;
+    questionnaireFillsSummary: string;
+    selfEmptyQuestionnairesFillsButNoScored: string;
+    selfEmptyQuestionnairesNoFills: string;
+    completedAtLabel: string;
+    noChange: string;
     pulseDotLabel: string;
     viewFullTimeline: string;
     patternsGroupedTitle: string;
@@ -539,6 +547,12 @@ export interface Dictionary {
     environmentDesc: string;
     observationCountSingle: string;
     observationCountPlural: string;
+    observationIntensityTitle: string;
+    observationIntensitySubtitle: string;
+    observationIntensityEmpty: string;
+    observationIntensitySelectPrompt: string;
+    observationIntensityHelper: string;
+    observationIntensityTitleSelectLimit: string;
     dual: {
       windowLabel: string;
       window7d: string;
@@ -571,6 +585,13 @@ export interface Dictionary {
       conceptDays: string;
       noPairedConcepts: string;
       disclaimer: string;
+      emptyStateTitle: string;
+      emptyStateDesc: string;
+      noSubjectsTitle: string;
+      noSubjectsDesc: string;
+      noSubjectsCta: string;
+      selectSubjectTitle: string;
+      selectSubjectDesc: string;
     };
   };
 

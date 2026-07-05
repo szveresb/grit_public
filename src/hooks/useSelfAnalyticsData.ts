@@ -50,6 +50,7 @@ export const useSelfAnalyticsData = ({
   const [obsRows, setObsRows] = useState<Array<{ concept_id: string; intensity: number; logged_at: string }>>([]);
   const [concepts, setConcepts] = useState<Record<string, { name_hu: string; name_en: string }>>({});
   const [questionnaireTrends, setQuestionnaireTrends] = useState<QuestionnaireTrendWithTitle[]>([]);
+  const [questionnaireFillsCount, setQuestionnaireFillsCount] = useState<number>(0);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -61,6 +62,7 @@ export const useSelfAnalyticsData = ({
         setObsRows([]);
         setConcepts({});
         setQuestionnaireTrends([]);
+        setQuestionnaireFillsCount(0);
         setLoading(false);
         return;
       }
@@ -86,18 +88,20 @@ export const useSelfAnalyticsData = ({
         .is('subject_id', null)
         .gte('logged_at', startDate);
 
-      // 3. Fetch Self Questionnaire Trends
-      const trendsPromise = supabase
-        .from('questionnaire_score_trends' as any)
-        .select('*, questionnaires(title, title_localized)')
+      // 3. Fetch Self Questionnaire Responses for Trends
+      const responsesPromise = supabase
+        .from('questionnaire_responses')
+        .select('id, questionnaire_id, total_score, completed_at, questionnaires(title, title_localized)')
         .eq('user_id', userId)
         .eq('subject_type', 'self')
-        .is('subject_id', null);
+        .is('subject_id', null)
+        .not('total_score', 'is', null)
+        .order('completed_at', { ascending: true });
 
-      const [moodRes, obsRes, trendsRes] = await Promise.all([
+      const [moodRes, obsRes, responsesRes] = await Promise.all([
         moodPromise,
         obsPromise,
-        trendsPromise,
+        responsesPromise,
       ]);
 
       if (cancelled) return;
@@ -108,7 +112,48 @@ export const useSelfAnalyticsData = ({
         intensity: number;
         logged_at: string;
       }>;
-      const trendsRows = (trendsRes.data ?? []) as unknown as QuestionnaireTrendWithTitle[];
+      
+      const responsesRows = responsesRes.data ?? [];
+      const questionnaireFillsCountVal = responsesRows.filter((r) => r.completed_at >= startDate).length;
+      
+      const scoredResponses = responsesRows.filter((r) => r.total_score !== null);
+      const trendsMap = new Map<string, any[]>();
+      
+      scoredResponses.forEach((row) => {
+        if (!trendsMap.has(row.questionnaire_id)) {
+          trendsMap.set(row.questionnaire_id, []);
+        }
+        trendsMap.get(row.questionnaire_id)!.push(row);
+      });
+
+      const trendsRows: QuestionnaireTrendWithTitle[] = [];
+
+      for (const [qId, rs] of trendsMap.entries()) {
+        const inWindow = rs.filter((r) => r.completed_at >= startDate);
+        if (inWindow.length === 0) continue;
+
+        const latest = rs[rs.length - 1];
+        const prev = rs.length > 1 ? rs[rs.length - 2] : null;
+
+        trendsRows.push({
+          id: latest.id,
+          user_id: userId as string,
+          questionnaire_id: qId,
+          subject_type: 'self',
+          subject_id: null,
+          latest_response_id: latest.id,
+          latest_score: latest.total_score,
+          previous_score: prev ? prev.total_score : null,
+          trend_delta: prev ? latest.total_score - prev.total_score : 0,
+          last_updated_at: latest.completed_at,
+          questionnaires: latest.questionnaires as any,
+          completion_count: rs.length,
+          ordered_entries: rs.map((r) => ({ date: r.completed_at, score: r.total_score })),
+          in_window_scores: inWindow.map((r) => r.total_score),
+        } as any);
+      }
+
+      trendsRows.sort((a, b) => new Date(b.last_updated_at).getTime() - new Date(a.last_updated_at).getTime());
 
       // Fetch concept metadata
       const conceptIds = Array.from(new Set(selfObsRows.map((r) => r.concept_id)));
@@ -163,6 +208,7 @@ export const useSelfAnalyticsData = ({
       setObsRows(selfObsRows);
       setConcepts(conceptMap);
       setQuestionnaireTrends(trendsRows);
+      setQuestionnaireFillsCount(questionnaireFillsCountVal);
       setLoading(false);
     };
 
@@ -250,6 +296,7 @@ export const useSelfAnalyticsData = ({
     overlapStats,
     conceptCorrelations,
     questionnaireTrends,
+    questionnaireFillsCount,
     loading,
   };
 };
