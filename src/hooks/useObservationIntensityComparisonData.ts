@@ -24,12 +24,16 @@ export interface UseObservationIntensityComparisonDataResult {
 
 interface UseObservationIntensityComparisonDataParams {
   userId: string | null | undefined;
+  subjectType: 'self' | 'relative';
+  subjectId: string | null;
   days?: number;
   refreshKey?: number;
 }
 
 export const useObservationIntensityComparisonData = ({
   userId,
+  subjectType,
+  subjectId,
   days = 30,
   refreshKey = 0,
 }: UseObservationIntensityComparisonDataParams): UseObservationIntensityComparisonDataResult => {
@@ -55,14 +59,29 @@ export const useObservationIntensityComparisonData = ({
       setLoading(true);
       const startDate = format(subDays(new Date(), days), 'yyyy-MM-dd');
 
-      // Fetch Self Observations within the active days range
-      const { data: obsLogsRes, error } = await supabase
+      // Build query dynamically based on subjectType and subjectId
+      let query = supabase
         .from('observation_logs')
         .select('concept_id, intensity, logged_at')
         .eq('user_id', userId)
-        .eq('subject_type', 'self')
-        .is('subject_id', null)
+        .eq('subject_type', subjectType)
         .gte('logged_at', startDate);
+
+      if (subjectType === 'relative') {
+        if (!subjectId) {
+          setData([]);
+          setConcepts([]);
+          setDefaultSelectedConceptIds([]);
+          setConceptHasData({});
+          setLoading(false);
+          return;
+        }
+        query = query.eq('subject_id', subjectId);
+      } else {
+        query = query.is('subject_id', null);
+      }
+
+      const { data: obsLogsRes, error } = await query;
 
       if (cancelled) return;
 
@@ -100,7 +119,6 @@ export const useObservationIntensityComparisonData = ({
       const validLogs = obsLogsRes.filter((log) => conceptMap.has(log.concept_id));
 
       // Aggregate repeated logs for the same concept on the same day by taking the highest intensity
-      // key: date_conceptId -> max intensity
       const dailyConceptIntensity: Record<string, number> = {};
       validLogs.forEach((log) => {
         const key = `${log.logged_at}_${log.concept_id}`;
@@ -146,7 +164,7 @@ export const useObservationIntensityComparisonData = ({
         points.push(point);
       }
 
-      // Check if each concept has data (should be true for all in range, but match contract)
+      // Check if each concept has data
       const hasDataMap: Record<string, boolean> = {};
       conceptList.forEach((c) => {
         hasDataMap[c.id] = points.some((p) => p[c.id] !== null);
@@ -164,7 +182,7 @@ export const useObservationIntensityComparisonData = ({
     return () => {
       cancelled = true;
     };
-  }, [userId, days, refreshKey]);
+  }, [userId, subjectType, subjectId, days, refreshKey]);
 
   return { data, loading, concepts, defaultSelectedConceptIds, conceptHasData };
 };

@@ -179,6 +179,8 @@ const Timeline = () => {
     conceptHasData: obsIntensityConceptHasData,
   } = useObservationIntensityComparisonData({
     userId: user?.id,
+    subjectType,
+    subjectId: selectedSubjectId,
     days: windowDays,
   });
 
@@ -198,6 +200,12 @@ const Timeline = () => {
       return stillValid;
     });
   }, [obsIntensityConcepts, defaultSelectedConceptIds, obsIntensityLoading, hasInitializedConceptIds]);
+
+  // Reset initial flag when stance or selected person changes
+  useEffect(() => {
+    setHasInitializedConceptIds(false);
+    setSelectedConceptIds([]);
+  }, [subjectType, selectedSubjectId]);
 
   const selfMoodPoints = useMemo(() => {
     return dailySeries
@@ -695,7 +703,55 @@ const Timeline = () => {
             </div>
 
           ) : (
-            <PatternPulseChart logs={obsLogs} conceptMap={conceptMap} />
+            <div className="space-y-6">
+              {/* Range selector for relative individual analytics */}
+              <div className="flex items-center justify-center gap-2 pt-3 border-t border-border/50 animate-fade-in">
+                <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground mr-1">
+                  {t.timeline.dual.windowLabel}
+                </span>
+                {([7, 30, 90] as const).map((w) => (
+                  <button
+                    key={w}
+                    onClick={() => setWindowDays(w)}
+                    className={`px-3 py-1 text-[11px] font-semibold rounded-full border transition-colors ${
+                      windowDays === w
+                        ? 'bg-primary text-primary-foreground border-primary'
+                        : 'bg-background text-muted-foreground border-border hover:bg-muted/40'
+                    }`}
+                  >
+                    {w === 7 ? t.timeline.dual.window7d : w === 30 ? t.timeline.dual.window30d : t.timeline.dual.window90d}
+                  </button>
+                ))}
+              </div>
+
+              {/* Observation Intensity Comparison */}
+              <ErrorBoundary name="RelativeObservationIntensityComparison">
+                <ObservationIntensityChart
+                  data={obsIntensityData}
+                  concepts={obsIntensityConcepts}
+                  selectedConceptIds={selectedConceptIds}
+                  onSelectedConceptIdsChange={setSelectedConceptIds}
+                  conceptHasData={obsIntensityConceptHasData}
+                  lang={lang}
+                  t={t}
+                />
+              </ErrorBoundary>
+
+              {/* Observation Patterns */}
+              <ErrorBoundary name="RelativeObservationPatterns">
+                {obsLogs.length === 0 ? (
+                  <div className="surface-card p-5 space-y-2">
+                    <h2 className="text-sm font-semibold text-foreground">{t.timeline.patternChartTitle}</h2>
+                    <p className="text-xs text-muted-foreground">{t.timeline.selfEmptyObservations}</p>
+                  </div>
+                ) : (
+                  <div className="space-y-2">
+                    <h2 className="text-sm font-semibold text-foreground px-1">{t.timeline.patternChartTitle}</h2>
+                    <PatternPulseChart logs={obsLogs} conceptMap={conceptMap} />
+                  </div>
+                )}
+              </ErrorBoundary>
+            </div>
           )}
         </ErrorBoundary>
       </div>

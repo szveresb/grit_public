@@ -66,6 +66,50 @@ const ObservationIntensityChart = ({
     return selectedConceptIds.some((id) => data.some((p) => p[id] !== null));
   }, [data, selectedConceptIds]);
 
+  // Compute trendlines for selected concepts using simple linear regression
+  const chartData = useMemo(() => {
+    const updatedData = data.map((p) => ({ ...p }));
+
+    selectedConceptIds.forEach((conceptId) => {
+      const validPoints: { x: number; y: number }[] = [];
+      updatedData.forEach((p, index) => {
+        const val = p[conceptId];
+        if (val !== null && val !== undefined) {
+          validPoints.push({ x: index, y: Number(val) });
+        }
+      });
+
+      // We need at least 2 points to compute a trendline
+      if (validPoints.length >= 2) {
+        const xs = validPoints.map((pt) => pt.x);
+        const ys = validPoints.map((pt) => pt.y);
+        
+        const n = xs.length;
+        let sx = 0, sy = 0, sxx = 0, sxy = 0;
+        for (let i = 0; i < n; i++) {
+          sx += xs[i];
+          sy += ys[i];
+          sxx += xs[i] * xs[i];
+          sxy += xs[i] * ys[i];
+        }
+        
+        const denom = n * sxx - sx * sx;
+        if (denom !== 0) {
+          const slope = (n * sxy - sx * sy) / denom;
+          const intercept = (sy - slope * sx) / n;
+
+          updatedData.forEach((p, index) => {
+            const trendVal = slope * index + intercept;
+            // Clamp trendline values to the fixed YAxis bounds [1, 5]
+            p[`${conceptId}_trend`] = Math.min(Math.max(trendVal, 1), 5);
+          });
+        }
+      }
+    });
+
+    return updatedData;
+  }, [data, selectedConceptIds]);
+
   if (concepts.length === 0) {
     return (
       <div className="surface-card p-5 space-y-2 border border-border/50 rounded-2xl shadow-sm">
@@ -73,7 +117,7 @@ const ObservationIntensityChart = ({
           {t.timeline.observationIntensityTitle || (lang === 'en' ? 'Observation Intensity Comparison' : 'Megfigyelések Intenzitása')}
         </h2>
         <p className="text-xs text-muted-foreground animate-fade-in">
-          {t.timeline.observationIntensityEmpty || (lang === 'en' ? 'No self observations in the active range.' : 'Nincs elég megfigyelési adat a kiválasztott időszakban.')}
+          {t.timeline.observationIntensityEmpty || (lang === 'en' ? 'No observations in the active range.' : 'Nincs elég megfigyelési adat a kiválasztott időszakban.')}
         </p>
       </div>
     );
@@ -164,7 +208,7 @@ const ObservationIntensityChart = ({
         </div>
       ) : (
         <ChartContainer config={chartConfig} className="h-[280px] w-full">
-          <LineChart data={data} margin={{ top: 20, right: 10, bottom: 10, left: 0 }}>
+          <LineChart data={chartData} margin={{ top: 20, right: 10, bottom: 10, left: 0 }}>
             <CartesianGrid strokeDasharray="3 3" className="stroke-border/30" vertical={false} />
 
             <XAxis
@@ -203,7 +247,7 @@ const ObservationIntensityChart = ({
                     <p className="font-bold text-foreground border-b border-border/50 pb-1.5 mb-1.5">{dateStr}</p>
                     {concepts
                       .filter((c) => selectedConceptIds.includes(c.id))
-                      .map((c, index) => {
+                      .map((c) => {
                         const color = colorsPalette[concepts.indexOf(c) % colorsPalette.length];
                         const val = p[c.id];
                         const name = lang === 'en' ? c.name_en : c.name_hu;
@@ -226,21 +270,39 @@ const ObservationIntensityChart = ({
 
             {concepts
               .filter((c) => selectedConceptIds.includes(c.id))
-              .map((c, index) => {
+              .map((c) => {
                 const color = colorsPalette[concepts.indexOf(c) % colorsPalette.length];
-                return (
+                const hasTrend = chartData.some((p) => p[`${c.id}_trend`] !== undefined);
+                
+                return [
+                  // 1. Light Trendline (dashed, thin line)
+                  hasTrend && (
+                    <Line
+                      key={`${c.id}_trend`}
+                      type="monotone"
+                      dataKey={`${c.id}_trend`}
+                      stroke={color}
+                      strokeWidth={1.5}
+                      strokeOpacity={0.4}
+                      strokeDasharray="4 4"
+                      dot={false}
+                      activeDot={false}
+                      connectNulls={true}
+                      animationDuration={1000}
+                    />
+                  ),
+                  // 2. Data Dots (transparent line, only dots visible)
                   <Line
                     key={c.id}
                     type="monotone"
                     dataKey={c.id}
-                    stroke={color}
-                    strokeWidth={2.5}
-                    dot={{ r: 3.5, fill: color, strokeWidth: 1.5, stroke: 'hsl(var(--background))' }}
-                    activeDot={{ r: 5, fill: color, strokeWidth: 0 }}
+                    stroke="transparent"
+                    dot={{ r: 4, fill: color, strokeWidth: 0 }}
+                    activeDot={{ r: 6, fill: color, strokeWidth: 0 }}
                     connectNulls={false}
                     animationDuration={1000}
                   />
-                );
+                ];
               })}
           </LineChart>
         </ChartContainer>

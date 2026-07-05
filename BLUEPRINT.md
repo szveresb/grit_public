@@ -58,7 +58,7 @@ Survey managers can attach source studies (PDF upload, DOI/URL link, or manual d
 
 **Timeline mood comparison chart refactored.** The top chart on the relative timeline view now plots user's daily average mood alongside selected observed people's daily average mood using a clean multi-select component. Faded dashed states are shown for observed people with no data.
 
-**Timeline observation intensity comparison chart implemented.** In individual self mode, a dedicated line chart compares daily intensities across selected concepts (up to 3). Repeated daily logs for the same concept are aggregated by highest intensity, unlogged days are represented as gaps, and the selected chips default to concepts with the most recent activity.
+**Timeline observation intensity comparison chart implemented.** A dedicated chart compares daily intensities across selected concepts (up to 3) in both self and observed person (relative) modes. Data is displayed as dots with a light linear regression trendline. Repeated daily logs for the same concept are aggregated by highest intensity, unlogged days are represented as gaps, and the selected chips default to concepts with the most recent activity.
 
 ## Next Priority
 - Promoted schema changes to live database
