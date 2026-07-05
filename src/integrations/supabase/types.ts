@@ -760,6 +760,7 @@ export type Database = {
           description: string | null
           description_localized: Json | null
           id: string
+          interpretation_profile: string | null
           is_published: boolean
           repeat_interval: string | null
           score_ranges: Json | null
@@ -776,6 +777,7 @@ export type Database = {
           description?: string | null
           description_localized?: Json | null
           id?: string
+          interpretation_profile?: string | null
           is_published?: boolean
           repeat_interval?: string | null
           score_ranges?: Json | null
@@ -792,6 +794,7 @@ export type Database = {
           description?: string | null
           description_localized?: Json | null
           id?: string
+          interpretation_profile?: string | null
           is_published?: boolean
           repeat_interval?: string | null
           score_ranges?: Json | null
