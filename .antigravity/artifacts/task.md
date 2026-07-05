@@ -1,5 +1,5 @@
-- [x] Create `useMoodComparisonData.ts` hook
-- [x] Create `MoodComparisonChart.tsx` component
-- [x] Modify `Timeline.tsx` page to integrate comparison chart
-- [x] Add translation keys for comparison labels in `en.ts`, `hu.ts`, and `types.ts`
-- [x] Verify functionality (single/multi-subject toggling, date window changes, missing data state)
+- [x] Create `useObservationIntensityDefault.ts` hook
+- [x] Modify `ObservationStepper.tsx` to use the new hook
+- [x] Modify `EntryModal.tsx` to use the new hook
+- [x] Run compiler check to verify code compiles without errors
+- [x] Document changes in `walkthrough.md`

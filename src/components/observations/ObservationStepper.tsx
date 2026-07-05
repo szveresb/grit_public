@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { format } from 'date-fns';
 import { supabase } from '@/integrations/supabase/client';
+import { useObservationIntensityDefault, IntensitySource } from '@/hooks/useObservationIntensityDefault';
 
 import { useAuth } from '@/hooks/useAuth';
 import { useLanguage } from '@/hooks/useLanguage';
@@ -49,8 +50,7 @@ const ObservationStepper = ({ onLogged, observationDate }: { onLogged?: () => vo
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [selectedConcept, setSelectedConcept] = useState<string | null>(null);
   const [intensity, setIntensity] = useState(3);
-  const [pulseLevel, setPulseLevel] = useState<number | null>(null);
-  const [intensityTouched, setIntensityTouched] = useState(false);
+  const [intensitySource, setIntensitySource] = useState<IntensitySource>('fallback');
 
   const [context, setContext] = useState('');
   const [narrative, setNarrative] = useState('');
@@ -60,51 +60,36 @@ const ObservationStepper = ({ onLogged, observationDate }: { onLogged?: () => vo
   const subjectId = activeSubject.id;
   const subjectName = activeSubject.type === 'relative' ? activeSubject.name : null;
 
+  const targetDate = observationDate || format(new Date(), 'yyyy-MM-dd');
+  const { defaultIntensity, source: defaultIntensitySource } = useObservationIntensityDefault({
+    date: targetDate,
+    subjectType,
+    subjectId,
+  });
+
   useEffect(() => {
     supabase.from('observation_categories').select('*').eq('is_active', true).order('sort_order')
       .then(({ data }) => setCategories((data as Category[]) ?? []));
   }, []);
-
-  // Fetch today's mood pulse and derive the suggested severity.
-  // Pulse scale: 1 = struggling → 5 = strong (higher = better).
-  // Severity scale: 1 = minimal → 5 = overwhelming (higher = worse).
-  // Conversion: severity = 6 - pulseLevel  (uneasy/2 → severity 4, etc.)
-  useEffect(() => {
-    if (!user) return;
-    let cancelled = false;
-    const today = format(new Date(), 'yyyy-MM-dd');
-    let query = (supabase.from as any)('mood_pulses')
-      .select('level')
-      .eq('user_id', user.id)
-      .eq('entry_date', today)
-      .eq('subject_type', subjectType);
-    if (subjectType === 'relative' && subjectId) {
-      query = query.eq('subject_id', subjectId);
-    } else {
-      query = query.is('subject_id', null);
-    }
-    query
-      .order('created_at', { ascending: false })
-      .limit(1)
-      .maybeSingle()
-      .then(({ data }: { data: { level: number } | null }) => {
-        if (cancelled) return;
-        setPulseLevel(data ? 6 - data.level : null);
-      });
-    return () => { cancelled = true; };
-  }, [user, subjectType, subjectId]);
 
   useEffect(() => {
     setStep(0);
     setSelectedCategory(null);
     setSelectedConcept(null);
     setConcepts([]);
-    setIntensity(pulseLevel ?? 3);
-    setIntensityTouched(false);
+    setIntensity(3);
+    setIntensitySource('fallback');
     setContext('');
     setNarrative('');
     setSubmitting(false);
-  }, [activeSubject.key, pulseLevel]);
+  }, [activeSubject.key, targetDate]);
+
+  useEffect(() => {
+    if (intensitySource !== 'manual') {
+      setIntensity(defaultIntensity);
+      setIntensitySource(defaultIntensitySource);
+    }
+  }, [defaultIntensity, defaultIntensitySource, intensitySource]);
 
   const selectCategory = async (catId: string) => {
     setSelectedCategory(catId);
@@ -116,11 +101,6 @@ const ObservationStepper = ({ onLogged, observationDate }: { onLogged?: () => vo
 
   const selectConcept = (conceptId: string) => {
     setSelectedConcept(conceptId);
-    // Pre-seed intensity from today's pulse (already inverted to severity scale).
-    // Only seed if the user hasn't manually touched intensity yet.
-    if (!intensityTouched && pulseLevel !== null) {
-      setIntensity(pulseLevel);
-    }
     setStep(3);
   };
 
@@ -144,7 +124,7 @@ const ObservationStepper = ({ onLogged, observationDate }: { onLogged?: () => vo
     if (error) { toast.error(friendlyDbError(error)); setSubmitting(false); return; }
     toast.success(t.observations.logged);
     setStep(0); setSelectedCategory(null); setSelectedConcept(null);
-    setIntensity(pulseLevel ?? 3); setIntensityTouched(false); setContext(''); setNarrative('');
+    setIntensity(defaultIntensity); setIntensitySource(defaultIntensitySource); setContext(''); setNarrative('');
     setSubmitting(false);
     onLogged?.();
   };
@@ -266,7 +246,7 @@ const ObservationStepper = ({ onLogged, observationDate }: { onLogged?: () => vo
                 <button
                   key={n}
                   type="button"
-                  onClick={() => { setIntensity(n); setIntensityTouched(true); }}
+                  onClick={() => { setIntensity(n); setIntensitySource('manual'); }}
                   className={`h-10 w-10 rounded-full border text-sm font-semibold transition-all ${
                     intensity === n
                       ? 'bg-primary text-primary-foreground border-primary shadow-md'
@@ -277,9 +257,9 @@ const ObservationStepper = ({ onLogged, observationDate }: { onLogged?: () => vo
                 </button>
               ))}
             </div>
-            {pulseLevel !== null && (
+            {defaultIntensitySource === 'pulse-seeded' && (
               <p className="text-[10px] text-muted-foreground">
-                {intensityTouched ? t.observations.intensityCustom : t.observations.intensityFromPulse}
+                {intensitySource === 'manual' ? t.observations.intensityCustom : t.observations.intensityFromPulse}
               </p>
             )}
           </div>

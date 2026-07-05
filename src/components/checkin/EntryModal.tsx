@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { format, parseISO } from 'date-fns';
 import { hu, enUS } from 'date-fns/locale';
+import { useObservationIntensityDefault, IntensitySource } from '@/hooks/useObservationIntensityDefault';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/hooks/useAuth';
 import { useLanguage } from '@/hooks/useLanguage';
@@ -59,7 +60,14 @@ const EntryModal = ({ open, onOpenChange, entryDate, prefill, onSaved }: EntryMo
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [selectedConcept, setSelectedConcept] = useState<SelectedConceptLike | null>(null);
   const [intensity, setIntensity] = useState(3);
+  const [intensitySource, setIntensitySource] = useState<IntensitySource>('fallback');
   const [saving, setSaving] = useState(false);
+
+  const { defaultIntensity, source: defaultIntensitySource } = useObservationIntensityDefault({
+    date: entryDate,
+    subjectType: 'self',
+    subjectId: null,
+  });
 
   // Extra journal fields (collapsible)
   const [showExtras, setShowExtras] = useState(false);
@@ -76,6 +84,7 @@ const EntryModal = ({ open, onOpenChange, entryDate, prefill, onSaved }: EntryMo
       setSelectedConcept(null);
       setConcepts([]);
       setIntensity(3);
+      setIntensitySource('fallback');
       setSaving(false);
       setEventDescription('');
       setSelfAnchor('');
@@ -91,6 +100,13 @@ const EntryModal = ({ open, onOpenChange, entryDate, prefill, onSaved }: EntryMo
       }
     }
   }, [open, prefill]);
+
+  useEffect(() => {
+    if (intensitySource !== 'manual') {
+      setIntensity(defaultIntensity);
+      setIntensitySource(defaultIntensitySource);
+    }
+  }, [defaultIntensity, defaultIntensitySource, intensitySource]);
 
   // Fetch categories once
   useEffect(() => {
@@ -274,7 +290,7 @@ const EntryModal = ({ open, onOpenChange, entryDate, prefill, onSaved }: EntryMo
                   <button
                     key={n}
                     type="button"
-                    onClick={() => setIntensity(n)}
+                    onClick={() => { setIntensity(n); setIntensitySource('manual'); }}
                     className={`h-10 w-10 rounded-full border text-sm font-semibold transition-all ${
                       intensity === n
                         ? 'bg-primary text-primary-foreground border-primary shadow-md'
@@ -285,6 +301,11 @@ const EntryModal = ({ open, onOpenChange, entryDate, prefill, onSaved }: EntryMo
                   </button>
                 ))}
               </div>
+              {defaultIntensitySource === 'pulse-seeded' && (
+                <p className="text-[10px] text-muted-foreground text-center mt-2">
+                  {intensitySource === 'manual' ? t.observations.intensityCustom : t.observations.intensityFromPulse}
+                </p>
+              )}
             </div>
 
             {/* Collapsible extras */}

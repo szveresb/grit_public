@@ -60,6 +60,8 @@ Survey managers can attach source studies (PDF upload, DOI/URL link, or manual d
 
 **Timeline observation intensity comparison chart implemented.** A dedicated chart compares daily intensities across selected concepts (up to 3) in both self and observed person (relative) modes. Data is displayed as dots with a light linear regression trendline. Repeated daily logs for the same concept are aggregated by highest intensity, unlogged days are represented as gaps, and the selected chips default to concepts with the most recent activity.
 
+**Seeding observation intensity from mood pulses implemented.** Created a shared `useObservationIntensityDefault` hook to query and map logged daily mood pulses using the inverse mapping `6 - pulseLevel` to seed observation defaults for both the standalone stepper and guided entry modal flows, while preserving manual overrides.
+
 ## Next Priority
 - Promoted schema changes to live database
 - Configure Lovable/Supabase backend Edge Function secrets (`GEMINI_API_KEY`)
