@@ -32,6 +32,9 @@ I have successfully implemented the shared defaulting rule for pre-seeding obser
 - Added a local `intensitySource` state to track user manual overrides and protect them from async loading overwrites.
 - Added the same helper text message block under the intensity buttons for visual parity with the stepper.
 
+#### [MODIFY] [SubjectWorkspaceSection.tsx](file:///c:/Users/veres.sz/Documents/GitHub/grit.hu-beta/src/components/checkin/SubjectWorkspaceSection.tsx)
+- Passed the active `pulseDate` formatted as `observationDate` prop to the inline `<ObservationStepper>` component. This ensures the inline stepper targets the user's selected check-in date retrospectively, loading any past mood pulse to seed the default intensity.
+
 ---
 
 ## 2. Verification Results

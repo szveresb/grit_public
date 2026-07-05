@@ -303,7 +303,10 @@ const SubjectWorkspaceSection = ({
                   <h2 className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground mb-4">
                     {t.checkIn.whatHappenedTitle}
                   </h2>
-                  <ObservationStepper onLogged={refresh} />
+                  <ObservationStepper 
+                    onLogged={refresh} 
+                    observationDate={format(pulseDate, 'yyyy-MM-dd')}
+                  />
                 </div>
 
                 {!isParallel && (
