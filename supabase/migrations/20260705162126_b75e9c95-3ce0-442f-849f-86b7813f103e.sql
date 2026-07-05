@@ -1,0 +1,1 @@
+ALTER TABLE public.questionnaires ADD COLUMN IF NOT EXISTS interpretation_profile text;
