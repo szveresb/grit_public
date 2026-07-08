@@ -1096,6 +1096,11 @@ export interface Dictionary {
       s4Title: string;
       s4Desc: string;
     };
+    cookieBanner: {
+      text: string;
+      accept: string;
+      policy: string;
+    };
     gdpr: {
       title: string;
       lastUpdated: string;

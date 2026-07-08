@@ -1127,6 +1127,11 @@ export const en: Dictionary = {
       s4Title: '4. Contact',
       s4Desc: 'If you have questions about our cookie policy, please contact us through the available channels on the site.',
     },
+    cookieBanner: {
+      text: 'We use essential cookies to ensure safe login and proper website functioning. By using this website, you agree to our use of cookies.',
+      accept: 'Accept',
+      policy: 'Cookie Policy',
+    },
     gdpr: {
       title: 'GDPR Compliance',
       lastUpdated: 'Last Updated: March 1, 2026',

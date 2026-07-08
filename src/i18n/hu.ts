@@ -1126,6 +1126,11 @@ export const hu: Dictionary = {
       s4Title: '4. Kapcsolat',
       s4Desc: 'Ha kérdése van a cookie szabályzattal kapcsolatban, kérjük vegye fel velünk a kapcsolatot az oldalon elérhető elérhetőségeken.',
     },
+    cookieBanner: {
+      text: 'A weboldal működéséhez elengedhetetlen (esszenciális) sütiket használunk a biztonságos bejelentkezés és a megfelelő működés érdekében. A weboldal használatával hozzájárul a sütik használatához.',
+      accept: 'Elfogadom',
+      policy: 'Süti szabályzat',
+    },
     gdpr: {
       title: 'GDPR megfelelőség',
       lastUpdated: 'Utolsó frissítés: 2026. március 1.',

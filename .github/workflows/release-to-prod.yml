@@ -48,6 +48,8 @@ jobs:
             "supabase/migrations/20260523145328_b4fcba80-25a5-4cc5-b866-2e08c81ca159.sql"
             "supabase/migrations"
             ".env"
+            "src/components/CookieBanner.tsx"
+            "src/pages/Cookies.tsx"
           )
 
           # Build rsync exclude args so protected live files are never overwritten/deleted.

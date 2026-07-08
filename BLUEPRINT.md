@@ -42,6 +42,8 @@ Survey managers can attach source studies (PDF upload, DOI/URL link, or manual d
 4.  [`src/pages/Surveys.tsx`](file:///c:/Users/veres.sz/Documents/GitHub/grit.hu/src/pages/Surveys.tsx) — Questionnaire hub with logic-aware respondent stepper.
 
 ## State of Play
+**Cookie Banner & Policy Protection live.** A premium bilingual cookie banner has been integrated globally. To prevent syncs from `grit.hu-beta` overwriting the production banner and policy page, the files are protected in the GitHub Actions release workflow.
+
 **Layout and spacing are fully refined.** Dashboard features a standardized **`space-y-6`** rhythm and a strict **Action-Result vertical hierarchy**. Dismissible pattern nudges with 30-day lookbacks and memory persistence are live.
 
 **Feedback Review UI implemented.** Admins can now review and filter user feedback at `/manage-feedback` with context panel hidden for a cleaner view.

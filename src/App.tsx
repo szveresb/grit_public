@@ -12,6 +12,7 @@ import ProtectedRoute from "@/components/ProtectedRoute";
 import Index from "./pages/Index";
 import ReloadPrompt from "@/components/ReloadPrompt";
 import OfflineStatus from "@/components/OfflineStatus";
+import CookieBanner from "@/components/CookieBanner";
 import ErrorBoundary from "@/components/ErrorBoundary";
 
 const Auth = lazy(() => import("./pages/Auth"));
@@ -137,6 +138,7 @@ const App = () => (
             <LanguageProvider>
               <ReloadPrompt />
               <OfflineStatus />
+              <CookieBanner />
               <StanceProvider>
                 <ErrorBoundary name="GlobalApp">
                   <AppRoutes />
