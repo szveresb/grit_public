@@ -1,6 +1,5 @@
 import { useEffect, useState, useCallback } from 'react';
 import { supabase } from '@/integrations/supabase/client';
-const supabaseAny = supabase as any;
 import { useAuth } from '@/hooks/useAuth';
 import { useLanguage } from '@/hooks/useLanguage';
 import { useStance } from '@/hooks/useStance';
@@ -367,8 +366,49 @@ const ScoreHistoryGroup = ({
       ? Math.round((latest.total_score / group.maxPossibleScore) * 100)
       : 0;
 
-  const [interpretation] = useState<{ body: string; citations: any[] } | null>(null);
+  const [interpretation, setInterpretation] = useState<{ body: string; citations: any[] } | null>(null);
 
+  useEffect(() => {
+    if (!group.questionnaire_id || latest?.total_score === undefined) return;
+
+    const loadInterpretation = async () => {
+      const { data, error } = await supabase
+        .from('survey_interpretations')
+        .select('*')
+        .eq('survey_id', group.questionnaire_id);
+
+      if (error || !data || data.length === 0) return;
+
+      const matched = data.find(i => 
+        i.score_min !== null && 
+        i.score_max !== null && 
+        latest.total_score >= i.score_min && 
+        latest.total_score <= i.score_max
+      ) || data.find(i => i.score_min === null && i.score_max === null);
+
+      if (matched) {
+        let citationsList: any[] = [];
+        if (matched.citations && matched.citations.length > 0) {
+          const { data: studyData } = await supabase
+            .from('survey_studies')
+            .select('title, authors, year, citation_string, url, doi')
+            .in('id', matched.citations);
+          if (studyData) {
+            citationsList = studyData;
+          }
+        }
+
+        setInterpretation({
+          body: lang === 'hu' ? matched.body_hu : matched.body_en,
+          citations: citationsList
+        });
+      } else {
+        setInterpretation(null);
+      }
+    };
+
+    loadInterpretation();
+  }, [group.questionnaire_id, latest?.total_score, lang]);
 
   return (
     <div className={`rounded-[1.5rem] border border-border/60 ${compact ? 'p-3 space-y-3' : 'p-4 space-y-4'}`}>

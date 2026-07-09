@@ -80,6 +80,8 @@ Survey managers can attach source studies (PDF upload, DOI/URL link, or manual d
 
 **Conditional Logic Auto-Scored Skips implemented.** Extended type systems and logic engines ([logic-engine.ts](file:///c:/Users/veres.sz/Documents/GitHub/grit.hu-beta/src/lib/logic-engine.ts), [logic-validation.ts](file:///c:/Users/veres.sz/Documents/GitHub/grit.hu-beta/src/lib/logic-validation.ts)) to support `synthetic_skipped_answers` configuration and checks. Implemented visual editor selectors, cloning remapping, target-aware pruning helpers, and pre-save validation rules in [SelfChecks.tsx](file:///c:/Users/veres.sz/Documents/GitHub/grit.hu-beta/src/pages/SelfChecks.tsx). Integrated synthetic answers into the client-side calculator and subscale scorer, inserting configured scores instead of `__SKIPPED__` sentinels on questionnaire submission in [QuestionnaireFiller.tsx](file:///c:/Users/veres.sz/Documents/GitHub/grit.hu-beta/src/components/checkin/QuestionnaireFiller.tsx) to match database trigger behaviors. Added 11 new Vitest unit tests in [logic.test.ts](file:///c:/Users/veres.sz/Documents/GitHub/grit.hu-beta/src/test/logic.test.ts) verifying correctness and schema validation.
 
+**Dropped NOT NULL constraint on survey_interpretations.content.** Added migration `20260709210000_drop_content_not_null.sql` to drop the NOT NULL constraint on the legacy `content` column. Updated type definitions in `types.ts` to make `content` nullable in `Row`, `Insert`, and `Update` types.
+
 ## Next Priority
 - Promoted schema changes to live database
 - Configure Lovable/Supabase backend Edge Function secrets (`GEMINI_API_KEY`)
