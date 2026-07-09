@@ -281,7 +281,7 @@ export const hu: Dictionary = {
 
   questionnaires_manage: {
     title: 'Kérdőívek',
-    subtitle: 'Gyengéd önvizsgálatok az érzéseid nyomon követéséhez.',
+    subtitle: 'Önvizsgálatok az érzéseid nyomon követéséhez.',
     noAvailable: 'Még nincsenek elérhető kérdőívek.',
     noHistoryForQuestionnaire: 'Ehhez a kérdőívhez még nincs kitöltési előzmény.',
     completed: 'Kérdőív befejezve',
