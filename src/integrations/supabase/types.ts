@@ -718,6 +718,7 @@ export type Database = {
           questionnaire_id: string
           subject_id: string | null
           subject_type: Database["public"]["Enums"]["subject_type"]
+          subscale_scores: Json | null
           total_score: number | null
           user_id: string
         }
@@ -727,6 +728,7 @@ export type Database = {
           questionnaire_id: string
           subject_id?: string | null
           subject_type?: Database["public"]["Enums"]["subject_type"]
+          subscale_scores?: Json | null
           total_score?: number | null
           user_id: string
         }
@@ -736,6 +738,7 @@ export type Database = {
           questionnaire_id?: string
           subject_id?: string | null
           subject_type?: Database["public"]["Enums"]["subject_type"]
+          subscale_scores?: Json | null
           total_score?: number | null
           user_id?: string
         }

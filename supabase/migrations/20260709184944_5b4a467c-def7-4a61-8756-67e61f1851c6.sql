@@ -1,0 +1,1 @@
+ALTER TABLE public.questionnaire_responses ADD COLUMN IF NOT EXISTS subscale_scores jsonb;
