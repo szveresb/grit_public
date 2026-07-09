@@ -869,7 +869,7 @@ export type Database = {
           body_en: string | null
           body_hu: string | null
           citations: string[]
-          content: string
+          content: string | null
           content_en: string | null
           created_at: string
           generated_at: string
@@ -887,7 +887,7 @@ export type Database = {
           body_en?: string | null
           body_hu?: string | null
           citations?: string[]
-          content: string
+          content?: string | null
           content_en?: string | null
           created_at?: string
           generated_at?: string
@@ -905,7 +905,7 @@ export type Database = {
           body_en?: string | null
           body_hu?: string | null
           citations?: string[]
-          content?: string
+          content?: string | null
           content_en?: string | null
           created_at?: string
           generated_at?: string
