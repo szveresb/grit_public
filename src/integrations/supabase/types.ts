@@ -866,37 +866,55 @@ export type Database = {
       }
       survey_interpretations: {
         Row: {
+          body_en: string | null
+          body_hu: string | null
+          citations: string[]
           content: string
           content_en: string | null
           created_at: string
           generated_at: string
+          generated_by: string
           id: string
           model: string | null
           score_band: string | null
+          score_max: number | null
+          score_min: number | null
           status: string
           survey_id: string
           updated_at: string
         }
         Insert: {
+          body_en?: string | null
+          body_hu?: string | null
+          citations?: string[]
           content: string
           content_en?: string | null
           created_at?: string
           generated_at?: string
+          generated_by?: string
           id?: string
           model?: string | null
           score_band?: string | null
+          score_max?: number | null
+          score_min?: number | null
           status?: string
           survey_id: string
           updated_at?: string
         }
         Update: {
+          body_en?: string | null
+          body_hu?: string | null
+          citations?: string[]
           content?: string
           content_en?: string | null
           created_at?: string
           generated_at?: string
+          generated_by?: string
           id?: string
           model?: string | null
           score_band?: string | null
+          score_max?: number | null
+          score_min?: number | null
           status?: string
           survey_id?: string
           updated_at?: string
