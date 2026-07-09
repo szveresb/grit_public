@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback } from 'react';
-import { supabase as supabaseClient } from '@/integrations/supabase/client';
-const supabase = supabaseClient as any;
+import { supabase } from '@/integrations/supabase/client';
+const supabaseAny = supabase as any;
 import { useAuth } from '@/hooks/useAuth';
 import { useLanguage } from '@/hooks/useLanguage';
 import { useStance } from '@/hooks/useStance';
