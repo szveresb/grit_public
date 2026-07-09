@@ -19,11 +19,33 @@ interface ScoreEntry {
   questionnaire_title: string;
   total_score: number;
   completed_at: string;
+  subscale_scores?: Record<string, number> | null;
 }
 
 interface AnswerDetail {
   question_text: string;
   answer: string;
+}
+
+interface Subscale {
+  id: string;
+  name: {
+    hu?: string;
+    en?: string;
+  };
+  type: 'sum' | 'average';
+  score_ranges?: {
+    min: number;
+    max: number;
+    label: {
+      hu: string;
+      en: string;
+    };
+    description?: {
+      hu?: string;
+      en?: string;
+    };
+  }[];
 }
 
 interface GroupedScores {
@@ -34,6 +56,7 @@ interface GroupedScores {
   maxPossibleScore: number;
   scoringEnabled: boolean;
   interpretationProfile: string | null;
+  subscales?: any;
 }
 
 interface LocalizedQuestionnaireRow {
@@ -45,6 +68,7 @@ interface LocalizedQuestionnaireRow {
   score_ranges: ScoreRange[] | null;
   scoring_enabled: boolean;
   scoring_mode: string;
+  subscales: any;
 }
 
 interface ScoreHistoryProps {
@@ -99,7 +123,7 @@ const ScoreHistory = ({
 
       let responseQuery = supabase
         .from('questionnaire_responses')
-        .select('id, questionnaire_id, total_score, completed_at, subject_type, subject_id')
+        .select('id, questionnaire_id, total_score, completed_at, subject_type, subject_id, subscale_scores')
         .eq('user_id', user.id);
 
       if (effectiveSubjectType === 'relative') {
@@ -126,12 +150,12 @@ const ScoreHistory = ({
       const qIds = [...new Set(responses.map((response) => response.questionnaire_id))];
       const { data: questionnaires } = await supabase
         .from('questionnaires')
-        .select('id, title, title_localized, snomed_code, interpretation_profile, score_ranges, scoring_enabled, scoring_mode')
+        .select('id, title, title_localized, snomed_code, interpretation_profile, score_ranges, scoring_enabled, scoring_mode, subscales')
         .in('id', qIds);
 
       const { data: questions } = await supabase
         .from('questionnaire_questions')
-        .select('questionnaire_id, question_type, options, answer_scores')
+        .select('questionnaire_id, question_type, options, answer_scores, subscale_ids')
         .in('questionnaire_id', qIds);
 
       const titleMap = new Map(
@@ -183,6 +207,7 @@ const ScoreHistory = ({
             maxPossibleScore: maxScoreMap.get(response.questionnaire_id) ?? 0,
             scoringEnabled: questionnaire?.scoring_enabled ?? false,
             interpretationProfile: questionnaire?.interpretation_profile ?? null,
+            subscales: questionnaire?.subscales,
           });
         }
 
@@ -192,6 +217,7 @@ const ScoreHistory = ({
           questionnaire_title: grouped.get(response.questionnaire_id)!.title,
           total_score: response.total_score ?? 0,
           completed_at: response.completed_at,
+          subscale_scores: response.subscale_scores as Record<string, number> | null,
         });
       }
 
@@ -311,10 +337,18 @@ const ScoreHistoryGroup = ({
   toggleEntry,
   getMatchedRange,
 }: ScoreHistoryGroupProps) => {
-  const chartData = group.entries.map((entry) => ({
-    date: safeFormat(entry.completed_at, 'MM/dd', lang),
-    score: entry.total_score,
-  }));
+  const chartData = group.entries.map((entry) => {
+    const dataObj: any = {
+      date: safeFormat(entry.completed_at, 'MM/dd', lang),
+      score: entry.total_score,
+    };
+    if (entry.subscale_scores) {
+      for (const [subId, val] of Object.entries(entry.subscale_scores)) {
+        dataObj[subId] = val;
+      }
+    }
+    return dataObj;
+  });
 
   const { trends } = useQuestionnaireTrends({
     userId,
@@ -507,7 +541,7 @@ const ScoreHistoryGroup = ({
                         fontSize: '12px',
                       }}
                     />
-                    <Line
+                     <Line
                       type="monotone"
                       dataKey="score"
                       stroke="hsl(var(--primary))"
@@ -515,6 +549,29 @@ const ScoreHistoryGroup = ({
                       dot={{ fill: 'hsl(var(--primary))', r: 3 }}
                       activeDot={{ r: 5 }}
                     />
+                    {group.subscales && (group.subscales as unknown as Subscale[]).map((sub, idx) => {
+                      const name = lang === 'en' ? sub.name.en || sub.id : sub.name.hu || sub.id;
+                      const colors = [
+                        '#10B981', // Emerald
+                        '#3B82F6', // Blue
+                        '#F59E0B', // Amber
+                        '#EC4899', // Pink
+                        '#8B5CF6'  // Violet
+                      ];
+                      const color = colors[idx % colors.length];
+                      return (
+                        <Line
+                          key={sub.id}
+                          type="monotone"
+                          dataKey={sub.id}
+                          name={name}
+                          stroke={color}
+                          strokeWidth={1.5}
+                          strokeDasharray="4 4"
+                          dot={{ r: 2 }}
+                        />
+                      );
+                    })}
                   </LineChart>
                 </ResponsiveContainer>
               </div>
@@ -557,6 +614,42 @@ const ScoreHistoryGroup = ({
                       </CollapsibleTrigger>
                       <CollapsibleContent>
                         <div className="space-y-1.5 px-2 pb-2 pt-1">
+                          {/* Subscale scores breakdown */}
+                          {group.subscales && (group.subscales as unknown as Subscale[]).length > 0 && entry.subscale_scores && (
+                            <div className="mb-2 pb-2 border-b border-border/30 space-y-1">
+                              <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground">
+                                {t.questionnaires_manage.subscaleScores}
+                              </p>
+                              <div className="grid grid-cols-1 gap-1.5 sm:grid-cols-2">
+                                {(group.subscales as unknown as Subscale[]).map((sub) => {
+                                  const score = (entry.subscale_scores as Record<string, number>)[sub.id] ?? 0;
+                                  const name = lang === 'en' ? sub.name.en || sub.id : sub.name.hu || sub.id;
+                                  const typeLabel = sub.type === 'average' ? t.questionnaires_manage.subscaleTypeAverage : t.questionnaires_manage.subscaleTypeSum;
+
+                                  const matchedRange = (sub.score_ranges || []).find(r => score >= r.min && score <= r.max);
+                                  const matchedLabel = matchedRange ? (lang === 'en' ? matchedRange.label.en : matchedRange.label.hu) : null;
+
+                                  return (
+                                    <div key={sub.id} className="flex justify-between items-center bg-accent/10 rounded-lg px-2 py-1 text-[10px] border border-border/10">
+                                      <div className="text-left">
+                                        <span className="font-medium text-foreground">{name}</span>
+                                        <span className="text-[8px] text-muted-foreground ml-1.5">({typeLabel})</span>
+                                      </div>
+                                      <div className="flex items-center gap-1.5 shrink-0">
+                                        {matchedLabel && (
+                                          <span className="text-[9px] font-semibold text-primary">
+                                            {matchedLabel}
+                                          </span>
+                                        )}
+                                        <span className="font-bold text-foreground">{score}</span>
+                                      </div>
+                                    </div>
+                                  );
+                                })}
+                              </div>
+                            </div>
+                          )}
+
                           {!answers && (
                             <p className="text-[11px] text-muted-foreground">{t.loading}</p>
                           )}

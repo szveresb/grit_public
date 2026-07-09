@@ -24,7 +24,7 @@ import {
 import ScoreResults from './ScoreResults';
 import ScoreHistory from './ScoreHistory';
 import QuestionnaireCard from './QuestionnaireCard';
-import { evaluateLogicRules, computeVisiblePath, getSkippedQuestionIds, hasBranchingLogic } from '@/lib/logic-engine';
+import { evaluateLogicRules, computeVisiblePath, getSkippedQuestionIds, hasBranchingLogic, getSkippedQuestionsWithRules } from '@/lib/logic-engine';
 import type { QuestionWithLogic, LogicRule } from '@/lib/logic-engine';
 import { type ScoreRange } from '@/lib/score-interpretation';
 import type { Database } from '@/integrations/supabase/types';
@@ -89,6 +89,7 @@ const QuestionnaireFiller: React.FC<QuestionnaireFillerProps> = ({ onCompleted, 
     maxPossibleScore: number;
     questionScores: { questionText: string; answer: string; score: number }[];
     scoreRanges: ScoreRange[];
+    subscaleScores?: Record<string, number>;
   } | null>(null);
   const subjectScopeKey = `${activeSubject.type}:${activeSubject.id ?? 'self'}`;
   const previousSubjectScopeRef = useRef(subjectScopeKey);
@@ -150,12 +151,12 @@ const QuestionnaireFiller: React.FC<QuestionnaireFillerProps> = ({ onCompleted, 
 
       const questionnaireQuery = supabase
         .from('questionnaires')
-        .select('id, title, title_localized, description, description_localized, repeat_interval, scoring_enabled, scoring_mode, score_ranges, interpretation_profile, is_published, created_at, updated_at, created_by, snomed_code')
+        .select('id, title, title_localized, description, description_localized, repeat_interval, scoring_enabled, scoring_mode, score_ranges, interpretation_profile, is_published, created_at, updated_at, created_by, snomed_code, subscales')
         .eq('is_published', true)
         .order('created_at', { ascending: false });
 
       const [questionnaireResult, responseResult] = await Promise.all([
-        readOnly ? supabase.from('questionnaires').select('id, title, title_localized, description, description_localized, repeat_interval, scoring_enabled, scoring_mode, score_ranges, interpretation_profile, is_published, created_at, updated_at, created_by, snomed_code').order('created_at', { ascending: false }) : questionnaireQuery,
+        readOnly ? supabase.from('questionnaires').select('id, title, title_localized, description, description_localized, repeat_interval, scoring_enabled, scoring_mode, score_ranges, interpretation_profile, is_published, created_at, updated_at, created_by, snomed_code, subscales').order('created_at', { ascending: false }) : questionnaireQuery,
         responsePromise,
       ]);
 
@@ -226,9 +227,25 @@ const QuestionnaireFiller: React.FC<QuestionnaireFillerProps> = ({ onCompleted, 
     let totalScore = 0;
     let maxPossibleScore = 0;
 
+    const questionsWithLogic: QuestionWithLogic[] = questions.map((question) => ({
+      id: question.id,
+      sort_order: question.sort_order,
+      logic_rules: question.logic_rules,
+    }));
+    const skippedWithRules = getSkippedQuestionsWithRules(questionsWithLogic, answers);
+    const allAnswers = { ...answers };
+    skippedWithRules.forEach((item) => {
+      const syntheticVal = item.ruleApplied?.synthetic_skipped_answers?.[item.id];
+      if (syntheticVal !== undefined) {
+        allAnswers[item.id] = syntheticVal;
+      } else {
+        allAnswers[item.id] = '__SKIPPED__';
+      }
+    });
+
     for (const question of questions) {
-      const answer = answers[question.id];
-      if (!answer || question.question_type === 'text') continue;
+      const answer = allAnswers[question.id];
+      if (!answer || answer === '__SKIPPED__' || question.question_type === 'text') continue;
 
       let score = 0;
       let maxScore = 0;
@@ -272,6 +289,76 @@ const QuestionnaireFiller: React.FC<QuestionnaireFillerProps> = ({ onCompleted, 
     return { totalScore, maxPossibleScore, questionScores };
   };
 
+  interface Subscale {
+    id: string;
+    name: {
+      hu?: string;
+      en?: string;
+    };
+    type: 'sum' | 'average';
+  }
+
+  const calculateSubscaleScores = (
+    questionnaire: Questionnaire,
+    questionsList: Question[],
+    fullAnswers: Record<string, string>
+  ): Record<string, number> => {
+    const scores: Record<string, number> = {};
+    const counts: Record<string, number> = {};
+
+    const subscalesConfig = (questionnaire.subscales as unknown as Subscale[]) ?? [];
+    for (const sub of subscalesConfig) {
+      scores[sub.id] = 0;
+      counts[sub.id] = 0;
+    }
+
+    for (const question of questionsList) {
+      const answer = fullAnswers[question.id];
+      const subscaleIds = (question.subscale_ids as string[]) ?? [];
+      
+      if (subscaleIds.length === 0) continue;
+      
+      if (!answer || answer === '__SKIPPED__' || question.question_type === 'text') {
+        continue;
+      }
+
+      let score = 0;
+      if (questionnaire.scoring_mode === 'weighted' && question.answer_scores) {
+        const scoresObj = question.answer_scores as Record<string, number>;
+        score = scoresObj[answer] ?? 0;
+      } else if (question.question_type === 'scale') {
+        if (question.answer_scores && Object.keys(question.answer_scores).length > 0) {
+          const scoresObj = question.answer_scores as Record<string, number>;
+          score = scoresObj[answer] ?? 0;
+        } else {
+          score = Number(answer);
+          if (isNaN(score)) score = 0;
+        }
+      } else if (question.question_type === 'yes_no') {
+        score = answer === 'yes' ? 1 : 0;
+      } else if (question.question_type === 'multiple_choice') {
+        const optionIndex = (question.options ?? []).indexOf(answer);
+        score = optionIndex !== -1 ? optionIndex + 1 : 0;
+      }
+
+      for (const subId of subscaleIds) {
+        if (scores[subId] !== undefined) {
+          scores[subId] += score;
+          counts[subId] += 1;
+        }
+      }
+    }
+
+    for (const sub of subscalesConfig) {
+      if (sub.type === 'average') {
+        const count = counts[sub.id];
+        scores[sub.id] = count > 0 ? Number((scores[sub.id] / count).toFixed(2)) : 0;
+      }
+    }
+
+    return scores;
+  };
+
   const handleSubmit = async () => {
     if (!user || !selectedQ) return;
 
@@ -286,11 +373,30 @@ const QuestionnaireFiller: React.FC<QuestionnaireFillerProps> = ({ onCompleted, 
 
     const questionnaire = questionnaires.find((candidate) => candidate.id === selectedQ);
 
+    let subscaleScoresObj: Record<string, number> = {};
+    if (questionnaire) {
+      const questionsWithLogic: QuestionWithLogic[] = questions.map((question) => ({
+        id: question.id,
+        sort_order: question.sort_order,
+        logic_rules: question.logic_rules,
+      }));
+      const skippedWithRules = getSkippedQuestionsWithRules(questionsWithLogic, answers);
+
+      const fullAnswers = { ...answers };
+      for (const item of skippedWithRules) {
+        const syntheticVal = item.ruleApplied?.synthetic_skipped_answers?.[item.id];
+        fullAnswers[item.id] = syntheticVal !== undefined ? syntheticVal : '__SKIPPED__';
+      }
+
+      subscaleScoresObj = calculateSubscaleScores(questionnaire, questions, fullAnswers);
+    }
+
     if (questionnaire?.scoring_enabled) {
       const score = calculateScore(questionnaire);
       setScoreResult({
         ...score,
         scoreRanges: (questionnaire.score_ranges ?? []) as ScoreRange[],
+        subscaleScores: subscaleScoresObj,
       });
     }
 
@@ -301,6 +407,7 @@ const QuestionnaireFiller: React.FC<QuestionnaireFillerProps> = ({ onCompleted, 
         questionnaire_id: selectedQ,
         subject_type: activeSubject.type,
         subject_id: activeSubject.type === 'relative' ? activeSubject.id : null,
+        subscale_scores: subscaleScoresObj as any,
       })
       .select('id')
       .single();
@@ -326,15 +433,17 @@ const QuestionnaireFiller: React.FC<QuestionnaireFillerProps> = ({ onCompleted, 
       sort_order: question.sort_order,
       logic_rules: question.logic_rules,
     }));
-    const visiblePath = computeVisiblePath(questionsWithLogic, answers);
-    const skippedQuestionIds = getSkippedQuestionIds(questionsWithLogic, visiblePath);
+    const skippedWithRules = getSkippedQuestionsWithRules(questionsWithLogic, answers);
 
-    if (skippedQuestionIds.length > 0) {
-      const skippedRows = skippedQuestionIds.map((questionId) => ({
-        response_id: response.id,
-        question_id: questionId,
-        answer: '__SKIPPED__' as unknown as Database['public']['Tables']['questionnaire_answers']['Insert']['answer'],
-      }));
+    if (skippedWithRules.length > 0) {
+      const skippedRows = skippedWithRules.map((item) => {
+        const syntheticVal = item.ruleApplied?.synthetic_skipped_answers?.[item.id];
+        return {
+          response_id: response.id,
+          question_id: item.id,
+          answer: (syntheticVal !== undefined ? syntheticVal : '__SKIPPED__') as unknown as Database['public']['Tables']['questionnaire_answers']['Insert']['answer'],
+        };
+      });
       await supabase.from('questionnaire_answers').insert(skippedRows);
     }
 
@@ -479,6 +588,7 @@ const QuestionnaireFiller: React.FC<QuestionnaireFillerProps> = ({ onCompleted, 
           maxPossibleScore={scoreResult.maxPossibleScore}
           questionScores={scoreResult.questionScores}
           scoreRanges={scoreResult.scoreRanges}
+          subscaleScores={scoreResult.subscaleScores}
           onClose={() => {
             const completedQuestionnaireId = selectedQ;
             setSelectedQ(null);

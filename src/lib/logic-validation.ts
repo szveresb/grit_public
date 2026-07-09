@@ -112,6 +112,105 @@ export function validateLogicRules(
           messageKey: 'logic.invalidCondition',
         });
       }
+
+      // 6. Synthetic skipped answers validation
+      if (rule.synthetic_skipped_answers) {
+        const sourceSO = question.sort_order;
+        const targetSO = rule.action === 'jump_to' && rule.target_question_id
+          ? idToSortOrder.get(rule.target_question_id)
+          : undefined;
+
+        for (const [skippedId, val] of Object.entries(rule.synthetic_skipped_answers)) {
+          const skippedQ = sorted.find(q => q.id === skippedId);
+          if (!skippedQ) {
+            errors.push({
+              questionId: question.id,
+              questionIndex: qi,
+              ruleIndex: ri,
+              message: `Synthetic answer refers to non-existent question ID: ${skippedId}`,
+              messageKey: 'logic.syntheticNonExistent',
+            });
+            continue;
+          }
+
+          const skippedSO = skippedQ.sort_order;
+          
+          // Verify it is actually skipped by this rule
+          if (rule.action === 'jump_to') {
+            if (targetSO === undefined || skippedSO <= sourceSO || skippedSO >= targetSO) {
+              errors.push({
+                questionId: question.id,
+                questionIndex: qi,
+                ruleIndex: ri,
+                message: `Question Q${(idToIndex.get(skippedId) ?? 0) + 1} is not skipped by this jump rule.`,
+                messageKey: 'logic.syntheticNotSkipped',
+              });
+              continue;
+            }
+          } else if (rule.action === 'skip_to_end') {
+            if (skippedSO <= sourceSO) {
+              errors.push({
+                questionId: question.id,
+                questionIndex: qi,
+                ruleIndex: ri,
+                message: `Question Q${(idToIndex.get(skippedId) ?? 0) + 1} is not skipped by this rule.`,
+                messageKey: 'logic.syntheticNotSkipped',
+              });
+              continue;
+            }
+          }
+
+          // Verify it is a scored type (scale, yes_no, multiple_choice) and check type-aware constraints
+          const type = skippedQ.question_type;
+          if (type === 'text') {
+            errors.push({
+              questionId: question.id,
+              questionIndex: qi,
+              ruleIndex: ri,
+              message: `Question Q${(idToIndex.get(skippedId) ?? 0) + 1} is a text question and cannot have a synthetic answer.`,
+              messageKey: 'logic.syntheticTextUnscored',
+            });
+            continue;
+          }
+
+          if (type === 'yes_no') {
+            if (val !== 'yes' && val !== 'no') {
+              errors.push({
+                questionId: question.id,
+                questionIndex: qi,
+                ruleIndex: ri,
+                message: `Synthetic answer for yes_no question Q${(idToIndex.get(skippedId) ?? 0) + 1} must be 'yes' or 'no'.`,
+                messageKey: 'logic.syntheticInvalidYesNo',
+              });
+            }
+          } else if (type === 'scale') {
+            const opts = skippedQ.options;
+            const min = opts && opts[0] ? Number(opts[0]) : 1;
+            const max = opts && opts[1] ? Number(opts[1]) : 5;
+            const valNum = Number(val);
+            if (isNaN(valNum) || valNum < min || valNum > max) {
+              errors.push({
+                questionId: question.id,
+                questionIndex: qi,
+                ruleIndex: ri,
+                message: `Synthetic answer for scale question Q${(idToIndex.get(skippedId) ?? 0) + 1} must be between ${min} and ${max}.`,
+                messageKey: 'logic.syntheticInvalidScale',
+              });
+            }
+          } else if (type === 'multiple_choice') {
+            const opts = skippedQ.options ?? [];
+            if (!opts.includes(val)) {
+              errors.push({
+                questionId: question.id,
+                questionIndex: qi,
+                ruleIndex: ri,
+                message: `Synthetic answer for multiple choice question Q${(idToIndex.get(skippedId) ?? 0) + 1} is not one of its configured options.`,
+                messageKey: 'logic.syntheticInvalidMC',
+              });
+            }
+          }
+        }
+      }
     }
   }
 

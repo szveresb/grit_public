@@ -17,12 +17,17 @@ export interface LogicRule {
   condition: LogicCondition;
   action: 'jump_to' | 'skip_to_end';
   target_question_id?: string;
+  synthetic_skipped_answers?: Record<string, string>;
 }
 
 export interface QuestionWithLogic {
   id: string;
   sort_order: number;
   logic_rules: LogicRule[] | null;
+  question_type?: string;
+  options?: string[] | null;
+  answer_scores?: Record<string, number> | null;
+  exclude_from_scoring?: boolean;
 }
 
 export interface EvaluationResult {
@@ -142,6 +147,68 @@ export function getSkippedQuestionIds(
     .filter((q) => !visibleSet.has(q.id))
     .map((q) => q.id);
 }
+
+/**
+ * Returns list of skipped questions along with the specific logic rules
+ * that caused them to be skipped.
+ */
+export function getSkippedQuestionsWithRules(
+  questions: QuestionWithLogic[],
+  answers: Record<string, string>
+): { id: string; ruleApplied?: LogicRule }[] {
+  const sorted = [...questions].sort((a, b) => a.sort_order - b.sort_order);
+  const idToIndex = new Map<string, number>();
+  sorted.forEach((q, i) => idToIndex.set(q.id, i));
+
+  const visiblePath: string[] = [];
+  const skippedList: { id: string; ruleApplied?: LogicRule }[] = [];
+  let currentIndex = 0;
+
+  while (currentIndex < sorted.length) {
+    const question = sorted[currentIndex];
+    visiblePath.push(question.id);
+
+    const answer = answers[question.id];
+    if (answer === undefined) {
+      break;
+    }
+
+    const rules = question.logic_rules;
+    let appliedRule: LogicRule | undefined;
+    if (rules && rules.length > 0) {
+      for (const r of rules) {
+        if (r.condition.answer_equals === answer) {
+          appliedRule = r;
+          break;
+        }
+      }
+    }
+
+    if (appliedRule) {
+      if (appliedRule.action === 'skip_to_end') {
+        for (let s = currentIndex + 1; s < sorted.length; s++) {
+          skippedList.push({ id: sorted[s].id, ruleApplied: appliedRule });
+        }
+        break; // stop walking
+      } else if (appliedRule.action === 'jump_to' && appliedRule.target_question_id) {
+        const targetIndex = idToIndex.get(appliedRule.target_question_id);
+        if (targetIndex !== undefined && targetIndex > currentIndex) {
+          for (let s = currentIndex + 1; s < targetIndex; s++) {
+            skippedList.push({ id: sorted[s].id, ruleApplied: appliedRule });
+          }
+          currentIndex = targetIndex;
+          continue;
+        }
+      }
+    }
+
+    currentIndex++;
+  }
+
+  const visibleSet = new Set(visiblePath);
+  return skippedList.filter(item => !visibleSet.has(item.id));
+}
+
 
 // ─── Branching Detection ───────────────────────────────────────────
 

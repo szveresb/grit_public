@@ -361,6 +361,17 @@ export interface Dictionary {
     scoreRangeDescription: string;
     addScoreRange: string;
     answerScores: string;
+    subscalesSection: string;
+    subscalesHint: string;
+    addSubscale: string;
+    subscaleId: string;
+    subscaleNameHu: string;
+    subscaleNameEn: string;
+    subscaleType: string;
+    subscaleTypeSum: string;
+    subscaleTypeAverage: string;
+    mapSubscales: string;
+    subscaleScores: string;
     interpretation: string;
     interpretationProfile: string;
     interpretationProfileHint: string;
@@ -1095,11 +1106,6 @@ export interface Dictionary {
       s3Desc: string;
       s4Title: string;
       s4Desc: string;
-    };
-    cookieBanner: {
-      text: string;
-      accept: string;
-      policy: string;
     };
     gdpr: {
       title: string;

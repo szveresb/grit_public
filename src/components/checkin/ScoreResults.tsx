@@ -12,12 +12,34 @@ interface QuestionScore {
   score: number;
 }
 
+interface Subscale {
+  id: string;
+  name: {
+    hu?: string;
+    en?: string;
+  };
+  type: 'sum' | 'average';
+  score_ranges?: {
+    min: number;
+    max: number;
+    label: {
+      hu: string;
+      en: string;
+    };
+    description?: {
+      hu?: string;
+      en?: string;
+    };
+  }[];
+}
+
 interface ScoreResultsProps {
   surveyId?: string | null;
   totalScore: number;
   maxPossibleScore: number;
   questionScores: QuestionScore[];
   scoreRanges: ScoreRange[];
+  subscaleScores?: Record<string, number>;
   onClose: () => void;
 }
 
@@ -27,16 +49,30 @@ const ScoreResults = ({
   maxPossibleScore,
   questionScores,
   scoreRanges,
+  subscaleScores,
   onClose,
 }: ScoreResultsProps) => {
   const { t, lang } = useLanguage();
   const [interpretation, setInterpretation] = useState<{ body: string; citationIds: string[] } | null>(null);
   const [citationsList, setCitationsList] = useState<any[]>([]);
+  const [subscalesList, setSubscalesList] = useState<Subscale[]>([]);
 
   useEffect(() => {
     if (!surveyId) return;
 
-    const loadInterpretation = async () => {
+    const loadData = async () => {
+      // Load subscales configuration
+      const { data: qData } = await supabase
+        .from('questionnaires')
+        .select('subscales')
+        .eq('id', surveyId)
+        .single();
+
+      if (qData?.subscales) {
+        setSubscalesList((qData.subscales as unknown as Subscale[]) ?? []);
+      }
+
+      // Load interpretation
       const { data, error } = await supabase
         .from('survey_interpretations')
         .select('*')
@@ -70,7 +106,7 @@ const ScoreResults = ({
       }
     };
 
-    loadInterpretation();
+    loadData();
   }, [surveyId, totalScore, lang]);
 
   const matchedRange = scoreRanges.find((r) => totalScore >= r.min && totalScore <= r.max);
@@ -166,6 +202,51 @@ const ScoreResults = ({
           </div>
         )}
       </div>
+
+      {/* Subscale scores */}
+      {subscalesList.length > 0 && subscaleScores && (
+        <div className="space-y-2.5">
+          <h4 className="text-xs font-semibold uppercase tracking-widest text-muted-foreground text-left">
+            {t.questionnaires_manage.subscaleScores}
+          </h4>
+          <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2">
+            {subscalesList.map((sub) => {
+              const score = subscaleScores[sub.id] ?? 0;
+              const name = lang === 'en' ? sub.name.en || sub.id : sub.name.hu || sub.id;
+              const typeLabel = sub.type === 'average' ? t.questionnaires_manage.subscaleTypeAverage : t.questionnaires_manage.subscaleTypeSum;
+
+              // Find matched subscale range
+              const matchedRange = (sub.score_ranges || []).find(r => score >= r.min && score <= r.max);
+              const matchedLabel = matchedRange ? (lang === 'en' ? matchedRange.label.en : matchedRange.label.hu) : null;
+              const matchedDesc = matchedRange?.description ? (lang === 'en' ? matchedRange.description.en : matchedRange.description.hu) : null;
+
+              return (
+                <div key={sub.id} className="bg-accent/20 rounded-xl p-3 flex flex-col justify-between text-xs border border-border/30 space-y-2">
+                  <div className="flex justify-between items-start">
+                    <div className="text-left">
+                      <p className="font-semibold text-foreground">{name}</p>
+                      <p className="text-[10px] text-muted-foreground">{typeLabel}</p>
+                    </div>
+                    <div className="text-right shrink-0">
+                      <span className="text-sm font-bold text-foreground">{score}</span>
+                      {matchedLabel && (
+                        <span className="block text-[10px] font-semibold text-primary mt-0.5">
+                          {matchedLabel}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                  {matchedDesc && (
+                    <p className="text-[11px] text-muted-foreground leading-relaxed pt-1 border-t border-border/20 text-left">
+                      {matchedDesc}
+                    </p>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      )}
 
       {/* Per-question breakdown */}
       <div className="space-y-2">

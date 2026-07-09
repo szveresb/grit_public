@@ -18,7 +18,8 @@ import { toast } from 'sonner';
 import { friendlyDbError } from '@/lib/db-error';
 import { FPlus, FTrash, FPencil, FClose, FSave } from '@/components/icons/FreudIcons';
 import type { Database, Json } from '@/integrations/supabase/types';
-import type { LogicRule } from '@/lib/logic-engine';
+import { type LogicRule, type QuestionWithLogic } from '@/lib/logic-engine';
+import { validateLogicRules } from '@/lib/logic-validation';
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
@@ -31,10 +32,30 @@ type Question = Database['public']['Tables']['questionnaire_questions']['Row'] &
   options_localized: Record<string, string> | null; 
 };
 interface ScoreRange { min: number; max: number; label: string; description?: string; }
+interface Subscale {
+  id: string;
+  name: {
+    hu: string;
+    en: string;
+  };
+  type: string;
+  score_ranges?: {
+    min: number;
+    max: number;
+    label: {
+      hu: string;
+      en: string;
+    };
+    description?: {
+      hu?: string;
+      en?: string;
+    };
+  }[];
+}
 
 const SelfChecks = () => {
   const { user } = useAuth();
-  const { t } = useLanguage();
+  const { t, lang } = useLanguage();
   const { hasAnyRole } = useUserRole();
   const isEditor = hasAnyRole('admin', 'editor');
   const location = useLocation();
@@ -55,14 +76,79 @@ const SelfChecks = () => {
   const [formTitle, setFormTitle] = useState('');
   const [formDesc, setFormDesc] = useState('');
   const [formPublished, setFormPublished] = useState(true);
-  const [formQuestions, setFormQuestions] = useState<{ id?: string; text: string; type: string; options: string; answerScores: Record<string, number>; scaleMin: number; scaleMax: number; scaleLabels: Record<string, string>; reverseScored: boolean; excludeFromScoring: boolean; logicRules: LogicRule[] }[]>([{ text: '', type: 'text', options: '', answerScores: {}, scaleMin: 1, scaleMax: 5, scaleLabels: {}, reverseScored: false, excludeFromScoring: false, logicRules: [] }]);
+  const [formQuestions, setFormQuestions] = useState<{ id?: string; text: string; type: string; options: string; answerScores: Record<string, number>; scaleMin: number; scaleMax: number; scaleLabels: Record<string, string>; reverseScored: boolean; excludeFromScoring: boolean; logicRules: LogicRule[]; subscaleIds: string[] }[]>([{ text: '', type: 'text', options: '', answerScores: {}, scaleMin: 1, scaleMax: 5, scaleLabels: {}, reverseScored: false, excludeFromScoring: false, logicRules: [], subscaleIds: [] }]);
   const [formRepeat, setFormRepeat] = useState<string>('');
   const [formScoringEnabled, setFormScoringEnabled] = useState(false);
   const [formScoringMode, setFormScoringMode] = useState<string>('sum');
   const [formScoreRanges, setFormScoreRanges] = useState<ScoreRange[]>([]);
   const [formInterpretationProfile, setFormInterpretationProfile] = useState<string>('');
+  const [formSubscales, setFormSubscales] = useState<Subscale[]>([]);
+  const [subscaleEditMode, setSubscaleEditMode] = useState<'form' | 'json'>('form');
+  const [rawSubscalesJson, setRawSubscalesJson] = useState('[]');
+  const [subscaleJsonError, setSubscaleJsonError] = useState<string | null>(null);
 
   const [saving, setSaving] = useState(false);
+  const [mockEditorAnswers, setMockEditorAnswers] = useState<Record<string, string>>({});
+
+  const getSkippedQuestionsForRule = (sourceIndex: number, rule: LogicRule) => {
+    if (rule.action === 'skip_to_end') {
+      return formQuestions.slice(sourceIndex + 1).filter(q => q.type !== 'text' && q.text.trim());
+    } else if (rule.action === 'jump_to' && rule.target_question_id) {
+      const targetIndex = formQuestions.findIndex(q => q.id === rule.target_question_id);
+      if (targetIndex > sourceIndex) {
+        return formQuestions.slice(sourceIndex + 1, targetIndex).filter(q => q.type !== 'text' && q.text.trim());
+      }
+    }
+    return [];
+  };
+
+  const handleRuleTargetChange = (questionIndex: number, ruleIndex: number, action: 'jump_to' | 'skip_to_end', targetQuestionId?: string) => {
+    const c = [...formQuestions];
+    const oldRule = c[questionIndex].logicRules[ruleIndex];
+    const tempRule = {
+      ...oldRule,
+      action,
+      target_question_id: targetQuestionId
+    };
+    
+    const skippedQuestions = getSkippedQuestionsForRule(questionIndex, tempRule);
+    const skippedIds = new Set(skippedQuestions.map(q => q.id).filter(Boolean) as string[]);
+    
+    const prunedAnswers: Record<string, string> = {};
+    if (oldRule.synthetic_skipped_answers) {
+      Object.entries(oldRule.synthetic_skipped_answers).forEach(([qId, val]) => {
+        if (skippedIds.has(qId)) {
+          prunedAnswers[qId] = val;
+        }
+      });
+    }
+    
+    c[questionIndex].logicRules = [...c[questionIndex].logicRules];
+    c[questionIndex].logicRules[ruleIndex] = {
+      ...tempRule,
+      synthetic_skipped_answers: Object.keys(prunedAnswers).length > 0 ? prunedAnswers : undefined
+    };
+    setFormQuestions(c);
+  };
+
+  const handleSyntheticAnswerChange = (questionIndex: number, ruleIndex: number, skippedQuestionId: string, value: string) => {
+    const c = [...formQuestions];
+    c[questionIndex].logicRules = [...c[questionIndex].logicRules];
+    const rule = c[questionIndex].logicRules[ruleIndex];
+    const currentAnswers = { ...rule.synthetic_skipped_answers };
+    
+    if (value === "") {
+      delete currentAnswers[skippedQuestionId];
+    } else {
+      currentAnswers[skippedQuestionId] = value;
+    }
+    
+    c[questionIndex].logicRules[ruleIndex] = {
+      ...rule,
+      synthetic_skipped_answers: Object.keys(currentAnswers).length > 0 ? currentAnswers : undefined
+    };
+    setFormQuestions(c);
+  };
 
   const fetchQuestionnaires = useCallback(async () => {
     const { data } = await supabase.from('questionnaires').select('*').order('created_at', { ascending: false });
@@ -82,12 +168,126 @@ const SelfChecks = () => {
     })));
   };
 
-  const openCreate = () => { setEditingId(null); setFormTitle(''); setFormDesc(''); setFormPublished(false); setFormRepeat(''); setFormScoringEnabled(false); setFormScoringMode('sum'); setFormScoreRanges([]); setFormInterpretationProfile(''); setFormQuestions([{ text: '', type: 'text', options: '', answerScores: {}, scaleMin: 1, scaleMax: 5, scaleLabels: {}, reverseScored: false, excludeFromScoring: false, logicRules: [] }]); setShowForm(true); };
+  const handleRawSubscalesJsonChange = (val: string) => {
+    setRawSubscalesJson(val);
+    if (!val.trim()) {
+      setFormSubscales([]);
+      setSubscaleJsonError(null);
+      return;
+    }
+    try {
+      const parsed = JSON.parse(val);
+      if (!Array.isArray(parsed)) {
+        setSubscaleJsonError('Subscales must be a JSON array.');
+        return;
+      }
+      for (const item of parsed) {
+        if (typeof item !== 'object' || item === null) {
+          setSubscaleJsonError('Each item in subscales must be an object.');
+          return;
+        }
+        if (typeof item.id !== 'string') {
+          setSubscaleJsonError('Each item must have a string "id".');
+          return;
+        }
+        if (typeof item.name !== 'object' || item.name === null || typeof item.name.hu !== 'string' || typeof item.name.en !== 'string') {
+          setSubscaleJsonError('Each item must have a "name" object with "hu" and "en" string properties.');
+          return;
+        }
+        if (typeof item.type !== 'string') {
+          setSubscaleJsonError('Each item must have a string "type".');
+          return;
+        }
+        if (item.score_ranges !== undefined) {
+          if (!Array.isArray(item.score_ranges)) {
+            setSubscaleJsonError('If present, "score_ranges" must be an array.');
+            return;
+          }
+          for (const r of item.score_ranges) {
+            if (typeof r !== 'object' || r === null) {
+              setSubscaleJsonError('Each score range must be an object.');
+              return;
+            }
+            if (typeof r.min !== 'number' || typeof r.max !== 'number') {
+              setSubscaleJsonError('Each score range must have numeric "min" and "max" fields.');
+              return;
+            }
+            if (typeof r.label !== 'object' || r.label === null || typeof r.label.hu !== 'string' || typeof r.label.en !== 'string') {
+              setSubscaleJsonError('Each score range must have a "label" object with "hu" and "en" string properties.');
+              return;
+            }
+            if (r.description !== undefined) {
+              if (typeof r.description !== 'object' || r.description === null || (r.description.hu !== undefined && typeof r.description.hu !== 'string') || (r.description.en !== undefined && typeof r.description.en !== 'string')) {
+                setSubscaleJsonError('If present, "description" must be an object with "hu" and "en" string properties.');
+                return;
+              }
+            }
+          }
+        }
+      }
+      setFormSubscales(parsed as Subscale[]);
+      setSubscaleJsonError(null);
+    } catch (e: any) {
+      setSubscaleJsonError(`Syntax Error: ${e.message}`);
+    }
+  };
+
+  const updateFormSubscales = (newSubscales: Subscale[]) => {
+    setFormSubscales(newSubscales);
+    setRawSubscalesJson(JSON.stringify(newSubscales, null, 2));
+    setSubscaleJsonError(null);
+  };
+
+  const openCreate = () => {
+    setEditingId(null);
+    setFormTitle('');
+    setFormDesc('');
+    setFormPublished(false);
+    setFormRepeat('');
+    setFormScoringEnabled(false);
+    setFormScoringMode('sum');
+    setFormScoreRanges([]);
+    setFormInterpretationProfile('');
+    setFormSubscales([]);
+    setRawSubscalesJson('[]');
+    setSubscaleJsonError(null);
+    setSubscaleEditMode('form');
+    setMockEditorAnswers({});
+    setFormQuestions([{
+      id: crypto.randomUUID(),
+      text: '',
+      type: 'text',
+      options: '',
+      answerScores: {},
+      scaleMin: 1,
+      scaleMax: 5,
+      scaleLabels: {},
+      reverseScored: false,
+      excludeFromScoring: false,
+      logicRules: [],
+      subscaleIds: []
+    }]);
+    setShowForm(true);
+  };
 
   const openEdit = async (q: Questionnaire) => {
-    setEditingId(q.id); setFormTitle(q.title); setFormDesc(q.description ?? ''); setFormPublished(q.is_published); setFormRepeat(q.repeat_interval ?? '');
-    setFormScoringEnabled(q.scoring_enabled ?? false); setFormScoringMode(q.scoring_mode ?? 'sum'); setFormScoreRanges((q.score_ranges as ScoreRange[]) ?? []);
+    setEditingId(q.id);
+    setFormTitle(q.title);
+    setFormDesc(q.description ?? '');
+    setFormPublished(q.is_published);
+    setFormRepeat(q.repeat_interval ?? '');
+    setFormScoringEnabled(q.scoring_enabled ?? false);
+    setFormScoringMode(q.scoring_mode ?? 'sum');
+    setFormScoreRanges((q.score_ranges as ScoreRange[]) ?? []);
     setFormInterpretationProfile(q.interpretation_profile ?? '');
+    setMockEditorAnswers({});
+
+    const loadedSubscales = (q.subscales as unknown as Subscale[]) ?? [];
+    setFormSubscales(loadedSubscales);
+    setRawSubscalesJson(JSON.stringify(loadedSubscales, null, 2));
+    setSubscaleJsonError(null);
+    setSubscaleEditMode('form');
+
     const { data } = await supabase.from('questionnaire_questions').select('*').eq('questionnaire_id', q.id).order('sort_order');
     setFormQuestions((data ?? []).map(qq => {
       const opts = qq.options as string[] | null;
@@ -96,7 +296,6 @@ const SelfChecks = () => {
         scaleMin = opts[0] !== undefined && opts[0] !== '' ? Number(opts[0]) : 1;
         scaleMax = opts[1] !== undefined && opts[1] !== '' ? Number(opts[1]) : 5;
       }
-      // Detect reverse scoring pattern: answer_scores exist and match reversed values
       const scores = (qq.answer_scores as Record<string, number>) ?? {};
       let isReverse = false;
       if (qq.question_type === 'scale' && Object.keys(scores).length > 0) {
@@ -105,13 +304,32 @@ const SelfChecks = () => {
           if (scores[String(n)] !== (scaleMin + scaleMax) - n) { isReverse = false; break; }
         }
       }
-      return { id: qq.id, text: qq.question_text, type: qq.question_type, options: qq.question_type === 'multiple_choice' && opts ? opts.join(', ') : '', answerScores: scores, scaleMin, scaleMax, scaleLabels: (qq.options_localized as Record<string, string>) ?? {}, reverseScored: isReverse, excludeFromScoring: (qq as { exclude_from_scoring?: boolean }).exclude_from_scoring ?? false, logicRules: (qq.logic_rules as unknown as LogicRule[]) ?? [] };
+      return {
+        id: qq.id,
+        text: qq.question_text,
+        type: qq.question_type,
+        options: qq.question_type === 'multiple_choice' && opts ? opts.join(', ') : '',
+        answerScores: scores,
+        scaleMin,
+        scaleMax,
+        scaleLabels: (qq.options_localized as Record<string, string>) ?? {},
+        reverseScored: isReverse,
+        excludeFromScoring: (qq as { exclude_from_scoring?: boolean }).exclude_from_scoring ?? false,
+        logicRules: (qq.logic_rules as unknown as LogicRule[]) ?? [],
+        subscaleIds: (qq.subscale_ids as string[]) ?? []
+      };
     }));
     setShowForm(true);
   };
 
   const handleSave = async () => {
     if (!user || !formTitle.trim()) return;
+
+    if (subscaleEditMode === 'json' && subscaleJsonError) {
+      toast.error(t.errors?.validationError || 'Invalid subscales JSON format.');
+      return;
+    }
+
     setSaving(true);
     
     const validQuestions = formQuestions.filter(nq => nq.text.trim());
@@ -121,15 +339,63 @@ const SelfChecks = () => {
       return;
     }
 
+    let finalSubscales: Subscale[] = [];
+    if (formScoringEnabled) {
+      if (subscaleEditMode === 'json') {
+        try {
+          finalSubscales = JSON.parse(rawSubscalesJson);
+        } catch (e) {
+          toast.error('Invalid subscales JSON');
+          setSaving(false);
+          return;
+        }
+      } else {
+        finalSubscales = formSubscales;
+      }
+
+      if (formPublished) {
+        for (const sub of finalSubscales) {
+          const hasMapped = validQuestions.some(q => q.subscaleIds?.includes(sub.id));
+          if (!hasMapped) {
+            toast.error(lang === 'en' 
+              ? `Subscale "${sub.name.en || sub.id}" must have at least one question associated with it before publishing.`
+              : `A(z) "${sub.name.hu || sub.id}" részskálához legalább egy kérdést hozzá kell rendelni a közzététel előtt.`
+            );
+            setSaving(false);
+            return;
+          }
+        }
+      }
+    }
+
+    // Map form questions to QuestionWithLogic structure for validation
+    const questionsForValidation: QuestionWithLogic[] = validQuestions.map((nq, idx) => ({
+      id: nq.id || `temp-${idx}`,
+      sort_order: idx,
+      logic_rules: nq.logicRules,
+      question_type: nq.type,
+      options: nq.type === 'multiple_choice' ? nq.options.split(',').map(s => s.trim()).filter(Boolean) : nq.type === 'scale' ? [String(nq.scaleMin), String(nq.scaleMax)] : null,
+      answer_scores: nq.answerScores,
+      exclude_from_scoring: nq.excludeFromScoring,
+    }));
+
+    const validation = validateLogicRules(questionsForValidation);
+    if (!validation.valid) {
+      const firstErr = validation.errors[0];
+      toast.error(`Validation Error (Q${firstErr.questionIndex + 1}): ${firstErr.message}`);
+      setSaving(false);
+      return;
+    }
+
     if (editingId) {
-      const { error } = await supabase.from('questionnaires').update({ title: formTitle, description: formDesc || null, is_published: formPublished, repeat_interval: formRepeat || null, scoring_enabled: formScoringEnabled, scoring_mode: formScoringMode, score_ranges: (formScoreRanges.length ? formScoreRanges : null) as unknown as Json, interpretation_profile: formInterpretationProfile || null }).eq('id', editingId);
+      const { error } = await supabase.from('questionnaires').update({ title: formTitle, description: formDesc || null, is_published: formPublished, repeat_interval: formRepeat || null, scoring_enabled: formScoringEnabled, scoring_mode: formScoringMode, score_ranges: (formScoreRanges.length ? formScoreRanges : null) as unknown as Json, interpretation_profile: formInterpretationProfile || null, subscales: finalSubscales as unknown as Json }).eq('id', editingId);
       if (error) { toast.error(friendlyDbError(error)); setSaving(false); return; }
       await supabase.from('questionnaire_questions').delete().eq('questionnaire_id', editingId);
       const qRows = validQuestions.map((nq, i) => {
         let answerScores: Record<string, number> | null = null;
         if (formScoringEnabled && formScoringMode === 'weighted') answerScores = nq.answerScores;
         else if (formScoringEnabled && nq.reverseScored && nq.type === 'scale') answerScores = nq.answerScores;
-        return { questionnaire_id: editingId, question_text: nq.text, question_type: nq.type, options: nq.type === 'multiple_choice' ? nq.options.split(',').map(s => s.trim()).filter(Boolean) : nq.type === 'scale' ? [String(nq.scaleMin), String(nq.scaleMax)] : null, sort_order: i, answer_scores: answerScores, options_localized: nq.type === 'scale' && Object.keys(nq.scaleLabels).length > 0 ? nq.scaleLabels : null, logic_rules: (nq.logicRules.length > 0 ? nq.logicRules : null) as unknown as Json, exclude_from_scoring: nq.excludeFromScoring };
+        return { id: nq.id || crypto.randomUUID(), questionnaire_id: editingId, question_text: nq.text, question_type: nq.type, options: nq.type === 'multiple_choice' ? nq.options.split(',').map(s => s.trim()).filter(Boolean) : nq.type === 'scale' ? [String(nq.scaleMin), String(nq.scaleMax)] : null, sort_order: i, answer_scores: answerScores, options_localized: nq.type === 'scale' && Object.keys(nq.scaleLabels).length > 0 ? nq.scaleLabels : null, logic_rules: (nq.logicRules.length > 0 ? nq.logicRules : null) as unknown as Json, exclude_from_scoring: nq.excludeFromScoring, subscale_ids: nq.subscaleIds || [] };
       });
       if (qRows.length) {
         const { error: insertErr } = await supabase.from('questionnaire_questions').insert(qRows);
@@ -137,13 +403,13 @@ const SelfChecks = () => {
       }
       toast.success(t.questionnaires_manage.questionnaireUpdated);
     } else {
-      const { data: q, error } = await supabase.from('questionnaires').insert({ title: formTitle, description: formDesc || null, created_by: user.id, is_published: formPublished, repeat_interval: formRepeat || null, scoring_enabled: formScoringEnabled, scoring_mode: formScoringMode, score_ranges: (formScoreRanges.length ? formScoreRanges : null) as unknown as Json, interpretation_profile: formInterpretationProfile || null }).select('id').single();
+      const { data: q, error } = await supabase.from('questionnaires').insert({ title: formTitle, description: formDesc || null, created_by: user.id, is_published: formPublished, repeat_interval: formRepeat || null, scoring_enabled: formScoringEnabled, scoring_mode: formScoringMode, score_ranges: (formScoreRanges.length ? formScoreRanges : null) as unknown as Json, interpretation_profile: formInterpretationProfile || null, subscales: finalSubscales as unknown as Json }).select('id').single();
       if (error || !q) { toast.error(error ? friendlyDbError(error) : t.errors.genericFailure); setSaving(false); return; }
       const qRows = validQuestions.map((nq, i) => {
         let answerScores: Record<string, number> | null = null;
         if (formScoringEnabled && formScoringMode === 'weighted') answerScores = nq.answerScores;
         else if (formScoringEnabled && nq.reverseScored && nq.type === 'scale') answerScores = nq.answerScores;
-        return { questionnaire_id: q.id, question_text: nq.text, question_type: nq.type, options: nq.type === 'multiple_choice' ? nq.options.split(',').map(s => s.trim()).filter(Boolean) : nq.type === 'scale' ? [String(nq.scaleMin), String(nq.scaleMax)] : null, sort_order: i, answer_scores: answerScores, options_localized: nq.type === 'scale' && Object.keys(nq.scaleLabels).length > 0 ? nq.scaleLabels : null, logic_rules: (nq.logicRules.length > 0 ? nq.logicRules : null) as unknown as Json, exclude_from_scoring: nq.excludeFromScoring };
+        return { id: nq.id || crypto.randomUUID(), questionnaire_id: q.id, question_text: nq.text, question_type: nq.type, options: nq.type === 'multiple_choice' ? nq.options.split(',').map(s => s.trim()).filter(Boolean) : nq.type === 'scale' ? [String(nq.scaleMin), String(nq.scaleMax)] : null, sort_order: i, answer_scores: answerScores, options_localized: nq.type === 'scale' && Object.keys(nq.scaleLabels).length > 0 ? nq.scaleLabels : null, logic_rules: (nq.logicRules.length > 0 ? nq.logicRules : null) as unknown as Json, exclude_from_scoring: nq.excludeFromScoring, subscale_ids: nq.subscaleIds || [] };
       });
       if (qRows.length) {
         const { error: insertErr } = await supabase.from('questionnaire_questions').insert(qRows);
@@ -180,6 +446,7 @@ const SelfChecks = () => {
       scoring_mode: q.scoring_mode,
       score_ranges: q.score_ranges,
       interpretation_profile: q.interpretation_profile,
+      subscales: q.subscales,
     }).select('id').single();
     if (error || !cloned) { toast.error(error ? friendlyDbError(error) : t.errors.genericFailure); return; }
     // Clone questions
@@ -201,16 +468,28 @@ const SelfChecks = () => {
           question_text_localized: oq.question_text_localized,
           exclude_from_scoring: (oq as { exclude_from_scoring?: boolean }).exclude_from_scoring ?? false,
           logic_rules: null as LogicRule[] | null, // placeholder, remapped below
+          subscale_ids: oq.subscale_ids,
         };
       });
-      // Remap logic_rules target IDs to the new cloned question IDs
+      // Remap logic_rules target IDs and synthetic skipped answer mappings to the new cloned question IDs
       origQuestions.forEach((oq, idx) => {
         const rules = oq.logic_rules as unknown as LogicRule[] | null;
         if (rules && rules.length > 0) {
-          qRows[idx].logic_rules = rules.map(r => ({
-            ...r,
-            target_question_id: r.target_question_id ? (idMap.get(r.target_question_id) ?? r.target_question_id) : r.target_question_id,
-          })) as unknown as LogicRule[] | null;
+          qRows[idx].logic_rules = rules.map(r => {
+            const remappedRule: LogicRule = {
+              ...r,
+              target_question_id: r.target_question_id ? (idMap.get(r.target_question_id) ?? r.target_question_id) : r.target_question_id,
+            };
+            if (r.synthetic_skipped_answers) {
+              const newSyntheticAnswers: Record<string, string> = {};
+              Object.entries(r.synthetic_skipped_answers).forEach(([oldId, val]) => {
+                const newId = idMap.get(oldId) ?? oldId;
+                newSyntheticAnswers[newId] = val;
+              });
+              remappedRule.synthetic_skipped_answers = newSyntheticAnswers;
+            }
+            return remappedRule;
+          }) as unknown as LogicRule[] | null;
         }
       });
       await supabase.from('questionnaire_questions').insert(qRows as unknown as Database['public']['Tables']['questionnaire_questions']['Insert'][]);
@@ -272,6 +551,166 @@ const SelfChecks = () => {
       default:
         return <Textarea value={val} onChange={e => setAnswers(a => ({ ...a, [q.id]: e.target.value }))} rows={2} placeholder="" className="rounded-2xl" />;
     }
+  };
+
+  const getLivePreviewScores = (
+    qConfig: { scoring_mode?: string | null; subscales?: any },
+    qList: any[],
+    ansObj: Record<string, string>
+  ) => {
+    let totalScore = 0;
+    let maxPossibleScore = 0;
+    const subscaleTotals: Record<string, number> = {};
+    const subscaleCounts: Record<string, number> = {};
+
+    const subscalesList = (qConfig.subscales as unknown as Subscale[]) ?? [];
+    for (const sub of subscalesList) {
+      subscaleTotals[sub.id] = 0;
+      subscaleCounts[sub.id] = 0;
+    }
+
+    for (const question of qList) {
+      const answer = ansObj[question.id ?? ''];
+      if (!answer || question.question_type === 'text') continue;
+
+      let score = 0;
+      let maxScore = 0;
+
+      if (qConfig.scoring_mode === 'weighted' && question.answer_scores) {
+        const scores = question.answer_scores as Record<string, number>;
+        score = scores[answer] ?? 0;
+        maxScore = Math.max(...Object.values(scores), 0);
+      } else if (question.question_type === 'scale') {
+        const scaleMax =
+          question.options && question.options.length >= 2 && question.options[1] !== ''
+            ? Number(question.options[1])
+            : 5;
+
+        if (question.answer_scores && Object.keys(question.answer_scores).length > 0) {
+          const scores = question.answer_scores as Record<string, number>;
+          score = scores[answer] ?? 0;
+          maxScore = Math.max(...Object.values(scores), 0);
+        } else {
+          score = Number(answer) || 0;
+          maxScore = scaleMax;
+        }
+      } else if (question.question_type === 'yes_no') {
+        score = answer === 'yes' ? 1 : 0;
+        maxScore = 1;
+      } else if (question.question_type === 'multiple_choice') {
+        const optionIndex = (question.options ?? []).indexOf(answer);
+        score = optionIndex !== -1 ? optionIndex + 1 : 0;
+        maxScore = (question.options ?? []).length;
+      }
+
+      totalScore += score;
+      maxPossibleScore += maxScore;
+
+      const subscaleIds = (question.subscale_ids as string[]) ?? [];
+      for (const subId of subscaleIds) {
+        if (subscaleTotals[subId] !== undefined) {
+          subscaleTotals[subId] += score;
+          subscaleCounts[subId] += 1;
+        }
+      }
+    }
+
+    const calculatedSubscales: Record<string, number> = {};
+    for (const sub of subscalesList) {
+      if (sub.type === 'average') {
+        const count = subscaleCounts[sub.id];
+        calculatedSubscales[sub.id] = count > 0 ? Number((subscaleTotals[sub.id] / count).toFixed(2)) : 0;
+      } else {
+        calculatedSubscales[sub.id] = subscaleTotals[sub.id];
+      }
+    }
+
+    return { totalScore, maxPossibleScore, subscaleScores: calculatedSubscales };
+  };
+
+  const renderLiveScoringPreviewPanel = (
+    calculatedScores: { totalScore: number; maxPossibleScore: number; subscaleScores: Record<string, number> },
+    scoreRanges: ScoreRange[],
+    subscalesList: Subscale[]
+  ) => {
+    const primaryMatched = scoreRanges.find(r => calculatedScores.totalScore >= r.min && calculatedScores.totalScore <= r.max);
+    
+    return (
+      <div className="border border-border/80 rounded-2xl p-4 bg-muted/5 space-y-4 text-left">
+        <div>
+          <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
+            Live Scoring Preview / Kalkulációs Teszt
+          </h3>
+          <p className="text-[11px] text-muted-foreground mt-0.5">
+            Test questionnaire calculations in real time using mock inputs.
+          </p>
+        </div>
+
+        <div className="bg-accent/10 border border-border/20 rounded-xl p-3 flex flex-col gap-1">
+          <div className="flex justify-between items-center text-xs">
+            <span className="font-semibold text-foreground">Primary Score / Főpontszám:</span>
+            <span className="font-bold text-foreground">
+              {calculatedScores.totalScore} / {calculatedScores.maxPossibleScore} pt
+            </span>
+          </div>
+          {primaryMatched && (
+            <div className="pt-1.5 border-t border-border/10">
+              <span className="text-[10px] font-semibold text-primary block">
+                Interpretation: {primaryMatched.label}
+              </span>
+              {primaryMatched.description && (
+                <p className="text-[10px] text-muted-foreground leading-relaxed mt-0.5">
+                  {primaryMatched.description}
+                </p>
+              )}
+            </div>
+          )}
+        </div>
+
+        {subscalesList.length > 0 && (
+          <div className="space-y-2">
+            <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider block">
+              Subscale Scores / Részskálák:
+            </span>
+            <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2">
+              {subscalesList.map((sub) => {
+                const score = calculatedScores.subscaleScores[sub.id] ?? 0;
+                const name = lang === 'en' ? sub.name.en || sub.id : sub.name.hu || sub.id;
+                const typeLabel = sub.type === 'average' ? t.questionnaires_manage.subscaleTypeAverage : t.questionnaires_manage.subscaleTypeSum;
+
+                const matchedRange = (sub.score_ranges || []).find(r => score >= r.min && score <= r.max);
+                const matchedLabel = matchedRange ? (lang === 'en' ? matchedRange.label.en : matchedRange.label.hu) : null;
+                const matchedDesc = matchedRange?.description ? (lang === 'en' ? matchedRange.description.en : matchedRange.description.hu) : null;
+
+                return (
+                  <div key={sub.id} className="bg-accent/10 rounded-xl p-2.5 flex flex-col justify-between text-xs border border-border/10 space-y-1.5">
+                    <div className="flex justify-between items-start">
+                      <div className="text-left">
+                        <p className="font-semibold text-foreground">{name}</p>
+                        <p className="text-[9px] text-muted-foreground">{typeLabel}</p>
+                      </div>
+                      <div className="text-right shrink-0">
+                        <span className="text-[11px] font-bold text-foreground">{score}</span>
+                        {matchedLabel && (
+                          <span className="block text-[9px] font-semibold text-primary mt-0.5">
+                            {matchedLabel}
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                    {matchedDesc && (
+                      <p className="text-[10px] text-muted-foreground leading-relaxed pt-1 border-t border-border/10 text-left">
+                        {matchedDesc}
+                      </p>
+                    )}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        )}
+      </div>
+    );
   };
 
   const questionnaireContent = (
@@ -389,6 +828,318 @@ const SelfChecks = () => {
               </>
             )}
           </div>
+
+          {/* Subscales config */}
+          {formScoringEnabled && (
+            <div className="space-y-3 border border-border rounded-2xl p-4">
+              <div className="flex items-center justify-between">
+                <div>
+                  <Label className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+                    {t.questionnaires_manage.subscalesSection}
+                  </Label>
+                  <p className="text-[11px] text-muted-foreground mt-0.5">
+                    {t.questionnaires_manage.subscalesHint}
+                  </p>
+                </div>
+                <div className="flex bg-muted p-0.5 rounded-xl text-xs shrink-0">
+                  <button
+                    type="button"
+                    onClick={() => setSubscaleEditMode('form')}
+                    className={`px-2.5 py-1 rounded-lg font-medium transition-all ${
+                      subscaleEditMode === 'form'
+                        ? 'bg-background shadow-sm text-foreground'
+                        : 'text-muted-foreground hover:text-foreground'
+                    }`}
+                  >
+                    Form
+                  </button>
+                  <button
+                    type="button"
+                    onClick={() => setSubscaleEditMode('json')}
+                    className={`px-2.5 py-1 rounded-lg font-medium transition-all ${
+                      subscaleEditMode === 'json'
+                        ? 'bg-background shadow-sm text-foreground'
+                        : 'text-muted-foreground hover:text-foreground'
+                    }`}
+                  >
+                    JSON
+                  </button>
+                </div>
+              </div>
+
+              {subscaleEditMode === 'form' ? (
+                <div className="space-y-3">
+                  {formSubscales.map((ss, i) => (
+                    <div key={i} className="border-b border-border/30 pb-3 last:border-0 last:pb-0 space-y-2.5">
+                      <div className="flex gap-2 items-end">
+                        <div className="flex-1 min-w-[80px] space-y-1">
+                          <Label className="text-[10px] text-muted-foreground uppercase">{t.questionnaires_manage.subscaleId}</Label>
+                          <Input
+                            value={ss.id}
+                            onChange={e => {
+                              const c = [...formSubscales];
+                              c[i] = { ...c[i], id: e.target.value };
+                              updateFormSubscales(c);
+                            }}
+                            placeholder="e.g. anx"
+                            className="rounded-xl h-8 text-xs"
+                          />
+                        </div>
+                        <div className="flex-1 min-w-[100px] space-y-1">
+                          <Label className="text-[10px] text-muted-foreground uppercase">{t.questionnaires_manage.subscaleNameHu}</Label>
+                          <Input
+                            value={ss.name.hu}
+                            onChange={e => {
+                              const c = [...formSubscales];
+                              c[i] = { ...c[i], name: { ...c[i].name, hu: e.target.value } };
+                              updateFormSubscales(c);
+                            }}
+                            placeholder="pl. szorongás"
+                            className="rounded-xl h-8 text-xs"
+                          />
+                        </div>
+                        <div className="flex-1 min-w-[100px] space-y-1">
+                          <Label className="text-[10px] text-muted-foreground uppercase">{t.questionnaires_manage.subscaleNameEn}</Label>
+                          <Input
+                            value={ss.name.en}
+                            onChange={e => {
+                              const c = [...formSubscales];
+                              c[i] = { ...c[i], name: { ...c[i].name, en: e.target.value } };
+                              updateFormSubscales(c);
+                            }}
+                            placeholder="e.g. anxiety"
+                            className="rounded-xl h-8 text-xs"
+                          />
+                        </div>
+                        <div className="w-24 space-y-1">
+                          <Label className="text-[10px] text-muted-foreground uppercase">{t.questionnaires_manage.subscaleType}</Label>
+                          <select
+                            value={ss.type}
+                            onChange={e => {
+                              const c = [...formSubscales];
+                              c[i] = { ...c[i], type: e.target.value };
+                              updateFormSubscales(c);
+                            }}
+                            className="w-full border border-input rounded-xl px-2 h-8 text-xs bg-background"
+                          >
+                            <option value="sum">{t.questionnaires_manage.subscaleTypeSum}</option>
+                            <option value="average">{t.questionnaires_manage.subscaleTypeAverage}</option>
+                          </select>
+                        </div>
+                        <Button
+                          type="button"
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8 text-destructive shrink-0"
+                          onClick={() => {
+                            const c = formSubscales.filter((_, j) => j !== i);
+                            updateFormSubscales(c);
+                          }}
+                        >
+                          <FTrash className="h-3.5 w-3.5" />
+                        </Button>
+                      </div>
+
+                      {/* Subscale Score Interpretation Ranges */}
+                      <div className="pl-4 space-y-2 border-l-2 border-border/40">
+                        <span className="text-[9px] font-bold uppercase tracking-wider text-muted-foreground block">
+                          {t.questionnaires_manage.scoreRanges}
+                        </span>
+                        <div className="space-y-2">
+                          {(ss.score_ranges || []).map((range, ri) => (
+                            <div key={ri} className="flex flex-wrap gap-2 items-end bg-muted/30 p-2 rounded-xl border border-border/20">
+                              <div className="w-14 space-y-1">
+                                <Label className="text-[8px] text-muted-foreground uppercase">Min</Label>
+                                <Input
+                                  type="number"
+                                  value={range.min}
+                                  onChange={e => {
+                                    const c = [...formSubscales];
+                                    const ranges = [...(c[i].score_ranges || [])];
+                                    ranges[ri] = { ...ranges[ri], min: Number(e.target.value) };
+                                    c[i] = { ...c[i], score_ranges: ranges };
+                                    updateFormSubscales(c);
+                                  }}
+                                  className="rounded-lg h-7 text-xs"
+                                />
+                              </div>
+                              <div className="w-14 space-y-1">
+                                <Label className="text-[8px] text-muted-foreground uppercase">Max</Label>
+                                <Input
+                                  type="number"
+                                  value={range.max}
+                                  onChange={e => {
+                                    const c = [...formSubscales];
+                                    const ranges = [...(c[i].score_ranges || [])];
+                                    ranges[ri] = { ...ranges[ri], max: Number(e.target.value) };
+                                    c[i] = { ...c[i], score_ranges: ranges };
+                                    updateFormSubscales(c);
+                                  }}
+                                  className="rounded-lg h-7 text-xs"
+                                />
+                              </div>
+                              <div className="flex-1 min-w-[90px] space-y-1">
+                                <Label className="text-[8px] text-muted-foreground uppercase">Label HU</Label>
+                                <Input
+                                  value={range.label?.hu || ''}
+                                  onChange={e => {
+                                    const c = [...formSubscales];
+                                    const ranges = [...(c[i].score_ranges || [])];
+                                    ranges[ri] = { ...ranges[ri], label: { ...ranges[ri].label, hu: e.target.value } };
+                                    c[i] = { ...c[i], score_ranges: ranges };
+                                    updateFormSubscales(c);
+                                  }}
+                                  placeholder="pl. Alacsony"
+                                  className="rounded-lg h-7 text-xs"
+                                />
+                              </div>
+                              <div className="flex-1 min-w-[90px] space-y-1">
+                                <Label className="text-[8px] text-muted-foreground uppercase">Label EN</Label>
+                                <Input
+                                  value={range.label?.en || ''}
+                                  onChange={e => {
+                                    const c = [...formSubscales];
+                                    const ranges = [...(c[i].score_ranges || [])];
+                                    ranges[ri] = { ...ranges[ri], label: { ...ranges[ri].label, en: e.target.value } };
+                                    c[i] = { ...c[i], score_ranges: ranges };
+                                    updateFormSubscales(c);
+                                  }}
+                                  placeholder="e.g. Low"
+                                  className="rounded-lg h-7 text-xs"
+                                />
+                              </div>
+                              <div className="flex-[1.5] min-w-[130px] space-y-1">
+                                <Label className="text-[8px] text-muted-foreground uppercase">Desc HU</Label>
+                                <Input
+                                  value={range.description?.hu || ''}
+                                  onChange={e => {
+                                    const c = [...formSubscales];
+                                    const ranges = [...(c[i].score_ranges || [])];
+                                    ranges[ri] = { ...ranges[ri], description: { ...ranges[ri].description, hu: e.target.value } };
+                                    c[i] = { ...c[i], score_ranges: ranges };
+                                    updateFormSubscales(c);
+                                  }}
+                                  className="rounded-lg h-7 text-xs"
+                                />
+                              </div>
+                              <div className="flex-[1.5] min-w-[130px] space-y-1">
+                                <Label className="text-[8px] text-muted-foreground uppercase">Desc EN</Label>
+                                <Input
+                                  value={range.description?.en || ''}
+                                  onChange={e => {
+                                    const c = [...formSubscales];
+                                    const ranges = [...(c[i].score_ranges || [])];
+                                    ranges[ri] = { ...ranges[ri], description: { ...ranges[ri].description, en: e.target.value } };
+                                    c[i] = { ...c[i], score_ranges: ranges };
+                                    updateFormSubscales(c);
+                                  }}
+                                  className="rounded-lg h-7 text-xs"
+                                />
+                              </div>
+                              <Button
+                                type="button"
+                                variant="ghost"
+                                size="icon"
+                                className="h-7 w-7 text-destructive shrink-0"
+                                onClick={() => {
+                                  const c = [...formSubscales];
+                                  c[i] = {
+                                    ...c[i],
+                                    score_ranges: (c[i].score_ranges || []).filter((_, j) => j !== ri),
+                                  };
+                                  updateFormSubscales(c);
+                                }}
+                              >
+                                <FTrash className="h-3 w-3" />
+                              </Button>
+                            </div>
+                          ))}
+                          <Button
+                            type="button"
+                            variant="outline"
+                            size="sm"
+                            className="rounded-xl text-[10px] h-6 px-2 py-0"
+                            onClick={() => {
+                              const c = [...formSubscales];
+                              c[i] = {
+                                ...c[i],
+                                score_ranges: [...(c[i].score_ranges || []), { min: 0, max: 0, label: { hu: '', en: '' }, description: { hu: '', en: '' } }],
+                              };
+                              updateFormSubscales(c);
+                            }}
+                          >
+                            <FPlus className="h-2.5 w-2.5 mr-1" /> {t.questionnaires_manage.addScoreRange}
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                  <Button
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    className="rounded-2xl text-xs h-7"
+                    onClick={() => {
+                      const c = [...formSubscales, { id: '', name: { hu: '', en: '' }, type: 'sum' }];
+                      updateFormSubscales(c);
+                    }}
+                  >
+                    <FPlus className="h-3 w-3 mr-1" /> {t.questionnaires_manage.addSubscale}
+                  </Button>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  <Textarea
+                    value={rawSubscalesJson}
+                    onChange={e => handleRawSubscalesJsonChange(e.target.value)}
+                    rows={6}
+                    className="font-mono text-xs rounded-2xl"
+                    placeholder="[ { &quot;id&quot;: &quot;anx&quot;, &quot;name&quot;: { &quot;hu&quot;: &quot;Szorongás&quot;, &quot;en&quot;: &quot;Anxiety&quot; }, &quot;type&quot;: &quot;sum&quot; } ]"
+                  />
+                  {subscaleJsonError && (
+                    <p className="text-[11px] text-destructive font-semibold">
+                      {subscaleJsonError}
+                    </p>
+                  )}
+                </div>
+              )}
+
+              {/* Visual Mapping Summary Panel */}
+              {formSubscales.length > 0 && (
+                <div className="mt-3 p-3 rounded-2xl bg-muted/20 border border-border/50 space-y-2 text-left">
+                  <Label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground block">
+                    Subscale Mapping Summary / Kérdés hozzárendelések
+                  </Label>
+                  <div className="space-y-1.5">
+                    {formSubscales.map(sub => {
+                      const name = lang === 'en' ? sub.name.en || sub.id : sub.name.hu || sub.id;
+                      const mappedIndices = formQuestions
+                        .map((q, idx) => q.subscaleIds?.includes(sub.id) ? idx + 1 : null)
+                        .filter((val): val is number => val !== null);
+                        
+                      return (
+                        <div key={sub.id} className="text-xs flex items-center justify-between gap-3 border-b border-border/10 pb-1.5 last:border-0 last:pb-0">
+                          <span className="font-semibold text-foreground">
+                            {name} ({sub.id})
+                          </span>
+                          {mappedIndices.length > 0 ? (
+                            <span className="bg-primary/10 text-primary font-medium px-2 py-0.5 rounded-lg text-[10px]">
+                              {lang === 'en' ? 'Questions' : 'Kérdések'}: {mappedIndices.map(i => `Q${i}`).join(', ')}
+                            </span>
+                          ) : (
+                            <span className="bg-destructive/10 text-destructive font-semibold px-2 py-0.5 rounded-lg text-[10px]">
+                              {lang === 'en' ? 'No questions mapped' : 'Nincs kérdés hozzárendelve'}
+                            </span>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
+
           <div className="flex items-center justify-end border-t border-border/50 pt-3">
             <Button size="sm" className="rounded-2xl" onClick={handleSave} disabled={saving}>
               <FSave className="h-4 w-4 mr-1" /> {saving ? t.saving : editingId ? t.update : t.create}
@@ -524,60 +1275,121 @@ const SelfChecks = () => {
                         </div>
                       )}
                     </div>
-                    {nq.logicRules.map((rule, ri) => (
-                      <div key={ri} className="flex flex-wrap items-center gap-1.5 text-xs">
-                        <span className="text-muted-foreground shrink-0">{t.questionnaires_manage.whenAnswerIs}:</span>
-                        <select
-                          value={rule.condition.answer_equals}
-                          onChange={e => {
-                            const c = [...formQuestions];
-                            c[i].logicRules = [...c[i].logicRules];
-                            c[i].logicRules[ri] = { ...c[i].logicRules[ri], condition: { answer_equals: e.target.value } };
-                            setFormQuestions(c);
-                          }}
-                          className="border border-input rounded-xl px-2 py-1 text-xs bg-background min-w-[80px]"
-                        >
-                          <option value="">—</option>
-                          {(nq.type === 'yes_no' ? ['yes', 'no'] :
-                            nq.type === 'scale' ? Array.from({ length: nq.scaleMax - nq.scaleMin + 1 }, (_, k) => String(nq.scaleMin + k)) :
-                            nq.type === 'multiple_choice' ? nq.options.split(',').map(s => s.trim()).filter(Boolean) :
-                            []).map(opt => (
-                            <option key={opt} value={opt}>{opt}</option>
-                          ))}
-                        </select>
-                        <span className="text-muted-foreground shrink-0">{t.questionnaires_manage.thenGoTo}:</span>
-                        <select
-                          value={rule.action === 'skip_to_end' ? '__END__' : (rule.target_question_id ?? '')}
-                          onChange={e => {
-                            const c = [...formQuestions];
-                            c[i].logicRules = [...c[i].logicRules];
-                            if (e.target.value === '__END__') {
-                              c[i].logicRules[ri] = { ...c[i].logicRules[ri], action: 'skip_to_end', target_question_id: undefined };
-                            } else {
-                              c[i].logicRules[ri] = { ...c[i].logicRules[ri], action: 'jump_to', target_question_id: e.target.value };
-                            }
-                            setFormQuestions(c);
-                          }}
-                          className="border border-input rounded-xl px-2 py-1 text-xs bg-background min-w-[120px]"
-                        >
-                          <option value="">—</option>
-                          {/* Forward-only: only show questions after the current one */}
-                          {formQuestions.slice(i + 1).map((fq, fi) => (
-                            <option key={fq.id ?? `new-${i + 1 + fi}`} value={fq.id ?? ''}>
-                              {t.questionnaires_manage.questionN.replace('{n}', String(i + 2 + fi))}: {fq.text.substring(0, 30) || '...'}
-                            </option>
-                          ))}
-                          <option value="__END__">{t.questionnaires_manage.endOfSurvey}</option>
-                        </select>
-                        <Button type="button" variant="ghost" size="icon" className="h-6 w-6 text-destructive" onClick={() => {
-                          const c = [...formQuestions];
-                          c[i].logicRules = c[i].logicRules.filter((_, j) => j !== ri);
-                          setFormQuestions(c);
-                        }}>
-                          <FTrash className="h-3 w-3" />
-                        </Button>
-                      </div>
-                    ))}
+                    {nq.logicRules.map((rule, ri) => {
+                      const skippedQuestions = getSkippedQuestionsForRule(i, rule);
+                      return (
+                        <div key={ri} className="space-y-2 border-b border-border/20 pb-2 last:border-0 last:pb-0">
+                          <div className="flex flex-wrap items-center gap-1.5 text-xs">
+                            <span className="text-muted-foreground shrink-0">{t.questionnaires_manage.whenAnswerIs}:</span>
+                            <select
+                              value={rule.condition.answer_equals}
+                              onChange={e => {
+                                const c = [...formQuestions];
+                                c[i].logicRules = [...c[i].logicRules];
+                                c[i].logicRules[ri] = { ...c[i].logicRules[ri], condition: { answer_equals: e.target.value } };
+                                setFormQuestions(c);
+                              }}
+                              className="border border-input rounded-xl px-2 py-1 text-xs bg-background min-w-[80px]"
+                            >
+                              <option value="">—</option>
+                              {(nq.type === 'yes_no' ? ['yes', 'no'] :
+                                nq.type === 'scale' ? Array.from({ length: nq.scaleMax - nq.scaleMin + 1 }, (_, k) => String(nq.scaleMin + k)) :
+                                nq.type === 'multiple_choice' ? nq.options.split(',').map(s => s.trim()).filter(Boolean) :
+                                []).map(opt => (
+                                <option key={opt} value={opt}>{opt}</option>
+                              ))}
+                            </select>
+                            <span className="text-muted-foreground shrink-0">{t.questionnaires_manage.thenGoTo}:</span>
+                            <select
+                              value={rule.action === 'skip_to_end' ? '__END__' : (rule.target_question_id ?? '')}
+                              onChange={e => {
+                                if (e.target.value === '__END__') {
+                                  handleRuleTargetChange(i, ri, 'skip_to_end', undefined);
+                                } else {
+                                  handleRuleTargetChange(i, ri, 'jump_to', e.target.value);
+                                }
+                              }}
+                              className="border border-input rounded-xl px-2 py-1 text-xs bg-background min-w-[120px]"
+                            >
+                              <option value="">—</option>
+                              {/* Forward-only: only show questions after the current one */}
+                              {formQuestions.slice(i + 1).map((fq, fi) => (
+                                <option key={fq.id ?? `new-${i + 1 + fi}`} value={fq.id ?? ''}>
+                                  {t.questionnaires_manage.questionN.replace('{n}', String(i + 2 + fi))}: {fq.text.substring(0, 30) || '...'}
+                                </option>
+                              ))}
+                              <option value="__END__">{t.questionnaires_manage.endOfSurvey}</option>
+                            </select>
+                            <Button type="button" variant="ghost" size="icon" className="h-6 w-6 text-destructive" onClick={() => {
+                              const c = [...formQuestions];
+                              c[i].logicRules = c[i].logicRules.filter((_, j) => j !== ri);
+                              setFormQuestions(c);
+                            }}>
+                              <FTrash className="h-3 w-3" />
+                            </Button>
+                          </div>
+
+                          {/* Synthetic Auto-Score for Skipped Questions */}
+                          {skippedQuestions.length > 0 && (
+                            <div className="pl-4 pt-1 space-y-1.5 border-l-2 border-primary/20">
+                              <span className="text-[10px] font-semibold text-muted-foreground block uppercase tracking-wide">
+                                Auto-score Skipped Questions / Kihagyott kérdések pontozása
+                              </span>
+                              <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                                {skippedQuestions.map((q, idx) => {
+                                  const qIndex = formQuestions.findIndex(fq => fq.id === q.id);
+                                  const label = `Q${qIndex + 1}: ${q.text.substring(0, 20)}...`;
+                                  const value = rule.synthetic_skipped_answers?.[q.id!] ?? "";
+                                  
+                                  return (
+                                    <div key={q.id || idx} className="flex items-center justify-between gap-2 text-xs bg-accent/10 rounded-lg p-1.5">
+                                      <span className="text-muted-foreground truncate max-w-[150px] font-medium" title={q.text}>
+                                        {label}
+                                      </span>
+                                      {q.type === 'yes_no' && (
+                                        <select
+                                          value={value}
+                                          onChange={e => handleSyntheticAnswerChange(i, ri, q.id!, e.target.value)}
+                                          className="border border-input rounded-xl px-1.5 py-0.5 text-[11px] bg-background"
+                                        >
+                                          <option value="">— (Skip)</option>
+                                          <option value="yes">yes</option>
+                                          <option value="no">no</option>
+                                        </select>
+                                      )}
+                                      {q.type === 'scale' && (
+                                        <select
+                                          value={value}
+                                          onChange={e => handleSyntheticAnswerChange(i, ri, q.id!, e.target.value)}
+                                          className="border border-input rounded-xl px-1.5 py-0.5 text-[11px] bg-background"
+                                        >
+                                          <option value="">— (Skip)</option>
+                                          {Array.from({ length: q.scaleMax - q.scaleMin + 1 }, (_, k) => String(q.scaleMin + k)).map(pt => (
+                                            <option key={pt} value={pt}>{pt}</option>
+                                          ))}
+                                        </select>
+                                      )}
+                                      {q.type === 'multiple_choice' && (
+                                        <select
+                                          value={value}
+                                          onChange={e => handleSyntheticAnswerChange(i, ri, q.id!, e.target.value)}
+                                          className="border border-input rounded-xl px-1.5 py-0.5 text-[11px] bg-background max-w-[100px]"
+                                        >
+                                          <option value="">— (Skip)</option>
+                                          {q.options.split(',').map(s => s.trim()).filter(Boolean).map(opt => (
+                                            <option key={opt} value={opt}>{opt}</option>
+                                          ))}
+                                        </select>
+                                      )}
+                                    </div>
+                                  );
+                                })}
+                              </div>
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
                     <Button type="button" variant="ghost" size="sm" className="h-7 text-[11px] text-muted-foreground" onClick={() => {
                       const c = [...formQuestions];
                       c[i].logicRules = [...c[i].logicRules, { condition: { answer_equals: '' }, action: 'jump_to' as const }];
@@ -587,9 +1399,47 @@ const SelfChecks = () => {
                     </Button>
                   </div>
                 )}
+                {/* Question subscale mapping */}
+                {formScoringEnabled && formSubscales.length > 0 && (
+                  <div className="space-y-1.5 pl-8 pt-2 border-t border-border/30">
+                    <Label className="text-[10px] uppercase tracking-widest text-muted-foreground">
+                      {t.questionnaires_manage.mapSubscales}
+                    </Label>
+                    <div className="flex flex-wrap gap-1.5">
+                      {formSubscales.map(ss => {
+                        const isSelected = nq.subscaleIds?.includes(ss.id);
+                        const name = lang === 'en' ? ss.name.en || ss.id : ss.name.hu || ss.id;
+                        return (
+                          <button
+                            key={ss.id}
+                            type="button"
+                            onClick={() => {
+                              const c = [...formQuestions];
+                              const currentIds = c[i].subscaleIds || [];
+                              if (isSelected) {
+                                c[i].subscaleIds = currentIds.filter(id => id !== ss.id);
+                              } else {
+                                c[i].subscaleIds = [...currentIds, ss.id];
+                              }
+                              setFormQuestions(c);
+                            }}
+                            className={`px-2 py-0.5 rounded-full text-[10px] font-medium border transition-colors ${
+                              isSelected
+                                ? 'bg-primary/10 text-primary border-primary/30'
+                                : 'bg-background text-muted-foreground border-border hover:border-muted-foreground/30'
+                            }`}
+                          >
+                            {name} ({ss.id})
+                          </button>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+
                 <div className="flex justify-end pt-1 border-t border-border/30">
                   <Button type="button" variant="ghost" size="sm" className="h-7 text-[11px] text-muted-foreground hover:text-foreground gap-1" onClick={() => {
-                    const clone = { ...nq, id: undefined, text: nq.text ? `${nq.text} (copy)` : '', answerScores: { ...nq.answerScores }, scaleLabels: { ...nq.scaleLabels }, logicRules: [] };
+                    const clone = { ...nq, id: crypto.randomUUID(), text: nq.text ? `${nq.text} (copy)` : '', answerScores: { ...nq.answerScores }, scaleLabels: { ...nq.scaleLabels }, logicRules: [], subscaleIds: [...(nq.subscaleIds || [])] };
                     const c = [...formQuestions];
                     c.splice(i + 1, 0, clone);
                     setFormQuestions(c);
@@ -600,8 +1450,79 @@ const SelfChecks = () => {
                 </div>
               </div>
             ))}
-            <Button type="button" variant="outline" size="sm" className="rounded-2xl" onClick={() => setFormQuestions(q => [...q, { text: '', type: 'text', options: '', answerScores: {}, scaleMin: 1, scaleMax: 5, scaleLabels: {}, reverseScored: false, excludeFromScoring: false, logicRules: [] }])}>{t.questionnaires_manage.addQuestion}</Button>
+            <Button type="button" variant="outline" size="sm" className="rounded-2xl" onClick={() => setFormQuestions(q => [...q, { id: crypto.randomUUID(), text: '', type: 'text', options: '', answerScores: {}, scaleMin: 1, scaleMax: 5, scaleLabels: {}, reverseScored: false, excludeFromScoring: false, logicRules: [], subscaleIds: [] }])}>{t.questionnaires_manage.addQuestion}</Button>
           </div>
+          {/* Live Preview Scoring Calculator Block inside Editor */}
+          {formScoringEnabled && (
+            <div className="border border-border/80 rounded-2xl p-4 bg-muted/5 space-y-4 text-left">
+              <div>
+                <span className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+                  Mock Answers / Teszt Válaszok
+                </span>
+                <p className="text-[11px] text-muted-foreground mt-0.5">
+                  Select mock answers below to test scoring calculations.
+                </p>
+              </div>
+              
+              <div className="space-y-2.5 max-h-60 overflow-y-auto pr-1">
+                {formQuestions.map((q, idx) => {
+                  if (q.type === 'text') return null;
+                  const val = mockEditorAnswers[String(idx)] ?? '';
+                  
+                  let optionsList: string[] = [];
+                  if (q.type === 'scale') {
+                    const sMin = Number(q.scaleMin) || 1;
+                    const sMax = Number(q.scaleMax) || 5;
+                    optionsList = Array.from({ length: sMax - sMin + 1 }, (_, k) => String(sMin + k));
+                  } else if (q.type === 'yes_no') {
+                    optionsList = ['yes', 'no'];
+                  } else if (q.type === 'multiple_choice') {
+                    optionsList = q.options.split(',').map(s => s.trim()).filter(Boolean);
+                  }
+
+                  return (
+                    <div key={idx} className="flex flex-wrap items-center justify-between gap-3 border-b border-border/20 pb-2 last:border-0 last:pb-0 text-xs">
+                      <span className="font-medium text-foreground max-w-[200px] truncate">
+                        {idx + 1}. {q.text || 'Question text...'}
+                      </span>
+                      <div className="flex gap-1.5 flex-wrap shrink-0">
+                        {optionsList.map(opt => (
+                          <button
+                            key={opt}
+                            type="button"
+                            onClick={() => setMockEditorAnswers(a => ({ ...a, [String(idx)]: opt }))}
+                            className={`px-2 py-1 rounded-lg border text-[10px] font-medium transition-all ${
+                              val === opt
+                                ? 'bg-primary text-primary-foreground border-primary'
+                                : 'bg-background border-border text-muted-foreground hover:border-primary/50'
+                            }`}
+                          >
+                            {opt === 'yes' ? t.yes : opt === 'no' ? t.no : opt}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+
+              {(() => {
+                const mockCalculated = getLivePreviewScores(
+                  { scoring_mode: formScoringMode, subscales: formSubscales },
+                  formQuestions.map((q, idx) => ({
+                    id: String(idx),
+                    question_type: q.type,
+                    options: q.type === 'multiple_choice' ? q.options.split(',').map(s => s.trim()).filter(Boolean) : q.type === 'scale' ? [String(q.scaleMin), String(q.scaleMax)] : null,
+                    answer_scores: q.answerScores,
+                    subscale_ids: q.subscaleIds
+                  })),
+                  mockEditorAnswers
+                );
+                return renderLiveScoringPreviewPanel(mockCalculated, formScoreRanges, formSubscales);
+              })()}
+            </div>
+          )}
+
           <div className="flex gap-2">
             <Button size="sm" className="rounded-2xl" onClick={handleSave} disabled={saving}>
               <FSave className="h-4 w-4 mr-1" /> {saving ? t.saving : editingId ? t.update : t.create}
@@ -625,6 +1546,25 @@ const SelfChecks = () => {
               {renderQuestionInput(q)}
             </div>
           ))}
+          {/* Live Preview Scoring Calculator Block inside Preview Filler */}
+          {(() => {
+            const questionnaire = questionnaires.find(q => q.id === selectedQ);
+            if (!questionnaire || !questionnaire.scoring_enabled) return null;
+            const subscalesList = (questionnaire.subscales as unknown as Subscale[]) ?? [];
+            const calculated = getLivePreviewScores(
+              questionnaire,
+              questions.map(q => ({
+                id: q.id,
+                question_type: q.question_type,
+                options: q.options,
+                answer_scores: q.answer_scores,
+                subscale_ids: q.subscale_ids
+              })),
+              answers
+            );
+            return renderLiveScoringPreviewPanel(calculated, (questionnaire.score_ranges ?? []) as ScoreRange[], subscalesList);
+          })()}
+
           <div className="flex gap-2">
             <Button size="sm" className="rounded-2xl" onClick={handleSubmitAnswers} disabled={submitting}>{submitting ? t.questionnaires_manage.submitting : t.submit}</Button>
             <Button size="sm" variant="outline" className="rounded-2xl" onClick={() => setSelectedQ(null)}>{t.cancel}</Button>

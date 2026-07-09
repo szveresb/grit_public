@@ -777,6 +777,7 @@ export type Database = {
           question_type: string
           questionnaire_id: string
           sort_order: number
+          subscale_ids: Json
         }
         Insert: {
           answer_scores?: Json | null
@@ -791,6 +792,7 @@ export type Database = {
           question_type?: string
           questionnaire_id: string
           sort_order?: number
+          subscale_ids?: Json
         }
         Update: {
           answer_scores?: Json | null
@@ -805,6 +807,7 @@ export type Database = {
           question_type?: string
           questionnaire_id?: string
           sort_order?: number
+          subscale_ids?: Json
         }
         Relationships: [
           {
@@ -823,6 +826,7 @@ export type Database = {
           questionnaire_id: string
           subject_id: string | null
           subject_type: Database["public"]["Enums"]["subject_type"]
+          subscale_scores: Json
           total_score: number | null
           user_id: string
         }
@@ -832,6 +836,7 @@ export type Database = {
           questionnaire_id: string
           subject_id?: string | null
           subject_type?: Database["public"]["Enums"]["subject_type"]
+          subscale_scores?: Json
           total_score?: number | null
           user_id: string
         }
@@ -841,6 +846,7 @@ export type Database = {
           questionnaire_id?: string
           subject_id?: string | null
           subject_type?: Database["public"]["Enums"]["subject_type"]
+          subscale_scores?: Json
           total_score?: number | null
           user_id?: string
         }
@@ -936,6 +942,7 @@ export type Database = {
           scoring_enabled: boolean
           scoring_mode: string
           snomed_code: string | null
+          subscales: Json
           title: string
           title_localized: Json | null
           updated_at: string
@@ -953,6 +960,7 @@ export type Database = {
           scoring_enabled?: boolean
           scoring_mode?: string
           snomed_code?: string | null
+          subscales?: Json
           title: string
           title_localized?: Json | null
           updated_at?: string
@@ -970,6 +978,7 @@ export type Database = {
           scoring_enabled?: boolean
           scoring_mode?: string
           snomed_code?: string | null
+          subscales?: Json
           title?: string
           title_localized?: Json | null
           updated_at?: string

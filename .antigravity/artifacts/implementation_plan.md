@@ -1,64 +1,79 @@
-# Implementation Plan — Cookie Banner & Policy Protection
+# Seed Observation Intensity From Mood Pulse
 
-Implement a bilingual cookie banner on `grit.hu-live` (production) and safeguard it (along with the cookie policy page) so that automated code promotions from `grit.hu-beta` do not overwrite or remove them on production.
+As a user logging a structured clinical observation (either via the standalone stepper or the guided journal flow), the observation intensity should default based on the mood pulse level logged for the same date and subject context. This creates a helpful default using an inverse mapping while still allowing full user override.
 
 ## User Review Required
 
 > [!IMPORTANT]
-> **Repository Confirmation Required:** Under the project safety rules, I must explicitly ask you to confirm which repository (`grit.hu` or `grit.hu-beta`) I should perform the changes in. 
-> Since we want the code integration to be robust, we propose checking the changes into the common repository branch (so the code is available in both and integrates smoothly into `App.tsx`), but we will use domain detection and git protection to ensure the banner only activates on production and its configuration cannot be overwritten. Please confirm which repository you want me to commit the changes to.
+> **Repository Confirmation**: As per the Critical Safety Rules, please confirm which repository (`grit.hu-beta` or `grit.hu`) we should proceed in. We assume `grit.hu-beta` is the correct target based on your request.
 
 > [!NOTE]
-> The Cookie Policy page itself ([Cookies.tsx](file:///c:/Users/veres.sz/Documents/GitHub/grit.hu/src/pages/Cookies.tsx)) is already implemented in the frontend and displays the legal text from the database (falling back to the local translation dictionary). We will protect this page from any sync overwrites.
+> **Helper Text Display**: The helper text ("Suggested based on your mood check-in...") will only render if a matching mood pulse actually exists for the chosen date and subject. If no pulse exists, no helper text is shown.
 
 ## Open Questions
 
-> [!IMPORTANT]
-> 1. **Which Repository to Target:** Please confirm whether I should work in `grit.hu` (production) or `grit.hu-beta` (beta). (Usually, checking the base setup into both repositories and applying domain checks + git sync exclusions is the most robust approach to avoid future merge conflicts).
-> 2. **Cookie Banner Design:** We will design a floating banner at the bottom of the viewport using glassmorphism styling (`backdrop-blur`), complying with the "Clinical Core, Human Surface" styling guidelines. Please let us know if you prefer a different layout.
+*None at this stage.*
 
 ---
 
 ## Proposed Changes
 
-### Configuration Layer
+### Hooks Layer
 
-#### [MODIFY] [release-to-prod.yml](file:///c:/Users/veres.sz/Documents/GitHub/grit.hu/.github/workflows/release-to-prod.yml)
-- Add the new cookie banner file and the cookies page file to the `protected_paths` array. This ensures that any `rsync` sync run from `grit.hu-beta` to `grit.hu-live` will exclude/preserve these files.
-- Protected paths to add:
-  - `"src/components/CookieBanner.tsx"`
-  - `"src/pages/Cookies.tsx"`
+#### [NEW] [useObservationIntensityDefault.ts](file:///c:/Users/veres.sz/Documents/GitHub/grit.hu-beta/src/hooks/useObservationIntensityDefault.ts)
+- Create a shared, reusable hook that accepts:
+  - `date: string` (the target date of the observation)
+  - `subjectType: 'self' | 'relative'`
+  - `subjectId: string | null`
+- Query the `mood_pulses` table for the latest pulse for the given date, user, and subject context.
+- Implement the inverse defaulting rule: `6 - pulseLevel` (e.g. pulse `2` maps to intensity `4`).
+- Return:
+  - `defaultIntensity: number` (the seeded value, falling back to `3`)
+  - `source: 'pulse-seeded' | 'fallback'` (identifying if it was seeded from a pulse or used the fallback)
+  - `loading: boolean`
 
-### Translation Layer
+---
 
-#### [MODIFY] [types.ts](file:///c:/Users/veres.sz/Documents/GitHub/grit.hu/src/i18n/types.ts)
-- Add types for the `cookieBanner` dictionary structure under `legal`.
+### Components Layer
 
-#### [MODIFY] [hu.ts](file:///c:/Users/veres.sz/Documents/GitHub/grit.hu/src/i18n/hu.ts)
-- Add Hungarian translations for the cookie banner text, accept button, and policy link.
+#### [MODIFY] [ObservationStepper.tsx](file:///c:/Users/veres.sz/Documents/GitHub/grit.hu-beta/src/components/observations/ObservationStepper.tsx)
+- Remove the local, duplicated `mood_pulses` fetch logic and `today` hardcoding.
+- Integrate the new `useObservationIntensityDefault` hook using the `observationDate` and active stance subject context.
+- Introduce the local union state `intensitySource` (`'pulse-seeded' | 'fallback' | 'manual'`) to track if the user has manually changed the intensity within the current draft session.
+- Reset the draft session state when the active subject, observation date, or submission reset occurs.
+- Render helper text using the shared translations.
 
-#### [MODIFY] [en.ts](file:///c:/Users/veres.sz/Documents/GitHub/grit.hu/src/i18n/en.ts)
-- Add English translations for the cookie banner text, accept button, and policy link.
-
-### Frontend Layer
-
-#### [NEW] [CookieBanner.tsx](file:///c:/Users/veres.sz/Documents/GitHub/grit.hu/src/components/CookieBanner.tsx)
-- Create a beautiful, responsive, floating cookie banner using Tailwind CSS and Framer Motion.
-- Restrict rendering to live domains (`grit.hu`, `www.grit.hu`) and `localhost` (for testing/development).
-- Persist consent selection in `localStorage` under the key `grit_cookie_consent_v1`.
-
-#### [MODIFY] [App.tsx](file:///c:/Users/veres.sz/Documents/GitHub/grit.hu/src/App.tsx)
-- Import and render `<CookieBanner />` globally within the routing context.
+#### [MODIFY] [EntryModal.tsx](file:///c:/Users/veres.sz/Documents/GitHub/grit.hu-beta/src/components/checkin/EntryModal.tsx)
+- Integrate the new `useObservationIntensityDefault` hook for the user's self stance (`subjectType: 'self'`, `subjectId: null`) and the entry date.
+- Manage `intensitySource` local state.
+- Update the intensity UI step to render the helper text under the slider when seeded from a pulse.
 
 ---
 
 ## Verification Plan
 
 ### Automated Tests
-- Run `npm run dev` to verify compilation and check for lint or TypeScript errors.
+- Run TypeScript compiler validation to ensure no type errors are introduced:
+  ```powershell
+  & "C:\Users\veres.sz\AppData\Local\ms-playwright-go\1.57.0\node.exe" node_modules\typescript\bin\tsc --noEmit
+  ```
 
 ### Manual Verification
-- Verify that the cookie banner is shown on `localhost` if no consent has been stored yet.
-- Verify translation toggles (HU <-> EN) in the cookie banner.
-- Click "Accept" and verify that the banner disappears and `grit_cookie_consent_v1` is stored in `localStorage`.
-- Refresh the page and ensure the banner does not reappear.
+1. **Self Observation Seeding**:
+   - Log a mood pulse of `2/5` for today (Self).
+   - Open the standalone observation stepper. Verify the default intensity is preselected as `4/5`, and the helper text says *"Suggested based on your mood check-in today"*.
+   - Reopen a guided entry modal for today. Verify default intensity is `4/5`.
+2. **Relative Observation Seeding**:
+   - Log a mood pulse of `2/5` for a relative for today.
+   - Switch stance to that relative, and open the stepper. Verify the default intensity is `4/5`.
+3. **No Pulse Seeding**:
+   - Go to a backdated day without any mood pulse.
+   - Open both the stepper and the entry modal. Verify the intensity defaults to the neutral `3/5` and no helper text is shown.
+4. **Stance Isolation**:
+   - Ensure a relative's mood pulse does not seed a self observation, and vice versa.
+5. **Manual Override Persistence**:
+   - Change the intensity manually. Verify that the helper text changes to *"You've adjusted the weight"*.
+   - Move back/forth in steps, or toggle categories. Ensure the manual selection is not lost or overwritten during the active draft session.
+6. **Date Changes**:
+   - Log a pulse for a past date.
+   - Open a backdated entry/observation for that past date. Verify it seeds from the correct date's pulse.
