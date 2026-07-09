@@ -4,7 +4,8 @@ import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
 import { FClose } from '@/components/icons/FreudIcons';
 import { type ScoreRange } from '@/lib/score-interpretation';
-import { supabase } from '@/integrations/supabase/client';
+import { supabase as supabaseClient } from '@/integrations/supabase/client';
+const supabase = supabaseClient as any;
 
 interface QuestionScore {
   questionText: string;
