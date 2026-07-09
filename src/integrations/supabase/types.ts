@@ -864,6 +864,112 @@ export type Database = {
         }
         Relationships: []
       }
+      survey_interpretations: {
+        Row: {
+          content: string
+          content_en: string | null
+          created_at: string
+          generated_at: string
+          id: string
+          model: string | null
+          score_band: string | null
+          status: string
+          survey_id: string
+          updated_at: string
+        }
+        Insert: {
+          content: string
+          content_en?: string | null
+          created_at?: string
+          generated_at?: string
+          id?: string
+          model?: string | null
+          score_band?: string | null
+          status?: string
+          survey_id: string
+          updated_at?: string
+        }
+        Update: {
+          content?: string
+          content_en?: string | null
+          created_at?: string
+          generated_at?: string
+          id?: string
+          model?: string | null
+          score_band?: string | null
+          status?: string
+          survey_id?: string
+          updated_at?: string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "survey_interpretations_survey_id_fkey"
+            columns: ["survey_id"]
+            isOneToOne: false
+            referencedRelation: "questionnaires"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
+      survey_studies: {
+        Row: {
+          authors: string | null
+          citation_string: string | null
+          created_at: string
+          doi: string | null
+          id: string
+          key_findings: string | null
+          source_type: string
+          status: string
+          storage_path: string | null
+          survey_id: string
+          title: string
+          updated_at: string
+          url: string | null
+          year: number | null
+        }
+        Insert: {
+          authors?: string | null
+          citation_string?: string | null
+          created_at?: string
+          doi?: string | null
+          id?: string
+          key_findings?: string | null
+          source_type?: string
+          status?: string
+          storage_path?: string | null
+          survey_id: string
+          title: string
+          updated_at?: string
+          url?: string | null
+          year?: number | null
+        }
+        Update: {
+          authors?: string | null
+          citation_string?: string | null
+          created_at?: string
+          doi?: string | null
+          id?: string
+          key_findings?: string | null
+          source_type?: string
+          status?: string
+          storage_path?: string | null
+          survey_id?: string
+          title?: string
+          updated_at?: string
+          url?: string | null
+          year?: number | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "survey_studies_survey_id_fkey"
+            columns: ["survey_id"]
+            isOneToOne: false
+            referencedRelation: "questionnaires"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       user_consents: {
         Row: {
           consent_key: string
