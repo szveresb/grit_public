@@ -669,6 +669,7 @@ export type Database = {
           question_type: string
           questionnaire_id: string
           sort_order: number
+          subscale_ids: string[] | null
         }
         Insert: {
           answer_scores?: Json | null
@@ -683,6 +684,7 @@ export type Database = {
           question_type?: string
           questionnaire_id: string
           sort_order?: number
+          subscale_ids?: string[] | null
         }
         Update: {
           answer_scores?: Json | null
@@ -697,6 +699,7 @@ export type Database = {
           question_type?: string
           questionnaire_id?: string
           sort_order?: number
+          subscale_ids?: string[] | null
         }
         Relationships: [
           {
@@ -767,6 +770,7 @@ export type Database = {
           scoring_enabled: boolean
           scoring_mode: string
           snomed_code: string | null
+          subscales: Json | null
           title: string
           title_localized: Json | null
           updated_at: string
@@ -784,6 +788,7 @@ export type Database = {
           scoring_enabled?: boolean
           scoring_mode?: string
           snomed_code?: string | null
+          subscales?: Json | null
           title: string
           title_localized?: Json | null
           updated_at?: string
@@ -801,6 +806,7 @@ export type Database = {
           scoring_enabled?: boolean
           scoring_mode?: string
           snomed_code?: string | null
+          subscales?: Json | null
           title?: string
           title_localized?: Json | null
           updated_at?: string
