@@ -94,7 +94,7 @@ Survey managers can attach source studies (PDF upload, DOI/URL link, or manual d
 
 **Category wiring and localization implemented end-to-end.** Updated the admin dashboard list query in `SelfChecks.tsx` to fetch the joined category relation with robust schema fallbacks. Wired bilingual `{name_hu} / {name_en}` values into the admin questionnaire list, category management sidebar list, and category selection dropdown to make both values editable and reviewable. Checked strict TypeScript types mapping without using `any`.
 
-**Mobile viewport layout responsiveness improved.** Modified core dialog overlay boundaries to prevent modal borders from touching screen edges. Redesigned subscale definition lists, nested score range inputs, library admin forms, and questionnaire discovery popovers to wrap or stack correctly on mobile viewports. Tested to ensure full TypeScript compilation compliance.
+**Mobile viewport layout responsiveness improved.** Modified core dialog overlay boundaries to prevent modal borders from touching screen edges. Redesigned subscale definition lists, nested score range inputs, library admin forms, and questionnaire discovery popovers to wrap or stack correctly on mobile viewports. Declared the missing `adminFrequencyFilter` state hook in `SelfChecks.tsx` to fix a build-breaking reference error. Tested to ensure full TypeScript compilation compliance.
 
 ## Next Priority
 - Promoted schema changes to live database

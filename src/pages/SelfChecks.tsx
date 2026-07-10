@@ -1,4 +1,4 @@
-﻿import { useEffect, useState, useCallback } from 'react';
+import { useEffect, useState, useCallback } from 'react';
 import { useLocation } from 'react-router-dom';
 import DashboardLayout from '@/components/DashboardLayout';
 import { useAuth } from '@/hooks/useAuth';
@@ -114,6 +114,7 @@ const SelfChecks = () => {
   const [categorySchemaAvailable, setCategorySchemaAvailable] = useState(true);
   const [adminStatusFilter, setAdminStatusFilter] = useState<AdminStatusFilter>('all');
   const [adminCategoryFilter, setAdminCategoryFilter] = useState<string>('all');
+  const [adminFrequencyFilter, setAdminFrequencyFilter] = useState<string>('all');
   const [adminSortMode, setAdminSortMode] = useState<AdminSortMode>('recent');
   const [formCategory, setFormCategory] = useState<string>('');
   const [showCategoryEditor, setShowCategoryEditor] = useState(false);
