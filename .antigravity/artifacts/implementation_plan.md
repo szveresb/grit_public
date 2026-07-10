@@ -1,79 +1,88 @@
-# Seed Observation Intensity From Mood Pulse
+# Story 2: Observed Person Demographics In Profile Registry
 
-As a user logging a structured clinical observation (either via the standalone stepper or the guided journal flow), the observation intensity should default based on the mood pulse level logged for the same date and subject context. This creates a helpful default using an inverse mapping while still allowing full user override.
+Introduce biological sex and birth year fields for observed people (subjects) in the profile registry under `/profile`. This aligns the demographics data model and user experience of observed people with the user's own profile demographics (Story 1).
 
 ## User Review Required
 
 > [!IMPORTANT]
-> **Repository Confirmation**: As per the Critical Safety Rules, please confirm which repository (`grit.hu-beta` or `grit.hu`) we should proceed in. We assume `grit.hu-beta` is the correct target based on your request.
+> **Repository Confirmation**: As per the Critical Safety Rules, you must explicitly confirm which repository (`grit.hu` or `grit.hu-beta`) we should proceed in. All proposed changes listed below assume the chosen repository.
+> Please reply in chat to confirm the repository before we execute this plan.
 
 > [!NOTE]
-> **Helper Text Display**: The helper text ("Suggested based on your mood check-in...") will only render if a matching mood pulse actually exists for the chosen date and subject. If no pulse exists, no helper text is shown.
-
-## Open Questions
-
-*None at this stage.*
+> **Database Migrations**: Running database migrations requires the user to watch the logs, so we will wait for confirmation before applying the SQL migration file.
 
 ---
 
 ## Proposed Changes
 
-### Hooks Layer
+### Database Layer
 
-#### [NEW] [useObservationIntensityDefault.ts](file:///c:/Users/veres.sz/Documents/GitHub/grit.hu-beta/src/hooks/useObservationIntensityDefault.ts)
-- Create a shared, reusable hook that accepts:
-  - `date: string` (the target date of the observation)
-  - `subjectType: 'self' | 'relative'`
-  - `subjectId: string | null`
-- Query the `mood_pulses` table for the latest pulse for the given date, user, and subject context.
-- Implement the inverse defaulting rule: `6 - pulseLevel` (e.g. pulse `2` maps to intensity `4`).
-- Return:
-  - `defaultIntensity: number` (the seeded value, falling back to `3`)
-  - `source: 'pulse-seeded' | 'fallback'` (identifying if it was seeded from a pulse or used the fallback)
-  - `loading: boolean`
+#### [NEW] [20260710182000_add_subject_demographics.sql](file:///c:/Users/veres.sz/Documents/GitHub/grit.hu-beta/supabase/migrations/20260710182000_add_subject_demographics.sql)
+- Add a new SQL migration to add optional `biological_sex` and `birth_year` columns to the `subjects` table.
+- Use identical constraints and types as those used in `profiles` (Story 1):
+  ```sql
+  ALTER TABLE public.subjects
+  ADD COLUMN biological_sex TEXT CHECK (biological_sex IN ('female', 'male', 'intersex', 'unknown')),
+  ADD COLUMN birth_year INTEGER CHECK (birth_year IS NULL OR (birth_year >= 1900 AND birth_year <= 2100));
+  ```
+
+---
+
+### Types Layer
+
+#### [MODIFY] [types.ts](file:///c:/Users/veres.sz/Documents/GitHub/grit.hu-beta/src/integrations/supabase/types.ts)
+- Update the `subjects` table interfaces manually to include `biological_sex` and `birth_year` for `Row`, `Insert`, and `Update` types:
+  - `biological_sex: string | null` (and `biological_sex?: string | null` for Insert/Update)
+  - `birth_year: number | null` (and `birth_year?: number | null` for Insert/Update)
+
+#### [MODIFY] [SubjectSelector.tsx](file:///c:/Users/veres.sz/Documents/GitHub/grit.hu-beta/src/components/observations/SubjectSelector.tsx)
+- Update the local `Subject` interface to include optional fields:
+  ```typescript
+  export interface Subject {
+    id: string;
+    name: string;
+    relationship_type: string;
+    biological_sex?: string | null;
+    birth_year?: number | null;
+  }
+  ```
 
 ---
 
 ### Components Layer
 
-#### [MODIFY] [ObservationStepper.tsx](file:///c:/Users/veres.sz/Documents/GitHub/grit.hu-beta/src/components/observations/ObservationStepper.tsx)
-- Remove the local, duplicated `mood_pulses` fetch logic and `today` hardcoding.
-- Integrate the new `useObservationIntensityDefault` hook using the `observationDate` and active stance subject context.
-- Introduce the local union state `intensitySource` (`'pulse-seeded' | 'fallback' | 'manual'`) to track if the user has manually changed the intensity within the current draft session.
-- Reset the draft session state when the active subject, observation date, or submission reset occurs.
-- Render helper text using the shared translations.
-
-#### [MODIFY] [EntryModal.tsx](file:///c:/Users/veres.sz/Documents/GitHub/grit.hu-beta/src/components/checkin/EntryModal.tsx)
-- Integrate the new `useObservationIntensityDefault` hook for the user's self stance (`subjectType: 'self'`, `subjectId: null`) and the entry date.
-- Manage `intensitySource` local state.
-- Update the intensity UI step to render the helper text under the slider when seeded from a pulse.
+#### [MODIFY] [ManagedRelatives.tsx](file:///c:/Users/veres.sz/Documents/GitHub/grit.hu-beta/src/components/premium/ManagedRelatives.tsx)
+- Update the local `Subject` interface to include optional fields.
+- Update `fetchSubjects` to select `biological_sex` and `birth_year` from Supabase.
+- Add form states:
+  - For creation: `newBiologicalSex` (null/string), `newBirthYear` (string)
+  - For editing: `editBiologicalSex` (null/string), `editBirthYear` (string)
+- In `handleAdd`, perform birth year validation (4-digit string, 1900 <= year <= current year) if a value is entered. Toast a localized error if invalid. Pass the parsed values to the `.insert()` payload.
+- In `handleSaveEdit`, perform identical birth year validation if entered. Pass the parsed values to the `.update()` payload.
+- In `startEdit` and `cancelEdit`, correctly set/reset edit states.
+- Render the new optional fields:
+  - **Add Form**: Optional biological sex select dropdown and numeric-only 4-digit birth year input field.
+  - **Edit Form**: Optional biological sex select dropdown and numeric-only 4-digit birth year input field.
+  - **List Display**: Display demographic details (e.g. `• Female, born 2012`) next to the relationship type if specified, dynamically translated.
 
 ---
 
 ## Verification Plan
 
 ### Automated Tests
-- Run TypeScript compiler validation to ensure no type errors are introduced:
+- Run TypeScript compilation checks to ensure type safety:
   ```powershell
   & "C:\Users\veres.sz\AppData\Local\ms-playwright-go\1.57.0\node.exe" node_modules\typescript\bin\tsc --noEmit
   ```
 
 ### Manual Verification
-1. **Self Observation Seeding**:
-   - Log a mood pulse of `2/5` for today (Self).
-   - Open the standalone observation stepper. Verify the default intensity is preselected as `4/5`, and the helper text says *"Suggested based on your mood check-in today"*.
-   - Reopen a guided entry modal for today. Verify default intensity is `4/5`.
-2. **Relative Observation Seeding**:
-   - Log a mood pulse of `2/5` for a relative for today.
-   - Switch stance to that relative, and open the stepper. Verify the default intensity is `4/5`.
-3. **No Pulse Seeding**:
-   - Go to a backdated day without any mood pulse.
-   - Open both the stepper and the entry modal. Verify the intensity defaults to the neutral `3/5` and no helper text is shown.
-4. **Stance Isolation**:
-   - Ensure a relative's mood pulse does not seed a self observation, and vice versa.
-5. **Manual Override Persistence**:
-   - Change the intensity manually. Verify that the helper text changes to *"You've adjusted the weight"*.
-   - Move back/forth in steps, or toggle categories. Ensure the manual selection is not lost or overwritten during the active draft session.
-6. **Date Changes**:
-   - Log a pulse for a past date.
-   - Open a backdated entry/observation for that past date. Verify it seeds from the correct date's pulse.
+1. **Creation Flow**:
+   - Create an observed person with both biological sex and birth year specified.
+   - Create an observed person with only one field specified.
+   - Confirm consent check is still required.
+2. **Edit Flow**:
+   - Reopen edit mode and confirm the saved values are loaded and visible.
+   - Modify the demographics (e.g. clear birth year or change sex) and verify they update/persist.
+   - Confirm that editing name or relationship type without changing demographics preserves the demographics.
+3. **Validation Flow**:
+   - Enter an invalid birth year (e.g., `1850` or `2035` or letters) and verify that validation blocks the action and shows a localized error toast.

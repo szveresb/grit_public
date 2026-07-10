@@ -1,4 +1,4 @@
-﻿export type Lang = 'hu' | 'en';
+export type Lang = 'hu' | 'en';
 
 export interface Dictionary {
   // Global
@@ -769,6 +769,17 @@ export interface Dictionary {
     yourDataDesc: string;
     exportAllData: string;
     dataExported: string;
+    biologicalSexLabel: string;
+    biologicalSexPlaceholder: string;
+    biologicalSexNone: string;
+    biologicalSexFemale: string;
+    biologicalSexMale: string;
+    biologicalSexIntersex: string;
+    biologicalSexUnknown: string;
+    birthYearLabel: string;
+    birthYearPlaceholder: string;
+    errorInvalidBirthYear: string;
+    approximateAge: string;
   };
 
   // Manage Library

@@ -96,6 +96,14 @@ Survey managers can attach source studies (PDF upload, DOI/URL link, or manual d
 
 **Mobile viewport layout responsiveness improved.** Modified core dialog overlay boundaries to prevent modal borders from touching screen edges. Redesigned subscale definition lists, nested score range inputs, library admin forms, and questionnaire discovery popovers to wrap or stack correctly on mobile viewports. Declared the missing `adminFrequencyFilter` state hook in `SelfChecks.tsx` to fix a build-breaking reference error. Tested to ensure full TypeScript compilation compliance.
 
+**Self Profile Demographics implemented.** Added database migration for nullable `biological_sex` and `birth_year` columns on the `profiles` table. Updated database TypeScript types and added EN/HU translations. Updated `Profile.tsx` to display biological sex select dropdown and birth year numeric input with localized validation blocking invalid values.
+
+**Observed Person Demographics in Profile Registry implemented.** Added database migration for nullable `biological_sex` and `birth_year` columns on the `subjects` table. Updated database TypeScript types and `Subject` interfaces. Updated `ManagedRelatives.tsx` to display biological sex select dropdown and birth year numeric input in both the add and edit forms, applying identical validation guards. Added inline demographics display next to relationship tags in the profile registry list.
+
+**Observed Person Demographics in Timeline Quick-Add implemented.** Extended both inline observed-person creation flows (the Correlation tab form and the picker dropdown form) to include optional biological sex and birth year fields. Applied validation for the birth year to match the profile registry, updated Supabase queries to retrieve and save demographics correctly, reset states on submit or cancellation, and verified that newly created subjects immediately become selected and active in the active context.
+
+**Localized Demographics Validation and Readback implemented.** Added bilingual Hungarian and English translation keys for demographics and approximate age. Updated the `useStance` context to query and return demographics, and integrated real-time approximate age calculations and readbacks across self-profile, observed-person registry, subject picker, timeline, and dashboard hub layouts. Checked compile safety with 0 errors.
+
 ## Next Priority
 - Promoted schema changes to live database
 - Configure Lovable/Supabase backend Edge Function secrets (`GEMINI_API_KEY`)

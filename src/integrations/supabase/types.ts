@@ -697,6 +697,8 @@ export type Database = {
       profiles: {
         Row: {
           beta_access: boolean | null
+          biological_sex: string | null
+          birth_year: number | null
           consent_completed: boolean
           created_at: string
           display_name: string | null
@@ -707,6 +709,8 @@ export type Database = {
         }
         Insert: {
           beta_access?: boolean | null
+          biological_sex?: string | null
+          birth_year?: number | null
           consent_completed?: boolean
           created_at?: string
           display_name?: string | null
@@ -717,6 +721,8 @@ export type Database = {
         }
         Update: {
           beta_access?: boolean | null
+          biological_sex?: string | null
+          birth_year?: number | null
           consent_completed?: boolean
           created_at?: string
           display_name?: string | null
@@ -1037,6 +1043,8 @@ export type Database = {
       }
       subjects: {
         Row: {
+          biological_sex: string | null
+          birth_year: number | null
           created_at: string
           id: string
           name: string
@@ -1044,6 +1052,8 @@ export type Database = {
           user_id: string
         }
         Insert: {
+          biological_sex?: string | null
+          birth_year?: number | null
           created_at?: string
           id?: string
           name: string
@@ -1051,6 +1061,8 @@ export type Database = {
           user_id: string
         }
         Update: {
+          biological_sex?: string | null
+          birth_year?: number | null
           created_at?: string
           id?: string
           name?: string

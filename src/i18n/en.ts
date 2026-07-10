@@ -657,6 +657,17 @@ export const en: Dictionary = {
     yourDataDesc: 'Download all your journal entries and self-check responses as a portable file.',
     exportAllData: 'Export All Data',
     dataExported: 'Data exported',
+    biologicalSexLabel: 'Biological Sex',
+    biologicalSexPlaceholder: 'Select biological sex...',
+    biologicalSexNone: 'Not specified',
+    biologicalSexFemale: 'Female',
+    biologicalSexMale: 'Male',
+    biologicalSexIntersex: 'Intersex',
+    biologicalSexUnknown: 'Unknown',
+    birthYearLabel: 'Birth Year',
+    birthYearPlaceholder: 'e.g. 1990',
+    errorInvalidBirthYear: 'Please enter a valid 4-digit birth year between 1900 and 2026.',
+    approximateAge: 'Approximate age: {age} years',
   },
 
   export: {

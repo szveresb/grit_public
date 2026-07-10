@@ -13,6 +13,8 @@ export interface SupportedSubject {
   id: string;
   name: string;
   relationshipType: string;
+  biologicalSex?: string | null;
+  birthYear?: number | null;
 }
 
 export interface ActiveSubjectContext {
@@ -21,6 +23,8 @@ export interface ActiveSubjectContext {
   id: string | null;
   name: string;
   relationshipType?: string;
+  biologicalSex?: string | null;
+  birthYear?: number | null;
   color: SubjectColor | null;
 }
 
@@ -95,15 +99,17 @@ export const StanceProvider = ({ children }: { children: React.ReactNode }) => {
     setSubjectsLoading(true);
     const { data } = await supabase
       .from('subjects')
-      .select('id, name, relationship_type')
+      .select('id, name, relationship_type, biological_sex, birth_year')
       .eq('user_id', user.id)
       .order('created_at');
 
     setSubjects(
-      ((data ?? []) as Array<{ id: string; name: string; relationship_type: string }>).map((subject) => ({
+      ((data ?? []) as Array<{ id: string; name: string; relationship_type: string; biological_sex?: string | null; birth_year?: number | null }>).map((subject) => ({
         id: subject.id,
         name: subject.name,
         relationshipType: subject.relationship_type,
+        biologicalSex: subject.biological_sex,
+        birthYear: subject.birth_year,
       }))
     );
     setSubjectsLoading(false);
@@ -163,6 +169,8 @@ export const StanceProvider = ({ children }: { children: React.ReactNode }) => {
         id: selectedSubjectId,
         name,
         relationshipType: subject?.relationshipType,
+        biologicalSex: subject?.biologicalSex,
+        birthYear: subject?.birthYear,
         color: subjectColor,
       };
     }
@@ -201,7 +209,7 @@ export const StanceProvider = ({ children }: { children: React.ReactNode }) => {
 
 interface ScopedStanceProviderProps {
   children: React.ReactNode;
-  subject: { type: 'self' } | { type: 'relative'; id: string; name: string; relationshipType?: string };
+  subject: { type: 'self' } | { type: 'relative'; id: string; name: string; relationshipType?: string; biologicalSex?: string | null; birthYear?: number | null };
 }
 
 export const ScopedStanceProvider = ({ children, subject }: ScopedStanceProviderProps) => {
@@ -215,6 +223,8 @@ export const ScopedStanceProvider = ({ children, subject }: ScopedStanceProvider
           id: subject.id,
           name: subject.name,
           relationshipType: subject.relationshipType,
+          biologicalSex: subject.biologicalSex,
+          birthYear: subject.birthYear,
           color: observerSubjectColor,
         }
       : {

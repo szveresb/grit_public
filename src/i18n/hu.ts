@@ -709,6 +709,17 @@ export const hu: Dictionary = {
     yourDataDesc: 'Töltsd le az összes naplóbejegyzésedet és önellenőrzési válaszodat hordozható fájlként.',
     exportAllData: 'Összes adat exportálása',
     dataExported: 'Adatok exportálva',
+    biologicalSexLabel: 'Biológiai nem',
+    biologicalSexPlaceholder: 'Biológiai nem kiválasztása...',
+    biologicalSexNone: 'Nincs megadva',
+    biologicalSexFemale: 'Nő',
+    biologicalSexMale: 'Férfi',
+    biologicalSexIntersex: 'Interszexuális',
+    biologicalSexUnknown: 'Ismeretlen',
+    birthYearLabel: 'Születési év',
+    birthYearPlaceholder: 'pl. 1990',
+    errorInvalidBirthYear: 'Kérjük, adjon meg egy érvényes 4 jegyű születési évet 1900 és 2026 között.',
+    approximateAge: 'Körülbelüli életkor: {age} év',
   },
 
   admin: {

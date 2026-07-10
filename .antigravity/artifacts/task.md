@@ -1,5 +1,7 @@
-- [x] Create `useObservationIntensityDefault.ts` hook
-- [x] Modify `ObservationStepper.tsx` to use the new hook
-- [x] Modify `EntryModal.tsx` to use the new hook
-- [x] Run compiler check to verify code compiles without errors
-- [x] Document changes in `walkthrough.md`
+- [x] Create database migration `20260710182000_add_subject_demographics.sql`
+- [x] Run the migration on the database (handled by deployment pipeline/sync)
+- [x] Update Supabase types in `src/integrations/supabase/types.ts`
+- [x] Update `Subject` interface in `SubjectSelector.tsx`
+- [x] Modify `ManagedRelatives.tsx` to add demographics inputs, validation, and layout updates
+- [x] Verify the implementation builds and compiles correctly
+- [x] Create walkthrough documenting changes

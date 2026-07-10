@@ -79,6 +79,22 @@ const RELATIONSHIP_TYPES = ['child', 'spouse', 'parent', 'sibling', 'other'] as 
 
 const Timeline = () => {
   const { t, lang } = useLanguage();
+  const getSupportedSubjectDemographicsSummary = (s: any) => {
+    const parts: string[] = [];
+    if (s.biologicalSex) {
+      const key = `biologicalSex${s.biologicalSex.charAt(0).toUpperCase() + s.biologicalSex.slice(1)}` as keyof typeof t.profile;
+      parts.push(t.profile[key] || s.biologicalSex);
+    }
+    if (s.birthYear) {
+      parts.push(String(s.birthYear));
+      const currentYear = new Date().getFullYear();
+      if (s.birthYear >= 1900 && s.birthYear <= currentYear) {
+        const age = currentYear - s.birthYear;
+        parts.push(t.profile.approximateAge.replace('{age}', String(age)));
+      }
+    }
+    return parts.length > 0 ? ` • ${parts.join(' • ')}` : '';
+  };
   const { user } = useAuth();
   const {
     subjectType,
@@ -102,23 +118,46 @@ const Timeline = () => {
   const [showAddInline, setShowAddInline] = useState(false);
   const [newName, setNewName] = useState('');
   const [newRelType, setNewRelType] = useState<string>('other');
+  const [newBiologicalSex, setNewBiologicalSex] = useState<string | null>(null);
+  const [newBirthYear, setNewBirthYear] = useState<string>('');
   const [newObserverConsent, setNewObserverConsent] = useState(false);
   const [adding, setAdding] = useState(false);
 
   const handleAddInlineSubject = async () => {
     if (!user || !newName.trim()) return;
+
+    let parsedBirthYear: number | null = null;
+    if (newBirthYear.trim() !== '') {
+      const yearNum = parseInt(newBirthYear.trim(), 10);
+      const currentYear = new Date().getFullYear();
+      if (!/^\d{4}$/.test(newBirthYear.trim()) || isNaN(yearNum) || yearNum < 1900 || yearNum > currentYear) {
+        toast.error(t.profile.errorInvalidBirthYear);
+        return;
+      }
+      parsedBirthYear = yearNum;
+    }
+
     setAdding(true);
     const { data, error } = await (supabase.from('subjects') as any)
-      .insert([{ user_id: user.id, name: newName.trim(), relationship_type: newRelType }])
+      .insert([{ 
+        user_id: user.id, 
+        name: newName.trim(), 
+        relationship_type: newRelType,
+        biological_sex: newBiologicalSex || null,
+        birth_year: parsedBirthYear
+      }])
       .select('id, name, relationship_type')
       .single();
     if (error) {
       toast.error(error.message);
     } else if (data) {
-      toast.success(lang === 'en' ? 'Person added successfully' : 'Személy sikeresen hozzáadva');
+      toast.success(t.premium.subjectAdded);
       await refetchSubjects();
       setActiveSubjectContext({ type: 'relative', id: data.id, name: data.name });
       setNewName('');
+      setNewRelType('other');
+      setNewBiologicalSex(null);
+      setNewBirthYear('');
       setNewObserverConsent(false);
       setShowAddInline(false);
     }
@@ -375,6 +414,60 @@ const Timeline = () => {
                         </SelectContent>
                       </Select>
                     </div>
+
+                    <div className="space-y-1.5">
+                      <Label htmlFor="inline-subject-sex" className="text-xs font-medium text-foreground">
+                        {t.profile.biologicalSexLabel}
+                      </Label>
+                      <Select 
+                        value={newBiologicalSex || "none"} 
+                        onValueChange={(val) => setNewBiologicalSex(val === "none" ? null : val)}
+                      >
+                        <SelectTrigger id="inline-subject-sex" className="rounded-2xl bg-background border-input">
+                          <SelectValue placeholder={t.profile.biologicalSexPlaceholder} />
+                        </SelectTrigger>
+                        <SelectContent className="rounded-xl border border-border bg-popover text-popover-foreground shadow-md">
+                          <SelectItem value="none" className="rounded-lg">{t.profile.biologicalSexNone}</SelectItem>
+                          <SelectItem value="female" className="rounded-lg">{t.profile.biologicalSexFemale}</SelectItem>
+                          <SelectItem value="male" className="rounded-lg">{t.profile.biologicalSexMale}</SelectItem>
+                          <SelectItem value="intersex" className="rounded-lg">{t.profile.biologicalSexIntersex}</SelectItem>
+                          <SelectItem value="unknown" className="rounded-lg">{t.profile.biologicalSexUnknown}</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div className="space-y-1.5">
+                      <Label htmlFor="inline-subject-birthyear" className="text-xs font-medium text-foreground">
+                        {t.profile.birthYearLabel}
+                      </Label>
+                      <Input 
+                        id="inline-subject-birthyear"
+                        type="text"
+                        inputMode="numeric"
+                        pattern="[0-9]*"
+                        placeholder={t.profile.birthYearPlaceholder}
+                        value={newBirthYear} 
+                        onChange={e => {
+                          const val = e.target.value;
+                          if (/^\d*$/.test(val) && val.length <= 4) {
+                            setNewBirthYear(val);
+                          }
+                        }} 
+                        className="rounded-2xl" 
+                      />
+                      {newBirthYear.trim() !== '' && (() => {
+                        const y = parseInt(newBirthYear.trim(), 10);
+                        const currentYear = new Date().getFullYear();
+                        if (/^\d{4}$/.test(newBirthYear.trim()) && !isNaN(y) && y >= 1900 && y <= currentYear) {
+                          return (
+                            <p className="text-xs text-muted-foreground mt-1 animate-fade-in">
+                              {t.profile.approximateAge.replace('{age}', String(currentYear - y))}
+                            </p>
+                          );
+                        }
+                        return null;
+                      })()}
+                    </div>
                     
                     <label className="flex items-start gap-3 cursor-pointer group pt-1">
                       <button
@@ -406,7 +499,14 @@ const Timeline = () => {
                         size="sm"
                         variant="ghost"
                         className="rounded-2xl"
-                        onClick={() => { setShowAddInline(false); setNewObserverConsent(false); }}
+                        onClick={() => {
+                          setShowAddInline(false);
+                          setNewName('');
+                          setNewRelType('other');
+                          setNewBiologicalSex(null);
+                          setNewBirthYear('');
+                          setNewObserverConsent(false);
+                        }}
                       >
                         {t.cancel}
                       </Button>
@@ -453,6 +553,7 @@ const Timeline = () => {
                         <span className="text-sm font-semibold block text-foreground">{s.name}</span>
                         <span className="text-[10px] text-muted-foreground">
                           {t.subjects.relationshipTypes[s.relationshipType as keyof typeof t.subjects.relationshipTypes] ?? s.relationshipType}
+                          {getSupportedSubjectDemographicsSummary(s)}
                         </span>
                       </div>
                     </button>

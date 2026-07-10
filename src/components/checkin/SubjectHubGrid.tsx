@@ -35,17 +35,34 @@ const SubjectHubGrid = ({ onSelect, onToggleCompare, onStartParallel, selectedKe
       name: userName,
       subtitle: t.subjects.selfCardSubtitle,
     },
-    ...subjects.map((subject) => ({
-      key: `relative:${subject.id}`,
-      type: 'relative' as const,
-      id: subject.id,
-      name: subject.name?.trim() || t.subjects.otherLabel,
-      subtitle:
-        t.subjects.relationshipTypes[
-          subject.relationshipType as keyof typeof t.subjects.relationshipTypes
-        ] ?? subject.relationshipType,
-    })),
-  ], [subjects, t.subjects.otherLabel, t.subjects.relationshipTypes, t.subjects.selfCardSubtitle, userName]);
+    ...subjects.map((subject) => {
+      const relTypeLabel = t.subjects.relationshipTypes[
+        subject.relationshipType as keyof typeof t.subjects.relationshipTypes
+      ] ?? subject.relationshipType;
+      
+      const parts: string[] = [relTypeLabel];
+      if (subject.biologicalSex) {
+        const key = `biologicalSex${subject.biologicalSex.charAt(0).toUpperCase() + subject.biologicalSex.slice(1)}` as keyof typeof t.profile;
+        parts.push(t.profile[key] || subject.biologicalSex);
+      }
+      if (subject.birthYear) {
+        parts.push(String(subject.birthYear));
+        const currentYear = new Date().getFullYear();
+        if (subject.birthYear >= 1900 && subject.birthYear <= currentYear) {
+          const age = currentYear - subject.birthYear;
+          parts.push(t.profile.approximateAge.replace('{age}', String(age)));
+        }
+      }
+
+      return {
+        key: `relative:${subject.id}`,
+        type: 'relative' as const,
+        id: subject.id,
+        name: subject.name?.trim() || t.subjects.otherLabel,
+        subtitle: parts.join(' • '),
+      };
+    }),
+  ], [subjects, t.subjects.otherLabel, t.subjects.relationshipTypes, t.subjects.selfCardSubtitle, userName, t.profile]);
 
   const handleToggle = (key: string) => {
     const isAlreadySelected = selectedKeys.includes(key);

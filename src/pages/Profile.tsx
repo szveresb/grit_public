@@ -6,6 +6,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from 'sonner';
 import { FDownload } from '@/components/icons/FreudIcons';
 import ConsentDashboard from '@/components/consent/ConsentDashboard';
@@ -15,23 +16,45 @@ const Profile = () => {
   const { user, signOut, setDisplayName: setAuthDisplayName, refreshDisplayName } = useAuth();
   const { t } = useLanguage();
   const [displayName, setDisplayName] = useState('');
+  const [biologicalSex, setBiologicalSex] = useState<string | null>(null);
+  const [birthYear, setBirthYear] = useState('');
   const [saving, setSaving] = useState(false);
 
   useEffect(() => {
     if (!user) return;
-    supabase.from('profiles').select('display_name').eq('user_id', user.id).maybeSingle()
-      .then(({ data }) => { setDisplayName(data?.display_name ?? ''); });
+    supabase.from('profiles').select('display_name, biological_sex, birth_year').eq('user_id', user.id).maybeSingle()
+      .then(({ data }) => {
+        setDisplayName(data?.display_name ?? '');
+        setBiologicalSex(data?.biological_sex ?? null);
+        setBirthYear(data?.birth_year ? String(data.birth_year) : '');
+      });
   }, [user]);
 
   const handleSave = async () => {
     if (!user) return;
+
+    let parsedBirthYear: number | null = null;
+    if (birthYear.trim() !== '') {
+      const yearNum = parseInt(birthYear.trim(), 10);
+      const currentYear = new Date().getFullYear();
+      if (!/^\d{4}$/.test(birthYear.trim()) || isNaN(yearNum) || yearNum < 1900 || yearNum > currentYear) {
+        toast.error(t.profile.errorInvalidBirthYear);
+        return;
+      }
+      parsedBirthYear = yearNum;
+    }
+
     setSaving(true);
     const trimmedDisplayName = displayName.trim();
     const nextDisplayName = trimmedDisplayName || null;
 
     const { error } = await supabase
       .from('profiles')
-      .update({ display_name: nextDisplayName })
+      .update({
+        display_name: nextDisplayName,
+        biological_sex: biologicalSex || null,
+        birth_year: parsedBirthYear,
+      })
       .eq('user_id', user.id);
 
     if (error) {
@@ -91,6 +114,53 @@ const Profile = () => {
           <div className="space-y-2">
             <Label className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">{t.profile.displayNameLabel}</Label>
             <Input value={displayName} onChange={e => setDisplayName(e.target.value)} className="rounded-2xl" />
+          </div>
+          <div className="space-y-2">
+            <Label className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">{t.profile.biologicalSexLabel}</Label>
+            <Select 
+              value={biologicalSex || "none"} 
+              onValueChange={(val) => setBiologicalSex(val === "none" ? null : val)}
+            >
+              <SelectTrigger className="rounded-2xl bg-background border-input">
+                <SelectValue placeholder={t.profile.biologicalSexPlaceholder} />
+              </SelectTrigger>
+              <SelectContent className="rounded-xl border border-border bg-popover text-popover-foreground shadow-md">
+                <SelectItem value="none" className="rounded-lg">{t.profile.biologicalSexNone}</SelectItem>
+                <SelectItem value="female" className="rounded-lg">{t.profile.biologicalSexFemale}</SelectItem>
+                <SelectItem value="male" className="rounded-lg">{t.profile.biologicalSexMale}</SelectItem>
+                <SelectItem value="intersex" className="rounded-lg">{t.profile.biologicalSexIntersex}</SelectItem>
+                <SelectItem value="unknown" className="rounded-lg">{t.profile.biologicalSexUnknown}</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="space-y-2">
+            <Label className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">{t.profile.birthYearLabel}</Label>
+            <Input 
+              type="text"
+              inputMode="numeric"
+              pattern="[0-9]*"
+              placeholder={t.profile.birthYearPlaceholder}
+              value={birthYear} 
+              onChange={e => {
+                const val = e.target.value;
+                if (/^\d*$/.test(val) && val.length <= 4) {
+                  setBirthYear(val);
+                }
+              }} 
+              className="rounded-2xl" 
+            />
+            {birthYear.trim() !== '' && (() => {
+              const y = parseInt(birthYear.trim(), 10);
+              const currentYear = new Date().getFullYear();
+              if (/^\d{4}$/.test(birthYear.trim()) && !isNaN(y) && y >= 1900 && y <= currentYear) {
+                return (
+                  <p className="text-xs text-muted-foreground mt-1 animate-fade-in">
+                    {t.profile.approximateAge.replace('{age}', String(currentYear - y))}
+                  </p>
+                );
+              }
+              return null;
+            })()}
           </div>
           <Button onClick={handleSave} disabled={saving} size="sm" className="rounded-2xl">
             {saving ? t.saving : t.profile.saveChanges}

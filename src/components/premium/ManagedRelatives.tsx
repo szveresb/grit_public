@@ -15,6 +15,8 @@ interface Subject {
   id: string;
   name: string;
   relationship_type: string;
+  biological_sex?: string | null;
+  birth_year?: number | null;
 }
 
 const RELATIONSHIP_TYPES = ['child', 'spouse', 'parent', 'sibling', 'other'] as const;
@@ -27,19 +29,40 @@ const ManagedRelatives = () => {
   const [showAdd, setShowAdd] = useState(false);
   const [newName, setNewName] = useState('');
   const [newRelType, setNewRelType] = useState<string>('other');
+  const [newBiologicalSex, setNewBiologicalSex] = useState<string | null>(null);
+  const [newBirthYear, setNewBirthYear] = useState<string>('');
   const [adding, setAdding] = useState(false);
   const [deleting, setDeleting] = useState<string | null>(null);
   const [observerConsent, setObserverConsent] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
   const [editName, setEditName] = useState('');
   const [editRelType, setEditRelType] = useState<string>('other');
+  const [editBiologicalSex, setEditBiologicalSex] = useState<string | null>(null);
+  const [editBirthYear, setEditBirthYear] = useState<string>('');
   const [saving, setSaving] = useState(false);
+
+  const getDemographicsSummary = (s: Subject) => {
+    const parts: string[] = [];
+    if (s.biological_sex) {
+      const key = `biologicalSex${s.biological_sex.charAt(0).toUpperCase() + s.biological_sex.slice(1)}` as keyof typeof t.profile;
+      parts.push(t.profile[key] || s.biological_sex);
+    }
+    if (s.birth_year) {
+      parts.push(String(s.birth_year));
+      const currentYear = new Date().getFullYear();
+      if (s.birth_year >= 1900 && s.birth_year <= currentYear) {
+        const age = currentYear - s.birth_year;
+        parts.push(t.profile.approximateAge.replace('{age}', String(age)));
+      }
+    }
+    return parts.length > 0 ? ` • ${parts.join(' • ')}` : '';
+  };
 
   const fetchSubjects = useCallback(async () => {
     if (!user) return;
     const { data } = await supabase
       .from('subjects')
-      .select('id, name, relationship_type')
+      .select('id, name, relationship_type, biological_sex, birth_year')
       .eq('user_id', user.id)
       .order('created_at');
     setSubjects((data as Subject[]) ?? []);
@@ -50,15 +73,35 @@ const ManagedRelatives = () => {
 
   const handleAdd = async () => {
     if (!user || !newName.trim()) return;
+
+    let parsedBirthYear: number | null = null;
+    if (newBirthYear.trim() !== '') {
+      const yearNum = parseInt(newBirthYear.trim(), 10);
+      const currentYear = new Date().getFullYear();
+      if (!/^\d{4}$/.test(newBirthYear.trim()) || isNaN(yearNum) || yearNum < 1900 || yearNum > currentYear) {
+        toast.error(t.profile.errorInvalidBirthYear);
+        return;
+      }
+      parsedBirthYear = yearNum;
+    }
+
     setAdding(true);
     const { error } = await (supabase.from('subjects') as any)
-      .insert([{ user_id: user.id, name: newName.trim(), relationship_type: newRelType }]);
+      .insert([{ 
+        user_id: user.id, 
+        name: newName.trim(), 
+        relationship_type: newRelType,
+        biological_sex: newBiologicalSex || null,
+        birth_year: parsedBirthYear
+      }]);
     if (error) {
       toast.error(error.message);
     } else {
       toast.success(t.premium.subjectAdded);
       setNewName('');
       setNewRelType('other');
+      setNewBiologicalSex(null);
+      setNewBirthYear('');
       setObserverConsent(false);
       setShowAdd(false);
       fetchSubjects();
@@ -78,20 +121,41 @@ const ManagedRelatives = () => {
     setEditingId(s.id);
     setEditName(s.name);
     setEditRelType(s.relationship_type);
+    setEditBiologicalSex(s.biological_sex ?? null);
+    setEditBirthYear(s.birth_year ? String(s.birth_year) : '');
   };
 
   const cancelEdit = () => {
     setEditingId(null);
     setEditName('');
     setEditRelType('other');
+    setEditBiologicalSex(null);
+    setEditBirthYear('');
   };
 
   const handleSaveEdit = async () => {
     if (!editingId || !editName.trim()) return;
+
+    let parsedBirthYear: number | null = null;
+    if (editBirthYear.trim() !== '') {
+      const yearNum = parseInt(editBirthYear.trim(), 10);
+      const currentYear = new Date().getFullYear();
+      if (!/^\d{4}$/.test(editBirthYear.trim()) || isNaN(yearNum) || yearNum < 1900 || yearNum > currentYear) {
+        toast.error(t.profile.errorInvalidBirthYear);
+        return;
+      }
+      parsedBirthYear = yearNum;
+    }
+
     setSaving(true);
     const { error } = await supabase
       .from('subjects')
-      .update({ name: editName.trim(), relationship_type: editRelType as any })
+      .update({ 
+        name: editName.trim(), 
+        relationship_type: editRelType as any,
+        biological_sex: editBiologicalSex || null,
+        birth_year: parsedBirthYear
+      })
       .eq('id', editingId);
     if (error) {
       toast.error(error.message);
@@ -158,6 +222,57 @@ const ManagedRelatives = () => {
                     </SelectContent>
                   </Select>
                 </div>
+                <div className="space-y-2">
+                  <Label className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+                    {t.profile.biologicalSexLabel}
+                  </Label>
+                  <Select 
+                    value={editBiologicalSex || "none"} 
+                    onValueChange={(val) => setEditBiologicalSex(val === "none" ? null : val)}
+                  >
+                    <SelectTrigger className="rounded-2xl bg-background border-input">
+                      <SelectValue placeholder={t.profile.biologicalSexPlaceholder} />
+                    </SelectTrigger>
+                    <SelectContent className="rounded-xl border border-border bg-popover text-popover-foreground shadow-md">
+                      <SelectItem value="none" className="rounded-lg">{t.profile.biologicalSexNone}</SelectItem>
+                      <SelectItem value="female" className="rounded-lg">{t.profile.biologicalSexFemale}</SelectItem>
+                      <SelectItem value="male" className="rounded-lg">{t.profile.biologicalSexMale}</SelectItem>
+                      <SelectItem value="intersex" className="rounded-lg">{t.profile.biologicalSexIntersex}</SelectItem>
+                      <SelectItem value="unknown" className="rounded-lg">{t.profile.biologicalSexUnknown}</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+                <div className="space-y-2">
+                  <Label className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+                    {t.profile.birthYearLabel}
+                  </Label>
+                  <Input 
+                    type="text"
+                    inputMode="numeric"
+                    pattern="[0-9]*"
+                    placeholder={t.profile.birthYearPlaceholder}
+                    value={editBirthYear} 
+                    onChange={e => {
+                      const val = e.target.value;
+                      if (/^\d*$/.test(val) && val.length <= 4) {
+                        setEditBirthYear(val);
+                      }
+                    }} 
+                    className="rounded-2xl" 
+                  />
+                  {editBirthYear.trim() !== '' && (() => {
+                    const y = parseInt(editBirthYear.trim(), 10);
+                    const currentYear = new Date().getFullYear();
+                    if (/^\d{4}$/.test(editBirthYear.trim()) && !isNaN(y) && y >= 1900 && y <= currentYear) {
+                      return (
+                        <p className="text-xs text-muted-foreground mt-1 animate-fade-in">
+                          {t.profile.approximateAge.replace('{age}', String(currentYear - y))}
+                        </p>
+                      );
+                    }
+                    return null;
+                  })()}
+                </div>
                 <div className="flex gap-2">
                   <Button
                     size="sm"
@@ -187,8 +302,9 @@ const ManagedRelatives = () => {
                 </div>
                 <div className="flex-1 min-w-0">
                   <span className="text-sm font-semibold block truncate">{s.name}</span>
-                  <span className="text-[10px] text-muted-foreground">
+                  <span className="text-[10px] text-muted-foreground text-wrap">
                     {relLabels[s.relationship_type as keyof typeof relLabels] ?? s.relationship_type}
+                    {getDemographicsSummary(s)}
                   </span>
                 </div>
                 <Button
@@ -243,6 +359,57 @@ const ManagedRelatives = () => {
                 ))}
               </SelectContent>
             </Select>
+          </div>
+          <div className="space-y-2">
+            <Label className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+              {t.profile.biologicalSexLabel}
+            </Label>
+            <Select 
+              value={newBiologicalSex || "none"} 
+              onValueChange={(val) => setNewBiologicalSex(val === "none" ? null : val)}
+            >
+              <SelectTrigger className="rounded-2xl bg-background border-input">
+                <SelectValue placeholder={t.profile.biologicalSexPlaceholder} />
+              </SelectTrigger>
+              <SelectContent className="rounded-xl border border-border bg-popover text-popover-foreground shadow-md">
+                <SelectItem value="none" className="rounded-lg">{t.profile.biologicalSexNone}</SelectItem>
+                <SelectItem value="female" className="rounded-lg">{t.profile.biologicalSexFemale}</SelectItem>
+                <SelectItem value="male" className="rounded-lg">{t.profile.biologicalSexMale}</SelectItem>
+                <SelectItem value="intersex" className="rounded-lg">{t.profile.biologicalSexIntersex}</SelectItem>
+                <SelectItem value="unknown" className="rounded-lg">{t.profile.biologicalSexUnknown}</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div className="space-y-2">
+            <Label className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
+              {t.profile.birthYearLabel}
+            </Label>
+            <Input 
+              type="text"
+              inputMode="numeric"
+              pattern="[0-9]*"
+              placeholder={t.profile.birthYearPlaceholder}
+              value={newBirthYear} 
+              onChange={e => {
+                const val = e.target.value;
+                if (/^\d*$/.test(val) && val.length <= 4) {
+                  setNewBirthYear(val);
+                }
+              }} 
+              className="rounded-2xl" 
+            />
+            {newBirthYear.trim() !== '' && (() => {
+              const y = parseInt(newBirthYear.trim(), 10);
+              const currentYear = new Date().getFullYear();
+              if (/^\d{4}$/.test(newBirthYear.trim()) && !isNaN(y) && y >= 1900 && y <= currentYear) {
+                return (
+                  <p className="text-xs text-muted-foreground mt-1 animate-fade-in">
+                    {t.profile.approximateAge.replace('{age}', String(currentYear - y))}
+                  </p>
+                );
+              }
+              return null;
+            })()}
           </div>
           
           <label className="flex items-start gap-3 cursor-pointer group pt-2 pb-1">

@@ -1,46 +1,38 @@
-# Walkthrough: Seed Observation Intensity From Mood Pulse
+# Walkthrough: Observed Person Demographics In Profile Registry
 
-I have successfully implemented the shared defaulting rule for pre-seeding observation intensity from logged mood pulses on the same date and subject context using the inverse mapping: `6 - pulseLevel`.
+I have successfully added optional biological sex and birth year demographics fields to the observed person (subject) add and edit forms within the profile registry flow.
 
 ## 1. Changes Made
 
-### Hooks
+### Database Layer
+- **[NEW] [20260710182000_add_subject_demographics.sql](file:///c:/Users/veres.sz/Documents/GitHub/grit.hu-beta/supabase/migrations/20260710182000_add_subject_demographics.sql)**:
+  - Added a new database migration to add `biological_sex` and `birth_year` columns to the `subjects` table.
+  - Implemented constraints mapping to Story 1: `biological_sex` check `IN ('female', 'male', 'intersex', 'unknown')` and `birth_year` check `BETWEEN 1900 AND 2100`.
 
-#### [NEW] [useObservationIntensityDefault.ts](file:///c:/Users/veres.sz/Documents/GitHub/grit.hu-beta/src/hooks/useObservationIntensityDefault.ts)
-- Created a shared, strictly typed React hook to query the `mood_pulses` table for the active user, date, and subject context.
-- Implemented the explicit inverse mapping formula `6 - pulseLevel` mapping:
-  - `1` (Struggling) $\rightarrow$ `5` (Overwhelming)
-  - `2` (Uneasy) $\rightarrow$ `4` (Heavy)
-  - `3` (Okay) $\rightarrow$ `3` (Moderate)
-  - `4` (Good) $\rightarrow$ `2` (Light)
-  - `5` (Strong) $\rightarrow$ `1` (Minimal)
-- Returns `defaultIntensity` (defaults to `3`), the `source` (`'pulse-seeded' | 'fallback'`), and `loading`/`error` states.
+### TypeScript Types
+- **[MODIFY] [types.ts](file:///c:/Users/veres.sz/Documents/GitHub/grit.hu-beta/src/integrations/supabase/types.ts)**:
+  - Manually registered the new optional `biological_sex` and `birth_year` columns under the `subjects` table types (`Row`, `Insert`, and `Update`).
+- **[MODIFY] [SubjectSelector.tsx](file:///c:/Users/veres.sz/Documents/GitHub/grit.hu-beta/src/components/observations/SubjectSelector.tsx)**:
+  - Expanded the local `Subject` interface to declare optional `biological_sex` and `birth_year` fields.
 
----
-
-### Components
-
-#### [MODIFY] [ObservationStepper.tsx](file:///c:/Users/veres.sz/Documents/GitHub/grit.hu-beta/src/components/observations/ObservationStepper.tsx)
-- Integrated the new `useObservationIntensityDefault` hook to fetch and map the daily pulse level dynamically.
-- Cleaned up duplicated and hardcoded `today` query logic.
-- Managed a local `intensitySource` (`'pulse-seeded' | 'fallback' | 'manual'`) state to preserve manual user overrides correctly during the draft session.
-- Configured state resets to trigger when the target date or active subject context changes.
-- Updated the helper text section to display `"Suggested based on your mood check-in today"` (in HU or EN) when seeded, and `"You've adjusted the weight"` when manually overridden.
-
-#### [MODIFY] [EntryModal.tsx](file:///c:/Users/veres.sz/Documents/GitHub/grit.hu-beta/src/components/checkin/EntryModal.tsx)
-- Integrated the new `useObservationIntensityDefault` hook for the self perspective context on the selected entry date.
-- Added a local `intensitySource` state to track user manual overrides and protect them from async loading overwrites.
-- Added the same helper text message block under the intensity buttons for visual parity with the stepper.
-
-#### [MODIFY] [SubjectWorkspaceSection.tsx](file:///c:/Users/veres.sz/Documents/GitHub/grit.hu-beta/src/components/checkin/SubjectWorkspaceSection.tsx)
-- Passed the active `pulseDate` formatted as `observationDate` prop to the inline `<ObservationStepper>` component. This ensures the inline stepper targets the user's selected check-in date retrospectively, loading any past mood pulse to seed the default intensity.
+### User Interface
+- **[MODIFY] [ManagedRelatives.tsx](file:///c:/Users/veres.sz/Documents/GitHub/grit.hu-beta/src/components/premium/ManagedRelatives.tsx)**:
+  - Updated the local `Subject` interface.
+  - Sourced `biological_sex` and `birth_year` columns inside the `fetchSubjects` query.
+  - Added new React state variables to manage demographic inputs separately for addition and edit flows:
+    - Addition: `newBiologicalSex` (`string | null`), `newBirthYear` (`string`)
+    - Editing: `editBiologicalSex` (`string | null`), `editBirthYear` (`string`)
+  - Integrated 4-digit validation checks to `handleAdd` and `handleSaveEdit` (ensuring 1900 <= birth year <= current year), returning a localized error toast if invalid.
+  - Reset form fields on successful addition and edit cancellation/save actions.
+  - Rendered a select dropdown for biological sex and a text input (with numeric-only filters) for birth year in both forms.
+  - Formatted the list display to print demographic details (e.g. `• Female • 1995` or `• Nő • 1995`) dynamically using existing localization keys.
 
 ---
 
 ## 2. Verification Results
 
-### Compilation Check
-- Run compilation check using TypeScript compiler:
+### Code Compilation
+- Ran compilation checks with the TypeScript compiler:
   ```powershell
   & "C:\Users\veres.sz\AppData\Local\ms-playwright-go\1.57.0\node.exe" node_modules\typescript\bin\tsc --noEmit
   ```
