@@ -1,4 +1,4 @@
-import { useEffect, useState, useCallback } from 'react';
+﻿import { useEffect, useState, useCallback } from 'react';
 import { useLocation } from 'react-router-dom';
 import DashboardLayout from '@/components/DashboardLayout';
 import { useAuth } from '@/hooks/useAuth';
@@ -16,7 +16,7 @@ import SurveyInterpretationManager from '@/components/checkin/SurveyInterpretati
 import ReactMarkdown from 'react-markdown';
 import { toast } from 'sonner';
 import { friendlyDbError } from '@/lib/db-error';
-import { FPlus, FTrash, FPencil, FClose, FSave, FList } from '@/components/icons/FreudIcons';
+import { FPlus, FTrash, FPencil, FClose, FSave, FList, FClipboardCheck, FClock, FChevronDown } from '@/components/icons/FreudIcons';
 import type { Database, Json } from '@/integrations/supabase/types';
 import { type LogicRule, type QuestionWithLogic } from '@/lib/logic-engine';
 import { validateLogicRules } from '@/lib/logic-validation';
@@ -73,6 +73,9 @@ interface Subscale {
   }[];
 }
 
+type AdminStatusFilter = 'all' | 'published' | 'draft';
+type AdminSortMode = 'recent' | 'alphabetical';
+
 const SelfChecks = () => {
   const { user } = useAuth();
   const { t, lang } = useLanguage();
@@ -109,6 +112,9 @@ const SelfChecks = () => {
 
   const [categories, setCategories] = useState<Category[]>([]);
   const [categorySchemaAvailable, setCategorySchemaAvailable] = useState(true);
+  const [adminStatusFilter, setAdminStatusFilter] = useState<AdminStatusFilter>('all');
+  const [adminCategoryFilter, setAdminCategoryFilter] = useState<string>('all');
+  const [adminSortMode, setAdminSortMode] = useState<AdminSortMode>('recent');
   const [formCategory, setFormCategory] = useState<string>('');
   const [showCategoryEditor, setShowCategoryEditor] = useState(false);
   const [editingCategory, setEditingCategory] = useState<Category | null>(null);
@@ -240,6 +246,94 @@ const SelfChecks = () => {
     fetchQuestionnaires();
     fetchCategories();
   }, [fetchQuestionnaires, fetchCategories]);
+
+  const getLocalizedCategoryName = (category?: Category | null) => {
+    if (!category) {
+      return t.questionnaires_manage.uncategorized;
+    }
+
+    return lang === 'en' ? category.name_en : category.name_hu;
+  };
+
+  const getRepeatIntervalLabel = (repeatInterval?: string | null) => {
+    switch (repeatInterval) {
+      case 'daily':
+        return t.questionnaires_manage.repeatDaily;
+      case 'weekly':
+        return t.questionnaires_manage.repeatWeekly;
+      case 'biweekly':
+        return t.questionnaires_manage.repeatBiweekly;
+      case 'monthly':
+        return t.questionnaires_manage.repeatMonthly;
+      case 'anytime':
+        return t.questionnaires_manage.repeatAnytime;
+      default:
+        return t.questionnaires_manage.repeatOnce;
+    }
+  };
+
+  const formatAdminDate = (value?: string | null) => {
+    if (!value) {
+      return t.questionnaires_manage.metaNever;
+    }
+
+    return new Intl.DateTimeFormat(lang === 'en' ? 'en-US' : 'hu-HU', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+    }).format(new Date(value));
+  };
+
+  const getQuestionnaireDescriptionPreview = (description?: string | null) => {
+    if (!description?.trim()) {
+      return t.questionnaires_manage.adminNoDescription;
+    }
+
+    return description.replace(/\s+/g, ' ').trim();
+  };
+
+  const adminCategoryOptions = categories.filter(
+    (category) =>
+      category.is_active || questionnaires.some((questionnaire) => questionnaire.category?.id === category.id)
+  );
+
+  const adminAvailableFrequencies = Array.from(
+    new Set(
+      questionnaires
+        .map((questionnaire) => questionnaire.repeat_interval ?? 'once')
+        .filter((value) => value !== 'all')
+    )
+  );
+
+  const filteredAdminQuestionnaires = questionnaires
+    .filter((questionnaire) => {
+      if (adminStatusFilter === 'published' && !questionnaire.is_published) {
+        return false;
+      }
+
+      if (adminStatusFilter === 'draft' && questionnaire.is_published) {
+        return false;
+      }
+
+      if (adminFrequencyFilter !== 'all' && (questionnaire.repeat_interval ?? 'once') !== adminFrequencyFilter) {
+        return false;
+      }
+
+      if (adminCategoryFilter === 'all') {
+        return true;
+      }
+
+      return questionnaire.category?.key === adminCategoryFilter;
+    })
+    .sort((left, right) => {
+      if (adminSortMode === 'alphabetical') {
+        return left.title.localeCompare(right.title, lang === 'en' ? 'en' : 'hu');
+      }
+
+      const leftTime = new Date(left.updated_at ?? left.created_at ?? 0).getTime();
+      const rightTime = new Date(right.updated_at ?? right.created_at ?? 0).getTime();
+      return rightTime - leftTime;
+    });
 
   const loadQuestions = async (qId: string) => {
     setSelectedQ(qId); setAnswers({});
@@ -451,7 +545,7 @@ const SelfChecks = () => {
           if (!hasMapped) {
             toast.error(lang === 'en' 
               ? `Subscale "${sub.name.en || sub.id}" must have at least one question associated with it before publishing.`
-              : `A(z) "${sub.name.hu || sub.id}" részskálához legalább egy kérdést hozzá kell rendelni a közzététel előtt.`
+              : `A(z) "${sub.name.hu || sub.id}" rĂ©szskĂˇlĂˇhoz legalĂˇbb egy kĂ©rdĂ©st hozzĂˇ kell rendelni a kĂ¶zzĂ©tĂ©tel elĹ‘tt.`
             );
             setSaving(false);
             return;
@@ -741,7 +835,7 @@ const SelfChecks = () => {
       <div className="border border-border/80 rounded-2xl p-4 bg-muted/5 space-y-4 text-left">
         <div>
           <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground">
-            Live Scoring Preview / Kalkulációs Teszt
+            Live Scoring Preview / KalkulĂˇciĂłs Teszt
           </h3>
           <p className="text-[11px] text-muted-foreground mt-0.5">
             Test questionnaire calculations in real time using mock inputs.
@@ -750,7 +844,7 @@ const SelfChecks = () => {
 
         <div className="bg-accent/10 border border-border/20 rounded-xl p-3 flex flex-col gap-1">
           <div className="flex justify-between items-center text-xs">
-            <span className="font-semibold text-foreground">Primary Score / Főpontszám:</span>
+            <span className="font-semibold text-foreground">Primary Score / FĹ‘pontszĂˇm:</span>
             <span className="font-bold text-foreground">
               {calculatedScores.totalScore} / {calculatedScores.maxPossibleScore} pt
             </span>
@@ -772,7 +866,7 @@ const SelfChecks = () => {
         {subscalesList.length > 0 && (
           <div className="space-y-2">
             <span className="text-[10px] font-semibold text-muted-foreground uppercase tracking-wider block">
-              Subscale Scores / Részskálák:
+              Subscale Scores / RĂ©szskĂˇlĂˇk:
             </span>
             <div className="grid grid-cols-1 gap-2.5 sm:grid-cols-2">
               {subscalesList.map((sub) => {
@@ -900,7 +994,7 @@ const SelfChecks = () => {
                   {formScoreRanges.map((sr, i) => (
                     <div key={i} className="flex gap-2 items-center">
                       <Input type="number" value={sr.min} onChange={e => { const c = [...formScoreRanges]; c[i] = { ...c[i], min: Number(e.target.value) }; setFormScoreRanges(c); }} placeholder={t.questionnaires_manage.scoreRangeMin} className="w-16 rounded-2xl text-xs" />
-                      <span className="text-xs text-muted-foreground">–</span>
+                      <span className="text-xs text-muted-foreground">â€“</span>
                       <Input type="number" value={sr.max} onChange={e => { const c = [...formScoreRanges]; c[i] = { ...c[i], max: Number(e.target.value) }; setFormScoreRanges(c); }} placeholder={t.questionnaires_manage.scoreRangeMax} className="w-16 rounded-2xl text-xs" />
                       <Input value={sr.label} onChange={e => { const c = [...formScoreRanges]; c[i] = { ...c[i], label: e.target.value }; setFormScoreRanges(c); }} placeholder={t.questionnaires_manage.scoreRangeLabel} className="flex-1 rounded-2xl text-xs" />
                       <Input value={sr.description ?? ''} onChange={e => { const c = [...formScoreRanges]; c[i] = { ...c[i], description: e.target.value }; setFormScoreRanges(c); }} placeholder={t.questionnaires_manage.scoreRangeDescription} className="flex-1 rounded-2xl text-xs" />
@@ -994,8 +1088,8 @@ const SelfChecks = () => {
                 <div className="space-y-3">
                   {formSubscales.map((ss, i) => (
                     <div key={i} className="border-b border-border/30 pb-3 last:border-0 last:pb-0 space-y-2.5">
-                      <div className="flex gap-2 items-end">
-                        <div className="flex-1 min-w-[80px] space-y-1">
+                      <div className="flex flex-col sm:flex-row gap-2 items-start sm:items-end w-full">
+                        <div className="w-full sm:flex-[0.8] sm:min-w-[80px] space-y-1">
                           <Label className="text-[10px] text-muted-foreground uppercase">{t.questionnaires_manage.subscaleId}</Label>
                           <Input
                             value={ss.id}
@@ -1008,7 +1102,7 @@ const SelfChecks = () => {
                             className="rounded-xl h-8 text-xs"
                           />
                         </div>
-                        <div className="flex-1 min-w-[100px] space-y-1">
+                        <div className="w-full sm:flex-[1.2] sm:min-w-[100px] space-y-1">
                           <Label className="text-[10px] text-muted-foreground uppercase">{t.questionnaires_manage.subscaleNameHu}</Label>
                           <Input
                             value={ss.name.hu}
@@ -1017,11 +1111,11 @@ const SelfChecks = () => {
                               c[i] = { ...c[i], name: { ...c[i].name, hu: e.target.value } };
                               updateFormSubscales(c);
                             }}
-                            placeholder="pl. szorongás"
+                            placeholder="pl. szorongĂˇs"
                             className="rounded-xl h-8 text-xs"
                           />
                         </div>
-                        <div className="flex-1 min-w-[100px] space-y-1">
+                        <div className="w-full sm:flex-[1.2] sm:min-w-[100px] space-y-1">
                           <Label className="text-[10px] text-muted-foreground uppercase">{t.questionnaires_manage.subscaleNameEn}</Label>
                           <Input
                             value={ss.name.en}
@@ -1034,7 +1128,7 @@ const SelfChecks = () => {
                             className="rounded-xl h-8 text-xs"
                           />
                         </div>
-                        <div className="w-24 space-y-1">
+                        <div className="w-full sm:w-24 space-y-1">
                           <Label className="text-[10px] text-muted-foreground uppercase">{t.questionnaires_manage.subscaleType}</Label>
                           <select
                             value={ss.type}
@@ -1053,7 +1147,7 @@ const SelfChecks = () => {
                           type="button"
                           variant="ghost"
                           size="icon"
-                          className="h-8 w-8 text-destructive shrink-0"
+                          className="h-8 w-8 text-destructive shrink-0 self-end sm:self-auto"
                           onClick={() => {
                             const c = formSubscales.filter((_, j) => j !== i);
                             updateFormSubscales(c);
@@ -1070,8 +1164,8 @@ const SelfChecks = () => {
                         </span>
                         <div className="space-y-2">
                           {(ss.score_ranges || []).map((range, ri) => (
-                            <div key={ri} className="flex flex-wrap gap-2 items-end bg-muted/30 p-2 rounded-xl border border-border/20">
-                              <div className="w-14 space-y-1">
+                            <div key={ri} className="flex flex-col sm:flex-row sm:flex-wrap gap-2 items-stretch sm:items-end bg-muted/30 p-2.5 rounded-xl border border-border/20 w-full">
+                              <div className="w-full sm:w-14 space-y-1">
                                 <Label className="text-[8px] text-muted-foreground uppercase">Min</Label>
                                 <Input
                                   type="number"
@@ -1086,7 +1180,7 @@ const SelfChecks = () => {
                                   className="rounded-lg h-7 text-xs"
                                 />
                               </div>
-                              <div className="w-14 space-y-1">
+                              <div className="w-full sm:w-14 space-y-1">
                                 <Label className="text-[8px] text-muted-foreground uppercase">Max</Label>
                                 <Input
                                   type="number"
@@ -1101,7 +1195,7 @@ const SelfChecks = () => {
                                   className="rounded-lg h-7 text-xs"
                                 />
                               </div>
-                              <div className="flex-1 min-w-[90px] space-y-1">
+                              <div className="w-full sm:flex-1 sm:min-w-[90px] space-y-1">
                                 <Label className="text-[8px] text-muted-foreground uppercase">Label HU</Label>
                                 <Input
                                   value={range.label?.hu || ''}
@@ -1116,7 +1210,7 @@ const SelfChecks = () => {
                                   className="rounded-lg h-7 text-xs"
                                 />
                               </div>
-                              <div className="flex-1 min-w-[90px] space-y-1">
+                              <div className="w-full sm:flex-1 sm:min-w-[90px] space-y-1">
                                 <Label className="text-[8px] text-muted-foreground uppercase">Label EN</Label>
                                 <Input
                                   value={range.label?.en || ''}
@@ -1131,7 +1225,7 @@ const SelfChecks = () => {
                                   className="rounded-lg h-7 text-xs"
                                 />
                               </div>
-                              <div className="flex-[1.5] min-w-[130px] space-y-1">
+                              <div className="w-full sm:flex-[1.5] sm:min-w-[130px] space-y-1">
                                 <Label className="text-[8px] text-muted-foreground uppercase">Desc HU</Label>
                                 <Input
                                   value={range.description?.hu || ''}
@@ -1145,7 +1239,7 @@ const SelfChecks = () => {
                                   className="rounded-lg h-7 text-xs"
                                 />
                               </div>
-                              <div className="flex-[1.5] min-w-[130px] space-y-1">
+                              <div className="w-full sm:flex-[1.5] sm:min-w-[130px] space-y-1">
                                 <Label className="text-[8px] text-muted-foreground uppercase">Desc EN</Label>
                                 <Input
                                   value={range.description?.en || ''}
@@ -1163,7 +1257,7 @@ const SelfChecks = () => {
                                 type="button"
                                 variant="ghost"
                                 size="icon"
-                                className="h-7 w-7 text-destructive shrink-0"
+                                className="h-7 w-7 text-destructive shrink-0 self-end sm:self-auto"
                                 onClick={() => {
                                   const c = [...formSubscales];
                                   c[i] = {
@@ -1217,7 +1311,7 @@ const SelfChecks = () => {
                     onChange={e => handleRawSubscalesJsonChange(e.target.value)}
                     rows={6}
                     className="font-mono text-xs rounded-2xl"
-                    placeholder="[ { &quot;id&quot;: &quot;anx&quot;, &quot;name&quot;: { &quot;hu&quot;: &quot;Szorongás&quot;, &quot;en&quot;: &quot;Anxiety&quot; }, &quot;type&quot;: &quot;sum&quot; } ]"
+                    placeholder="[ { &quot;id&quot;: &quot;anx&quot;, &quot;name&quot;: { &quot;hu&quot;: &quot;SzorongĂˇs&quot;, &quot;en&quot;: &quot;Anxiety&quot; }, &quot;type&quot;: &quot;sum&quot; } ]"
                   />
                   {subscaleJsonError && (
                     <p className="text-[11px] text-destructive font-semibold">
@@ -1231,7 +1325,7 @@ const SelfChecks = () => {
               {formSubscales.length > 0 && (
                 <div className="mt-3 p-3 rounded-2xl bg-muted/20 border border-border/50 space-y-2 text-left">
                   <Label className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground block">
-                    Subscale Mapping Summary / Kérdés hozzárendelések
+                    Subscale Mapping Summary / KĂ©rdĂ©s hozzĂˇrendelĂ©sek
                   </Label>
                   <div className="space-y-1.5">
                     {formSubscales.map(sub => {
@@ -1247,11 +1341,11 @@ const SelfChecks = () => {
                           </span>
                           {mappedIndices.length > 0 ? (
                             <span className="bg-primary/10 text-primary font-medium px-2 py-0.5 rounded-lg text-[10px]">
-                              {lang === 'en' ? 'Questions' : 'Kérdések'}: {mappedIndices.map(i => `Q${i}`).join(', ')}
+                              {lang === 'en' ? 'Questions' : 'KĂ©rdĂ©sek'}: {mappedIndices.map(i => `Q${i}`).join(', ')}
                             </span>
                           ) : (
                             <span className="bg-destructive/10 text-destructive font-semibold px-2 py-0.5 rounded-lg text-[10px]">
-                              {lang === 'en' ? 'No questions mapped' : 'Nincs kérdés hozzárendelve'}
+                              {lang === 'en' ? 'No questions mapped' : 'Nincs kĂ©rdĂ©s hozzĂˇrendelve'}
                             </span>
                           )}
                         </div>
@@ -1320,7 +1414,7 @@ const SelfChecks = () => {
                     <div className="flex items-center gap-2">
                       <Label className="text-[10px] uppercase tracking-widest text-muted-foreground shrink-0">{t.questionnaires_manage.scaleRange}</Label>
                       <Input type="number" value={nq.scaleMin} onChange={e => { const c = [...formQuestions]; c[i].scaleMin = Number(e.target.value); setFormQuestions(c); }} className="w-16 h-8 rounded-xl text-xs" />
-                      <span className="text-xs text-muted-foreground">–</span>
+                      <span className="text-xs text-muted-foreground">â€“</span>
                       <Input type="number" value={nq.scaleMax} onChange={e => { const c = [...formQuestions]; c[i].scaleMax = Number(e.target.value); setFormQuestions(c); }} className="w-16 h-8 rounded-xl text-xs" />
                     </div>
                     <div className="space-y-1">
@@ -1361,7 +1455,7 @@ const SelfChecks = () => {
                           <span className="text-[10px] text-muted-foreground/70">
                             ({Array.from({ length: nq.scaleMax - nq.scaleMin + 1 }, (_, k) => {
                               const n = nq.scaleMin + k;
-                              return `${n}→${(nq.scaleMin + nq.scaleMax) - n}`;
+                              return `${n}â†’${(nq.scaleMin + nq.scaleMax) - n}`;
                             }).join(', ')})
                           </span>
                         )}
@@ -1392,7 +1486,7 @@ const SelfChecks = () => {
                         <div className="flex gap-1 flex-wrap">
                           {nq.logicRules.map((rule, ri) => (
                             <span key={ri} className="text-[9px] px-1.5 py-0.5 rounded-full bg-primary/10 text-primary font-semibold">
-                              {rule.condition.answer_equals} → {rule.action === 'skip_to_end' ? t.questionnaires_manage.endOfSurvey : `Q${(formQuestions.findIndex(fq => fq.id === rule.target_question_id) + 1) || '?'}`}
+                              {rule.condition.answer_equals} â†’ {rule.action === 'skip_to_end' ? t.questionnaires_manage.endOfSurvey : `Q${(formQuestions.findIndex(fq => fq.id === rule.target_question_id) + 1) || '?'}`}
                             </span>
                           ))}
                         </div>
@@ -1414,7 +1508,7 @@ const SelfChecks = () => {
                               }}
                               className="border border-input rounded-xl px-2 py-1 text-xs bg-background min-w-[80px]"
                             >
-                              <option value="">—</option>
+                              <option value="">â€”</option>
                               {(nq.type === 'yes_no' ? ['yes', 'no'] :
                                 nq.type === 'scale' ? Array.from({ length: nq.scaleMax - nq.scaleMin + 1 }, (_, k) => String(nq.scaleMin + k)) :
                                 nq.type === 'multiple_choice' ? nq.options.split(',').map(s => s.trim()).filter(Boolean) :
@@ -1434,7 +1528,7 @@ const SelfChecks = () => {
                               }}
                               className="border border-input rounded-xl px-2 py-1 text-xs bg-background min-w-[120px]"
                             >
-                              <option value="">—</option>
+                              <option value="">â€”</option>
                               {/* Forward-only: only show questions after the current one */}
                               {formQuestions.slice(i + 1).map((fq, fi) => (
                                 <option key={fq.id ?? `new-${i + 1 + fi}`} value={fq.id ?? ''}>
@@ -1456,7 +1550,7 @@ const SelfChecks = () => {
                           {skippedQuestions.length > 0 && (
                             <div className="pl-4 pt-1 space-y-1.5 border-l-2 border-primary/20">
                               <span className="text-[10px] font-semibold text-muted-foreground block uppercase tracking-wide">
-                                Auto-score Skipped Questions / Kihagyott kérdések pontozása
+                                Auto-score Skipped Questions / Kihagyott kĂ©rdĂ©sek pontozĂˇsa
                               </span>
                               <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                                 {skippedQuestions.map((q, idx) => {
@@ -1475,7 +1569,7 @@ const SelfChecks = () => {
                                           onChange={e => handleSyntheticAnswerChange(i, ri, q.id!, e.target.value)}
                                           className="border border-input rounded-xl px-1.5 py-0.5 text-[11px] bg-background"
                                         >
-                                          <option value="">— (Skip)</option>
+                                          <option value="">â€” (Skip)</option>
                                           <option value="yes">yes</option>
                                           <option value="no">no</option>
                                         </select>
@@ -1486,7 +1580,7 @@ const SelfChecks = () => {
                                           onChange={e => handleSyntheticAnswerChange(i, ri, q.id!, e.target.value)}
                                           className="border border-input rounded-xl px-1.5 py-0.5 text-[11px] bg-background"
                                         >
-                                          <option value="">— (Skip)</option>
+                                          <option value="">â€” (Skip)</option>
                                           {Array.from({ length: q.scaleMax - q.scaleMin + 1 }, (_, k) => String(q.scaleMin + k)).map(pt => (
                                             <option key={pt} value={pt}>{pt}</option>
                                           ))}
@@ -1498,7 +1592,7 @@ const SelfChecks = () => {
                                           onChange={e => handleSyntheticAnswerChange(i, ri, q.id!, e.target.value)}
                                           className="border border-input rounded-xl px-1.5 py-0.5 text-[11px] bg-background max-w-[100px]"
                                         >
-                                          <option value="">— (Skip)</option>
+                                          <option value="">â€” (Skip)</option>
                                           {q.options.split(',').map(s => s.trim()).filter(Boolean).map(opt => (
                                             <option key={opt} value={opt}>{opt}</option>
                                           ))}
@@ -1580,7 +1674,7 @@ const SelfChecks = () => {
             <div className="border border-border/80 rounded-2xl p-4 bg-muted/5 space-y-4 text-left">
               <div>
                 <span className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">
-                  Mock Answers / Teszt Válaszok
+                  Mock Answers / Teszt VĂˇlaszok
                 </span>
                 <p className="text-[11px] text-muted-foreground mt-0.5">
                   Select mock answers below to test scoring calculations.
@@ -1694,62 +1788,221 @@ const SelfChecks = () => {
           </div>
         </div>
       ) : (
-        <div className="space-y-3">
-          {questionnaires.length === 0 ? (
-            <div className="surface-card p-6">
-              <p className="text-sm text-muted-foreground">{t.questionnaires_manage.noAvailable}</p>
-            </div>
-          ) : questionnaires.map(q => (
-            <div key={q.id} className="surface-card p-5 flex items-start gap-4">
-              <button onClick={() => isEditor ? openEdit(q) : loadQuestions(q.id)} className="flex-1 text-left hover:opacity-80 transition-opacity min-w-0">
-                <div className="flex items-center gap-2 mb-1">
-                  <span className="text-sm font-semibold">{q.title}</span>
-                  {q.category && (
-                    <span className="rounded-full border border-primary/10 bg-primary/5 px-2 py-0.5 text-[9px] font-semibold uppercase tracking-wide text-primary">
-                      {q.category.name_hu} / {q.category.name_en}
-                    </span>
-                  )}
-                  {!q.is_published && <span className="text-[10px] px-2 py-0.5 rounded-full border border-border text-muted-foreground">{t.draft}</span>}
+        <section className="surface-card space-y-5 p-5 sm:p-6">
+          <div className="flex flex-col gap-4 border-b border-border/50 pb-4">
+            <div className="flex flex-col gap-3 md:flex-row md:items-center md:justify-between">
+              <div className="flex items-center gap-3">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+                  <FClipboardCheck className="h-4 w-4" />
                 </div>
-                {q.description && <p className="text-xs text-muted-foreground leading-relaxed">{q.description}</p>}
-              </button>
+                <h2 className="text-base font-semibold text-foreground">
+                  {t.questionnaires_manage.adminOverviewTitle}
+                </h2>
+              </div>
               {isEditor && (
-                <div className="flex gap-1 shrink-0 items-center">
-                  <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => togglePublished(q)} title={q.is_published ? 'Unpublish' : 'Publish'}>
-                    <Switch checked={q.is_published} className="pointer-events-none scale-75" />
+                <div className="flex flex-wrap items-center gap-2">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="rounded-full"
+                    onClick={() => setShowCategoryEditor(true)}
+                  >
+                    <FList className="mr-2 h-4 w-4" />
+                    {t.questionnaires_manage.manageCategoriesBtn}
                   </Button>
-                  <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => openEdit(q)}><FPencil className="h-3.5 w-3.5" /></Button>
-                  <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleClone(q)} title={t.questionnaires_manage.questionnaireCloned}>
-                    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-3.5 w-3.5"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="rounded-full"
+                    onClick={() => openCreate()}
+                  >
+                    <FPlus className="mr-2 h-4 w-4" />
+                    {t.create}
                   </Button>
-                  <AlertDialog>
-                    <AlertDialogTrigger asChild>
-                      <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:text-destructive"><FTrash className="h-3.5 w-3.5" /></Button>
-                    </AlertDialogTrigger>
-                    <AlertDialogContent>
-                      <AlertDialogHeader>
-                        <AlertDialogTitle>{t.questionnaires_manage.deleteConfirmTitle}</AlertDialogTitle>
-                        <AlertDialogDescription>{t.questionnaires_manage.deleteConfirmDesc.replace('{title}', q.title)}</AlertDialogDescription>
-                      </AlertDialogHeader>
-                      <AlertDialogFooter>
-                        <AlertDialogCancel>{t.cancel}</AlertDialogCancel>
-                        <AlertDialogAction onClick={() => handleDelete(q.id)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">{t.delete}</AlertDialogAction>
-                      </AlertDialogFooter>
-                    </AlertDialogContent>
-                  </AlertDialog>
                 </div>
               )}
             </div>
-          ))}
-        </div>
+
+            <div className="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
+              <div className="flex flex-wrap items-center gap-2">
+                {([
+                  ['all', t.questionnaires_manage.filterAll],
+                  ['published', t.published],
+                  ['draft', t.draft],
+                ] as const).map(([value, label]) => (
+                  <button
+                    key={value}
+                    type="button"
+                    onClick={() => setAdminStatusFilter(value)}
+                    className={`rounded-full border px-4 py-2 text-xs font-medium transition-colors ${
+                      adminStatusFilter === value
+                        ? 'border-primary bg-primary text-primary-foreground shadow-sm'
+                        : 'border-border bg-background text-muted-foreground hover:border-primary/40 hover:text-foreground'
+                    }`}
+                  >
+                    {label}
+                  </button>
+                ))}
+
+                {adminCategoryOptions.map((category) => (
+                  <button
+                    key={category.id}
+                    type="button"
+                    onClick={() => setAdminCategoryFilter((current) => current === category.key ? 'all' : category.key)}
+                    className={`rounded-full border px-4 py-2 text-xs font-medium transition-colors ${
+                      adminCategoryFilter === category.key
+                        ? 'border-primary bg-primary/10 text-primary'
+                        : 'border-border bg-background text-muted-foreground hover:border-primary/40 hover:text-foreground'
+                    }`}
+                  >
+                    {getLocalizedCategoryName(category)}
+                  </button>
+                ))}
+              </div>
+
+              <button
+                type="button"
+                onClick={() => setAdminSortMode((current) => current === 'recent' ? 'alphabetical' : 'recent')}
+                className="inline-flex items-center gap-2 self-start rounded-full border border-border bg-background px-4 py-2 text-xs font-medium text-muted-foreground transition-colors hover:border-primary/40 hover:text-foreground"
+              >
+                <span>{t.questionnaires_manage.sortLabel}: {adminSortMode === 'recent' ? t.questionnaires_manage.adminSortRecent : t.questionnaires_manage.sortAlphabetical}</span>
+                <FChevronDown className="h-3.5 w-3.5" />
+              </button>
+            </div>
+          </div>
+
+          {questionnaires.length === 0 ? (
+            <div className="rounded-[1.75rem] border border-border/60 bg-card/50 p-6">
+              <p className="text-sm text-muted-foreground">{t.questionnaires_manage.noAvailable}</p>
+            </div>
+          ) : filteredAdminQuestionnaires.length === 0 ? (
+            <div className="rounded-[1.75rem] border border-dashed border-border/60 bg-accent/20 p-6">
+              <p className="text-sm text-muted-foreground">{t.questionnaires_manage.noMatchingQuestionnaires}</p>
+            </div>
+          ) : (
+            <div className="grid gap-4 md:grid-cols-2 xl:grid-cols-3">
+              {filteredAdminQuestionnaires.map((q) => (
+                <div
+                  key={q.id}
+                  className="flex h-full flex-col rounded-[2rem] border border-border/70 bg-card/70 p-5 shadow-[0_12px_36px_-24px_rgba(24,63,44,0.28)]"
+                >
+                  <div className="mb-4 flex items-start justify-between gap-3">
+                    <div className="flex min-w-0 items-start gap-3">
+                      <div className="mt-0.5 flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+                        <FClipboardCheck className="h-4 w-4" />
+                      </div>
+                      <div className="min-w-0 space-y-2">
+                        <button
+                          type="button"
+                          onClick={() => isEditor ? openEdit(q) : loadQuestions(q.id)}
+                          className="text-left transition-opacity hover:opacity-80"
+                        >
+                          <h3 className="text-[1.05rem] font-semibold leading-snug text-foreground">
+                            {q.title}
+                          </h3>
+                        </button>
+                        <div className="flex flex-wrap items-center gap-2">
+                          <span className="rounded-full border border-primary/10 bg-primary/5 px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide text-primary">
+                            {getRepeatIntervalLabel(q.repeat_interval)}
+                          </span>
+                          {!q.is_published && (
+                            <span className="rounded-full border border-border px-2.5 py-1 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
+                              {t.draft}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+
+                    {isEditor && (
+                      <div className="flex shrink-0 items-center gap-1">
+                        <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => togglePublished(q)} title={q.is_published ? t.questionnaires_manage.unpublishedToast : t.questionnaires_manage.publishedToast}>
+                          <Switch checked={q.is_published} className="pointer-events-none scale-75" />
+                        </Button>
+                        <Button variant="ghost" size="icon" className="h-8 w-8" onClick={() => handleClone(q)} title={t.questionnaires_manage.questionnaireCloned}>
+                          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className="h-3.5 w-3.5"><rect x="9" y="9" width="13" height="13" rx="2" ry="2"/><path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/></svg>
+                        </Button>
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <Button variant="ghost" size="icon" className="h-8 w-8 text-destructive hover:text-destructive">
+                              <FTrash className="h-3.5 w-3.5" />
+                            </Button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>{t.questionnaires_manage.deleteConfirmTitle}</AlertDialogTitle>
+                              <AlertDialogDescription>{t.questionnaires_manage.deleteConfirmDesc.replace('{title}', q.title)}</AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>{t.cancel}</AlertDialogCancel>
+                              <AlertDialogAction onClick={() => handleDelete(q.id)} className="bg-destructive text-destructive-foreground hover:bg-destructive/90">{t.delete}</AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
+                      </div>
+                    )}
+                  </div>
+
+                  <p className="mb-5 line-clamp-4 min-h-[6.5rem] text-sm leading-8 text-muted-foreground">
+                    {getQuestionnaireDescriptionPreview(q.description)}
+                  </p>
+
+                  <div className="mb-4 grid grid-cols-1 sm:grid-cols-3 gap-3 rounded-[1.6rem] border border-border/70 bg-background/70 px-4 py-3">
+                    <div className="min-w-0">
+                      <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/80">
+                        {t.questionnaires_manage.categoryLabel}
+                      </p>
+                      <p className="mt-1 truncate text-sm text-foreground">
+                        {getLocalizedCategoryName(q.category)}
+                      </p>
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/80">
+                        {t.questionnaires_manage.adminMetaStatus}
+                      </p>
+                      <p className="mt-1 truncate text-sm text-foreground">
+                        {q.is_published ? t.published : t.draft}
+                      </p>
+                    </div>
+                    <div className="min-w-0">
+                      <p className="text-[10px] font-semibold uppercase tracking-wider text-muted-foreground/80">
+                        {t.questionnaires_manage.adminMetaUpdated}
+                      </p>
+                      <p className="mt-1 truncate text-sm text-foreground">
+                        {formatAdminDate(q.updated_at ?? q.created_at)}
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="mb-6 flex items-center gap-2 text-xs text-muted-foreground">
+                    <FClock className="h-3.5 w-3.5" />
+                    <span>
+                      {t.questionnaires_manage.adminUpdatedHint.replace('{date}', formatAdminDate(q.updated_at ?? q.created_at))}
+                    </span>
+                  </div>
+
+                  <div className="mt-auto flex flex-wrap gap-3">
+                    <Button type="button" className="rounded-full px-6" onClick={() => openEdit(q)}>
+                      <FPencil className="mr-2 h-4 w-4" />
+                      {t.questionnaires_manage.adminEditCta}
+                    </Button>
+                    <Button type="button" variant="outline" className="rounded-full px-6" onClick={() => loadQuestions(q.id)}>
+                      {t.questionnaires_manage.adminOpenPreview}
+                    </Button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </section>
       )}
     </>
   );
 
   return (
     <DashboardLayout>
-      <div className="max-w-2xl mx-auto w-full space-y-6">
-        <div>
+      <div className={`mx-auto w-full space-y-6 ${showForm || selectedQ ? 'max-w-2xl' : 'max-w-6xl'}`}>
+        <div className={showForm || selectedQ ? '' : 'pb-3 border-b border-border/50'}>
           <h1 className="text-xl font-bold tracking-tight text-foreground">{t.questionnaires_manage.title}</h1>
           <p className="mt-1 text-sm text-muted-foreground leading-relaxed">{t.questionnaires_manage.subtitle}</p>
         </div>
@@ -1910,7 +2163,7 @@ const SelfChecks = () => {
                   <Input
                     value={catNameHu}
                     onChange={(e) => setCatNameHu(e.target.value)}
-                    placeholder="pl. Hangulat & érzelmi állapot"
+                    placeholder="pl. Hangulat & Ă©rzelmi Ăˇllapot"
                     className="rounded-xl h-9 text-xs"
                   />
                 </div>
@@ -1928,7 +2181,7 @@ const SelfChecks = () => {
                   <Textarea
                     value={catDescHu}
                     onChange={(e) => setCatDescHu(e.target.value)}
-                    placeholder="pl. Kérdőívek a levert hangulatról..."
+                    placeholder="pl. KĂ©rdĹ‘Ă­vek a levert hangulatrĂłl..."
                     className="rounded-xl min-h-[60px] text-xs resize-none"
                   />
                 </div>
@@ -2034,3 +2287,4 @@ const SelfChecks = () => {
 };
 
 export default SelfChecks;
+

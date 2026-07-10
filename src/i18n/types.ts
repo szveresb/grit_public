@@ -1,4 +1,4 @@
-export type Lang = 'hu' | 'en';
+﻿export type Lang = 'hu' | 'en';
 
 export interface Dictionary {
   // Global
@@ -301,6 +301,14 @@ export interface Dictionary {
     categoryRequired: string;
     manageCategories: string;
     manageCategoriesBtn: string;
+    adminOverviewTitle: string;
+    adminNoDescription: string;
+    adminSortRecent: string;
+    adminMetaStatus: string;
+    adminMetaUpdated: string;
+    adminUpdatedHint: string;
+    adminEditCta: string;
+    adminOpenPreview: string;
     categoryCreated: string;
     categoryUpdated: string;
     categoryDeleted: string;
@@ -1224,3 +1232,4 @@ export interface Dictionary {
     online: string;
   };
 }
+

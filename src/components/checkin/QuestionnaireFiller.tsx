@@ -948,7 +948,7 @@ const QuestionnaireFiller: React.FC<QuestionnaireFillerProps> = ({ onCompleted, 
                             <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground" />
                           </button>
                         </PopoverTrigger>
-                        <PopoverContent align="start" className="w-[22rem] rounded-[1.5rem] border-border/70 p-0">
+                        <PopoverContent align="start" className="w-[min(22rem,calc(100vw-2rem))] rounded-[1.5rem] border-border/70 p-0">
                           <div className="border-b border-border/60 px-4 py-3">
                             <button
                               type="button"

@@ -225,7 +225,7 @@ const ManageLibrary = () => {
                 <img src={form.image_url} alt={t.ui.previewAlt} className="mt-2 h-24 w-full object-cover rounded-2xl border border-border" onError={e => (e.currentTarget.style.display = 'none')} />
               )}
             </div>
-            <div className="grid grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <div className="space-y-2">
                 <Label className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">{t.manageLibrary.author}</Label>
                 <Input value={form.author} onChange={e => setForm(f => ({ ...f, author: e.target.value }))} placeholder="Grit.hu" className="rounded-2xl" />
