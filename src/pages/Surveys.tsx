@@ -11,11 +11,26 @@ import { FArrowLeft, FClipboardCheck, FUsers, FBookOpen, FArrowRight } from '@/c
 import Breadcrumbs from '@/components/Breadcrumbs';
 import { Button } from '@/components/ui/button';
 import type { Database } from '@/integrations/supabase/types';
+import {
+  getFallbackQuestionnaireCategory,
+  isMissingQuestionnaireCategorySchema,
+  QUESTIONNAIRE_PUBLIC_SELECT_WITH_CATEGORIES,
+  FALLBACK_QUESTIONNAIRE_CATEGORIES,
+  type QuestionnaireCategoryLike,
+} from '@/lib/questionnaire-category-schema';
 
 type QuestionnaireRow = Pick<
   Database['public']['Tables']['questionnaires']['Row'],
   'id' | 'title' | 'description' | 'is_published' | 'title_localized' | 'description_localized' | 'interpretation_profile'
->;
+> & {
+  category_id?: string | null;
+  category?: {
+    id: string;
+    key: string;
+    name_hu: string;
+    name_en: string;
+  } | null;
+};
 
 type QuestionRow = Pick<
   Database['public']['Tables']['questionnaire_questions']['Row'],
@@ -34,6 +49,8 @@ const Surveys = () => {
   const [publicDetailQuestionnaire, setPublicDetailQuestionnaire] = useState<QuestionnaireRow | null>(null);
   const [publicDetailQuestions, setPublicDetailQuestions] = useState<QuestionRow[]>([]);
   const [publicDetailNotFound, setPublicDetailNotFound] = useState(false);
+  const [categories, setCategories] = useState<QuestionnaireCategoryLike[]>([]);
+  const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const supportedSubject =
     activeSubject.type === 'relative'
       ? {
@@ -47,16 +64,62 @@ const Surveys = () => {
     if (user || questionnaireId) return;
     const loadPublishedQuestionnaires = async () => {
       setPublicListLoading(true);
-      const { data } = await supabase
+      const result = await supabase
         .from('questionnaires')
-        .select('id, title, description, is_published, title_localized, description_localized, interpretation_profile')
+        .select(QUESTIONNAIRE_PUBLIC_SELECT_WITH_CATEGORIES)
         .eq('is_published', true)
         .order('created_at', { ascending: true });
 
-      setPublicQuestionnaires((data ?? []) as QuestionnaireRow[]);
+      if (result.error && isMissingQuestionnaireCategorySchema(result.error)) {
+        const fallback = await supabase
+          .from('questionnaires')
+          .select('id, title, description, is_published, title_localized, description_localized, interpretation_profile')
+          .eq('is_published', true)
+          .order('created_at', { ascending: true });
+
+        if (fallback.error) {
+          console.error('Error loading public questionnaires:', fallback.error);
+        } else {
+          setPublicQuestionnaires(
+            ((fallback.data ?? []) as QuestionnaireRow[]).map((questionnaire) => ({
+              ...questionnaire,
+              category: getFallbackQuestionnaireCategory(questionnaire.title),
+            }))
+          );
+        }
+      } else {
+        if (result.error) {
+          console.error('Error loading public questionnaires:', result.error);
+        }
+        setPublicQuestionnaires((result.data ?? []) as QuestionnaireRow[]);
+      }
       setPublicListLoading(false);
     };
     loadPublishedQuestionnaires();
+  }, [questionnaireId, user]);
+
+  useEffect(() => {
+    if (user || questionnaireId) return;
+    const loadCategories = async () => {
+      const { data, error } = await supabase
+        .from('questionnaire_categories')
+        .select('id, key, name_hu, name_en, is_active, sort_order')
+        .eq('is_active', true)
+        .order('sort_order', { ascending: true });
+
+      const missingCategorySchema = isMissingQuestionnaireCategorySchema(error);
+
+      if (error && !missingCategorySchema) {
+        console.error('Error loading categories:', error);
+      }
+
+      if (missingCategorySchema) {
+        setCategories(FALLBACK_QUESTIONNAIRE_CATEGORIES);
+      } else {
+        setCategories((data ?? []) as QuestionnaireCategoryLike[]);
+      }
+    };
+    loadCategories();
   }, [questionnaireId, user]);
 
   useEffect(() => {
@@ -67,12 +130,35 @@ const Surveys = () => {
       setPublicDetailQuestionnaire(null);
       setPublicDetailQuestions([]);
 
-      const { data: questionnaire } = await supabase
+      const result = await supabase
         .from('questionnaires')
-        .select('id, title, description, is_published, title_localized, description_localized, interpretation_profile')
+        .select(QUESTIONNAIRE_PUBLIC_SELECT_WITH_CATEGORIES)
         .eq('id', questionnaireId)
         .eq('is_published', true)
         .maybeSingle();
+
+      let questionnaire = result.data;
+      if (result.error && isMissingQuestionnaireCategorySchema(result.error)) {
+        const fallback = await supabase
+          .from('questionnaires')
+          .select('id, title, description, is_published, title_localized, description_localized, interpretation_profile')
+          .eq('id', questionnaireId)
+          .eq('is_published', true)
+          .maybeSingle();
+
+        if (fallback.error) {
+          console.error('Error loading survey detail:', fallback.error);
+        } else {
+          questionnaire = fallback.data
+            ? {
+                ...fallback.data,
+                category: getFallbackQuestionnaireCategory(fallback.data.title),
+              }
+            : fallback.data;
+        }
+      } else if (result.error) {
+        console.error('Error loading survey detail:', result.error);
+      }
 
       if (!questionnaire) {
         setPublicDetailNotFound(true);
@@ -109,6 +195,11 @@ const Surveys = () => {
       : localizedDescription?.hu ?? questionnaire.description;
   };
 
+  const filteredPublicQuestionnaires = publicQuestionnaires.filter((questionnaire) => {
+    if (selectedCategory === 'all') return true;
+    return questionnaire.category?.key === selectedCategory;
+  });
+
   if (!user) {
     if (questionnaireId) {
       return (
@@ -138,9 +229,16 @@ const Surveys = () => {
                 <p className="text-sm text-muted-foreground">{t.questionnaires_manage.noAvailable}</p>
               ) : (
                 <>
-                  <h2 className="text-base font-semibold text-foreground">
-                    {questionnaireTitle(publicDetailQuestionnaire)}
-                  </h2>
+                  <div className="flex flex-wrap items-center gap-2">
+                    <h2 className="text-base font-semibold text-foreground">
+                      {questionnaireTitle(publicDetailQuestionnaire)}
+                    </h2>
+                    {publicDetailQuestionnaire.category && (
+                      <span className="rounded-full border border-primary/10 bg-primary/5 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-primary">
+                        {lang === 'en' ? publicDetailQuestionnaire.category.name_en : publicDetailQuestionnaire.category.name_hu}
+                      </span>
+                    )}
+                  </div>
                   {questionnaireDescription(publicDetailQuestionnaire) ? (
                     <p className="text-sm text-muted-foreground leading-relaxed">
                       {questionnaireDescription(publicDetailQuestionnaire)}
@@ -209,25 +307,131 @@ const Surveys = () => {
             <div className="surface-card p-6 text-sm text-muted-foreground">{t.loading}</div>
           ) : (
             <section className="surface-card space-y-4 p-5 sm:p-6">
-              <h2 className="text-sm font-semibold text-foreground">{t.subjects.selfQuestionnaireTitle}</h2>
-              {publicQuestionnaires.length === 0 ? (
-                <p className="text-sm text-muted-foreground">{t.questionnaires_manage.noAvailable}</p>
-              ) : (
+              <div className="flex flex-col gap-4">
+                <h2 className="text-sm font-semibold text-foreground">{t.subjects.selfQuestionnaireTitle}</h2>
+                {categories.length > 0 && (
+                  <div className="flex w-full items-center gap-2 overflow-x-auto pb-1 scrollbar-none -mx-4 px-4 sm:mx-0 sm:px-0">
+                    <button
+                      type="button"
+                      onClick={() => setSelectedCategory('all')}
+                      className={`shrink-0 rounded-full border px-3 py-1 text-xs font-medium transition-colors ${
+                        selectedCategory === 'all'
+                          ? 'border-primary bg-primary text-primary-foreground shadow-sm'
+                          : 'border-border bg-background text-muted-foreground hover:border-primary/50'
+                      }`}
+                    >
+                      {t.questionnaires_manage.filterAllTopics}
+                    </button>
+                    {categories.map((cat) => {
+                      const label = lang === 'en' ? cat.name_en : cat.name_hu;
+                      return (
+                        <button
+                          key={cat.id}
+                          type="button"
+                          onClick={() => setSelectedCategory(cat.key)}
+                          className={`shrink-0 rounded-full border px-3 py-1 text-xs font-medium transition-colors ${
+                            selectedCategory === cat.key
+                              ? 'border-primary bg-primary text-primary-foreground shadow-sm'
+                              : 'border-border bg-background text-muted-foreground hover:border-primary/50'
+                          }`}
+                        >
+                          {label}
+                        </button>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+
+              {filteredPublicQuestionnaires.length === 0 ? (
+                <p className="text-sm text-muted-foreground">
+                  {selectedCategory === 'all'
+                    ? t.questionnaires_manage.noAvailable
+                    : t.questionnaires_manage.noMatchingQuestionnaires}
+                </p>
+              ) : selectedCategory !== 'all' ? (
                 <div className="space-y-3">
-                  {publicQuestionnaires.map((questionnaire) => (
+                  {filteredPublicQuestionnaires.map((questionnaire) => (
                     <Link
                       key={questionnaire.id}
                       to={localePath(`/surveys/${questionnaire.id}`)}
                       className="block w-full rounded-2xl border border-border p-4 text-left transition-colors hover:border-primary/40"
                     >
-                      <p className="text-sm font-semibold text-foreground">{questionnaireTitle(questionnaire)}</p>
+                      <div className="flex flex-wrap items-center gap-2 mb-1">
+                        <span className="text-sm font-semibold text-foreground">{questionnaireTitle(questionnaire)}</span>
+                        {questionnaire.category && (
+                          <span className="rounded-full border border-primary/10 bg-primary/5 px-2 py-0.5 text-[9px] font-semibold uppercase tracking-wide text-primary">
+                            {lang === 'en' ? questionnaire.category.name_en : questionnaire.category.name_hu}
+                          </span>
+                        )}
+                      </div>
                       {questionnaireDescription(questionnaire) ? (
-                        <p className="mt-1 text-xs text-muted-foreground line-clamp-2">
+                        <p className="text-xs text-muted-foreground line-clamp-2">
                           {questionnaireDescription(questionnaire)}
                         </p>
                       ) : null}
                     </Link>
                   ))}
+                </div>
+              ) : (
+                <div className="space-y-6">
+                  {(() => {
+                    const categoriesWithSurveys = categories
+                      .map((cat) => {
+                        const items = filteredPublicQuestionnaires.filter((q) => q.category?.key === cat.key);
+                        return { category: cat, items };
+                      })
+                      .filter((group) => group.items.length > 0);
+
+                    const uncategorizedItems = filteredPublicQuestionnaires.filter(
+                      (q) => !q.category || !categories.some((cat) => cat.key === q.category?.key)
+                    );
+
+                    if (uncategorizedItems.length > 0) {
+                      categoriesWithSurveys.push({
+                        category: {
+                          id: 'uncategorized',
+                          key: 'uncategorized',
+                          name_hu: t.questionnaires_manage.uncategorized ?? 'Egyéb',
+                          name_en: t.questionnaires_manage.uncategorized ?? 'Other',
+                          is_active: true,
+                          sort_order: 9999,
+                        },
+                        items: uncategorizedItems,
+                      });
+                    }
+
+                    return categoriesWithSurveys.map(({ category, items }) => (
+                      <div key={category.id} className="space-y-2.5">
+                        <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground/80 border-b border-border/40 pb-1">
+                          {lang === 'en' ? category.name_en : category.name_hu}
+                        </h3>
+                        <div className="space-y-3">
+                          {items.map((questionnaire) => (
+                            <Link
+                              key={questionnaire.id}
+                              to={localePath(`/surveys/${questionnaire.id}`)}
+                              className="block w-full rounded-2xl border border-border p-4 text-left transition-colors hover:border-primary/40 bg-card/50"
+                            >
+                              <div className="flex flex-wrap items-center gap-2 mb-1">
+                                <span className="text-sm font-semibold text-foreground">{questionnaireTitle(questionnaire)}</span>
+                                {questionnaire.category && (
+                                  <span className="rounded-full border border-primary/10 bg-primary/5 px-2 py-0.5 text-[9px] font-semibold uppercase tracking-wide text-primary">
+                                    {lang === 'en' ? questionnaire.category.name_en : questionnaire.category.name_hu}
+                                  </span>
+                                )}
+                              </div>
+                              {questionnaireDescription(questionnaire) ? (
+                                <p className="text-xs text-muted-foreground line-clamp-2">
+                                  {questionnaireDescription(questionnaire)}
+                                </p>
+                              ) : null}
+                            </Link>
+                          ))}
+                        </div>
+                      </div>
+                    ));
+                  })()}
                 </div>
               )}
             </section>

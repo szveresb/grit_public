@@ -16,16 +16,36 @@ import SurveyInterpretationManager from '@/components/checkin/SurveyInterpretati
 import ReactMarkdown from 'react-markdown';
 import { toast } from 'sonner';
 import { friendlyDbError } from '@/lib/db-error';
-import { FPlus, FTrash, FPencil, FClose, FSave } from '@/components/icons/FreudIcons';
+import { FPlus, FTrash, FPencil, FClose, FSave, FList } from '@/components/icons/FreudIcons';
 import type { Database, Json } from '@/integrations/supabase/types';
 import { type LogicRule, type QuestionWithLogic } from '@/lib/logic-engine';
 import { validateLogicRules } from '@/lib/logic-validation';
+import { FALLBACK_QUESTIONNAIRE_CATEGORIES, isMissingQuestionnaireCategorySchema, getFallbackQuestionnaireCategory } from '@/lib/questionnaire-category-schema';
+import { getQuestionnaireCategoryErrorMessage } from '@/lib/questionnaire-category-ui';
 import {
   AlertDialog, AlertDialogAction, AlertDialogCancel, AlertDialogContent,
   AlertDialogDescription, AlertDialogFooter, AlertDialogHeader, AlertDialogTitle, AlertDialogTrigger,
 } from '@/components/ui/alert-dialog';
 
-type Questionnaire = Database['public']['Tables']['questionnaires']['Row'] & { score_ranges: ScoreRange[] | null };
+interface Category {
+  id: string;
+  key: string;
+  name_hu: string;
+  name_en: string;
+  description_hu?: string | null;
+  description_en?: string | null;
+  is_active: boolean;
+  sort_order: number;
+}
+
+type Questionnaire = Omit<
+  Database['public']['Tables']['questionnaires']['Row'],
+  'category_id'
+> & { 
+  category_id?: string | null;
+  score_ranges: ScoreRange[] | null;
+  category?: Category | null;
+};
 type Question = Database['public']['Tables']['questionnaire_questions']['Row'] & { 
   options: string[] | null; 
   answer_scores: Record<string, number> | null; 
@@ -86,6 +106,20 @@ const SelfChecks = () => {
   const [subscaleEditMode, setSubscaleEditMode] = useState<'form' | 'json'>('form');
   const [rawSubscalesJson, setRawSubscalesJson] = useState('[]');
   const [subscaleJsonError, setSubscaleJsonError] = useState<string | null>(null);
+
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [categorySchemaAvailable, setCategorySchemaAvailable] = useState(true);
+  const [formCategory, setFormCategory] = useState<string>('');
+  const [showCategoryEditor, setShowCategoryEditor] = useState(false);
+  const [editingCategory, setEditingCategory] = useState<Category | null>(null);
+  const [catKey, setCatKey] = useState('');
+  const [catNameHu, setCatNameHu] = useState('');
+  const [catNameEn, setCatNameEn] = useState('');
+  const [catDescHu, setCatDescHu] = useState('');
+  const [catDescEn, setCatDescEn] = useState('');
+  const [catSortOrder, setCatSortOrder] = useState(0);
+  const [catIsActive, setCatIsActive] = useState(true);
+  const [savingCategory, setSavingCategory] = useState(false);
 
   const [saving, setSaving] = useState(false);
   const [mockEditorAnswers, setMockEditorAnswers] = useState<Record<string, string>>({});
@@ -150,12 +184,62 @@ const SelfChecks = () => {
     setFormQuestions(c);
   };
 
-  const fetchQuestionnaires = useCallback(async () => {
-    const { data } = await supabase.from('questionnaires').select('*').order('created_at', { ascending: false });
-    setQuestionnaires((data ?? []) as unknown as Questionnaire[]);
+  const fetchCategories = useCallback(async () => {
+    const { data, error } = await supabase
+      .from('questionnaire_categories')
+      .select('*')
+      .order('sort_order', { ascending: true })
+      .order('key', { ascending: true });
+    if (error) {
+      if (isMissingQuestionnaireCategorySchema(error)) {
+        setCategorySchemaAvailable(false);
+        setCategories(FALLBACK_QUESTIONNAIRE_CATEGORIES as Category[]);
+        return;
+      }
+      console.error('Error fetching categories:', error);
+      toast.error(getQuestionnaireCategoryErrorMessage(error));
+      setCategories([]);
+    } else {
+      setCategorySchemaAvailable(true);
+      setCategories((data ?? []) as unknown as Category[]);
+    }
   }, []);
 
-  useEffect(() => { fetchQuestionnaires(); }, [fetchQuestionnaires]);
+  const fetchQuestionnaires = useCallback(async () => {
+    const result = await supabase
+      .from('questionnaires')
+      .select('*, category:questionnaire_categories(id, key, name_hu, name_en, description_hu, description_en, is_active, sort_order)')
+      .order('created_at', { ascending: false });
+
+    if (result.error && isMissingQuestionnaireCategorySchema(result.error)) {
+      const fallbackResult = await supabase
+        .from('questionnaires')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      if (fallbackResult.error) {
+        console.error('Error fetching questionnaires:', fallbackResult.error);
+        toast.error('Failed to load questionnaires');
+      } else {
+        const mapped = (fallbackResult.data ?? []).map((q) => ({
+          ...q,
+          category: getFallbackQuestionnaireCategory(q.title) as Category | null,
+        }));
+        setQuestionnaires(mapped as unknown as Questionnaire[]);
+      }
+    } else {
+      if (result.error) {
+        console.error('Error fetching questionnaires:', result.error);
+        toast.error('Failed to load questionnaires');
+      }
+      setQuestionnaires((result.data ?? []) as unknown as Questionnaire[]);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchQuestionnaires();
+    fetchCategories();
+  }, [fetchQuestionnaires, fetchCategories]);
 
   const loadQuestions = async (qId: string) => {
     setSelectedQ(qId); setAnswers({});
@@ -244,6 +328,7 @@ const SelfChecks = () => {
     setFormDesc('');
     setFormPublished(false);
     setFormRepeat('');
+    setFormCategory('');
     setFormScoringEnabled(false);
     setFormScoringMode('sum');
     setFormScoreRanges([]);
@@ -276,6 +361,7 @@ const SelfChecks = () => {
     setFormDesc(q.description ?? '');
     setFormPublished(q.is_published);
     setFormRepeat(q.repeat_interval ?? '');
+    setFormCategory(q.category_id ?? ''); // Story 4: Currently assigned category is preselected when editing
     setFormScoringEnabled(q.scoring_enabled ?? false);
     setFormScoringMode(q.scoring_mode ?? 'sum');
     setFormScoreRanges((q.score_ranges as ScoreRange[]) ?? []);
@@ -339,6 +425,12 @@ const SelfChecks = () => {
       return;
     }
 
+    if (categorySchemaAvailable && formPublished && !formCategory) {
+      toast.error(t.questionnaires_manage.noCategoryError);
+      setSaving(false);
+      return;
+    }
+
     let finalSubscales: Subscale[] = [];
     if (formScoringEnabled) {
       if (subscaleEditMode === 'json') {
@@ -388,7 +480,9 @@ const SelfChecks = () => {
     }
 
     if (editingId) {
-      const { error } = await supabase.from('questionnaires').update({ title: formTitle, description: formDesc || null, is_published: formPublished, repeat_interval: formRepeat || null, scoring_enabled: formScoringEnabled, scoring_mode: formScoringMode, score_ranges: (formScoreRanges.length ? formScoreRanges : null) as unknown as Json, interpretation_profile: formInterpretationProfile || null, subscales: finalSubscales as unknown as Json }).eq('id', editingId);
+      // Story 4: Saving a survey persists the selected category_id (update path)
+      const questionnaireUpdatePayload = { title: formTitle, description: formDesc || null, is_published: formPublished, repeat_interval: formRepeat || null, scoring_enabled: formScoringEnabled, scoring_mode: formScoringMode, score_ranges: (formScoreRanges.length ? formScoreRanges : null) as unknown as Json, interpretation_profile: formInterpretationProfile || null, subscales: finalSubscales as unknown as Json, ...(categorySchemaAvailable ? { category_id: formCategory || null } : {}) };
+      const { error } = await supabase.from('questionnaires').update(questionnaireUpdatePayload).eq('id', editingId);
       if (error) { toast.error(friendlyDbError(error)); setSaving(false); return; }
       await supabase.from('questionnaire_questions').delete().eq('questionnaire_id', editingId);
       const qRows = validQuestions.map((nq, i) => {
@@ -403,7 +497,9 @@ const SelfChecks = () => {
       }
       toast.success(t.questionnaires_manage.questionnaireUpdated);
     } else {
-      const { data: q, error } = await supabase.from('questionnaires').insert({ title: formTitle, description: formDesc || null, created_by: user.id, is_published: formPublished, repeat_interval: formRepeat || null, scoring_enabled: formScoringEnabled, scoring_mode: formScoringMode, score_ranges: (formScoreRanges.length ? formScoreRanges : null) as unknown as Json, interpretation_profile: formInterpretationProfile || null, subscales: finalSubscales as unknown as Json }).select('id').single();
+      // Story 4: Saving a survey persists the selected category_id (insert path)
+      const questionnaireInsertPayload = { title: formTitle, description: formDesc || null, created_by: user.id, is_published: formPublished, repeat_interval: formRepeat || null, scoring_enabled: formScoringEnabled, scoring_mode: formScoringMode, score_ranges: (formScoreRanges.length ? formScoreRanges : null) as unknown as Json, interpretation_profile: formInterpretationProfile || null, subscales: finalSubscales as unknown as Json, ...(categorySchemaAvailable ? { category_id: formCategory || null } : {}) };
+      const { data: q, error } = await supabase.from('questionnaires').insert(questionnaireInsertPayload).select('id').single();
       if (error || !q) { toast.error(error ? friendlyDbError(error) : t.errors.genericFailure); setSaving(false); return; }
       const qRows = validQuestions.map((nq, i) => {
         let answerScores: Record<string, number> | null = null;
@@ -428,9 +524,14 @@ const SelfChecks = () => {
   };
 
   const togglePublished = async (q: Questionnaire) => {
-    const { error } = await supabase.from('questionnaires').update({ is_published: !q.is_published }).eq('id', q.id);
+    const nextPublished = !q.is_published;
+    if (categorySchemaAvailable && nextPublished && !q.category_id) {
+      toast.error(t.questionnaires_manage.noCategoryError);
+      return;
+    }
+    const { error } = await supabase.from('questionnaires').update({ is_published: nextPublished }).eq('id', q.id);
     if (error) { toast.error(friendlyDbError(error)); return; }
-    toast.success(q.is_published ? t.questionnaires_manage.unpublishedToast : t.questionnaires_manage.publishedToast); fetchQuestionnaires();
+    toast.success(nextPublished ? t.questionnaires_manage.publishedToast : t.questionnaires_manage.unpublishedToast); fetchQuestionnaires();
   };
 
   const handleClone = async (q: Questionnaire) => {
@@ -447,6 +548,7 @@ const SelfChecks = () => {
       score_ranges: q.score_ranges,
       interpretation_profile: q.interpretation_profile,
       subscales: q.subscales,
+      ...(categorySchemaAvailable ? { category_id: q.category_id ?? null } : {}),
     }).select('id').single();
     if (error || !cloned) { toast.error(error ? friendlyDbError(error) : t.errors.genericFailure); return; }
     // Clone questions
@@ -716,7 +818,12 @@ const SelfChecks = () => {
   const questionnaireContent = (
     <>
       {isEditor && (
-        <div className="flex justify-end mb-4">
+        <div className="flex justify-end gap-2 mb-4">
+          {categorySchemaAvailable && (
+            <Button size="sm" variant="outline" className="rounded-2xl" onClick={() => setShowCategoryEditor(true)}>
+              <FList className="h-4 w-4 mr-1" /> {t.questionnaires_manage.manageCategoriesBtn}
+            </Button>
+          )}
           <Button size="sm" variant="outline" className="rounded-2xl" onClick={openCreate}>
             <FPlus className="h-4 w-4 mr-1" /> {t.create}
           </Button>
@@ -743,6 +850,22 @@ const SelfChecks = () => {
           <div className="flex items-center gap-3">
             <Switch checked={formPublished} onCheckedChange={setFormPublished} />
             <Label className="text-sm">{t.published}</Label>
+          </div>
+          <div className="space-y-2">
+            <Label className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">{t.questionnaires_manage.categoryLabel}</Label>
+            <select value={formCategory} onChange={e => setFormCategory(e.target.value)} disabled={!categorySchemaAvailable}
+              className="w-full border border-input rounded-2xl px-3 py-2 text-sm bg-background disabled:cursor-not-allowed disabled:opacity-60">
+              <option value="">-- {t.questionnaires_manage.selectCategoryPlaceholder || 'Select Category'} --</option>
+              {categories.filter(c => c.is_active || c.id === formCategory).map(c => (
+                <option key={c.id} value={c.id}>
+                  {c.name_hu} / {c.name_en}
+                  {!c.is_active && ` (${t.questionnaires_manage.categoryInactive})`}
+                </option>
+              ))}
+            </select>
+            {!categorySchemaAvailable && (
+              <p className="text-[11px] text-muted-foreground">Questionnaire categories are visible, but saving them is blocked until the Supabase migration is applied.</p>
+            )}
           </div>
           <div className="space-y-2">
             <Label className="text-xs font-semibold uppercase tracking-widest text-muted-foreground">{t.questionnaires_manage.repeatInterval}</Label>
@@ -1581,6 +1704,11 @@ const SelfChecks = () => {
               <button onClick={() => isEditor ? openEdit(q) : loadQuestions(q.id)} className="flex-1 text-left hover:opacity-80 transition-opacity min-w-0">
                 <div className="flex items-center gap-2 mb-1">
                   <span className="text-sm font-semibold">{q.title}</span>
+                  {q.category && (
+                    <span className="rounded-full border border-primary/10 bg-primary/5 px-2 py-0.5 text-[9px] font-semibold uppercase tracking-wide text-primary">
+                      {q.category.name_hu} / {q.category.name_en}
+                    </span>
+                  )}
                   {!q.is_published && <span className="text-[10px] px-2 py-0.5 rounded-full border border-border text-muted-foreground">{t.draft}</span>}
                 </div>
                 {q.description && <p className="text-xs text-muted-foreground leading-relaxed">{q.description}</p>}
@@ -1628,6 +1756,279 @@ const SelfChecks = () => {
 
         {questionnaireContent}
       </div>
+
+      {showCategoryEditor && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm p-4 animate-fade-in">
+          <div className="bg-card w-full max-w-2xl rounded-3xl border border-border p-6 shadow-2xl space-y-4 max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between border-b border-border/50 pb-3">
+              <h3 className="text-base font-bold text-foreground">
+                {t.questionnaires_manage.categoriesManagementTitle}
+              </h3>
+              <Button
+                variant="ghost"
+                size="icon"
+                onClick={() => {
+                  setShowCategoryEditor(false);
+                  setEditingCategory(null);
+                  setCatKey('');
+                  setCatNameHu('');
+                  setCatNameEn('');
+                  setCatDescHu('');
+                  setCatDescEn('');
+                  setCatSortOrder(0);
+                  setCatIsActive(true);
+                }}
+              >
+                <FClose className="h-4 w-4" />
+              </Button>
+            </div>
+
+            {/* List of existing categories */}
+            <div className="space-y-2">
+              <span className="text-[10px] font-bold uppercase tracking-wider text-muted-foreground">
+                {t.questionnaires_manage.existingCategoriesLabel}
+              </span>
+              {categories.length === 0 ? (
+                <p className="text-sm text-muted-foreground py-2">
+                  No categories found.
+                </p>
+              ) : (
+                <div className="divide-y divide-border/30 max-h-48 overflow-y-auto pr-1">
+                  {categories.map((cat) => (
+                    <div key={cat.id} className="py-2.5 flex items-center justify-between text-xs gap-3">
+                      <div className="min-w-0 flex-1">
+                        <div className="flex items-center gap-2">
+                          <span className="font-semibold text-foreground">
+                            {cat.name_hu} / {cat.name_en}
+                          </span>
+                          <span className="text-[10px] font-mono text-muted-foreground">
+                            ({cat.key})
+                          </span>
+                          {!cat.is_active && (
+                            <span className="rounded bg-destructive/10 px-1 py-0.5 text-[9px] font-semibold text-destructive uppercase">
+                              Inactive
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-1.5 shrink-0">
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-7 w-7 text-primary"
+                          onClick={() => {
+                            setEditingCategory(cat);
+                            setCatKey(cat.key);
+                            setCatNameHu(cat.name_hu);
+                            setCatNameEn(cat.name_en);
+                            setCatDescHu(cat.description_hu || '');
+                            setCatDescEn(cat.description_en || '');
+                            setCatSortOrder(cat.sort_order);
+                            setCatIsActive(cat.is_active);
+                          }}
+                        >
+                          <FPencil className="h-3.5 w-3.5" />
+                        </Button>
+                        <AlertDialog>
+                          <AlertDialogTrigger asChild>
+                            <Button
+                              variant="ghost"
+                              size="icon"
+                              className="h-7 w-7 text-destructive hover:text-destructive hover:bg-destructive/10"
+                            >
+                              <FTrash className="h-3.5 w-3.5" />
+                            </Button>
+                          </AlertDialogTrigger>
+                          <AlertDialogContent>
+                            <AlertDialogHeader>
+                              <AlertDialogTitle>{t.questionnaires_manage.deleteCategoryConfirmTitle}</AlertDialogTitle>
+                              <AlertDialogDescription>
+                                {t.questionnaires_manage.deleteCategoryConfirmDesc.replace('{name}', lang === 'en' ? cat.name_en : cat.name_hu)}
+                              </AlertDialogDescription>
+                            </AlertDialogHeader>
+                            <AlertDialogFooter>
+                              <AlertDialogCancel>{t.cancel}</AlertDialogCancel>
+                              <AlertDialogAction
+                                onClick={async () => {
+                                  try {
+                                    const { error } = await supabase
+                                      .from('questionnaire_categories')
+                                      .delete()
+                                      .eq('id', cat.id);
+                                    if (error) throw error;
+                                    toast.success(t.questionnaires_manage.categoryDeleted);
+                                    await fetchCategories();
+                                  } catch (err: any) {
+                                    const isFkError = err.code === '23503' || (err.message && err.message.includes('foreign key'));
+                                    toast.error(isFkError 
+                                      ? t.questionnaires_manage.deleteCategoryInUseError
+                                      : (err.message || 'Failed to delete category')
+                                    );
+                                  }
+                                }}
+                                className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
+                              >
+                                {t.delete}
+                              </AlertDialogAction>
+                            </AlertDialogFooter>
+                          </AlertDialogContent>
+                        </AlertDialog>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Add / Edit Form */}
+            <div className="border-t border-border/50 pt-4 space-y-3 bg-accent/5 p-4 rounded-2xl border border-border/40">
+              <span className="text-xs font-bold text-foreground block">
+                {editingCategory ? t.questionnaires_manage.editCategoryFormTitle : t.questionnaires_manage.newCategoryFormTitle}
+              </span>
+              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
+                <div className="space-y-1">
+                  <Label className="text-[10px] text-muted-foreground uppercase">{t.questionnaires_manage.categoryKey}</Label>
+                  <Input
+                    value={catKey}
+                    onChange={(e) => setCatKey(e.target.value.toLowerCase().replace(/[^a-z0-9_-]/g, ''))}
+                    placeholder="e.g. mood_state"
+                    disabled={!!editingCategory}
+                    className="rounded-xl h-9 text-xs"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-[10px] text-muted-foreground uppercase">{t.questionnaires_manage.categorySortOrder}</Label>
+                  <Input
+                    type="number"
+                    value={catSortOrder}
+                    onChange={(e) => setCatSortOrder(Number(e.target.value))}
+                    className="rounded-xl h-9 text-xs"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-[10px] text-muted-foreground uppercase">{t.questionnaires_manage.categoryNameHu}</Label>
+                  <Input
+                    value={catNameHu}
+                    onChange={(e) => setCatNameHu(e.target.value)}
+                    placeholder="pl. Hangulat & érzelmi állapot"
+                    className="rounded-xl h-9 text-xs"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-[10px] text-muted-foreground uppercase">{t.questionnaires_manage.categoryNameEn}</Label>
+                  <Input
+                    value={catNameEn}
+                    onChange={(e) => setCatNameEn(e.target.value)}
+                    placeholder="e.g. Mood & emotional state"
+                    className="rounded-xl h-9 text-xs"
+                  />
+                </div>
+                <div className="space-y-1 sm:col-span-2">
+                  <Label className="text-[10px] text-muted-foreground uppercase">{t.questionnaires_manage.categoryDescHu}</Label>
+                  <Textarea
+                    value={catDescHu}
+                    onChange={(e) => setCatDescHu(e.target.value)}
+                    placeholder="pl. Kérdőívek a levert hangulatról..."
+                    className="rounded-xl min-h-[60px] text-xs resize-none"
+                  />
+                </div>
+                <div className="space-y-1 sm:col-span-2">
+                  <Label className="text-[10px] text-muted-foreground uppercase">{t.questionnaires_manage.categoryDescEn}</Label>
+                  <Textarea
+                    value={catDescEn}
+                    onChange={(e) => setCatDescEn(e.target.value)}
+                    placeholder="e.g. Questionnaires about low mood..."
+                    className="rounded-xl min-h-[60px] text-xs resize-none"
+                  />
+                </div>
+              </div>
+
+              <div className="flex items-center gap-3 pt-1">
+                <Switch checked={catIsActive} onCheckedChange={setCatIsActive} />
+                <Label className="text-xs font-semibold text-foreground uppercase">{t.questionnaires_manage.categoryIsActive}</Label>
+              </div>
+
+              <div className="flex justify-end gap-2 pt-2 border-t border-border/10">
+                {editingCategory && (
+                  <Button
+                    type="button"
+                    variant="ghost"
+                    size="sm"
+                    className="rounded-xl text-xs"
+                    onClick={() => {
+                      setEditingCategory(null);
+                      setCatKey('');
+                      setCatNameHu('');
+                      setCatNameEn('');
+                      setCatDescHu('');
+                      setCatDescEn('');
+                      setCatSortOrder(0);
+                      setCatIsActive(true);
+                    }}
+                  >
+                    {t.cancel}
+                  </Button>
+                )}
+                <Button
+                  type="button"
+                  size="sm"
+                  disabled={savingCategory || !catKey || !catNameHu || !catNameEn}
+                  className="rounded-xl text-xs bg-primary text-primary-foreground hover:bg-primary/95 px-4"
+                  onClick={async () => {
+                    setSavingCategory(true);
+                    try {
+                      if (editingCategory) {
+                        const { error } = await supabase
+                          .from('questionnaire_categories')
+                          .update({
+                            name_hu: catNameHu,
+                            name_en: catNameEn,
+                            description_hu: catDescHu || null,
+                            description_en: catDescEn || null,
+                            sort_order: catSortOrder,
+                            is_active: catIsActive,
+                          })
+                          .eq('id', editingCategory.id);
+                        if (error) throw error;
+                        toast.success(t.questionnaires_manage.categoryUpdated);
+                      } else {
+                        const { error } = await supabase
+                          .from('questionnaire_categories')
+                          .insert({
+                            key: catKey,
+                            name_hu: catNameHu,
+                            name_en: catNameEn,
+                            description_hu: catDescHu || null,
+                            description_en: catDescEn || null,
+                            sort_order: catSortOrder,
+                            is_active: catIsActive,
+                          });
+                        if (error) throw error;
+                        toast.success(t.questionnaires_manage.categoryCreated);
+                      }
+                      setEditingCategory(null);
+                      setCatKey('');
+                      setCatNameHu('');
+                      setCatNameEn('');
+                      setCatDescHu('');
+                      setCatDescEn('');
+                      setCatSortOrder(0);
+                      setCatIsActive(true);
+                      await fetchCategories();
+                    } catch (err: any) {
+                      toast.error(err.message || 'Failed to save category');
+                    } finally {
+                      setSavingCategory(false);
+                    }
+                  }}
+                >
+                  {savingCategory ? '...' : editingCategory ? t.save : t.create}
+                </Button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </DashboardLayout>
   );
 };

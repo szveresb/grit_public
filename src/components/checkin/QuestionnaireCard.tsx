@@ -39,6 +39,7 @@ interface QuestionnaireCardProps {
   activePanel: PanelMode;
   onPanelChange: (mode: PanelMode) => void;
   historyContent: ReactNode;
+  categoryLabel?: string | null;
 }
 
 const QuestionnaireCard = ({
@@ -65,6 +66,7 @@ const QuestionnaireCard = ({
   activePanel,
   onPanelChange,
   historyContent,
+  categoryLabel,
 }: QuestionnaireCardProps) => {
   const isMobile = useIsMobile();
 
@@ -82,6 +84,11 @@ const QuestionnaireCard = ({
         <div className="space-y-2">
           <div className="flex flex-wrap items-center gap-2">
             <h4 className="text-base font-semibold leading-tight text-foreground">{title}</h4>
+            {categoryLabel && (
+              <span className="rounded-full border border-primary/10 bg-primary/5 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-primary">
+                {categoryLabel}
+              </span>
+            )}
             <span className="rounded-full border border-border px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
               {repeatLabel}
             </span>
@@ -176,6 +183,11 @@ const QuestionnaireCard = ({
             <h3 className="min-w-0 text-base font-semibold leading-tight text-foreground">
               {title}
             </h3>
+            {categoryLabel && (
+              <span className="rounded-full border border-primary/10 bg-primary/5 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-primary">
+                {categoryLabel}
+              </span>
+            )}
             <span className="rounded-full border border-border px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-muted-foreground">
               {repeatLabel}
             </span>

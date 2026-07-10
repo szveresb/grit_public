@@ -21,6 +21,11 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
+import { Checkbox } from '@/components/ui/checkbox';
+import { cn } from '@/lib/utils';
+import { ChevronDown, SlidersHorizontal } from 'lucide-react';
 import ScoreResults from './ScoreResults';
 import ScoreHistory from './ScoreHistory';
 import QuestionnaireCard from './QuestionnaireCard';
@@ -28,11 +33,31 @@ import { evaluateLogicRules, computeVisiblePath, getSkippedQuestionIds, hasBranc
 import type { QuestionWithLogic, LogicRule } from '@/lib/logic-engine';
 import { type ScoreRange } from '@/lib/score-interpretation';
 import type { Database } from '@/integrations/supabase/types';
+import {
+  FALLBACK_QUESTIONNAIRE_CATEGORIES,
+  getFallbackQuestionnaireCategory,
+  isMissingQuestionnaireCategorySchema,
+  QUESTIONNAIRE_SELECT_BASE,
+  QUESTIONNAIRE_SELECT_WITH_CATEGORIES,
+} from '@/lib/questionnaire-category-schema';
+import { getQuestionnaireCategoryErrorMessage } from '@/lib/questionnaire-category-ui';
 
-type Questionnaire = Database['public']['Tables']['questionnaires']['Row'] & {
+type Questionnaire = Omit<
+  Database['public']['Tables']['questionnaires']['Row'],
+  'category_id'
+> & {
+  category_id?: string | null;
   score_ranges: ScoreRange[] | null;
   title_localized: Record<string, string> | null;
   description_localized: Record<string, string> | null;
+  category?: {
+    id: string;
+    key: string;
+    name_hu: string;
+    name_en: string;
+    is_active: boolean;
+    sort_order: number;
+  } | null;
 };
 
 type Question = Omit<
@@ -101,6 +126,20 @@ const QuestionnaireFiller: React.FC<QuestionnaireFillerProps> = ({ onCompleted, 
   const [sortMode, setSortMode] = useState<SortMode>('urgent');
   const dateLocale = getDateLocale(lang);
 
+  interface Category {
+    id: string;
+    key: string;
+    name_hu: string;
+    name_en: string;
+    is_active: boolean;
+    sort_order: number;
+  }
+  const [categories, setCategories] = useState<Category[]>([]);
+  const [selectedCategoryKeys, setSelectedCategoryKeys] = useState<string[]>([]);
+  const [topicsOpen, setTopicsOpen] = useState(false);
+  const [mobileTopicsOpen, setMobileTopicsOpen] = useState(false);
+  const [categorySchemaAvailable, setCategorySchemaAvailable] = useState(true);
+
   const qName = (questionnaire: Questionnaire | undefined | null) => {
     if (!questionnaire) return '';
     if (lang === 'en') return questionnaire.title_localized?.en ?? questionnaire.title;
@@ -111,6 +150,36 @@ const QuestionnaireFiller: React.FC<QuestionnaireFillerProps> = ({ onCompleted, 
     if (!questionnaire) return null;
     if (lang === 'en') return questionnaire.description_localized?.en ?? questionnaire.description;
     return questionnaire.description_localized?.hu ?? questionnaire.description;
+  };
+
+  const getCategoryLabel = (category: Category) => (lang === 'en' ? category.name_en : category.name_hu);
+
+  const allTopicsSelected = categories.length > 0 && selectedCategoryKeys.length === categories.length;
+  const effectiveSelectedCategoryKeys = allTopicsSelected ? [] : selectedCategoryKeys;
+  const hasTopicFilter = effectiveSelectedCategoryKeys.length > 0;
+
+  const selectedTopicSummary = (() => {
+    if (!categories.length || !hasTopicFilter) return t.questionnaires_manage.filterAllTopics;
+
+    const selectedTopics = categories.filter((category) => effectiveSelectedCategoryKeys.includes(category.key));
+    if (selectedTopics.length === 0) return t.questionnaires_manage.filterAllTopics;
+    if (selectedTopics.length === 1) return getCategoryLabel(selectedTopics[0]);
+
+    return `${getCategoryLabel(selectedTopics[0])} +${selectedTopics.length - 1}`;
+  })();
+
+  const toggleCategoryKey = (categoryKey: string) => {
+    setSelectedCategoryKeys((current) =>
+      current.includes(categoryKey)
+        ? current.filter((key) => key !== categoryKey)
+        : [...current, categoryKey]
+    );
+  };
+
+  const toggleAllCategories = () => {
+    setSelectedCategoryKeys((current) =>
+      current.length === categories.length ? [] : categories.map((category) => category.key)
+    );
   };
 
   useEffect(() => {
@@ -149,18 +218,74 @@ const QuestionnaireFiller: React.FC<QuestionnaireFillerProps> = ({ onCompleted, 
           })()
         : Promise.resolve({ data: [] as LastResponse[] });
 
+      const categoriesPromise = supabase
+        .from('questionnaire_categories')
+        .select('id, key, name_hu, name_en, is_active, sort_order')
+        .eq('is_active', true)
+        .order('sort_order', { ascending: true });
+
       const questionnaireQuery = supabase
         .from('questionnaires')
-        .select('id, title, title_localized, description, description_localized, repeat_interval, scoring_enabled, scoring_mode, score_ranges, interpretation_profile, is_published, created_at, updated_at, created_by, snomed_code, subscales')
+        .select(QUESTIONNAIRE_SELECT_WITH_CATEGORIES)
         .eq('is_published', true)
         .order('created_at', { ascending: false });
 
-      const [questionnaireResult, responseResult] = await Promise.all([
-        readOnly ? supabase.from('questionnaires').select('id, title, title_localized, description, description_localized, repeat_interval, scoring_enabled, scoring_mode, score_ranges, interpretation_profile, is_published, created_at, updated_at, created_by, snomed_code, subscales').order('created_at', { ascending: false }) : questionnaireQuery,
+      const [questionnaireResult, responseResult, categoriesResult] = await Promise.all([
+        readOnly 
+          ? supabase.from('questionnaires').select(QUESTIONNAIRE_SELECT_WITH_CATEGORIES).order('created_at', { ascending: false }) 
+          : questionnaireQuery,
         responsePromise,
+        categoriesPromise,
       ]);
 
-      setQuestionnaires((questionnaireResult.data ?? []) as unknown as Questionnaire[]);
+      const missingCategorySchema =
+        isMissingQuestionnaireCategorySchema(categoriesResult.error) ||
+        isMissingQuestionnaireCategorySchema(questionnaireResult.error);
+
+      setCategorySchemaAvailable(!missingCategorySchema);
+
+      if (categoriesResult.error && !missingCategorySchema) {
+        console.error('Error fetching categories:', categoriesResult.error);
+        toast.error(getQuestionnaireCategoryErrorMessage(categoriesResult.error));
+      }
+
+      let questionnaireData = (questionnaireResult.data ?? []) as unknown as Questionnaire[];
+      if (questionnaireResult.error && missingCategorySchema) {
+        const fallbackQuery = readOnly
+          ? supabase
+              .from('questionnaires')
+              .select(QUESTIONNAIRE_SELECT_BASE)
+              .order('created_at', { ascending: false })
+          : supabase
+              .from('questionnaires')
+              .select(QUESTIONNAIRE_SELECT_BASE)
+              .eq('is_published', true)
+              .order('created_at', { ascending: false });
+        const fallbackResult = await fallbackQuery;
+        if (fallbackResult.error) {
+          console.error('Error fetching questionnaires:', fallbackResult.error);
+          toast.error(t.errors.genericFailure);
+        } else {
+          questionnaireData = (fallbackResult.data ?? []) as unknown as Questionnaire[];
+        }
+      } else if (questionnaireResult.error) {
+        console.error('Error fetching questionnaires:', questionnaireResult.error);
+        toast.error(t.errors.genericFailure);
+      }
+
+      const activeCats = missingCategorySchema
+        ? (FALLBACK_QUESTIONNAIRE_CATEGORIES as Category[])
+        : ((categoriesResult.data ?? []) as Category[]);
+      const questionnairesWithFallbackCategory = missingCategorySchema
+        ? questionnaireData.map((questionnaire) => ({
+            ...questionnaire,
+            category: questionnaire.category ?? getFallbackQuestionnaireCategory(questionnaire.title),
+          }))
+        : questionnaireData;
+      setCategories(activeCats);
+      setQuestionnaires(questionnairesWithFallbackCategory);
+
+      setSelectedCategoryKeys((prev) => prev.filter((key) => activeCats.some((category) => category.key === key)));
 
       const seen = new Set<string>();
       const latestResponses: LastResponse[] = [];
@@ -772,6 +897,12 @@ const QuestionnaireFiller: React.FC<QuestionnaireFillerProps> = ({ onCompleted, 
             else if (filter === 'completed') filtered = enriched.filter((e) => e.last);
             else if (filter !== 'all') filtered = enriched.filter((e) => (e.q.repeat_interval ?? 'once') === filter);
 
+            if (hasTopicFilter) {
+              filtered = filtered.filter((e) =>
+                e.q.category ? effectiveSelectedCategoryKeys.includes(e.q.category.key) : false
+              );
+            }
+
             const sorted = [...filtered].sort((a, b) => {
               if (sortMode === 'alpha') return qName(a.q).localeCompare(qName(b.q));
               if (sortMode === 'recent') return b.lastKey - a.lastKey;
@@ -780,45 +911,89 @@ const QuestionnaireFiller: React.FC<QuestionnaireFillerProps> = ({ onCompleted, 
 
             return (
               <>
-                <div className="flex flex-wrap items-center justify-between gap-3">
-                  <div className="flex flex-wrap gap-2">
-                    {[
-                      { id: 'all', label: tm.filterAll },
-                      { id: 'due', label: tm.filterDueNow },
-                      { id: 'completed', label: tm.filterCompleted },
-                    ].map((f) => (
-                      <button
-                        key={f.id}
-                        type="button"
-                        onClick={() => setFilter(f.id)}
-                        className={`rounded-full border px-3 py-1 text-xs font-medium transition-colors ${
-                          filter === f.id
-                            ? 'border-primary bg-primary text-primary-foreground'
-                            : 'border-border bg-background text-muted-foreground hover:border-primary/50'
-                        }`}
-                      >
-                        {f.label}
-                      </button>
-                    ))}
-                    {frequencies.length > 1 && (
-                      <Select
-                        value={frequencies.includes(filter) ? filter : '__freq__'}
-                        onValueChange={(v) => v !== '__freq__' && setFilter(v)}
-                      >
-                        <SelectTrigger
-                          className={`h-7 w-auto gap-1.5 rounded-full border px-3 text-xs font-medium ${
-                            frequencies.includes(filter)
-                              ? 'border-primary bg-primary text-primary-foreground'
-                              : 'border-border bg-background text-muted-foreground'
+                <div className="rounded-[28px] border border-border/60 bg-card/70 px-4 py-3 shadow-sm shadow-black/5 backdrop-blur-sm">
+                  <div className="hidden items-center gap-2 lg:grid lg:grid-cols-[auto,minmax(14rem,1fr),auto,auto]">
+                    <div className="inline-flex min-w-0 rounded-full border border-border/70 bg-muted/30 p-1">
+                      {[
+                        { id: 'all', label: tm.filterAll },
+                        { id: 'due', label: tm.filterDueNow },
+                        { id: 'completed', label: tm.filterCompleted },
+                      ].map((option) => (
+                        <button
+                          key={option.id}
+                          type="button"
+                          onClick={() => setFilter(option.id)}
+                          className={`rounded-full px-4 py-2 text-xs font-medium transition-colors ${
+                            filter === option.id
+                              ? 'bg-primary text-primary-foreground shadow-sm'
+                              : 'text-muted-foreground hover:bg-background hover:text-foreground'
                           }`}
                         >
-                          <SelectValue placeholder={tm.filterByFrequency}>
-                            {frequencies.includes(filter)
-                              ? getRepeatLabel(filter === 'once' ? null : filter)
-                              : tm.filterByFrequency}
-                          </SelectValue>
+                          {option.label}
+                        </button>
+                      ))}
+                    </div>
+
+                    {categories.length > 0 ? (
+                      <Popover open={topicsOpen} onOpenChange={setTopicsOpen}>
+                        <PopoverTrigger asChild>
+                          <button
+                            type="button"
+                            className="flex h-11 min-w-0 items-center justify-between gap-3 rounded-full border border-border/70 bg-background/90 px-4 text-sm text-foreground transition-colors hover:border-primary/40"
+                          >
+                            <div className="flex min-w-0 items-center gap-2">
+                              <SlidersHorizontal className="h-4 w-4 shrink-0 text-muted-foreground" />
+                              <span className="truncate">{selectedTopicSummary}</span>
+                            </div>
+                            <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground" />
+                          </button>
+                        </PopoverTrigger>
+                        <PopoverContent align="start" className="w-[22rem] rounded-[1.5rem] border-border/70 p-0">
+                          <div className="border-b border-border/60 px-4 py-3">
+                            <button
+                              type="button"
+                              onClick={toggleAllCategories}
+                              className="flex w-full items-center gap-3 rounded-2xl px-1 py-1 text-left text-sm text-foreground"
+                            >
+                              <Checkbox checked={allTopicsSelected || selectedCategoryKeys.length === 0} />
+                              <span>{tm.filterAllTopics}</span>
+                            </button>
+                          </div>
+                          <div className="max-h-80 space-y-1 overflow-y-auto p-2">
+                            {categories.map((category) => {
+                              const checked = selectedCategoryKeys.includes(category.key);
+                              return (
+                                <button
+                                  key={category.id}
+                                  type="button"
+                                  onClick={() => toggleCategoryKey(category.key)}
+                                  className={cn(
+                                    'flex w-full items-center gap-3 rounded-2xl px-3 py-2 text-left text-sm transition-colors hover:bg-muted/60',
+                                    checked && 'bg-muted/50'
+                                  )}
+                                >
+                                  <Checkbox checked={checked} />
+                                  <span className="leading-snug">{getCategoryLabel(category)}</span>
+                                </button>
+                              );
+                            })}
+                          </div>
+                        </PopoverContent>
+                      </Popover>
+                    ) : (
+                      <div />
+                    )}
+
+                    {frequencies.length > 1 && (
+                      <Select
+                        value={frequencies.includes(filter) ? filter : '__all_frequency__'}
+                        onValueChange={(value) => setFilter(value === '__all_frequency__' ? 'all' : value)}
+                      >
+                        <SelectTrigger className="h-11 min-w-[12rem] rounded-full border-border/70 bg-background/90 px-4 text-left text-sm">
+                          <SelectValue placeholder={tm.filterByFrequency} />
                         </SelectTrigger>
                         <SelectContent>
+                          <SelectItem value="__all_frequency__">{tm.filterByFrequency}</SelectItem>
                           {frequencies.map((freq) => (
                             <SelectItem key={freq} value={freq}>
                               {getRepeatLabel(freq === 'once' ? null : freq)}
@@ -827,23 +1002,135 @@ const QuestionnaireFiller: React.FC<QuestionnaireFillerProps> = ({ onCompleted, 
                         </SelectContent>
                       </Select>
                     )}
+
+                    <Select value={sortMode} onValueChange={(value) => setSortMode(value as SortMode)}>
+                      <SelectTrigger className="h-11 min-w-[13rem] rounded-full border-border/70 bg-background/90 px-4 text-sm">
+                        <span className="text-muted-foreground">{tm.sortLabel}:</span>
+                        <SelectValue />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="urgent">{tm.sortMostUrgent}</SelectItem>
+                        <SelectItem value="recent">{tm.sortRecentlyUsed}</SelectItem>
+                        <SelectItem value="alpha">{tm.sortAlphabetical}</SelectItem>
+                      </SelectContent>
+                    </Select>
                   </div>
-                  <Select value={sortMode} onValueChange={(v) => setSortMode(v as SortMode)}>
-                    <SelectTrigger className="h-8 w-auto gap-1.5 rounded-full text-xs">
-                      <span className="text-muted-foreground">{tm.sortLabel}:</span>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="urgent">{tm.sortMostUrgent}</SelectItem>
-                      <SelectItem value="recent">{tm.sortRecentlyUsed}</SelectItem>
-                      <SelectItem value="alpha">{tm.sortAlphabetical}</SelectItem>
-                    </SelectContent>
-                  </Select>
+
+                  <div className="flex flex-col gap-2 lg:hidden">
+                    <div className="-mx-1 overflow-x-auto px-1 pb-1">
+                      <div className="inline-flex min-w-max rounded-full border border-border/70 bg-muted/30 p-1">
+                        {[
+                          { id: 'all', label: tm.filterAll },
+                          { id: 'due', label: tm.filterDueNow },
+                          { id: 'completed', label: tm.filterCompleted },
+                        ].map((option) => (
+                          <button
+                            key={option.id}
+                            type="button"
+                            onClick={() => setFilter(option.id)}
+                            className={`rounded-full px-4 py-2 text-xs font-medium transition-colors ${
+                              filter === option.id
+                                ? 'bg-primary text-primary-foreground shadow-sm'
+                                : 'text-muted-foreground hover:bg-background hover:text-foreground'
+                            }`}
+                          >
+                            {option.label}
+                          </button>
+                        ))}
+                      </div>
+                    </div>
+
+                    {categories.length > 0 && (
+                      <>
+                        <button
+                          type="button"
+                          onClick={() => setMobileTopicsOpen(true)}
+                          className="flex h-11 items-center justify-between gap-3 rounded-full border border-border/70 bg-background/90 px-4 text-sm text-foreground"
+                        >
+                          <div className="flex min-w-0 items-center gap-2">
+                            <SlidersHorizontal className="h-4 w-4 shrink-0 text-muted-foreground" />
+                            <span className="truncate">{selectedTopicSummary}</span>
+                          </div>
+                          <ChevronDown className="h-4 w-4 shrink-0 text-muted-foreground" />
+                        </button>
+
+                        <Sheet open={mobileTopicsOpen} onOpenChange={setMobileTopicsOpen}>
+                          <SheetContent side="bottom" className="rounded-t-[1.75rem] px-0 pb-6">
+                            <SheetHeader className="px-5 pb-3 text-left">
+                              <SheetTitle>{tm.categoryLabel}</SheetTitle>
+                            </SheetHeader>
+                            <div className="space-y-1 px-3">
+                              <button
+                                type="button"
+                                onClick={toggleAllCategories}
+                                className="flex w-full items-center gap-3 rounded-2xl border border-border/60 px-4 py-3 text-left text-sm"
+                              >
+                                <Checkbox checked={allTopicsSelected || selectedCategoryKeys.length === 0} />
+                                <span>{tm.filterAllTopics}</span>
+                              </button>
+                              <div className="max-h-[50vh] space-y-1 overflow-y-auto pt-2">
+                                {categories.map((category) => {
+                                  const checked = selectedCategoryKeys.includes(category.key);
+                                  return (
+                                    <button
+                                      key={category.id}
+                                      type="button"
+                                      onClick={() => toggleCategoryKey(category.key)}
+                                      className={cn(
+                                        'flex w-full items-center gap-3 rounded-2xl px-4 py-3 text-left text-sm transition-colors hover:bg-muted/60',
+                                        checked && 'bg-muted/50'
+                                      )}
+                                    >
+                                      <Checkbox checked={checked} />
+                                      <span className="leading-snug">{getCategoryLabel(category)}</span>
+                                    </button>
+                                  );
+                                })}
+                              </div>
+                            </div>
+                          </SheetContent>
+                        </Sheet>
+                      </>
+                    )}
+
+                    <div className={`grid gap-2 ${frequencies.length > 1 ? 'grid-cols-2' : 'grid-cols-1'}`}>
+                      {frequencies.length > 1 && (
+                        <Select
+                          value={frequencies.includes(filter) ? filter : '__all_frequency__'}
+                          onValueChange={(value) => setFilter(value === '__all_frequency__' ? 'all' : value)}
+                        >
+                          <SelectTrigger className="h-11 rounded-full border-border/70 bg-background/90 px-4 text-left text-sm">
+                            <SelectValue placeholder={tm.filterByFrequency} />
+                          </SelectTrigger>
+                          <SelectContent>
+                            <SelectItem value="__all_frequency__">{tm.filterByFrequency}</SelectItem>
+                            {frequencies.map((freq) => (
+                              <SelectItem key={freq} value={freq}>
+                                {getRepeatLabel(freq === 'once' ? null : freq)}
+                              </SelectItem>
+                            ))}
+                          </SelectContent>
+                        </Select>
+                      )}
+
+                      <Select value={sortMode} onValueChange={(value) => setSortMode(value as SortMode)}>
+                        <SelectTrigger className="h-11 rounded-full border-border/70 bg-background/90 px-4 text-sm">
+                          <span className="text-muted-foreground">{tm.sortLabel}:</span>
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="urgent">{tm.sortMostUrgent}</SelectItem>
+                          <SelectItem value="recent">{tm.sortRecentlyUsed}</SelectItem>
+                          <SelectItem value="alpha">{tm.sortAlphabetical}</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                  </div>
                 </div>
 
                 {sorted.length === 0 ? (
                   <p className="text-sm text-muted-foreground">{tm.noMatchingQuestionnaires}</p>
-                ) : (
+                ) : hasTopicFilter ? (
                   <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
                     {sorted.map(({ q: questionnaire, last: lastCompletion, available, nextDue }) => {
                       const description = qDescription(questionnaire);
@@ -867,6 +1154,13 @@ const QuestionnaireFiller: React.FC<QuestionnaireFillerProps> = ({ onCompleted, 
                           key={questionnaire.id}
                           title={qName(questionnaire)}
                           description={description}
+                          categoryLabel={
+                            questionnaire.category
+                              ? lang === 'en'
+                                ? questionnaire.category.name_en
+                                : questionnaire.category.name_hu
+                              : null
+                          }
                           repeatLabel={getRepeatLabel(questionnaire.repeat_interval)}
                           metaFrequencyLabel={tm.metaFrequency}
                           metaFrequencyValue={getRepeatLabel(questionnaire.repeat_interval)}
@@ -899,6 +1193,105 @@ const QuestionnaireFiller: React.FC<QuestionnaireFillerProps> = ({ onCompleted, 
                       );
                     })}
                   </div>
+                ) : (
+                  <div className="space-y-8 animate-fade-in">
+                    {(() => {
+                      const categoriesWithSurveys = categories
+                        .map((cat) => {
+                          const items = sorted.filter((item) => item.q.category?.key === cat.key);
+                          return { category: cat, items };
+                        })
+                        .filter((group) => group.items.length > 0);
+
+                      const uncategorizedItems = sorted.filter(
+                        (item) => !item.q.category || !categories.some((cat) => cat.key === item.q.category?.key)
+                      );
+
+                      if (uncategorizedItems.length > 0) {
+                        categoriesWithSurveys.push({
+                          category: {
+                            id: 'uncategorized',
+                            key: 'uncategorized',
+                            name_hu: tm.uncategorized ?? 'Egyéb',
+                            name_en: tm.uncategorized ?? 'Other',
+                            is_active: true,
+                            sort_order: 9999,
+                          },
+                          items: uncategorizedItems,
+                        });
+                      }
+
+                      return categoriesWithSurveys.map(({ category, items }) => (
+                        <div key={category.id} className="space-y-3">
+                          <h3 className="text-xs font-bold uppercase tracking-wider text-muted-foreground/80 border-b border-border/40 pb-1.5">
+                            {lang === 'en' ? category.name_en : category.name_hu}
+                          </h3>
+                          <div className="grid grid-cols-1 gap-4 md:grid-cols-2 xl:grid-cols-3">
+                            {items.map(({ q: questionnaire, last: lastCompletion, available, nextDue }) => {
+                              const description = qDescription(questionnaire);
+                              const cardPanelMode =
+                                activePanel?.questionnaireId === questionnaire.id ? activePanel.mode : null;
+
+                              const lastValue = lastCompletion
+                                ? formatDistanceToNow(new Date(lastCompletion.completed_at), {
+                                    addSuffix: true,
+                                    locale: dateLocale,
+                                  })
+                                : tm.metaNever;
+
+                              let nextDueValue: string;
+                              if (!nextDue) nextDueValue = tm.metaNotScheduled;
+                              else if (available) nextDueValue = tm.metaDueNow;
+                              else nextDueValue = format(nextDue, 'PP', { locale: dateLocale });
+
+                              return (
+                                <QuestionnaireCard
+                                  key={questionnaire.id}
+                                  title={qName(questionnaire)}
+                                  description={description}
+                                  categoryLabel={
+                                    questionnaire.category
+                                      ? lang === 'en'
+                                        ? questionnaire.category.name_en
+                                        : questionnaire.category.name_hu
+                                      : null
+                                  }
+                                  repeatLabel={getRepeatLabel(questionnaire.repeat_interval)}
+                                  metaFrequencyLabel={tm.metaFrequency}
+                                  metaFrequencyValue={getRepeatLabel(questionnaire.repeat_interval)}
+                                  metaLastCompletionLabel={tm.metaLastCompletion}
+                                  metaLastCompletionValue={lastValue}
+                                  metaNextDueLabel={tm.metaNextDue}
+                                  metaNextDueValue={nextDueValue}
+                                  available={available}
+                                  canReadMore={(description?.length ?? 0) > DESCRIPTION_TOGGLE_THRESHOLD}
+                                  onStart={() => loadQuestions(questionnaire.id)}
+                                  startLabel={tm.startQuestionnaire}
+                                  historyLabel={tm.viewQuestionnaireHistory}
+                                  availableNowLabel={tm.availableNow}
+                                  expandLabel={tm.expandDescription}
+                                  completedLabel={tm.alreadyCompleted}
+                                  closeLabel={t.ui.close}
+                                  detailPanelTitle={tm.detailPanelTitle}
+                                  activePanel={cardPanelMode}
+                                  onPanelChange={(mode) =>
+                                    setActivePanel(mode ? { questionnaireId: questionnaire.id, mode } : null)
+                                  }
+                                  historyContent={
+                                    <ScoreHistory
+                                      questionnaireId={questionnaire.id}
+                                      emptyMessage={tm.noHistoryForQuestionnaire}
+                                      compact
+                                    />
+                                  }
+                                />
+                              );
+                            })}
+                          </div>
+                        </div>
+                      ));
+                    })()}
+                  </div>
                 )}
               </>
             );
@@ -910,3 +1303,4 @@ const QuestionnaireFiller: React.FC<QuestionnaireFillerProps> = ({ onCompleted, 
 };
 
 export default QuestionnaireFiller;
+
