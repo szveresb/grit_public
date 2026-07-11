@@ -241,11 +241,14 @@ const ScoreHistory = ({
 
     if (answerCache[responseId]) return;
 
-    const { data } = await supabase
+    const { data, error } = await supabase
       .from('questionnaire_answers')
       .select('answer, questionnaire_questions(question_text, sort_order)')
-      .eq('response_id', responseId)
-      .order('questionnaire_questions(sort_order)' as never);
+      .eq('response_id', responseId);
+
+    if (error) {
+      console.error('Error fetching questionnaire answers:', error);
+    }
 
     const details: AnswerDetail[] = ((data ?? []) as Array<{
       answer: unknown;
