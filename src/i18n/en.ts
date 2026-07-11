@@ -707,17 +707,6 @@ export const en: Dictionary = {
     moodPulses: 'Quick Pulse entries',
   },
 
-  betaGate: {
-    closedBeta: 'Closed Beta',
-    description: 'We are currently in a private testing phase. Please enter your invite code to gain access.',
-    placeholder: 'INVITE CODE',
-    verifying: 'Verifying...',
-    submit: 'Enter Platform',
-    accessGranted: 'Access granted!',
-    invalidCode: 'Invalid or already used invite code.',
-    genericError: 'An error occurred.',
-  },
-
   error: {
     submit: 'Failed to submit. Please try again.',
     load: 'Failed to load content.',

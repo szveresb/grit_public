@@ -685,17 +685,6 @@ export interface Dictionary {
     moodPulses: string;
   };
 
-  betaGate: {
-    closedBeta: string;
-    description: string;
-    placeholder: string;
-    verifying: string;
-    submit: string;
-    accessGranted: string;
-    invalidCode: string;
-    genericError: string;
-  };
-
   error: {
     submit: string;
     load: string;

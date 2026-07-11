@@ -678,17 +678,6 @@ export const hu: Dictionary = {
     moodPulses: 'Hangulat pulzus bejegyzések',
   },
 
-  betaGate: {
-    closedBeta: 'Zárt béta',
-    description: 'Jelenleg zártkörű tesztelési szakaszban vagyunk. Add meg a meghívókódodat a hozzáféréshez.',
-    placeholder: 'MEGHÍVÓKÓD',
-    verifying: 'Ellenőrzés...',
-    submit: 'Belépés',
-    accessGranted: 'Hozzáférés engedélyezve!',
-    invalidCode: 'Érvénytelen vagy már felhasznált meghívókód.',
-    genericError: 'Hiba történt.',
-  },
-
   error: {
     submit: 'Sikertelen beküldés. Kérjük, próbálja újra.',
     load: 'Sikertelen betöltés.',
