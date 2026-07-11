@@ -683,6 +683,18 @@ export interface Dictionary {
     questionnaireResponses: string;
     observationsFhir: string;
     moodPulses: string;
+    reconciledLabel: string;
+  };
+
+  betaGate: {
+    closedBeta: string;
+    description: string;
+    placeholder: string;
+    verifying: string;
+    submit: string;
+    accessGranted: string;
+    invalidCode: string;
+    genericError: string;
   };
 
   error: {

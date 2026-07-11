@@ -64,7 +64,7 @@ export const useDualPerspectiveData = ({
       // 1. Fetch Self Mood Pulses
       const selfMoodPromise = supabase
         .from('mood_pulses')
-        .select('level, entry_date')
+        .select('level, entry_date, created_at')
         .eq('user_id', userId)
         .eq('subject_type', 'self')
         .gte('entry_date', startDate);
@@ -106,20 +106,23 @@ export const useDualPerspectiveData = ({
       }
       if (cancelled) return;
 
-      // Process into a daily map
-      const dailyMap: Record<string, { moodSum: number; moodCount: number; obsSum: number; obsCount: number }> = {};
-
+      // Map to track the newest pulse per date
+      const selfLatestMap: Record<string, { level: number; created_at: string }> = {};
       selfMoodRows.forEach((row) => {
-        if (!dailyMap[row.entry_date]) {
-          dailyMap[row.entry_date] = { moodSum: 0, moodCount: 0, obsSum: 0, obsCount: 0 };
+        const d = row.entry_date;
+        const rowCreatedAt = row.created_at || '';
+        const current = selfLatestMap[d];
+        if (!current || rowCreatedAt > current.created_at) {
+          selfLatestMap[d] = { level: row.level, created_at: rowCreatedAt };
         }
-        dailyMap[row.entry_date].moodSum += row.level;
-        dailyMap[row.entry_date].moodCount += 1;
       });
+
+      // Process observations into a daily map
+      const dailyMap: Record<string, { obsSum: number; obsCount: number }> = {};
 
       relativeObsRows.forEach((row) => {
         if (!dailyMap[row.logged_at]) {
-          dailyMap[row.logged_at] = { moodSum: 0, moodCount: 0, obsSum: 0, obsCount: 0 };
+          dailyMap[row.logged_at] = { obsSum: 0, obsCount: 0 };
         }
         dailyMap[row.logged_at].obsSum += row.intensity;
         dailyMap[row.logged_at].obsCount += 1;
@@ -131,12 +134,13 @@ export const useDualPerspectiveData = ({
       for (let i = days; i >= 0; i--) {
         const d = format(subDays(now, i), 'yyyy-MM-dd');
         const stats = dailyMap[d];
+        const selfLatest = selfLatestMap[d];
         points.push({
           date: d,
-          selfMood: stats?.moodCount ? stats.moodSum / stats.moodCount : null,
+          selfMood: selfLatest ? selfLatest.level : null,
           relativeIntensity: stats?.obsCount ? stats.obsSum / stats.obsCount : null,
           observationCount: stats?.obsCount || 0,
-          moodPulseCount: stats?.moodCount || 0,
+          moodPulseCount: selfLatest ? 1 : 0,
         });
       }
 

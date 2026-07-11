@@ -49,7 +49,7 @@ export const useMoodComparisonData = ({
       // 1. Fetch Self Mood Pulses
       const selfMoodPromise = supabase
         .from('mood_pulses')
-        .select('level, entry_date')
+        .select('level, entry_date, created_at')
         .eq('user_id', userId)
         .eq('subject_type', 'self')
         .is('subject_id', null)
@@ -60,7 +60,7 @@ export const useMoodComparisonData = ({
       if (compareSubjectIds.length > 0) {
         relativeMoodPromise = supabase
           .from('mood_pulses')
-          .select('level, entry_date, subject_id')
+          .select('level, entry_date, subject_id, created_at')
           .eq('user_id', userId)
           .eq('subject_type', 'relative')
           .in('subject_id', compareSubjectIds)
@@ -77,62 +77,53 @@ export const useMoodComparisonData = ({
       const selfMoodRows = selfMoodRes.data ?? [];
       const relativeMoodRows = relativeMoodRes?.data ?? [];
 
-      // Process daily entries. We bucket multiple entries in the same day and average them.
-      const dailyMap: Record<
-        string,
-        {
-          selfSum: number;
-          selfCount: number;
-          relatives: Record<string, { sum: number; count: number }>;
-        }
-      > = {};
-
-      const now = new Date();
-      // Initialize the daily map for the entire date range to ensure all days are represented
-      for (let i = days; i >= 0; i--) {
-        const d = format(subDays(now, i), 'yyyy-MM-dd');
-        dailyMap[d] = {
-          selfSum: 0,
-          selfCount: 0,
-          relatives: {},
-        };
-        compareSubjectIds.forEach((id) => {
-          dailyMap[d].relatives[id] = { sum: 0, count: 0 };
-        });
-      }
+      // Maps to track the newest pulse per date per subject
+      const selfLatestMap: Record<string, { level: number; created_at: string }> = {};
+      const relativeLatestMap: Record<string, Record<string, { level: number; created_at: string }>> = {};
 
       selfMoodRows.forEach((row) => {
         const d = row.entry_date;
-        if (dailyMap[d]) {
-          dailyMap[d].selfSum += row.level;
-          dailyMap[d].selfCount += 1;
+        const rowCreatedAt = row.created_at || '';
+        const current = selfLatestMap[d];
+        if (!current || rowCreatedAt > current.created_at) {
+          selfLatestMap[d] = { level: row.level, created_at: rowCreatedAt };
         }
       });
 
       relativeMoodRows.forEach((row) => {
         const d = row.entry_date;
         const id = row.subject_id;
-        if (id && dailyMap[d] && dailyMap[d].relatives[id]) {
-          dailyMap[d].relatives[id].sum += row.level;
-          dailyMap[d].relatives[id].count += 1;
+        const rowCreatedAt = row.created_at || '';
+        if (id) {
+          if (!relativeLatestMap[d]) {
+            relativeLatestMap[d] = {};
+          }
+          const current = relativeLatestMap[d][id];
+          if (!current || rowCreatedAt > current.created_at) {
+            relativeLatestMap[d][id] = { level: row.level, created_at: rowCreatedAt };
+          }
         }
       });
 
-      // Construct dynamic points
-      const points: MoodComparisonPoint[] = Object.entries(dailyMap)
-        .map(([date, stats]) => {
-          const pt: MoodComparisonPoint = {
-            date,
-            ts: parseISO(date).getTime(),
-            self: stats.selfCount > 0 ? stats.selfSum / stats.selfCount : null,
-          };
-          compareSubjectIds.forEach((id) => {
-            const relStats = stats.relatives[id];
-            pt[id] = relStats && relStats.count > 0 ? relStats.sum / relStats.count : null;
-          });
-          return pt;
-        })
-        .sort((a, b) => a.ts - b.ts);
+      const now = new Date();
+      // Initialize the daily list for the entire date range to ensure all days are represented
+      const points: MoodComparisonPoint[] = [];
+      for (let i = days; i >= 0; i--) {
+        const d = format(subDays(now, i), 'yyyy-MM-dd');
+        const selfLatest = selfLatestMap[d];
+        const pt: MoodComparisonPoint = {
+          date: d,
+          ts: parseISO(d).getTime(),
+          self: selfLatest ? selfLatest.level : null,
+        };
+        compareSubjectIds.forEach((id) => {
+          const relLatest = relativeLatestMap[d]?.[id];
+          pt[id] = relLatest ? relLatest.level : null;
+        });
+        points.push(pt);
+      }
+
+      points.sort((a, b) => a.ts - b.ts);
 
       // Track if each selected subject actually has data in the active window
       const hasDataMap: Record<string, boolean> = {};

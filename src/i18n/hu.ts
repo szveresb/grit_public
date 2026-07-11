@@ -676,6 +676,18 @@ export const hu: Dictionary = {
     questionnaireResponses: 'Kérdőív válaszok',
     observationsFhir: 'Megfigyelések (FHIR)',
     moodPulses: 'Hangulat pulzus bejegyzések',
+    reconciledLabel: 'összevonva {count} bejegyzésből',
+  },
+
+  betaGate: {
+    closedBeta: 'Zárt béta',
+    description: 'Jelenleg zártkörű tesztelési szakaszban vagyunk. Add meg a meghívókódodat a hozzáféréshez.',
+    placeholder: 'MEGHÍVÓKÓD',
+    verifying: 'Ellenőrzés...',
+    submit: 'Belépés',
+    accessGranted: 'Hozzáférés engedélyezve!',
+    invalidCode: 'Érvénytelen vagy már felhasznált meghívókód.',
+    genericError: 'Hiba történt.',
   },
 
   error: {

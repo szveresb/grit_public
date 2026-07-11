@@ -62,7 +62,8 @@ const DayDetailsSheet = ({
         .eq('user_id', userId)
         .eq('subject_type', 'self')
         .eq('entry_date', date)
-        .order('created_at');
+        .order('created_at', { ascending: false })
+        .limit(1);
 
       const obsPromise = relativeId
         ? supabase

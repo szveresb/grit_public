@@ -281,7 +281,7 @@ export const en: Dictionary = {
 
   questionnaires_manage: {
     title: 'Questionnaires',
-    subtitle: 'Check-ins to track how you\'re feeling.',
+    subtitle: 'Gentle check-ins to track how you\'re feeling.',
     noAvailable: 'No questionnaires available yet.',
     uncategorized: 'Other',
     selectCategoryPlaceholder: 'Select category',
@@ -705,6 +705,18 @@ export const en: Dictionary = {
     questionnaireResponses: 'Questionnaire Responses',
     observationsFhir: 'Observations (FHIR)',
     moodPulses: 'Quick Pulse entries',
+    reconciledLabel: 'reconciled from {count} rows',
+  },
+
+  betaGate: {
+    closedBeta: 'Closed Beta',
+    description: 'We are currently in a private testing phase. Please enter your invite code to gain access.',
+    placeholder: 'INVITE CODE',
+    verifying: 'Verifying...',
+    submit: 'Enter Platform',
+    accessGranted: 'Access granted!',
+    invalidCode: 'Invalid or already used invite code.',
+    genericError: 'An error occurred.',
   },
 
   error: {

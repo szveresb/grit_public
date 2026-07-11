@@ -80,13 +80,39 @@ const Export = () => {
       return obs;
     });
 
+    const rawPulses = pulsesRes.data ?? [];
+    const groupedPulses: Record<string, { canonical: any; rows: any[] }> = {};
+    rawPulses.forEach((p: any) => {
+      const subjectKey = p.subject_type === 'self' ? 'self' : (p.subject_id ?? 'unknown');
+      const key = `${p.entry_date}_${p.subject_type}_${subjectKey}`;
+      if (!groupedPulses[key]) {
+        groupedPulses[key] = { canonical: p, rows: [p] };
+      } else {
+        groupedPulses[key].rows.push(p);
+        const currentCanonical = groupedPulses[key].canonical;
+        const currentCreated = currentCanonical.created_at ? new Date(currentCanonical.created_at).getTime() : 0;
+        const pCreated = p.created_at ? new Date(p.created_at).getTime() : 0;
+        if (pCreated > currentCreated || (pCreated === currentCreated && p.id > currentCanonical.id)) {
+          groupedPulses[key].canonical = p;
+        }
+      }
+    });
+
+    const reconciledPulses = Object.values(groupedPulses).map((g) => {
+      const canonical = { ...g.canonical };
+      if (g.rows.length > 1) {
+        canonical.reconciled_from_n_rows = g.rows.length;
+      }
+      return canonical;
+    });
+
     const exportData = {
       disclaimer: t.export.disclaimer,
       exported_at: new Date().toISOString(),
       journal_entries: entriesRes.data ?? [],
       questionnaire_responses: responsesRes.data ?? [],
       observation_logs_fhir: fhirObservations,
-      mood_pulses: pulsesRes.data ?? [],
+      mood_pulses: reconciledPulses,
     };
 
     setPreviewData(exportData);
@@ -232,7 +258,10 @@ const Export = () => {
         csvContent += row + '\n';
       });
       (previewData.mood_pulses ?? []).filter((p: any) => inRange(p.entry_date)).forEach((p: any) => {
-        const row = ['mood_pulse', q(p.entry_date), '', q(p.label || ''), p.level, q(p.subject_type || '')].join(',');
+        const extra = p.reconciled_from_n_rows
+          ? `${p.subject_type || ''} (${t.export.reconciledLabel.replace('{count}', String(p.reconciled_from_n_rows))})`
+          : (p.subject_type || '');
+        const row = ['mood_pulse', q(p.entry_date), '', q(p.label || ''), p.level, q(extra)].join(',');
         csvContent += row + '\n';
       });
       (previewData.journal_entries ?? []).filter((e: any) => inRange(e.entry_date)).forEach((e: any) => {
@@ -400,14 +429,19 @@ const Export = () => {
                         </tr>
                       </thead>
                       <tbody>
-                        {pulsesF.map((p: any, i: number) => (
-                          <tr key={i}>
-                            <td className="border p-1">{p.entry_date}</td>
-                            <td className="border p-1 text-center">{p.level}</td>
-                            <td className="border p-1">{p.label}</td>
-                            <td className="border p-1">{p.subject_type}</td>
-                          </tr>
-                        ))}
+                        {pulsesF.map((p: any, i: number) => {
+                          const contextText = p.reconciled_from_n_rows
+                            ? `${p.subject_type || ''} (${t.export.reconciledLabel.replace('{count}', String(p.reconciled_from_n_rows))})`
+                            : (p.subject_type || '');
+                          return (
+                            <tr key={i}>
+                              <td className="border p-1">{p.entry_date}</td>
+                              <td className="border p-1 text-center">{p.level}</td>
+                              <td className="border p-1">{p.label}</td>
+                              <td className="border p-1">{contextText}</td>
+                            </tr>
+                          );
+                        })}
                       </tbody>
                     </table>
                   </div>

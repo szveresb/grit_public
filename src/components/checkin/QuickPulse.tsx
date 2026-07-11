@@ -157,32 +157,15 @@ const QuickPulse = ({
     let resultId: string | undefined;
     let error: unknown = null;
 
-    if (isUpdate && existingPulse) {
-      const { data, error: updErr } = await (supabase.from as any)('mood_pulses')
-        .update({ level, label })
-        .eq('id', existingPulse.id)
-        .select('id')
-        .single();
-      error = updErr;
-      resultId = (data as { id?: string } | null)?.id;
-    } else {
-      const insertPayload: Record<string, unknown> = {
-        user_id: user.id,
-        level,
-        label,
-        entry_date: format(entryDate, 'yyyy-MM-dd'),
-        subject_type: effectiveSubjectType,
-      };
-      if (effectiveSubjectType === 'relative' && effectiveSubjectId) {
-        insertPayload.subject_id = effectiveSubjectId;
-      }
-      const { data, error: insErr } = await (supabase.from as any)('mood_pulses')
-        .insert(insertPayload)
-        .select('id')
-        .single();
-      error = insErr;
-      resultId = (data as { id?: string } | null)?.id;
-    }
+    const { data: rpcData, error: rpcErr } = await supabase.rpc('save_mood_pulse', {
+      p_level: level,
+      p_label: label,
+      p_entry_date: format(entryDate, 'yyyy-MM-dd'),
+      p_subject_type: effectiveSubjectType,
+      p_subject_id: (effectiveSubjectType === 'relative' && effectiveSubjectId) ? effectiveSubjectId : null,
+    });
+    error = rpcErr;
+    resultId = rpcData?.id;
 
     if (error) {
       toast.error(friendlyDbError(error));
