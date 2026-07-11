@@ -293,6 +293,8 @@ export interface Dictionary {
   questionnaires_manage: {
     title: string;
     subtitle: string;
+    uncategorized: string;
+    selectCategoryPlaceholder: string;
     noAvailable: string;
     noHistoryForQuestionnaire: string;
     categoryLabel: string;

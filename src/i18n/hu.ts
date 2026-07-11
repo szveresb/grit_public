@@ -281,9 +281,10 @@ export const hu: Dictionary = {
 
   questionnaires_manage: {
     title: 'Kérdőívek',
-    subtitle: 'Gyengéd önvizsgálatok az érzéseid nyomon követéséhez.',
+    subtitle: 'Önvizsgálatok az érzéseid nyomon követéséhez.',
     noAvailable: 'Még nincsenek elérhető kérdőívek.',
     uncategorized: 'Egyéb',
+    selectCategoryPlaceholder: 'Válassz kategóriát',
     noHistoryForQuestionnaire: 'Ehhez a kérdőívhez még nincs kitöltési előzmény.',
     categoryLabel: 'Kategória',
     filterAllTopics: 'Minden téma',

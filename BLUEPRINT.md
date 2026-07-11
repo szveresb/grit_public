@@ -86,6 +86,8 @@ Survey managers can attach source studies (PDF upload, DOI/URL link, or manual d
 
 **[2026-07-10 16:10 CEST] Questionnaire category schema compatibility fallback implemented.** Traced today's breakage to frontend joins and direct reads against `public.questionnaire_categories` while the connected Lovable/Supabase project does not yet expose that table in the schema cache. `QuestionnaireFiller`, public `Surveys`, and admin `SelfChecks` now degrade to category-free questionnaire queries instead of hard-failing. The actual category feature remains backend-blocked until `supabase/migrations/20260710090000_questionnaire_categories.sql` is applied to the target project.
 
+**[2026-07-11 12:14 CEST] Dead beta gate code removed.** Audited the routing and auth guard flow and confirmed `BetaGate` plus `useBetaAccess` were orphaned: no active route referenced `/beta-gate`, and `ProtectedRoute` never enforced `profiles.beta_access`. Deleted the unused page and hook without changing current authentication or consent behavior. Verified with a fresh Docker `npm install && npm run build` production build.
+
 **Survey category admin CRUD management fully implemented.** Synchronized Hungarian and English i18n dictionaries for category creation, editing, and deletion. Refined the categories list to sort predictably using `sort_order` and `key`. Added support for defining and editing category descriptions (HU & EN) in the category admin overlay, and implemented a deletion button using an `AlertDialog` confirmation modal, catching DB constraint errors with a friendly localized toast. Enforced category assignments during survey creation, updates, and inline list-view publishing toggles, preventing questionnaires from being published category-free.
 
 **Public Survey Discovery category filtering implemented.** Added horizontal scrolling category filter pills to the public surveys listing in `Surveys.tsx` (for logged-out users). Sourced from active categories in the database (gracefully falling back to static defaults if the schema cache is not updated) and filtered public surveys dynamically. Handled localized empty states when zero surveys match.
@@ -107,3 +109,4 @@ Survey managers can attach source studies (PDF upload, DOI/URL link, or manual d
 ## Next Priority
 - Promoted schema changes to live database
 - Configure Lovable/Supabase backend Edge Function secrets (`GEMINI_API_KEY`)
+

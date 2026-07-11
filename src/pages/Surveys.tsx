@@ -137,7 +137,7 @@ const Surveys = () => {
         .eq('is_published', true)
         .maybeSingle();
 
-      let questionnaire = result.data;
+      let questionnaire: QuestionnaireRow | null = result.data as any;
       if (result.error && isMissingQuestionnaireCategorySchema(result.error)) {
         const fallback = await supabase
           .from('questionnaires')
@@ -149,12 +149,15 @@ const Surveys = () => {
         if (fallback.error) {
           console.error('Error loading survey detail:', fallback.error);
         } else {
-          questionnaire = fallback.data
-            ? {
-                ...fallback.data,
-                category: getFallbackQuestionnaireCategory(fallback.data.title),
-              }
-            : fallback.data;
+          if (fallback.data) {
+            questionnaire = ({
+              ...fallback.data,
+              category: getFallbackQuestionnaireCategory(fallback.data.title),
+              category_id: 'uncategorized'
+            } as unknown) as QuestionnaireRow;
+          } else {
+            questionnaire = null;
+          }
         }
       } else if (result.error) {
         console.error('Error loading survey detail:', result.error);

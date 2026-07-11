@@ -284,6 +284,7 @@ export const en: Dictionary = {
     subtitle: 'Gentle check-ins to track how you\'re feeling.',
     noAvailable: 'No questionnaires available yet.',
     uncategorized: 'Other',
+    selectCategoryPlaceholder: 'Select category',
     noHistoryForQuestionnaire: 'There is no fill history for this questionnaire yet.',
     categoryLabel: 'Category',
     filterAllTopics: 'All topics',

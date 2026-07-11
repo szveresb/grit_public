@@ -1038,7 +1038,7 @@ export type Database = {
             isOneToOne: false
             referencedRelation: "questionnaire_categories"
             referencedColumns: ["id"]
-          }
+          },
         ]
       }
       subjects: {
@@ -1100,7 +1100,6 @@ export type Database = {
           body_en: string
           body_hu: string
           citations: string[] | null
-          content: string | null
           created_at: string
           generated_by: string
           id: string
@@ -1113,7 +1112,6 @@ export type Database = {
           body_en: string
           body_hu: string
           citations?: string[] | null
-          content?: string | null
           created_at?: string
           generated_by: string
           id?: string
@@ -1126,7 +1124,6 @@ export type Database = {
           body_en?: string
           body_hu?: string
           citations?: string[] | null
-          content?: string | null
           created_at?: string
           generated_by?: string
           id?: string
