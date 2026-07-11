@@ -8,24 +8,14 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { toast } from 'sonner';
 import { FDownload } from '@/components/icons/FreudIcons';
-
-interface FhirObservation {
-  resourceType: 'Observation';
-  status: string;
-  subject: { reference: string };
-  effectiveDateTime: string;
-  code: {
-    coding: { system: string; code: string; display: string }[];
-  };
-  valueInteger: number;
-  component?: { code: { text: string }; valueString: string }[];
-}
+import { buildUserDataExport, buildTherapistExportData, deriveTherapistSummary } from '@/lib/user-data-export';
+import type { UserDataExport, TherapistExportSummary, FhirObservation } from '@/lib/user-data-export';
 
 const Export = () => {
   const { user } = useAuth();
   const { t, lang } = useLanguage();
   const [showPreview, setShowPreview] = useState(false);
-  const [previewData, setPreviewData] = useState<any>(null);
+  const [previewData, setPreviewData] = useState<UserDataExport | TherapistExportSummary | null>(null);
   const [previewType, setPreviewType] = useState<'all' | 'therapist'>('all');
   const [filterFrom, setFilterFrom] = useState<string>('');
   const [filterTo, setFilterTo] = useState<string>('');
@@ -33,178 +23,62 @@ const Export = () => {
   const handleExport = async () => {
     if (!user) return;
 
-    const [entriesRes, responsesRes, logsRes, conceptsRes, pulsesRes] = await Promise.all([
-      supabase.from('journal_entries').select('*').eq('user_id', user.id).order('entry_date'),
-      supabase.from('questionnaire_responses')
-        .select('*, questionnaires(title, snomed_code), questionnaire_answers(question_id, answer, questionnaire_questions(question_text))')
-        .eq('user_id', user.id),
-      supabase.from('observation_logs').select('*').eq('user_id', user.id).order('logged_at'),
-      supabase.from('observation_concepts').select('id, concept_code, name_en, bno_code'),
-      supabase.from('mood_pulses').select('*').eq('user_id', user.id).order('entry_date'),
-    ]);
-
-    const conceptMap: Record<string, { concept_code: string; name_en: string; bno_code?: string }> = {};
-    (conceptsRes.data ?? []).forEach((c: any) => {
-      conceptMap[c.id] = { concept_code: c.concept_code, name_en: c.name_en, bno_code: c.bno_code };
-    });
-
-    // Build FHIR Observations with localized BNO displays
-    const fhirObservations = (logsRes.data ?? []).map((log) => {
-      const concept = conceptMap[log.concept_id];
-      const coding: { system: string; code: string; display: string }[] = [
-        {
-          system: 'http://snomed.info/sct',
-          code: concept?.concept_code ?? 'unknown',
-          display: concept?.name_en ?? 'Unknown',
-        },
-      ];
-      if (concept?.bno_code) {
-        coding.push({
-          system: 'http://hl7.org/fhir/sid/icd-10',
-          code: concept.bno_code,
-          display: t.export.bnoLabels[concept.bno_code] ?? concept.bno_code,
-        });
-      }
-      const obs: FhirObservation = {
-        resourceType: 'Observation',
-        status: log.status ?? 'final',
-        subject: { reference: 'Patient/anonymous' },
-        effectiveDateTime: log.logged_at,
-        code: { coding },
-        valueInteger: log.intensity,
-      };
-      const components: { code: { text: string }; valueString: string }[] = [];
-      if (log.frequency) components.push({ code: { text: 'frequency' }, valueString: log.frequency });
-      if (log.context_modifier) components.push({ code: { text: 'context' }, valueString: log.context_modifier });
-      if (components.length > 0) obs.component = components;
-      return obs;
-    });
-
-    const rawPulses = pulsesRes.data ?? [];
-    const groupedPulses: Record<string, { canonical: any; rows: any[] }> = {};
-    rawPulses.forEach((p: any) => {
-      const subjectKey = p.subject_type === 'self' ? 'self' : (p.subject_id ?? 'unknown');
-      const key = `${p.entry_date}_${p.subject_type}_${subjectKey}`;
-      if (!groupedPulses[key]) {
-        groupedPulses[key] = { canonical: p, rows: [p] };
-      } else {
-        groupedPulses[key].rows.push(p);
-        const currentCanonical = groupedPulses[key].canonical;
-        const currentCreated = currentCanonical.created_at ? new Date(currentCanonical.created_at).getTime() : 0;
-        const pCreated = p.created_at ? new Date(p.created_at).getTime() : 0;
-        if (pCreated > currentCreated || (pCreated === currentCreated && p.id > currentCanonical.id)) {
-          groupedPulses[key].canonical = p;
-        }
-      }
-    });
-
-    const reconciledPulses = Object.values(groupedPulses).map((g) => {
-      const canonical = { ...g.canonical };
-      if (g.rows.length > 1) {
-        canonical.reconciled_from_n_rows = g.rows.length;
-      }
-      return canonical;
-    });
-
-    const exportData = {
-      disclaimer: t.export.disclaimer,
-      exported_at: new Date().toISOString(),
-      journal_entries: entriesRes.data ?? [],
-      questionnaire_responses: responsesRes.data ?? [],
-      observation_logs_fhir: fhirObservations,
-      mood_pulses: reconciledPulses,
-    };
-
-    setPreviewData(exportData);
-    setPreviewType('all');
-    setFilterFrom('');
-    setFilterTo('');
-    setShowPreview(true);
+    try {
+      const data = await buildUserDataExport(user.id, t.export.bnoLabels);
+      setPreviewData(data);
+      setPreviewType('all');
+      setFilterFrom('');
+      setFilterTo('');
+      setShowPreview(true);
+    } catch (err) {
+      console.error('Export failed:', err);
+      toast.error(t.export.exportFailed);
+    }
   };
 
   const handleTherapistExport = async () => {
     if (!user) return;
 
-    const [logsRes, conceptsRes, subjectsRes] = await Promise.all([
-      supabase.from('observation_logs').select('*').eq('user_id', user.id).order('logged_at'),
-      supabase.from('observation_concepts').select('id, concept_code, name_hu, name_en, bno_code'),
-      (supabase.from('subjects') as any).select('id, name, relationship_type').eq('user_id', user.id),
-    ]);
+    try {
+      const data = await buildTherapistExportData(user.id);
+      const logs = data.observation_logs;
+      const subjects = data.subjects;
 
-    const logs = logsRes.data ?? [];
-    const concepts = conceptsRes.data ?? [];
-    const subjects = subjectsRes.data ?? [];
-
-    if (logs.length === 0) {
-      toast.error(t.export.noObservations);
-      return;
-    }
-
-    const conceptMap: Record<string, any> = {};
-    concepts.forEach((c: any) => { conceptMap[c.id] = c; });
-
-    const subjectMap: Record<string, any> = {};
-    subjects.forEach((s: any) => { subjectMap[s.id] = s; });
-
-    const subjectGroups: Record<string, any> = {};
-
-    for (const log of logs) {
-      const subjectType = (log as any).subject_type ?? 'self';
-      const subjectId = (log as any).subject_id;
-      const subjectKey = subjectType === 'self' ? 'self' : (subjectId ?? 'unknown');
-      
-      if (!subjectGroups[subjectKey]) {
-        let label = t.subjects.selfLabel;
-        if (subjectType === 'relative' && subjectId && subjectMap[subjectId]) {
-          const s = subjectMap[subjectId];
-          const relLabel = t.subjects.relationshipTypes[s.relationship_type as keyof typeof t.subjects.relationshipTypes] ?? s.relationship_type;
-          label = `${s.name} (${relLabel})`;
-        } else if (subjectType === 'relative') {
-          label = t.subjects.otherLabel;
-        }
-        subjectGroups[subjectKey] = { subject_label: label, subject_type: subjectType, bno_groups: {} };
+      if (logs.length === 0) {
+        toast.error(t.export.noObservations);
+        return;
       }
 
-      const concept = conceptMap[log.concept_id];
-      const bno = concept?.bno_code ?? 'unknown';
-      if (!subjectGroups[subjectKey].bno_groups[bno]) {
-        subjectGroups[subjectKey].bno_groups[bno] = { bno_code: bno, observations: [] };
-      }
-      subjectGroups[subjectKey].bno_groups[bno].observations.push({
-        concept_localized: lang === 'hu' ? (concept?.name_hu ?? concept?.name_en) : concept?.name_en,
-        intensity: log.intensity,
-        logged_at: log.logged_at,
-        context: log.context_modifier,
-      });
+      const summary = deriveTherapistSummary(
+        logs,
+        subjects,
+        t.export.bnoLabels,
+        t.subjects.relationshipTypes,
+        t.subjects.selfLabel,
+        t.subjects.otherLabel,
+        lang
+      );
+      summary.disclaimer = t.export.disclaimer;
+
+      setPreviewData(summary);
+      setPreviewType('therapist');
+      setShowPreview(true);
+    } catch (err) {
+      console.error('Export failed:', err);
+      toast.error(t.export.exportFailed);
     }
+  };
 
-    const subjectSummaries = Object.values(subjectGroups).map((sg: any) => ({
-      subject_label: sg.subject_label,
-      subject_type: sg.subject_type,
-      bno_summary: Object.values(sg.bno_groups).map((group: any) => {
-        const intensities = group.observations.map((o: any) => o.intensity);
-        const dates = group.observations.map((o: any) => o.logged_at).sort();
-        return {
-          bno_code: group.bno_code,
-          bno_label_localized: t.export.bnoLabels[group.bno_code] ?? group.bno_code,
-          observation_count: group.observations.length,
-          avg_intensity: Math.round((intensities.reduce((a: any, b: any) => a + b, 0) / intensities.length) * 100) / 100,
-          date_range: { from: dates[0], to: dates[dates.length - 1] },
-          observations: group.observations,
-        };
-      }),
-    }));
-
-    const exportData = {
-      disclaimer: t.export.disclaimer,
-      export_type: 'therapist_summary',
-      exported_at: new Date().toISOString(),
-      subjects: subjectSummaries,
-    };
-
-    setPreviewData(exportData);
-    setPreviewType('therapist');
-    setShowPreview(true);
+  const handleJsonDownload = () => {
+    if (!previewData || previewType !== 'all') return;
+    const blob = new Blob([JSON.stringify(previewData, null, 2)], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `grithu-export-${new Date().toISOString().split('T')[0]}.json`;
+    a.click();
+    URL.revokeObjectURL(url);
+    toast.success(t.profile.dataExported);
   };
 
   const handleCsvExport = () => {
@@ -226,11 +100,11 @@ const Export = () => {
     const q = (v: unknown) => `"${csvSafe(v)}"`;
     let csvContent = '';
     
-    if (previewType === 'therapist') {
+    if (previewType === 'therapist' && therapistData) {
       csvContent = 'Subject,BNO Code,BNO Label,Date,Intensity,Concept,Context\n';
-      previewData.subjects.forEach((subject: any) => {
-        subject.bno_summary.forEach((bno: any) => {
-          bno.observations.filter((o: any) => inRange(o.logged_at)).forEach((obs: any) => {
+      therapistData.subjects.forEach((subject) => {
+        subject.bno_summary.forEach((bno) => {
+          bno.observations.filter((o) => inRange(o.logged_at)).forEach((obs) => {
             const row = [
               q(subject.subject_label),
               q(bno.bno_code),
@@ -244,9 +118,9 @@ const Export = () => {
           });
         });
       });
-    } else {
+    } else if (previewType === 'all' && allData) {
       csvContent = 'Source,Date,Code,Display,Value,Extra\n';
-      previewData.observation_logs_fhir.filter((o: any) => inRange(o.effectiveDateTime)).forEach((obs: any) => {
+      (allData.observation_logs_fhir ?? []).filter((o) => inRange(o.effectiveDateTime)).forEach((obs) => {
         const row = [
           'observation',
           q(obs.effectiveDateTime),
@@ -257,14 +131,14 @@ const Export = () => {
         ].join(',');
         csvContent += row + '\n';
       });
-      (previewData.mood_pulses ?? []).filter((p: any) => inRange(p.entry_date)).forEach((p: any) => {
+      (allData.mood_pulses ?? []).filter((p) => inRange(p.entry_date)).forEach((p) => {
         const extra = p.reconciled_from_n_rows
           ? `${p.subject_type || ''} (${t.export.reconciledLabel.replace('{count}', String(p.reconciled_from_n_rows))})`
           : (p.subject_type || '');
         const row = ['mood_pulse', q(p.entry_date), '', q(p.label || ''), p.level, q(extra)].join(',');
         csvContent += row + '\n';
       });
-      (previewData.journal_entries ?? []).filter((e: any) => inRange(e.entry_date)).forEach((e: any) => {
+      (allData.journal_entries ?? []).filter((e) => inRange(e.entry_date)).forEach((e) => {
         const row = ['journal', q(e.entry_date), '', q(e.title || ''), e.impact_level ?? '', q(e.emotional_state || e.event_description || '')].join(',');
         csvContent += row + '\n';
       });
@@ -286,9 +160,13 @@ const Export = () => {
     if (filterTo && d > filterTo) return false;
     return true;
   };
-  const pulsesF = (previewData?.mood_pulses ?? []).filter((p: any) => inRange(p.entry_date));
-  const journalF = (previewData?.journal_entries ?? []).filter((e: any) => inRange(e.entry_date));
-  const obsF = (previewData?.observation_logs_fhir ?? []).filter((o: any) => inRange(o.effectiveDateTime));
+
+  const allData = previewType === 'all' && previewData ? (previewData as UserDataExport) : null;
+  const therapistData = previewType === 'therapist' && previewData ? (previewData as TherapistExportSummary) : null;
+
+  const pulsesF = (allData?.mood_pulses ?? []).filter((p) => inRange(p.entry_date));
+  const journalF = (allData?.journal_entries ?? []).filter((e) => inRange(e.entry_date));
+  const obsF = (allData?.observation_logs_fhir ?? []).filter((o) => inRange(o.effectiveDateTime));
 
   return (
     <DashboardLayout showContextToolPanel={false}>
@@ -326,6 +204,11 @@ const Export = () => {
                 <Button size="sm" variant="secondary" className="rounded-2xl" onClick={handleCsvExport}>
                   {t.export.downloadCsv}
                 </Button>
+                {previewType === 'all' && (
+                  <Button size="sm" variant="secondary" className="rounded-2xl" onClick={handleJsonDownload}>
+                    {t.export.downloadJson}
+                  </Button>
+                )}
               </div>
             </div>
 
@@ -350,7 +233,7 @@ const Export = () => {
                 {previewType === 'therapist' ? t.export.therapistTitle : t.export.title}
               </h1>
               <p className="text-xs text-gray-500">
-                {t.export.exportedAt}: {new Date(previewData.exported_at).toLocaleString()}
+                {t.export.exportedAt}: {new Date(previewType === 'therapist' ? (previewData as TherapistExportSummary).exported_at : (previewData as UserDataExport).metadata.exported_at).toLocaleString()}
               </p>
               {(filterFrom || filterTo) && (
                 <p className="text-xs text-gray-500 mt-1">
@@ -360,18 +243,18 @@ const Export = () => {
             </div>
 
             <div className="text-sm text-gray-600 italic">
-              {previewData.disclaimer}
+              {t.export.disclaimer}
             </div>
 
-            {previewType === 'therapist' ? (
+            {previewType === 'therapist' && therapistData ? (
               <div className="space-y-6">
-                {previewData.subjects.map((subject: any, si: number) => (
+                {therapistData.subjects.map((subject, si: number) => (
                   <div key={si} className="space-y-4">
                     <h2 className="text-lg font-semibold border-b pb-1">{subject.subject_label}</h2>
-                    {subject.bno_summary.map((bno: any, bi: number) => {
-                      const obsRows = bno.observations.filter((o: any) => inRange(o.logged_at));
+                    {subject.bno_summary.map((bno, bi: number) => {
+                      const obsRows = bno.observations.filter((o) => inRange(o.logged_at));
                       if (obsRows.length === 0) return null;
-                      const avg = Math.round((obsRows.reduce((a: number, b: any) => a + b.intensity, 0) / obsRows.length) * 100) / 100;
+                      const avg = Math.round((obsRows.reduce((a: number, b) => a + b.intensity, 0) / obsRows.length) * 100) / 100;
                       return (
                       <div key={bi} className="space-y-2">
                         <h3 className="text-sm font-medium">
@@ -390,7 +273,7 @@ const Export = () => {
                             </tr>
                           </thead>
                           <tbody>
-                            {obsRows.map((obs: any, oi: number) => (
+                            {obsRows.map((obs, oi: number) => (
                               <tr key={oi}>
                                 <td className="border p-1">{new Date(obs.logged_at).toLocaleString()}</td>
                                 <td className="border p-1">{obs.concept_localized}</td>
@@ -411,7 +294,7 @@ const Export = () => {
                 <p className="text-sm">{t.export.summaryNote}</p>
                 <div className="text-xs">
                   <p>{t.export.journalEntries}: {journalF.length}</p>
-                  <p>{t.export.questionnaireResponses}: {previewData.questionnaire_responses?.length || 0}</p>
+                  <p>{t.export.questionnaireResponses}: {allData?.questionnaire_responses?.length || 0}</p>
                   <p>{t.export.observationsFhir}: {obsF.length}</p>
                   <p>{t.export.moodPulses}: {pulsesF.length}</p>
                 </div>
@@ -429,7 +312,7 @@ const Export = () => {
                         </tr>
                       </thead>
                       <tbody>
-                        {pulsesF.map((p: any, i: number) => {
+                        {pulsesF.map((p, i: number) => {
                           const contextText = p.reconciled_from_n_rows
                             ? `${p.subject_type || ''} (${t.export.reconciledLabel.replace('{count}', String(p.reconciled_from_n_rows))})`
                             : (p.subject_type || '');
@@ -460,7 +343,7 @@ const Export = () => {
                         </tr>
                       </thead>
                       <tbody>
-                        {journalF.map((e: any, i: number) => (
+                        {journalF.map((e, i: number) => (
                           <tr key={i}>
                             <td className="border p-1">{e.entry_date}</td>
                             <td className="border p-1">{e.title}</td>
@@ -485,7 +368,7 @@ const Export = () => {
                         </tr>
                       </thead>
                       <tbody>
-                        {obsF.map((obs: any, i: number) => (
+                        {obsF.map((obs, i: number) => (
                           <tr key={i}>
                             <td className="border p-1">{obs.effectiveDateTime}</td>
                             <td className="border p-1">{obs.code.coding[0]?.display}</td>

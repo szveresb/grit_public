@@ -644,8 +644,8 @@ export const hu: Dictionary = {
 
   export: {
     title: 'Adatok exportálása',
-    subtitle: 'Töltsd le adataidat PDF vagy CSV formátumban',
-    desc: 'Az exportált fájl tartalmazza az összes naplóbejegyzést, kérdőív választ és megfigyelési naplót.',
+    subtitle: 'Töltsd le adataidat JSON, PDF vagy CSV formátumban',
+    desc: 'Az exportált fájl tartalmazza az összes fiókadatodat: naplók, kérdőívek, hangulat pulzusok, megfigyelések (FHIR és nyers), megfigyelt személyek, beleegyezések és visszajelzések JSON formátumban.',
     exportAll: 'Minden adat exportálása',
     therapistTitle: 'Összefoglaló szakember számára',
     therapistDesc: 'Strukturált összefoglaló a rögzített megfigyelésekről, BNO kódokkal kiegészítve.',
@@ -677,6 +677,8 @@ export const hu: Dictionary = {
     observationsFhir: 'Megfigyelések (FHIR)',
     moodPulses: 'Hangulat pulzus bejegyzések',
     reconciledLabel: 'összevonva {count} bejegyzésből',
+    exportFailed: 'Az adatok exportálása sikertelen. Kérjük, próbáld újra.',
+    downloadJson: 'JSON letöltése',
   },
 
   betaGate: {
@@ -708,7 +710,7 @@ export const hu: Dictionary = {
     roleFraming: 'Szerep beállítása',
     adminAssigned: 'Adminisztrátor által kiosztott szerepek',
     yourData: 'Az adataid',
-    yourDataDesc: 'Töltsd le az összes naplóbejegyzésedet és önellenőrzési válaszodat hordozható fájlként.',
+    yourDataDesc: 'Töltsd le az összes fiókadatodat (naplók, kérdőívek, hangulat pulzusok, megfigyelések, megfigyelt személyek, beleegyezések és visszajelzések) hordozható JSON fájlként.',
     exportAllData: 'Összes adat exportálása',
     dataExported: 'Adatok exportálva',
     biologicalSexLabel: 'Biológiai nem',
@@ -918,6 +920,16 @@ export const hu: Dictionary = {
     stepAnythingElse: 'Van még valami?',
     intensityFromPulse: 'A mai hangulatbejegyzésed alapján javasolt',
     intensityCustom: 'Módosítottad a súlyt',
+    chooseValence: 'Milyen irányú megfigyelést rögzítesz?',
+    modePositiveTitle: 'Erőforrások & Pozitív megélések',
+    modePositiveDesc: 'Kellemes testi érzetek, támogató minták és belső erőforrások.',
+    modeNegativeTitle: 'Nehézségek & Kellemetlen tünetek',
+    modeNegativeDesc: 'Kellemetlen fizikai jelzések, szorongató érzések és nehézségek.',
+    stepCategory: 'Terület',
+    stepValence: 'Típus',
+    stepConcept: 'Megfigyelés',
+    stepQualifiers: 'Részletek',
+    mappedTo: 'Új név: {name}',
   },
 
   disclaimer: {

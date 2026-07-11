@@ -3,6 +3,7 @@ import { differenceInDays, endOfWeek, format, parseISO, startOfWeek } from 'date
 import { supabase } from '@/integrations/supabase/client';
 import type { CalendarFeedItem } from '@/components/checkin/FeedCalendar';
 import type { Dictionary } from '@/i18n/types';
+import { fetchConceptResolver } from '@/lib/observationResolver';
 
 interface TimelineItem {
   id: string;
@@ -137,15 +138,20 @@ export const useCalendarFeedData = ({
       const standaloneObs = observationData.filter((entry) => !entry.journal_entry_id);
 
       if (observationData.length > 0) {
-        const conceptIds = [...new Set(observationData.map((entry) => entry.concept_id))];
-        const { data: concepts } = await supabase
-          .from('observation_concepts')
-          .select('id, name_hu, name_en')
-          .in('id', conceptIds);
-
+        const resolver = await fetchConceptResolver(supabase);
         if (cancelled) return;
 
-        const nextConceptMap = Object.fromEntries((concepts ?? []).map((concept) => [concept.id, concept]));
+        const nextConceptMap: Record<string, any> = {};
+        observationData.forEach((entry) => {
+          const resolved = resolver.resolve(entry.concept_id);
+          if (resolved) {
+            nextConceptMap[entry.concept_id] = {
+              id: resolved.id,
+              name_en: resolved.name_en,
+              name_hu: resolved.name_hu,
+            };
+          }
+        });
         setConceptMap(nextConceptMap);
         setObsLogs(observationData.map((entry) => ({
           concept_id: entry.concept_id,
@@ -155,8 +161,13 @@ export const useCalendarFeedData = ({
         })));
 
         observationItems = standaloneObs.map((entry) => {
-          const concept = nextConceptMap[entry.concept_id];
-          const name = concept ? (lang === 'en' ? concept.name_en : concept.name_hu) : t.observations.tabObservations;
+          const resolved = resolver.resolve(entry.concept_id);
+          const showCanonical = resolved?.source_type === 'canonical';
+          const name = resolved
+            ? (lang === 'en'
+                ? (showCanonical ? resolved.resolvedNameEn : resolved.name_en)
+                : (showCanonical ? resolved.resolvedNameHu : resolved.name_hu))
+            : t.observations.tabObservations;
 
           return {
             id: entry.id,

@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useMemo } from 'react';
 import { format } from 'date-fns';
 import { supabase } from '@/integrations/supabase/client';
 import { useObservationIntensityDefault, IntensitySource } from '@/hooks/useObservationIntensityDefault';
@@ -12,46 +12,37 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from 'sonner';
 import { friendlyDbError } from '@/lib/db-error';
-import { FArrowLeft, FHeart, FMessageCircle, FShield, FCheck, FUsers, FHeartPulse } from '@/components/icons/FreudIcons';
+import { FArrowLeft, FHeart, FMessageCircle, FShield, FCheck, FUsers, FHeartPulse, FClock, FSparkles, FUser, FLibrary, FDashboard } from '@/components/icons/FreudIcons';
 import StanceBanner from '@/components/premium/StanceBanner';
 import { cn } from '@/lib/utils';
-
-interface Category {
-  id: string;
-  name_hu: string;
-  name_en: string;
-  icon: string | null;
-  sort_order: number;
-}
-
-interface Concept {
-  id: string;
-  name_hu: string;
-  name_en: string;
-  description_hu: string | null;
-  description_en: string | null;
-  sort_order: number;
-}
+import { useConceptResolver } from '@/hooks/useConceptResolver';
 
 const iconMap: Record<string, React.ReactNode> = {
-  heart: <FHeart className="h-5 w-5" />,
+  activity: <FHeartPulse className="h-5 w-5" />,
+  moon: <FClock className="h-5 w-5" />,
+  smile: <FHeart className="h-5 w-5" />,
+  sun: <FSparkles className="h-5 w-5" />,
   'message-circle': <FMessageCircle className="h-5 w-5" />,
+  users: <FUsers className="h-5 w-5" />,
   shield: <FShield className="h-5 w-5" />,
-  'heart-pulse': <FHeartPulse className="h-5 w-5" />,
+  compass: <FUser className="h-5 w-5" />,
+  brain: <FLibrary className="h-5 w-5" />,
+  map: <FDashboard className="h-5 w-5" />,
 };
 
 const ObservationStepper = ({ onLogged, observationDate }: { onLogged?: () => void; observationDate?: string }) => {
   const { user } = useAuth();
   const { t, lang } = useLanguage();
   const { activeSubject, subjectColor: globalSubjectColor } = useStance();
+  const { resolver, isLoading: isResolverLoading } = useConceptResolver();
+  
   const [step, setStep] = useState(0);
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [concepts, setConcepts] = useState<Concept[]>([]);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [selectedValence, setSelectedValence] = useState<'positive' | 'negative' | null>(null);
   const [selectedConcept, setSelectedConcept] = useState<string | null>(null);
+  
   const [intensity, setIntensity] = useState(3);
   const [intensitySource, setIntensitySource] = useState<IntensitySource>('fallback');
-
   const [context, setContext] = useState('');
   const [narrative, setNarrative] = useState('');
   const [submitting, setSubmitting] = useState(false);
@@ -67,16 +58,21 @@ const ObservationStepper = ({ onLogged, observationDate }: { onLogged?: () => vo
     subjectId,
   });
 
-  useEffect(() => {
-    supabase.from('observation_categories').select('*').eq('is_active', true).order('sort_order')
-      .then(({ data }) => setCategories((data as Category[]) ?? []));
-  }, []);
+  // Load categories and concepts dynamically from resolver
+  const categories = useMemo(() => {
+    return resolver ? resolver.getActiveCategories() : [];
+  }, [resolver]);
+
+  const concepts = useMemo(() => {
+    if (!resolver || !selectedCategory || !selectedValence) return [];
+    return resolver.getConceptsByCategoryAndValence(selectedCategory, selectedValence);
+  }, [resolver, selectedCategory, selectedValence]);
 
   useEffect(() => {
     setStep(0);
     setSelectedCategory(null);
+    setSelectedValence(null);
     setSelectedConcept(null);
-    setConcepts([]);
     setIntensity(3);
     setIntensitySource('fallback');
     setContext('');
@@ -91,11 +87,13 @@ const ObservationStepper = ({ onLogged, observationDate }: { onLogged?: () => vo
     }
   }, [defaultIntensity, defaultIntensitySource, intensitySource]);
 
-  const selectCategory = async (catId: string) => {
+  const selectCategory = (catId: string) => {
     setSelectedCategory(catId);
-    const { data } = await supabase.from('observation_concepts').select('*')
-      .eq('category_id', catId).eq('is_active', true).order('sort_order');
-    setConcepts((data as Concept[]) ?? []);
+    setStep(1);
+  };
+
+  const selectValence = (valence: 'positive' | 'negative') => {
+    setSelectedValence(valence);
     setStep(2);
   };
 
@@ -123,16 +121,33 @@ const ObservationStepper = ({ onLogged, observationDate }: { onLogged?: () => vo
     });
     if (error) { toast.error(friendlyDbError(error)); setSubmitting(false); return; }
     toast.success(t.observations.logged);
-    setStep(0); setSelectedCategory(null); setSelectedConcept(null);
-    setIntensity(defaultIntensity); setIntensitySource(defaultIntensitySource); setContext(''); setNarrative('');
+    setStep(0);
+    setSelectedCategory(null);
+    setSelectedValence(null);
+    setSelectedConcept(null);
+    setIntensity(defaultIntensity);
+    setIntensitySource(defaultIntensitySource);
+    setContext('');
+    setNarrative('');
     setSubmitting(false);
     onLogged?.();
   };
 
-  const name = (item: { name_hu: string; name_en: string }) => lang === 'en' ? item.name_en : item.name_hu;
-  const desc = (item: { description_hu: string | null; description_en: string | null }) => lang === 'en' ? item.description_en : item.description_hu;
+  const stepLabels = [
+    t.observations.stepCategory,
+    t.observations.stepValence,
+    t.observations.stepConcept,
+    t.observations.stepQualifiers
+  ];
 
-  const stepLabels = [t.subjects.perspectiveLabel, t.observations.stepWhatsGoing, t.observations.stepHowHeavy, t.observations.stepAnythingElse];
+  if (isResolverLoading) {
+    return (
+      <div className="text-center py-8 flex flex-col items-center gap-3">
+        <div className="h-6 w-6 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+        <span className="text-sm text-muted-foreground">{t.loading}</span>
+      </div>
+    );
+  }
 
   return (
     <div className="space-y-5">
@@ -152,33 +167,10 @@ const ObservationStepper = ({ onLogged, observationDate }: { onLogged?: () => vo
         ))}
       </div>
 
-      {/* Step 0: Perspective toggle */}
+      {/* Step 0: Category Selection */}
       {step === 0 && (
-        <div className="space-y-4 animate-fade-in">
-          <StanceBanner subjectType={subjectType} subjectName={subjectName ?? undefined} subjectColor={globalSubjectColor} compact />
-          <Button
-            size="sm"
-            className="rounded-2xl w-full"
-            onClick={() => {
-              if (subjectType === 'relative' && !subjectId) {
-                toast.error(t.subjects.selectSubjectError);
-                return;
-              }
-              setStep(1);
-            }}
-          >
-            {t.consent.next}
-          </Button>
-        </div>
-      )}
-
-      {/* Step 1: Categories */}
-      {step === 1 && (
         <div className="space-y-3 animate-fade-in">
-          <StanceBanner subjectType={subjectType} subjectName={subjectName ?? undefined} subjectColor={globalSubjectColor} onSwitch={() => setStep(0)} compact />
-          <Button variant="ghost" size="sm" className="rounded-2xl" onClick={() => setStep(0)}>
-            <FArrowLeft className="h-4 w-4 mr-1" /> {t.observations.back}
-          </Button>
+          <StanceBanner subjectType={subjectType} subjectName={subjectName ?? undefined} subjectColor={globalSubjectColor} compact />
           <p className="text-sm font-medium text-muted-foreground text-center">{t.observations.chooseDomain}</p>
           {categories.length === 0 ? (
             <p className="text-sm text-muted-foreground text-center">{t.observations.noCategories}</p>
@@ -188,12 +180,12 @@ const ObservationStepper = ({ onLogged, observationDate }: { onLogged?: () => vo
                 <button
                   key={cat.id}
                   onClick={() => selectCategory(cat.id)}
-                  className="surface-card p-5 flex items-center gap-4 text-left hover:border-primary/50 transition-colors"
+                  className="surface-card p-4 flex items-center gap-4 text-left hover:border-primary/50 transition-colors"
                 >
-                  <div className="h-10 w-10 rounded-2xl bg-primary/10 flex items-center justify-center text-primary">
+                  <div className="h-10 w-10 rounded-2xl bg-primary/10 flex items-center justify-center text-primary shrink-0">
                     {cat.icon && iconMap[cat.icon] ? iconMap[cat.icon] : <FHeart className="h-5 w-5" />}
                   </div>
-                  <span className="text-sm font-semibold">{name(cat)}</span>
+                  <span className="text-sm font-semibold">{lang === 'en' ? cat.name_en : cat.name_hu}</span>
                 </button>
               ))}
             </div>
@@ -201,10 +193,55 @@ const ObservationStepper = ({ onLogged, observationDate }: { onLogged?: () => vo
         </div>
       )}
 
-      {/* Step 2: Concepts */}
+      {/* Step 1: Valence (Positive / Negative Mode) */}
+      {step === 1 && (
+        <div className="space-y-3 animate-fade-in">
+          <StanceBanner subjectType={subjectType} subjectName={subjectName ?? undefined} subjectColor={globalSubjectColor} compact />
+          <Button variant="ghost" size="sm" className="rounded-2xl" onClick={() => setStep(0)}>
+            <FArrowLeft className="h-4 w-4 mr-1" /> {t.observations.back}
+          </Button>
+          <p className="text-sm font-medium text-muted-foreground text-center">{t.observations.chooseValence}</p>
+          
+          <div className="grid gap-4 sm:grid-cols-2">
+            <button
+              onClick={() => selectValence('positive')}
+              className={cn(
+                "border rounded-3xl p-5 text-left transition-all hover:shadow-sm flex flex-col justify-between min-h-[9rem] w-full",
+                "bg-emerald-500/5 hover:bg-emerald-500/10 border-emerald-500/20 hover:border-emerald-500/50"
+              )}
+            >
+              <div className="h-9 w-9 rounded-2xl bg-emerald-500/10 flex items-center justify-center text-emerald-600 shrink-0">
+                <FSparkles className="h-5 w-5" />
+              </div>
+              <div className="mt-3">
+                <span className="text-sm font-bold text-emerald-800 dark:text-emerald-300 block">{t.observations.modePositiveTitle}</span>
+                <span className="text-[11px] text-emerald-700/80 dark:text-emerald-400/80 mt-0.5 block leading-normal">{t.observations.modePositiveDesc}</span>
+              </div>
+            </button>
+
+            <button
+              onClick={() => selectValence('negative')}
+              className={cn(
+                "border rounded-3xl p-5 text-left transition-all hover:shadow-sm flex flex-col justify-between min-h-[9rem] w-full",
+                "bg-amber-500/5 hover:bg-amber-500/10 border-amber-500/20 hover:border-amber-500/50"
+              )}
+            >
+              <div className="h-9 w-9 rounded-2xl bg-amber-500/10 flex items-center justify-center text-amber-600 shrink-0">
+                <FHeartPulse className="h-5 w-5" />
+              </div>
+              <div className="mt-3">
+                <span className="text-sm font-bold text-amber-800 dark:text-amber-300 block">{t.observations.modeNegativeTitle}</span>
+                <span className="text-[11px] text-amber-700/80 dark:text-amber-400/80 mt-0.5 block leading-normal">{t.observations.modeNegativeDesc}</span>
+              </div>
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Step 2: Concept Cards */}
       {step === 2 && (
         <div className="space-y-3 animate-fade-in">
-          <StanceBanner subjectType={subjectType} subjectName={subjectName ?? undefined} subjectColor={globalSubjectColor} onSwitch={() => setStep(0)} compact />
+          <StanceBanner subjectType={subjectType} subjectName={subjectName ?? undefined} subjectColor={globalSubjectColor} compact />
           <Button variant="ghost" size="sm" className="rounded-2xl" onClick={() => setStep(1)}>
             <FArrowLeft className="h-4 w-4 mr-1" /> {t.observations.back}
           </Button>
@@ -212,17 +249,22 @@ const ObservationStepper = ({ onLogged, observationDate }: { onLogged?: () => vo
           {concepts.length === 0 ? (
             <p className="text-sm text-muted-foreground text-center">{t.observations.noConcepts}</p>
           ) : (
-            <div className="grid gap-3">
+            <div className="grid gap-3 max-h-[50vh] overflow-y-auto pr-1">
               {concepts.map(con => (
                 <button
                   key={con.id}
                   onClick={() => selectConcept(con.id)}
-                  className={`bg-card/60 backdrop-blur border rounded-3xl p-4 text-left transition-colors hover:border-primary/50 ${
+                  className={cn(
+                    "bg-card/60 backdrop-blur border rounded-3xl p-4 text-left transition-colors hover:border-primary/50",
                     selectedConcept === con.id ? 'border-primary' : 'border-border'
-                  }`}
+                  )}
                 >
-                  <span className="text-sm font-semibold block">{name(con)}</span>
-                  {desc(con) && <span className="text-xs text-muted-foreground mt-1 block">{desc(con)}</span>}
+                  <span className="text-sm font-semibold block">{lang === 'en' ? con.name_en : con.name_hu}</span>
+                  {(lang === 'en' ? con.description_en : con.description_hu) && (
+                    <span className="text-xs text-muted-foreground mt-1 block leading-normal">
+                      {lang === 'en' ? con.description_en : con.description_hu}
+                    </span>
+                  )}
                 </button>
               ))}
             </div>
@@ -233,7 +275,7 @@ const ObservationStepper = ({ onLogged, observationDate }: { onLogged?: () => vo
       {/* Step 3: Qualifiers */}
       {step === 3 && (
         <div className="space-y-5 animate-fade-in">
-          <StanceBanner subjectType={subjectType} subjectName={subjectName ?? undefined} subjectColor={globalSubjectColor} onSwitch={() => setStep(0)} />
+          <StanceBanner subjectType={subjectType} subjectName={subjectName ?? undefined} subjectColor={globalSubjectColor} />
           <Button variant="ghost" size="sm" className="rounded-2xl" onClick={() => setStep(2)}>
             <FArrowLeft className="h-4 w-4 mr-1" /> {t.observations.back}
           </Button>

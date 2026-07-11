@@ -3,6 +3,7 @@ import { supabase } from '@/integrations/supabase/client';
 import { format, subDays } from 'date-fns';
 import { linearRegression, pearson } from '@/lib/correlation';
 import type { QuestionnaireTrend } from './useQuestionnaireTrends';
+import { fetchConceptResolver } from '@/lib/observationResolver';
 
 export interface SelfAnalyticsPoint {
   date: string;
@@ -52,6 +53,7 @@ export const useSelfAnalyticsData = ({
   const [questionnaireTrends, setQuestionnaireTrends] = useState<QuestionnaireTrendWithTitle[]>([]);
   const [questionnaireFillsCount, setQuestionnaireFillsCount] = useState<number>(0);
   const [loading, setLoading] = useState(false);
+  const [resolver, setResolver] = useState<any | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -155,18 +157,21 @@ export const useSelfAnalyticsData = ({
 
       trendsRows.sort((a, b) => new Date(b.last_updated_at).getTime() - new Date(a.last_updated_at).getTime());
 
-      // Fetch concept metadata
-      const conceptIds = Array.from(new Set(selfObsRows.map((r) => r.concept_id)));
+      // Fetch concept metadata using resolver
+      const res = await fetchConceptResolver(supabase);
+      if (cancelled) return;
+      setResolver(res);
+
       const conceptMap: Record<string, { name_hu: string; name_en: string }> = {};
-      if (conceptIds.length > 0) {
-        const { data: cRows } = await supabase
-          .from('observation_concepts')
-          .select('id, name_hu, name_en')
-          .in('id', conceptIds);
-        (cRows ?? []).forEach((c: any) => {
-          conceptMap[c.id] = { name_hu: c.name_hu, name_en: c.name_en };
-        });
-      }
+      selfObsRows.forEach((r) => {
+        const resolved = res.resolve(r.concept_id);
+        if (resolved) {
+          conceptMap[resolved.resolvedId] = {
+            name_hu: resolved.resolvedNameHu,
+            name_en: resolved.resolvedNameEn,
+          };
+        }
+      });
 
       if (cancelled) return;
 
@@ -254,9 +259,19 @@ export const useSelfAnalyticsData = ({
     });
 
     const byConcept: Record<string, { sum: number; count: number; date: string }[]> = {};
+    const conceptOriginalIdsMap: Record<string, Set<string>> = {};
+
     obsRows.forEach((row) => {
-      if (!byConcept[row.concept_id]) byConcept[row.concept_id] = [];
-      const arr = byConcept[row.concept_id];
+      const resolved = resolver?.resolve(row.concept_id);
+      const targetId = resolved ? resolved.resolvedId : row.concept_id;
+
+      if (!conceptOriginalIdsMap[targetId]) {
+        conceptOriginalIdsMap[targetId] = new Set<string>();
+      }
+      conceptOriginalIdsMap[targetId].add(row.concept_id);
+
+      if (!byConcept[targetId]) byConcept[targetId] = [];
+      const arr = byConcept[targetId];
       const existing = arr.find((x) => x.date === row.logged_at);
       if (existing) {
         existing.sum += row.intensity;
@@ -285,6 +300,7 @@ export const useSelfAnalyticsData = ({
         n: series.length,
         r,
         series,
+        originalConceptIds: Array.from(conceptOriginalIdsMap[conceptId] ?? []),
       });
     });
     correlations.sort((a, b) => Math.abs(b.r) - Math.abs(a.r));
@@ -293,7 +309,7 @@ export const useSelfAnalyticsData = ({
       overlapStats,
       conceptCorrelations: correlations.slice(0, 5),
     };
-  }, [dailySeries, obsRows, concepts]);
+  }, [dailySeries, obsRows, concepts, resolver]);
 
   return {
     dailySeries,

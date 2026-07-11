@@ -108,7 +108,13 @@ Survey managers can attach source studies (PDF upload, DOI/URL link, or manual d
 
 **Mood Pulse Daily-Fact Hardening implemented.** Added database migration for daily pulse uniqueness per subject (using a stored generated canonical `subject_scope_key` column and check constraints), implemented a `save_mood_pulse` RPC function for concurrency-safe database writes, and refactored the QuickPulse write path. Updated the `useMoodComparisonData`, `useDualPerspectiveData`, and `useSelfAnalyticsData` trend hooks to prevent daily mood averaging and collapse legacy duplicates by newest `created_at`. Updated `DayDetailsSheet` to query exactly one row and refactored `Export` to reconcile legacy duplicates into a single canonical row with `reconciled_from_n_rows` audit metadata in JSON/CSV formats, supported by localized dictionary keys. Verified compile safety with 0 errors.
 
+**Full personal data export parity implemented.** Consolidated the user data export flow into a shared, fully typed canonical export builder (`buildUserDataExport`). Aligned the `/profile` page and `/export` page to consume this shared helper, ensuring a one-click full data export of profiles, journal entries, questionnaire responses, mood pulses, observation logs, subjects, consents, consent history, and feedback. Enforced strict query completeness checks and localized description parity. Verified compile safety with 0 errors.
+
+**Observation Concept System Refactoring (Tasks 1-7) implemented.** Refactored the observation concept system into a canonical concept-card model without breaking legacy data. Extended the schema with canonical metadata, deactivated legacy categories, and seeded 146 active, selectable canonical concepts and 10 new neutral categories from `concept cards.csv` (with full Hungarian/English translation parity). Built an in-memory resolution read-model (`ConceptResolver`) with a cached React hook (`useConceptResolver`). Reworked the progressive logging wizard (`ObservationStepper`) to follow a category-first flow with emotionally balanced mode cards. Updated the history panel (`ObservationHistory`), reflection dialog (`ObservationReflectDialog`), and timeline cards (`useCalendarFeedData`) to show original logged names, resolved categories, and parenthetical mapping hints. Canonicalized trend hooks (`useSelfAnalyticsData`, `useDualPerspectiveData`, `useObservationIntensityComparisonData`) to group correlations by resolved canonical concepts. Added `original_concept` and `canonical_concept` metadata to user/therapist data exports. Wrote a comprehensive unit test suite (`concept-resolution.test.ts`) covering resolution, UI picker, feed naming, and exports, verifying all 28 tests successfully pass in Docker.
+
 ## Next Priority
-- Promoted schema changes to live database
-- Configure Lovable/Supabase backend Edge Function secrets (`GEMINI_API_KEY`)
+- Apply observation schema and taxonomy seeding migrations to the live production Supabase instance
+- Promote database changes to the production environment
+- Run end-to-end integration smoke tests on staging
+
 

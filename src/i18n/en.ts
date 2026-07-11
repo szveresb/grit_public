@@ -655,7 +655,7 @@ export const en: Dictionary = {
     roleFraming: 'Role Framing',
     adminAssigned: 'Admin-assigned roles',
     yourData: 'Your Data',
-    yourDataDesc: 'Download all your journal entries and self-check responses as a portable file.',
+    yourDataDesc: 'Download your full account data (journals, questionnaires, mood pulses, observations, subjects, consent records, and feedback) as a portable JSON file.',
     exportAllData: 'Export All Data',
     dataExported: 'Data exported',
     biologicalSexLabel: 'Biological Sex',
@@ -673,8 +673,8 @@ export const en: Dictionary = {
 
   export: {
     title: 'Data Export',
-    subtitle: 'Download your data in PDF or CSV format',
-    desc: 'Export includes journal entries, self-check responses, and observation logs (FHIR-formatted) as JSON. This is your data — take it with you.',
+    subtitle: 'Download your data in JSON, PDF, or CSV format',
+    desc: 'Export includes your full account data: journals, questionnaires, mood pulses, observations (FHIR & raw), subjects, consent records, and feedback as JSON. This is your data — take it with you.',
     exportAll: 'Export All Data',
     therapistTitle: 'Therapist Export',
     therapistDesc: 'Summary grouped by ICD-10 codes to share with your therapist.',
@@ -706,6 +706,8 @@ export const en: Dictionary = {
     observationsFhir: 'Observations (FHIR)',
     moodPulses: 'Quick Pulse entries',
     reconciledLabel: 'reconciled from {count} rows',
+    exportFailed: 'Data export failed. Please try again.',
+    downloadJson: 'Download JSON',
   },
 
   betaGate: {
@@ -919,6 +921,16 @@ export const en: Dictionary = {
     stepAnythingElse: 'Anything to add?',
     intensityFromPulse: 'Suggested based on your mood check-in today',
     intensityCustom: "You've adjusted the weight",
+    chooseValence: 'What direction of observation are you recording?',
+    modePositiveTitle: 'Resources & Positive Experiences',
+    modePositiveDesc: 'Pleasant bodily sensations, supportive patterns, and inner resources.',
+    modeNegativeTitle: 'Challenges & Symptoms',
+    modeNegativeDesc: 'Unpleasant physical signals, distressing feelings, and challenges.',
+    stepCategory: 'Domain',
+    stepValence: 'Type',
+    stepConcept: 'Discovery',
+    stepQualifiers: 'Details',
+    mappedTo: 'New name: {name}',
   },
 
   disclaimer: {

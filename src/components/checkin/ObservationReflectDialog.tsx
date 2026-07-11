@@ -10,6 +10,7 @@ import { friendlyDbError } from '@/lib/db-error';
 import { format } from 'date-fns';
 import { getDateLocale } from '@/lib/date-locale';
 import { FEye, FSave } from '@/components/icons/FreudIcons';
+import { useConceptResolver } from '@/hooks/useConceptResolver';
 
 interface ObsRow {
   id: string;
@@ -21,19 +22,6 @@ interface ObsRow {
   frequency: string | null;
 }
 
-interface ConceptRow {
-  id: string;
-  name_hu: string;
-  name_en: string;
-  category_id: string;
-}
-
-interface CategoryRow {
-  id: string;
-  name_hu: string;
-  name_en: string;
-}
-
 interface Props {
   observationId: string | null;
   onClose: () => void;
@@ -43,9 +31,8 @@ interface Props {
 const ObservationReflectDialog = ({ observationId, onClose, onSaved }: Props) => {
   const { t, lang } = useLanguage();
   const { user } = useAuth();
+  const { resolver } = useConceptResolver();
   const [obs, setObs] = useState<ObsRow | null>(null);
-  const [concept, setConcept] = useState<ConceptRow | null>(null);
-  const [category, setCategory] = useState<CategoryRow | null>(null);
   const [comment, setComment] = useState('');
   const [saving, setSaving] = useState(false);
   const [loading, setLoading] = useState(false);
@@ -60,30 +47,11 @@ const ObservationReflectDialog = ({ observationId, onClose, onSaved }: Props) =>
       .eq('id', observationId)
       .eq('user_id', user.id)
       .single()
-      .then(async ({ data, error }) => {
+      .then(({ data, error }) => {
         if (error || !data) { console.error(error); onClose(); return; }
         const obsData = data as ObsRow;
         setObs(obsData);
         setComment('');
-
-        // Fetch concept + category
-        const { data: conceptData } = await supabase
-          .from('observation_concepts')
-          .select('id, name_hu, name_en, category_id')
-          .eq('id', obsData.concept_id)
-          .single();
-
-        if (conceptData) {
-          const c = conceptData as ConceptRow;
-          setConcept(c);
-          const { data: catData } = await supabase
-            .from('observation_categories')
-            .select('id, name_hu, name_en')
-            .eq('id', c.category_id)
-            .single();
-          if (catData) setCategory(catData as CategoryRow);
-        }
-
         setLoading(false);
       });
   }, [observationId, user]);
@@ -108,8 +76,11 @@ const ObservationReflectDialog = ({ observationId, onClose, onSaved }: Props) =>
 
   if (!observationId) return null;
 
-  const conceptName = concept ? (lang === 'en' ? concept.name_en : concept.name_hu) : '';
-  const categoryName = category ? (lang === 'en' ? category.name_en : category.name_hu) : '';
+  const resolved = obs ? resolver?.resolve(obs.concept_id) : undefined;
+  const conceptName = resolved ? (lang === 'en' ? resolved.name_en : resolved.name_hu) : '';
+  const categoryName = resolved ? (lang === 'en' ? resolved.category.name_en : resolved.category.name_hu) : '';
+  const canonicalName = resolved ? (lang === 'en' ? resolved.resolvedNameEn : resolved.resolvedNameHu) : '';
+  const showMapping = resolved && resolved.source_type !== 'canonical';
 
   return (
     <Dialog open={!!observationId} onOpenChange={() => onClose()}>
@@ -127,9 +98,16 @@ const ObservationReflectDialog = ({ observationId, onClose, onSaved }: Props) =>
           <div className="space-y-4">
             {/* Read-only observation detail */}
             <div className="bg-muted/50 rounded-2xl p-4 space-y-2">
-              <div className="flex items-center justify-between">
-                <span className="text-sm font-semibold">{conceptName || t.observations.tabObservations}</span>
-                <span className="text-xs text-muted-foreground">
+              <div className="flex items-start justify-between gap-4">
+                <div className="flex flex-col min-w-0">
+                  <span className="text-sm font-semibold truncate">{conceptName || t.observations.tabObservations}</span>
+                  {showMapping && (
+                    <span className="text-[10px] text-muted-foreground/60 italic mt-0.5">
+                      ({t.observations.mappedTo.replace('{name}', canonicalName)})
+                    </span>
+                  )}
+                </div>
+                <span className="text-xs text-muted-foreground shrink-0 mt-0.5">
                   {format(new Date(obs.logged_at), 'MMM d, yyyy', { locale: getDateLocale(lang) })}
                 </span>
               </div>

@@ -684,6 +684,8 @@ export interface Dictionary {
     observationsFhir: string;
     moodPulses: string;
     reconciledLabel: string;
+    exportFailed: string;
+    downloadJson: string;
   };
 
   betaGate: {

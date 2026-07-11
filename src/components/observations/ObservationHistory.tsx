@@ -6,6 +6,7 @@ import { useStance } from '@/hooks/useStance';
 import { format } from 'date-fns';
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from '@/components/ui/collapsible';
 import { FChevronDown } from '@/components/icons/FreudIcons';
+import { useConceptResolver } from '@/hooks/useConceptResolver';
 
 interface LogEntry {
   id: string;
@@ -14,14 +15,7 @@ interface LogEntry {
   context_modifier: string | null;
   user_narrative: string | null;
   logged_at: string;
-  concept: {
-    name_hu: string;
-    name_en: string;
-    category: {
-      name_hu: string;
-      name_en: string;
-    };
-  };
+  concept_id: string;
 }
 
 const ObservationHistory = ({ refreshKey }: { refreshKey?: number }) => {
@@ -29,6 +23,7 @@ const ObservationHistory = ({ refreshKey }: { refreshKey?: number }) => {
   const { t, lang } = useLanguage();
   const { subjectType, selectedSubjectId } = useStance();
   const [logs, setLogs] = useState<LogEntry[]>([]);
+  const { resolver, isLoading: isResolverLoading } = useConceptResolver();
 
   const fetchLogs = async () => {
     if (!user) return;
@@ -50,29 +45,12 @@ const ObservationHistory = ({ refreshKey }: { refreshKey?: number }) => {
       .limit(50);
 
     if (!data || data.length === 0) { setLogs([]); return; }
-
-    // Fetch concepts and categories for the logs
-    const conceptIds = [...new Set(data.map(d => d.concept_id))];
-    const { data: concepts } = await supabase
-      .from('observation_concepts')
-      .select('id, name_hu, name_en, category_id')
-      .in('id', conceptIds);
-
-    const categoryIds = [...new Set((concepts ?? []).map(c => c.category_id))];
-    const { data: categories } = await supabase
-      .from('observation_categories')
-      .select('id, name_hu, name_en')
-      .in('id', categoryIds);
-
-    const catMap = Object.fromEntries((categories ?? []).map(c => [c.id, c]));
-    const conMap = Object.fromEntries((concepts ?? []).map(c => [c.id, { ...c, category: catMap[c.category_id] }]));
-
-    setLogs(data.map(d => ({ ...d, concept: conMap[d.concept_id] })) as LogEntry[]);
+    setLogs(data as LogEntry[]);
   };
 
-  useEffect(() => { fetchLogs(); }, [user, refreshKey, subjectType, selectedSubjectId]);
-
-  const name = (item: { name_hu: string; name_en: string }) => lang === 'en' ? item.name_en : item.name_hu;
+  useEffect(() => {
+    fetchLogs();
+  }, [user, refreshKey, subjectType, selectedSubjectId]);
 
   const freqLabels: Record<string, string> = {
     once: t.observations.freqOnce,
@@ -80,6 +58,15 @@ const ObservationHistory = ({ refreshKey }: { refreshKey?: number }) => {
     often: t.observations.freqOften,
     constant: t.observations.freqConstant,
   };
+
+  if (isResolverLoading) {
+    return (
+      <div className="text-center py-8 flex flex-col items-center gap-2">
+        <div className="h-5 w-5 animate-spin rounded-full border-2 border-primary border-t-transparent" />
+        <span className="text-xs text-muted-foreground">{t.loading}</span>
+      </div>
+    );
+  }
 
   if (logs.length === 0) {
     return <p className="text-sm text-muted-foreground text-center py-4">{t.observations.noLogs}</p>;
@@ -99,27 +86,48 @@ const ObservationHistory = ({ refreshKey }: { refreshKey?: number }) => {
       {Object.entries(grouped).map(([date, entries]) => (
         <div key={date} className="space-y-2">
           <p className="text-xs font-medium text-muted-foreground">{format(new Date(date), 'yyyy. MM. dd.')}</p>
-          {entries.map(entry => (
-            <Collapsible key={entry.id}>
-              <CollapsibleTrigger className="w-full surface-card p-4 flex items-center justify-between text-left hover:border-primary/30 transition-colors">
-                <div className="flex items-center gap-3 min-w-0">
-                  <div className="h-7 w-7 rounded-full bg-primary/10 text-primary flex items-center justify-center text-xs font-bold shrink-0">
-                    {entry.intensity}
+          {entries.map(entry => {
+            const resolved = resolver?.resolve(entry.concept_id);
+            const conceptName = resolved
+              ? (lang === 'en' ? resolved.name_en : resolved.name_hu)
+              : '—';
+            const categoryName = resolved
+              ? (lang === 'en' ? resolved.category.name_en : resolved.category.name_hu)
+              : '';
+            const canonicalName = resolved
+              ? (lang === 'en' ? resolved.resolvedNameEn : resolved.resolvedNameHu)
+              : '';
+            const showMapping = resolved && resolved.source_type !== 'canonical';
+
+            return (
+              <Collapsible key={entry.id}>
+                <CollapsibleTrigger className="w-full surface-card p-4 flex items-center justify-between text-left hover:border-primary/30 transition-colors">
+                  <div className="flex items-center gap-3 min-w-0">
+                    <div className="h-7 w-7 rounded-full bg-primary/10 text-primary flex items-center justify-center text-xs font-bold shrink-0">
+                      {entry.intensity}
+                    </div>
+                    <div className="min-w-0">
+                      <span className="text-sm font-semibold block truncate">{conceptName}</span>
+                      <div className="flex flex-wrap items-center gap-x-2 text-[10px] text-muted-foreground">
+                        <span>{categoryName}</span>
+                        {showMapping && (
+                          <span className="text-muted-foreground/60 italic">
+                            ({t.observations.mappedTo.replace('{name}', canonicalName)})
+                          </span>
+                        )}
+                      </div>
+                    </div>
                   </div>
-                  <div className="min-w-0">
-                    <span className="text-sm font-semibold block truncate">{entry.concept ? name(entry.concept) : '—'}</span>
-                    <span className="text-[10px] text-muted-foreground">{entry.concept?.category ? name(entry.concept.category) : ''}</span>
-                  </div>
-                </div>
-                <FChevronDown className="h-4 w-4 text-muted-foreground shrink-0" />
-              </CollapsibleTrigger>
-              <CollapsibleContent className="px-4 pb-3 pt-1 space-y-1">
-                {entry.frequency && <p className="text-xs text-muted-foreground">{t.observations.frequency}: {freqLabels[entry.frequency] ?? entry.frequency}</p>}
-                {entry.context_modifier && <p className="text-xs text-muted-foreground">{t.observations.context}: {entry.context_modifier}</p>}
-                {entry.user_narrative && <p className="text-xs text-foreground/80 italic mt-1">"{entry.user_narrative}"</p>}
-              </CollapsibleContent>
-            </Collapsible>
-          ))}
+                  <FChevronDown className="h-4 w-4 text-muted-foreground shrink-0" />
+                </CollapsibleTrigger>
+                <CollapsibleContent className="px-4 pb-3 pt-1 space-y-1">
+                  {entry.frequency && <p className="text-xs text-muted-foreground">{t.observations.frequency}: {freqLabels[entry.frequency] ?? entry.frequency}</p>}
+                  {entry.context_modifier && <p className="text-xs text-muted-foreground">{t.observations.context}: {entry.context_modifier}</p>}
+                  {entry.user_narrative && <p className="text-xs text-foreground/80 italic mt-1">"{entry.user_narrative}"</p>}
+                </CollapsibleContent>
+              </Collapsible>
+            );
+          })}
         </div>
       ))}
     </div>

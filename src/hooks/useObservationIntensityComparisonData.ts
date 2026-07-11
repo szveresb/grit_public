@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { format, subDays, parseISO } from 'date-fns';
+import { fetchConceptResolver } from '@/lib/observationResolver';
 
 export interface ObservationIntensityPoint {
   date: string;
@@ -12,6 +13,7 @@ export interface ConceptMetadata {
   id: string;
   name_hu: string;
   name_en: string;
+  originalIds?: string[];
 }
 
 export interface UseObservationIntensityComparisonDataResult {
@@ -94,34 +96,41 @@ export const useObservationIntensityComparisonData = ({
         return;
       }
 
-      // Extract unique concept IDs
-      const uniqueConceptIds = Array.from(new Set(obsLogsRes.map((r) => r.concept_id)));
-
-      // Fetch concept metadata
-      const { data: conceptsRes } = await supabase
-        .from('observation_concepts')
-        .select('id, name_hu, name_en')
-        .in('id', uniqueConceptIds);
-
+      // Load concept resolver
+      const resolver = await fetchConceptResolver(supabase);
       if (cancelled) return;
 
-      const conceptList: ConceptMetadata[] = (conceptsRes ?? []).map((c) => ({
-        id: c.id,
-        name_hu: c.name_hu,
-        name_en: c.name_en,
-      }));
+      const resolvedLogs = obsLogsRes.map((log) => {
+        const resolved = resolver.resolve(log.concept_id);
+        return {
+          ...log,
+          resolvedId: resolved ? resolved.resolvedId : log.concept_id,
+          resolvedNameHu: resolved ? resolved.resolvedNameHu : log.concept_id,
+          resolvedNameEn: resolved ? resolved.resolvedNameEn : log.concept_id,
+        };
+      });
 
-      // Map to quickly find concept details
-      const conceptMap = new Map<string, ConceptMetadata>();
-      conceptList.forEach((c) => conceptMap.set(c.id, c));
-
-      // Filter out any logs that don't have matching concepts metadata (safety check)
-      const validLogs = obsLogsRes.filter((log) => conceptMap.has(log.concept_id));
+      const uniqueResolvedConcepts = new Map<string, ConceptMetadata>();
+      resolvedLogs.forEach((log) => {
+        if (!uniqueResolvedConcepts.has(log.resolvedId)) {
+          uniqueResolvedConcepts.set(log.resolvedId, {
+            id: log.resolvedId,
+            name_hu: log.resolvedNameHu,
+            name_en: log.resolvedNameEn,
+            originalIds: [],
+          });
+        }
+        const item = uniqueResolvedConcepts.get(log.resolvedId)!;
+        if (item.originalIds && !item.originalIds.includes(log.concept_id)) {
+          item.originalIds.push(log.concept_id);
+        }
+      });
+      const conceptList = Array.from(uniqueResolvedConcepts.values());
 
       // Aggregate repeated logs for the same concept on the same day by taking the highest intensity
       const dailyConceptIntensity: Record<string, number> = {};
-      validLogs.forEach((log) => {
-        const key = `${log.logged_at}_${log.concept_id}`;
+      resolvedLogs.forEach((log) => {
+        const key = `${log.logged_at}_${log.resolvedId}`;
         if (dailyConceptIntensity[key] === undefined) {
           dailyConceptIntensity[key] = log.intensity;
         } else {
@@ -131,10 +140,10 @@ export const useObservationIntensityComparisonData = ({
 
       // Find the most recent activity date for each concept to determine defaults
       const conceptRecentDates: Record<string, string> = {};
-      validLogs.forEach((log) => {
-        const currentMax = conceptRecentDates[log.concept_id];
+      resolvedLogs.forEach((log) => {
+        const currentMax = conceptRecentDates[log.resolvedId];
         if (!currentMax || log.logged_at > currentMax) {
-          conceptRecentDates[log.concept_id] = log.logged_at;
+          conceptRecentDates[log.resolvedId] = log.logged_at;
         }
       });
 

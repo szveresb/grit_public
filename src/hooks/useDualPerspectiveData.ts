@@ -2,6 +2,7 @@ import { useEffect, useMemo, useState } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { format, subDays } from 'date-fns';
 import { linearRegression, pearson, pearsonAtLag } from '@/lib/correlation';
+import { fetchConceptResolver } from '@/lib/observationResolver';
 
 export interface CorrelationPoint {
   date: string;
@@ -18,6 +19,7 @@ export interface ConceptCorrelation {
   n: number;
   r: number;
   series: Array<{ date: string; selfMood: number; intensity: number }>;
+  originalConceptIds?: string[];
 }
 
 export interface DualStats {
@@ -47,6 +49,7 @@ export const useDualPerspectiveData = ({
   const [obsRows, setObsRows] = useState<Array<{ concept_id: string; intensity: number; logged_at: string }>>([]);
   const [concepts, setConcepts] = useState<Record<string, { name_hu: string; name_en: string }>>({});
   const [loading, setLoading] = useState(false);
+  const [resolver, setResolver] = useState<any | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -92,18 +95,21 @@ export const useDualPerspectiveData = ({
         logged_at: string;
       }>;
 
-      // Concept name lookup
-      const conceptIds = Array.from(new Set(relativeObsRows.map((r) => r.concept_id)));
+      // Fetch concept metadata using resolver
+      const res = await fetchConceptResolver(supabase);
+      if (cancelled) return;
+      setResolver(res);
+
       const conceptMap: Record<string, { name_hu: string; name_en: string }> = {};
-      if (conceptIds.length > 0) {
-        const { data: cRows } = await supabase
-          .from('observation_concepts')
-          .select('id, name_hu, name_en')
-          .in('id', conceptIds);
-        (cRows ?? []).forEach((c: any) => {
-          conceptMap[c.id] = { name_hu: c.name_hu, name_en: c.name_en };
-        });
-      }
+      relativeObsRows.forEach((r) => {
+        const resolved = res.resolve(r.concept_id);
+        if (resolved) {
+          conceptMap[resolved.resolvedId] = {
+            name_hu: resolved.resolvedNameHu,
+            name_en: resolved.resolvedNameEn,
+          };
+        }
+      });
       if (cancelled) return;
 
       // Map to track the newest pulse per date
@@ -193,9 +199,19 @@ export const useDualPerspectiveData = ({
     });
 
     const byConcept: Record<string, { sum: number; count: number; date: string }[]> = {};
+    const conceptOriginalIdsMap: Record<string, Set<string>> = {};
+
     obsRows.forEach((row) => {
-      if (!byConcept[row.concept_id]) byConcept[row.concept_id] = [];
-      const arr = byConcept[row.concept_id];
+      const resolved = resolver?.resolve(row.concept_id);
+      const targetId = resolved ? resolved.resolvedId : row.concept_id;
+
+      if (!conceptOriginalIdsMap[targetId]) {
+        conceptOriginalIdsMap[targetId] = new Set<string>();
+      }
+      conceptOriginalIdsMap[targetId].add(row.concept_id);
+
+      if (!byConcept[targetId]) byConcept[targetId] = [];
+      const arr = byConcept[targetId];
       const existing = arr.find((x) => x.date === row.logged_at);
       if (existing) {
         existing.sum += row.intensity;
@@ -224,6 +240,7 @@ export const useDualPerspectiveData = ({
         n: series.length,
         r,
         series,
+        originalConceptIds: Array.from(conceptOriginalIdsMap[conceptId] ?? []),
       });
     });
     conceptCorrelations.sort((a, b) => Math.abs(b.r) - Math.abs(a.r));
@@ -237,7 +254,7 @@ export const useDualPerspectiveData = ({
       conceptCorrelations: conceptCorrelations.slice(0, 5),
       scatter,
     };
-  }, [data, obsRows, concepts]);
+  }, [data, obsRows, concepts, resolver]);
 
   return { data, stats, loading };
 };

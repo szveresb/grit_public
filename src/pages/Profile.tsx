@@ -11,6 +11,7 @@ import { toast } from 'sonner';
 import { FDownload } from '@/components/icons/FreudIcons';
 import ConsentDashboard from '@/components/consent/ConsentDashboard';
 import ManagedRelatives from '@/components/premium/ManagedRelatives';
+import { buildUserDataExport } from '@/lib/user-data-export';
 
 const Profile = () => {
   const { user, signOut, setDisplayName: setAuthDisplayName, refreshDisplayName } = useAuth();
@@ -84,17 +85,20 @@ const Profile = () => {
 
   const handleExport = async () => {
     if (!user) return;
-    const { data: entries } = await supabase.from('journal_entries').select('*').eq('user_id', user.id).order('entry_date');
-    const { data: responses } = await supabase.from('questionnaire_responses')
-      .select('*, questionnaires(title), questionnaire_answers(question_id, answer, questionnaire_questions(question_text))')
-      .eq('user_id', user.id);
-    const exportData = { exported_at: new Date().toISOString(), journal_entries: entries ?? [], questionnaire_responses: responses ?? [] };
-    const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url; a.download = `grithu-export-${new Date().toISOString().split('T')[0]}.json`;
-    a.click(); URL.revokeObjectURL(url);
-    toast.success(t.profile.dataExported);
+    try {
+      const exportData = await buildUserDataExport(user.id, t.export.bnoLabels);
+      const blob = new Blob([JSON.stringify(exportData, null, 2)], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `grithu-export-${new Date().toISOString().split('T')[0]}.json`;
+      a.click();
+      URL.revokeObjectURL(url);
+      toast.success(t.profile.dataExported);
+    } catch (err) {
+      console.error('Export failed:', err);
+      toast.toast ? toast.error(t.export.exportFailed) : toast.error(t.export.exportFailed);
+    }
   };
 
   return (
