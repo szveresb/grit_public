@@ -281,7 +281,7 @@ export const en: Dictionary = {
 
   questionnaires_manage: {
     title: 'Questionnaires',
-    subtitle: 'Gentle check-ins to track how you\'re feeling.',
+    subtitle: 'Check-ins to track how you\'re feeling.',
     noAvailable: 'No questionnaires available yet.',
     uncategorized: 'Other',
     selectCategoryPlaceholder: 'Select category',
